@@ -10,19 +10,23 @@
 		</data>
 		<key>flutter_assets/AssetManifest.bin</key>
 		<data>
-		ME0cAg6cl/bTZmwXEVgMugDccUI=
+		tauRiSsaAW3l18MD58AJgh7SBgI=
 		</data>
 		<key>flutter_assets/FontManifest.json</key>
 		<data>
-		vKJkVIcw+LGHFnKJGwrQwCREv68=
+		NL9Hx8CqjVXR3LtYDHMbFbYBWNM=
 		</data>
 		<key>flutter_assets/NOTICES.Z</key>
 		<data>
-		ao7YrwcuGi3Md3bA7jWCsp/QcXY=
+		O1WrNIIhI5pi5iBxOtV1JU3GAmE=
 		</data>
 		<key>flutter_assets/NativeAssetsManifest.json</key>
 		<data>
 		BASHf/14q0VcgmnKtkQLt+qMEqo=
+		</data>
+		<key>flutter_assets/assets/images/heather_logo.svg</key>
+		<data>
+		9GOvYrovvqbsRG5wuRSceBwLUjs=
 		</data>
 		<key>flutter_assets/fonts/MaterialIcons-Regular.otf</key>
 		<data>
@@ -34,11 +38,19 @@
 		</data>
 		<key>flutter_assets/kernel_blob.bin</key>
 		<data>
-		U1UM8LJ3VUFF07fKSDaGSVcATjE=
+		/R0FyDzAfiS/oIsx1ZFa7YqNA4I=
 		</data>
 		<key>flutter_assets/packages/cupertino_icons/assets/CupertinoIcons.ttf</key>
 		<data>
 		Bvk+P1ykE1PGRdktwgwDyz6AOqM=
+		</data>
+		<key>flutter_assets/packages/flutter_map/lib/assets/flutter_map_logo.png</key>
+		<data>
+		kUCCgXRmQ7Ql3lxXrdQuoudq1L8=
+		</data>
+		<key>flutter_assets/packages/weather_icons/lib/fonts/weathericons-regular-webfont.ttf</key>
+		<data>
+		mRbj28OZDjBzz1ostMLpWCc7dTI=
 		</data>
 		<key>flutter_assets/shaders/ink_sparkle.frag</key>
 		<data>
@@ -59,21 +71,21 @@
 		<dict>
 			<key>hash2</key>
 			<data>
-			AK9VrT1vIYmP534P8JLRoc2lLJQbaGDpko1FyK+MCV0=
+			gFcxgJ9j6mbL0Pa/AVjETl5XmLqB+6xiLKGxQQbuSUg=
 			</data>
 		</dict>
 		<key>flutter_assets/FontManifest.json</key>
 		<dict>
 			<key>hash2</key>
 			<data>
-			zX4DZFvESy3Ue3y2JvUcTsv1Whl6t3JBYotHrBZfviE=
+			FA1w3uFcvQEGDAxSLwbrhDAFgtZF4YSUXryGLeMxP2Y=
 			</data>
 		</dict>
 		<key>flutter_assets/NOTICES.Z</key>
 		<dict>
 			<key>hash2</key>
 			<data>
-			zH7ev8HmXIh/M2eAZbfv2b260IDoSYl8S8I1jWHXeS4=
+			9CzHkA0+3mJHrDx/T30pkKIsZm6FzsTN41M+7O3bppw=
 			</data>
 		</dict>
 		<key>flutter_assets/NativeAssetsManifest.json</key>
@@ -81,6 +93,13 @@
 			<key>hash2</key>
 			<data>
 			Ylst3tzkLj0hjOuIabyRGejeqGUKbLJKt3nVAIBVsUE=
+			</data>
+		</dict>
+		<key>flutter_assets/assets/images/heather_logo.svg</key>
+		<dict>
+			<key>hash2</key>
+			<data>
+			65NaYQKKG6tZZ3Rs6oYRUdGEFNdnirs3c9TL4+5LquU=
 			</data>
 		</dict>
 		<key>flutter_assets/fonts/MaterialIcons-Regular.otf</key>
@@ -101,7 +120,7 @@
 		<dict>
 			<key>hash2</key>
 			<data>
-			WND9ua/iU3QfH+TVkH7PiS2Vptotkq/R6T/fUwxouvU=
+			T9gFoxRvQjmTfc27HElhxtyHX/MgPefrEeVli0/LgH8=
 			</data>
 		</dict>
 		<key>flutter_assets/packages/cupertino_icons/assets/CupertinoIcons.ttf</key>
@@ -109,6 +128,20 @@
 			<key>hash2</key>
 			<data>
 			Z8RP6Rg7AC553ef2l34piGYcmj5KPF/OloeH79vtgjw=
+			</data>
+		</dict>
+		<key>flutter_assets/packages/flutter_map/lib/assets/flutter_map_logo.png</key>
+		<dict>
+			<key>hash2</key>
+			<data>
+			YFGuQvtQWTGoM+WPkgmp+WZppNDks/BvbYLN4SoOBAE=
+			</data>
+		</dict>
+		<key>flutter_assets/packages/weather_icons/lib/fonts/weathericons-regular-webfont.ttf</key>
+		<dict>
+			<key>hash2</key>
+			<data>
+			F2vaZmHyE93kfCEU125HbsjKmq4H3VT5VQ0tKP4CtP0=
 			</data>
 		</dict>
 		<key>flutter_assets/shaders/ink_sparkle.frag</key>

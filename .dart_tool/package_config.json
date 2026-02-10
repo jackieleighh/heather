@@ -164,6 +164,12 @@
       "languageVersion": "3.7"
     },
     {
+      "name": "dbus",
+      "rootUri": "file:///Users/jacquelineharnish/.pub-cache/hosted/pub.dev/dbus-0.7.12",
+      "packageUri": "lib/",
+      "languageVersion": "2.17"
+    },
+    {
       "name": "dio",
       "rootUri": "file:///Users/jacquelineharnish/.pub-cache/hosted/pub.dev/dio-5.9.1",
       "packageUri": "lib/",
@@ -210,6 +216,24 @@
       "rootUri": "file:///Users/jacquelineharnish/.pub-cache/hosted/pub.dev/flutter_lints-6.0.0",
       "packageUri": "lib/",
       "languageVersion": "3.8"
+    },
+    {
+      "name": "flutter_local_notifications",
+      "rootUri": "file:///Users/jacquelineharnish/.pub-cache/hosted/pub.dev/flutter_local_notifications-18.0.1",
+      "packageUri": "lib/",
+      "languageVersion": "3.1"
+    },
+    {
+      "name": "flutter_local_notifications_linux",
+      "rootUri": "file:///Users/jacquelineharnish/.pub-cache/hosted/pub.dev/flutter_local_notifications_linux-5.0.0",
+      "packageUri": "lib/",
+      "languageVersion": "3.1"
+    },
+    {
+      "name": "flutter_local_notifications_platform_interface",
+      "rootUri": "file:///Users/jacquelineharnish/.pub-cache/hosted/pub.dev/flutter_local_notifications_platform_interface-8.0.0",
+      "packageUri": "lib/",
+      "languageVersion": "3.1"
     },
     {
       "name": "flutter_map",
@@ -774,6 +798,12 @@
       "rootUri": "file:///Users/jacquelineharnish/.pub-cache/hosted/pub.dev/test_api-0.7.7",
       "packageUri": "lib/",
       "languageVersion": "3.5"
+    },
+    {
+      "name": "timezone",
+      "rootUri": "file:///Users/jacquelineharnish/.pub-cache/hosted/pub.dev/timezone-0.10.1",
+      "packageUri": "lib/",
+      "languageVersion": "2.19"
     },
     {
       "name": "timing",

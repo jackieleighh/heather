@@ -1,4 +1,6 @@
 import 'dart:async';
+import 'dart:io';
+import 'dart:typed_data';
 import 'dart:ui';
 
 import 'package:flutter/material.dart';
@@ -8,6 +10,7 @@ import 'package:google_fonts/google_fonts.dart';
 import 'package:latlong2/latlong.dart';
 
 import '../../../../core/constants/app_colors.dart';
+import '../../../../core/network/cached_tile_provider.dart';
 import '../../data/sources/rainviewer_remote_source.dart';
 import '../providers/radar_provider.dart';
 
@@ -28,9 +31,14 @@ class _RadarPageState extends ConsumerState<RadarPage> {
   bool _initialized = false;
   bool _holdingOnLast = false;
 
+  final Map<String, Uint8List> _tileCache = {};
+  final HttpClient _tileHttpClient = HttpClient();
+
   @override
   void dispose() {
     _playbackTimer?.cancel();
+    _tileCache.clear();
+    _tileHttpClient.close();
     super.dispose();
   }
 
@@ -210,6 +218,10 @@ class _RadarPageState extends ConsumerState<RadarPage> {
                                 child: TileLayer(
                                   key: ValueKey(frame.path),
                                   urlTemplate: radarTileUrl,
+                                  tileProvider: CachedRadarTileProvider(
+                                    cache: _tileCache,
+                                    httpClient: _tileHttpClient,
+                                  ),
                                 ),
                               ),
                               // Location marker
@@ -307,125 +319,111 @@ class _ControlBar extends StatelessWidget {
   Widget build(BuildContext context) {
     final timeLabel = formatRelativeTime(frame.time);
 
-    return BackdropFilter(
-      filter: ImageFilter.blur(sigmaX: 20, sigmaY: 20),
-      child: Container(
-        decoration: BoxDecoration(color: Colors.black.withValues(alpha: 0.45)),
-        padding: const EdgeInsets.fromLTRB(16, 12, 8, 8),
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            // Time label
-            Align(
-              alignment: Alignment.centerLeft,
-              child: Text(
-                timeLabel,
-                style: GoogleFonts.inter(
-                  fontSize: 13,
-                  fontWeight: FontWeight.w600,
-                  color: Colors.white,
-                ),
+    return Container(
+      decoration: BoxDecoration(color: Colors.black.withValues(alpha: 0.25)),
+      padding: const EdgeInsets.fromLTRB(16, 12, 8, 10),
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          // Time label
+          Align(
+            alignment: Alignment.centerLeft,
+            child: Text(
+              timeLabel,
+              style: GoogleFonts.inter(
+                fontSize: 14,
+                fontWeight: FontWeight.w700,
+                color: AppColors.cream,
               ),
             ),
-            // Slider + now indicator + play button
-            Row(
-              children: [
-                Expanded(
-                  child: LayoutBuilder(
-                    builder: (context, constraints) {
-                      // Slider's track is inset by the overlay radius (24px each side)
-                      const trackPadding = 24.0;
-                      final trackWidth =
-                          constraints.maxWidth - trackPadding * 2;
-                      final nowFraction = frameCount > 1
-                          ? nowIndex / (frameCount - 1)
-                          : 0.5;
-                      final nowX =
-                          trackPadding + nowFraction * trackWidth;
+          ),
+          // Slider + now indicator + play button
+          Row(
+            children: [
+              Expanded(
+                child: LayoutBuilder(
+                  builder: (context, constraints) {
+                    // Slider's track is inset by the overlay radius (24px each side)
+                    const trackPadding = 24.0;
+                    final trackWidth = constraints.maxWidth - trackPadding * 2;
+                    final nowFraction = frameCount > 1
+                        ? nowIndex / (frameCount - 1)
+                        : 0.5;
+                    final nowX = trackPadding + nowFraction * trackWidth;
 
-                      return Stack(
-                        children: [
-                          SliderTheme(
-                            data: SliderThemeData(
-                              activeTrackColor:
-                                  Colors.white.withValues(alpha: 0.85),
-                              inactiveTrackColor:
-                                  Colors.white.withValues(alpha: 0.25),
-                              thumbColor: Colors.white,
-                              overlayColor:
-                                  Colors.white.withValues(alpha: 0.15),
-                              trackHeight: 3,
-                              thumbShape: const RoundSliderThumbShape(
-                                enabledThumbRadius: 6,
-                              ),
+                    return Stack(
+                      children: [
+                        SliderTheme(
+                          data: SliderThemeData(
+                            activeTrackColor: AppColors.cream.withValues(
+                              alpha: 0.85,
                             ),
-                            child: Slider(
-                              value: currentIndex.toDouble(),
-                              min: 0,
-                              max: (frameCount - 1).toDouble(),
-                              divisions: frameCount - 1,
-                              onChanged: onSliderChanged,
+                            inactiveTrackColor: AppColors.cream.withValues(
+                              alpha: 0.25,
+                            ),
+                            thumbColor: AppColors.cream,
+                            overlayColor: AppColors.cream.withValues(
+                              alpha: 0.15,
+                            ),
+                            trackHeight: 3,
+                            thumbShape: const RoundSliderThumbShape(
+                              enabledThumbRadius: 6,
                             ),
                           ),
-                          // "Now" indicator
-                          Positioned(
-                            left: nowX - 1,
-                            top: 0,
-                            bottom: 0,
-                            child: IgnorePointer(
-                              child: Center(
-                                child: Container(
-                                  width: 2,
-                                  height: 16,
-                                  decoration: BoxDecoration(
-                                    color: Colors.white
-                                        .withValues(alpha: 0.7),
-                                    borderRadius:
-                                        BorderRadius.circular(1),
-                                  ),
+                          child: Slider(
+                            value: currentIndex.toDouble(),
+                            min: 0,
+                            max: (frameCount - 1).toDouble(),
+                            divisions: frameCount - 1,
+                            onChanged: onSliderChanged,
+                          ),
+                        ),
+                        // "Now" indicator
+                        Positioned(
+                          left: nowX - 1,
+                          top: 0,
+                          bottom: 0,
+                          child: IgnorePointer(
+                            child: Center(
+                              child: Container(
+                                width: 2,
+                                height: 16,
+                                decoration: BoxDecoration(
+                                  color: AppColors.cream,
+                                  borderRadius: BorderRadius.circular(1),
                                 ),
                               ),
                             ),
                           ),
-                        ],
-                      );
-                    },
-                  ),
-                ),
-                GestureDetector(
-                  onTap: onPlayPause,
-                  child: Icon(
-                    isPlaying ? Icons.pause_rounded : Icons.play_arrow_rounded,
-                    color: Colors.white.withValues(alpha: 0.85),
-                    size: 28,
-                  ),
-                ),
-              ],
-            ),
-            // "Now" label under slider right end
-            Row(
-              children: [
-                Expanded(
-                  child: Align(
-                    alignment: Alignment.centerRight,
-                    child: Padding(
-                      padding: const EdgeInsets.only(right: 14),
-                      child: Text(
-                        'Now',
-                        style: GoogleFonts.inter(
-                          fontSize: 10,
-                          fontWeight: FontWeight.w500,
-                          color: Colors.white.withValues(alpha: 0.5),
                         ),
-                      ),
-                    ),
-                  ),
+                        Positioned(
+                          left: nowX - 14,
+                          top: 32,
+                          child: Text(
+                            'Now',
+                            style: GoogleFonts.inter(
+                              fontSize: 12,
+                              fontWeight: FontWeight.w600,
+                              color: AppColors.cream.withValues(alpha: 0.85),
+                            ),
+                          ),
+                        ),
+                      ],
+                    );
+                  },
                 ),
-                const SizedBox(width: 28),
-              ],
-            ),
-          ],
-        ),
+              ),
+              GestureDetector(
+                onTap: onPlayPause,
+                child: Icon(
+                  isPlaying ? Icons.pause_rounded : Icons.play_arrow_rounded,
+                  color: AppColors.cream.withValues(alpha: 0.85),
+                  size: 28,
+                ),
+              ),
+            ],
+          ),
+        ],
       ),
     );
   }

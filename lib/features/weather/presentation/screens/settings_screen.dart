@@ -145,7 +145,7 @@ class SettingsScreen extends ConsumerWidget {
                                     icon: Icon(
                                       Icons.delete_outline,
                                       color: AppColors.cream.withValues(
-                                        alpha: 0.5,
+                                        alpha: 0.6,
                                       ),
                                       size: 20,
                                     ),
@@ -176,7 +176,7 @@ class SettingsScreen extends ConsumerWidget {
                               vertical: 4,
                             ),
                             title: Text(
-                              'Explicit Language',
+                              'R Rated',
                               style: GoogleFonts.poppins(
                                 fontSize: 15,
                                 fontWeight: FontWeight.w500,
@@ -201,11 +201,197 @@ class SettingsScreen extends ConsumerWidget {
                             inactiveThumbColor: AppColors.cream.withValues(
                               alpha: 0.4,
                             ),
+                            trackOutlineColor: WidgetStatePropertyAll(
+                              AppColors.cream.withValues(alpha: 0.1),
+                            ),
                             onChanged: (value) {
                               ref
                                   .read(settingsProvider.notifier)
                                   .setExplicitLanguage(value);
                             },
+                          ),
+                        ),
+
+                        const SizedBox(height: 24),
+
+                        // ── Notifications ──
+                        const _SectionHeader(title: 'Notifications'),
+                        const SizedBox(height: 4),
+                        Container(
+                          decoration: BoxDecoration(
+                            color: AppColors.cream.withValues(alpha: 0.15),
+                            borderRadius: BorderRadius.circular(12),
+                          ),
+                          child: Column(
+                            children: [
+                              SwitchListTile(
+                                contentPadding: const EdgeInsets.symmetric(
+                                  horizontal: 16,
+                                  vertical: 4,
+                                ),
+                                title: Text(
+                                  'Daily Weather Alert',
+                                  style: GoogleFonts.poppins(
+                                    fontSize: 15,
+                                    fontWeight: FontWeight.w500,
+                                    color: AppColors.cream,
+                                  ),
+                                ),
+                                subtitle: Text(
+                                  'Get a daily weather quip from Heather.',
+                                  style: GoogleFonts.poppins(
+                                    fontSize: 12,
+                                    color: AppColors.cream.withValues(
+                                      alpha: 0.6,
+                                    ),
+                                  ),
+                                ),
+                                value: settings.notificationsEnabled,
+                                activeTrackColor: AppColors.cream.withValues(
+                                  alpha: 0.3,
+                                ),
+                                activeThumbColor: AppColors.cream,
+                                inactiveTrackColor: AppColors.cream.withValues(
+                                  alpha: 0.1,
+                                ),
+                                inactiveThumbColor: AppColors.cream.withValues(
+                                  alpha: 0.4,
+                                ),
+                                onChanged: (value) async {
+                                  final granted = await ref
+                                      .read(settingsProvider.notifier)
+                                      .setNotificationsEnabled(value);
+                                  if (!granted && context.mounted) {
+                                    ScaffoldMessenger.of(context).showSnackBar(
+                                      SnackBar(
+                                        content: Text(
+                                          'Notification permission denied. Enable it in system settings.',
+                                          style: GoogleFonts.poppins(
+                                            fontSize: 13,
+                                          ),
+                                        ),
+                                      ),
+                                    );
+                                  }
+                                },
+                              ),
+                              if (settings.notificationsEnabled)
+                                ListTile(
+                                  contentPadding: const EdgeInsets.symmetric(
+                                    horizontal: 16,
+                                  ),
+                                  title: Text(
+                                    'Notification Time',
+                                    style: GoogleFonts.poppins(
+                                      fontSize: 15,
+                                      fontWeight: FontWeight.w500,
+                                      color: AppColors.cream,
+                                    ),
+                                  ),
+                                  trailing: Text(
+                                    settings.notificationTime.format(context),
+                                    style: GoogleFonts.poppins(
+                                      fontSize: 15,
+                                      color: AppColors.cream.withValues(
+                                        alpha: 0.8,
+                                      ),
+                                    ),
+                                  ),
+                                  onTap: () async {
+                                    final picked = await showTimePicker(
+                                      context: context,
+                                      initialTime: settings.notificationTime,
+                                      builder: (context, child) {
+                                        return Theme(
+                                          data: Theme.of(context).copyWith(
+                                            timePickerTheme: TimePickerThemeData(
+                                              backgroundColor:
+                                                  AppColors.midnightPurple,
+                                              hourMinuteTextColor:
+                                                  AppColors.cream,
+                                              hourMinuteColor: AppColors
+                                                  .vibrantPurple
+                                                  .withValues(alpha: 0.3),
+                                              dayPeriodTextColor:
+                                                  AppColors.cream,
+                                              dayPeriodColor: AppColors
+                                                  .vibrantPurple
+                                                  .withValues(alpha: 0.3),
+                                              dialHandColor:
+                                                  AppColors.vibrantPurple,
+                                              dialBackgroundColor: AppColors
+                                                  .vibrantPurple
+                                                  .withValues(alpha: 0.15),
+                                              dialTextColor: AppColors.cream,
+                                              entryModeIconColor: AppColors
+                                                  .cream
+                                                  .withValues(alpha: 0.6),
+                                              helpTextStyle:
+                                                  GoogleFonts.poppins(
+                                                    fontSize: 14,
+                                                    color: AppColors.cream,
+                                                  ),
+                                              hourMinuteTextStyle:
+                                                  GoogleFonts.poppins(
+                                                    fontSize: 32,
+                                                    fontWeight: FontWeight.w500,
+                                                  ),
+                                              dayPeriodTextStyle:
+                                                  GoogleFonts.poppins(
+                                                    fontSize: 14,
+                                                    fontWeight: FontWeight.w500,
+                                                  ),
+                                              shape: RoundedRectangleBorder(
+                                                borderRadius:
+                                                    BorderRadius.circular(16),
+                                              ),
+                                              dayPeriodShape:
+                                                  RoundedRectangleBorder(
+                                                    borderRadius:
+                                                        BorderRadius.circular(
+                                                          8,
+                                                        ),
+                                                  ),
+                                              dayPeriodBorderSide: BorderSide(
+                                                color: AppColors.cream
+                                                    .withValues(alpha: 0.2),
+                                              ),
+                                            ),
+                                            textButtonTheme:
+                                                TextButtonThemeData(
+                                                  style: TextButton.styleFrom(
+                                                    foregroundColor:
+                                                        AppColors.cream,
+                                                    textStyle:
+                                                        GoogleFonts.poppins(
+                                                          fontSize: 16,
+                                                          fontWeight:
+                                                              FontWeight.w500,
+                                                        ),
+                                                  ),
+                                                ),
+                                          ),
+                                          child: MediaQuery(
+                                            data: MediaQuery.of(context)
+                                                .copyWith(
+                                                  textScaler:
+                                                      const TextScaler.linear(
+                                                        0.9,
+                                                      ),
+                                                ),
+                                            child: child!,
+                                          ),
+                                        );
+                                      },
+                                    );
+                                    if (picked != null) {
+                                      ref
+                                          .read(settingsProvider.notifier)
+                                          .setNotificationTime(picked);
+                                    }
+                                  },
+                                ),
+                            ],
                           ),
                         ),
 

@@ -35,10 +35,12 @@ class RainViewerRemoteSource {
     final past = radar['past'] as List<dynamic>;
 
     final allPastFrames = past
-        .map((frame) => RadarFrame(
-              time: frame['time'] as int,
-              path: frame['path'] as String,
-            ))
+        .map(
+          (frame) => RadarFrame(
+            time: frame['time'] as int,
+            path: frame['path'] as String,
+          ),
+        )
         .toList();
 
     if (allPastFrames.isEmpty) {

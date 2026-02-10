@@ -1,7 +1,9 @@
+import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:freezed_annotation/freezed_annotation.dart';
 
 import '../../../../core/network/api_client.dart';
+import '../../../../core/services/notification_service.dart';
 import '../../../../core/storage/secure_storage.dart';
 import '../../data/repositories/quip_repository_impl.dart';
 import '../../data/repositories/weather_repository_impl.dart';
@@ -52,15 +54,27 @@ class WeatherState with _$WeatherState {
 final weatherStateProvider =
     StateNotifierProvider<WeatherNotifier, WeatherState>((ref) {
       final explicit = ref.read(settingsProvider).explicitLanguage;
+      final settings = ref.read(settingsProvider);
       final notifier = WeatherNotifier(
         weatherRepo: ref.watch(weatherRepositoryProvider),
         quipRepo: ref.watch(quipRepositoryProvider),
         explicit: explicit,
+        notificationsEnabled: settings.notificationsEnabled,
+        notificationTime: settings.notificationTime,
       );
 
       ref.listen<SettingsState>(settingsProvider, (previous, next) {
         if (previous?.explicitLanguage != next.explicitLanguage) {
           notifier.updateExplicit(next.explicitLanguage);
+        }
+        final notifChanged = previous?.notificationsEnabled !=
+                next.notificationsEnabled ||
+            previous?.notificationTime != next.notificationTime;
+        if (notifChanged) {
+          notifier.updateNotificationSettings(
+            enabled: next.notificationsEnabled,
+            time: next.notificationTime,
+          );
         }
       });
 
@@ -71,12 +85,18 @@ class WeatherNotifier extends StateNotifier<WeatherState> {
   final WeatherRepositoryImpl weatherRepo;
   final QuipRepositoryImpl quipRepo;
   bool _explicit;
+  bool _notificationsEnabled;
+  TimeOfDay _notificationTime;
 
   WeatherNotifier({
     required this.weatherRepo,
     required this.quipRepo,
     required bool explicit,
+    required bool notificationsEnabled,
+    required TimeOfDay notificationTime,
   })  : _explicit = explicit,
+        _notificationsEnabled = notificationsEnabled,
+        _notificationTime = notificationTime,
         super(const WeatherState.loading()) {
     loadWeather();
   }
@@ -84,6 +104,35 @@ class WeatherNotifier extends StateNotifier<WeatherState> {
   void updateExplicit(bool value) {
     _explicit = value;
     _refreshQuip();
+  }
+
+  void updateNotificationSettings({
+    required bool enabled,
+    required TimeOfDay time,
+  }) {
+    _notificationsEnabled = enabled;
+    _notificationTime = time;
+    _scheduleNotificationIfNeeded();
+  }
+
+  void _scheduleNotificationIfNeeded() {
+    final current = state;
+    if (current is! _Loaded) return;
+
+    if (!_notificationsEnabled) {
+      NotificationService().cancelNotification();
+      return;
+    }
+
+    final temp = current.forecast.current.temperature.round();
+    final description = current.forecast.current.description.toLowerCase();
+    final body = "It's $temp degrees and $description. ${current.quip}";
+    NotificationService().scheduleDailyNotification(
+      hour: _notificationTime.hour,
+      minute: _notificationTime.minute,
+      title: 'Heather',
+      body: body,
+    );
   }
 
   Future<void> _refreshQuip() async {
@@ -126,6 +175,7 @@ class WeatherNotifier extends StateNotifier<WeatherState> {
         location: location,
         quip: quip,
       );
+      _scheduleNotificationIfNeeded();
     } catch (e) {
       if (!mounted) return;
       state = WeatherState.error(e.toString());
@@ -150,6 +200,7 @@ class WeatherNotifier extends StateNotifier<WeatherState> {
         location: location,
         quip: quip,
       );
+      _scheduleNotificationIfNeeded();
       return true;
     } catch (e) {
       if (!mounted) return false;

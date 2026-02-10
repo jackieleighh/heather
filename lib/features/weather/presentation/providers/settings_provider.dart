@@ -1,7 +1,13 @@
+import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
+import '../../../../core/services/notification_service.dart';
+
 const _explicitLanguageKey = 'explicit_language';
+const _notificationsEnabledKey = 'notifications_enabled';
+const _notificationHourKey = 'notification_hour';
+const _notificationMinuteKey = 'notification_minute';
 
 final settingsProvider = StateNotifierProvider<SettingsNotifier, SettingsState>(
   (ref) {
@@ -11,12 +17,24 @@ final settingsProvider = StateNotifierProvider<SettingsNotifier, SettingsState>(
 
 class SettingsState {
   final bool explicitLanguage;
+  final bool notificationsEnabled;
+  final TimeOfDay notificationTime;
 
-  const SettingsState({this.explicitLanguage = false});
+  const SettingsState({
+    this.explicitLanguage = false,
+    this.notificationsEnabled = false,
+    this.notificationTime = const TimeOfDay(hour: 7, minute: 0),
+  });
 
-  SettingsState copyWith({bool? explicitLanguage}) {
+  SettingsState copyWith({
+    bool? explicitLanguage,
+    bool? notificationsEnabled,
+    TimeOfDay? notificationTime,
+  }) {
     return SettingsState(
       explicitLanguage: explicitLanguage ?? this.explicitLanguage,
+      notificationsEnabled: notificationsEnabled ?? this.notificationsEnabled,
+      notificationTime: notificationTime ?? this.notificationTime,
     );
   }
 }
@@ -29,12 +47,42 @@ class SettingsNotifier extends StateNotifier<SettingsState> {
   Future<void> _load() async {
     final prefs = await SharedPreferences.getInstance();
     final explicit = prefs.getBool(_explicitLanguageKey) ?? false;
-    state = SettingsState(explicitLanguage: explicit);
+    final notificationsEnabled =
+        prefs.getBool(_notificationsEnabledKey) ?? false;
+    final hour = prefs.getInt(_notificationHourKey) ?? 7;
+    final minute = prefs.getInt(_notificationMinuteKey) ?? 0;
+    state = SettingsState(
+      explicitLanguage: explicit,
+      notificationsEnabled: notificationsEnabled,
+      notificationTime: TimeOfDay(hour: hour, minute: minute),
+    );
   }
 
   Future<void> setExplicitLanguage(bool value) async {
     final prefs = await SharedPreferences.getInstance();
     await prefs.setBool(_explicitLanguageKey, value);
     state = state.copyWith(explicitLanguage: value);
+  }
+
+  /// Returns false if permission was denied.
+  Future<bool> setNotificationsEnabled(bool value) async {
+    if (value) {
+      final granted = await NotificationService().requestPermissions();
+      if (!granted) return false;
+    } else {
+      await NotificationService().cancelNotification();
+    }
+
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setBool(_notificationsEnabledKey, value);
+    state = state.copyWith(notificationsEnabled: value);
+    return true;
+  }
+
+  Future<void> setNotificationTime(TimeOfDay time) async {
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setInt(_notificationHourKey, time.hour);
+    await prefs.setInt(_notificationMinuteKey, time.minute);
+    state = state.copyWith(notificationTime: time);
   }
 }
