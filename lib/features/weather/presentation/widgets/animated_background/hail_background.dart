@@ -2,11 +2,12 @@ import 'dart:math';
 
 import 'package:flutter/material.dart';
 
-import '../../../../../core/constants/app_colors.dart';
 import 'particle.dart';
 
 class HailBackground extends StatefulWidget {
-  const HailBackground({super.key});
+  final List<Color> gradientColors;
+
+  const HailBackground({super.key, required this.gradientColors});
 
   @override
   State<HailBackground> createState() => _HailBackgroundState();
@@ -56,8 +57,12 @@ class _HailBackgroundState extends State<HailBackground>
       animation: _controller,
       builder: (context, child) {
         return CustomPaint(
-          painter: _HailPainter(
-              _drops, _hailStones, _random, _lightningOpacity),
+          foregroundPainter: _HailPainter(
+            _drops,
+            _hailStones,
+            _random,
+            _lightningOpacity,
+          ),
           size: Size.infinite,
           child: Container(
             decoration: BoxDecoration(
@@ -66,16 +71,16 @@ class _HailBackgroundState extends State<HailBackground>
                 end: Alignment.bottomCenter,
                 colors: [
                   Color.lerp(
-                    AppColors.midnightPurple,
+                    widget.gradientColors[0],
                     Colors.white,
                     _lightningOpacity * 0.12,
                   )!,
                   Color.lerp(
-                    AppColors.deepPurple,
+                    widget.gradientColors[1],
                     Colors.white,
                     _lightningOpacity * 0.08,
                   )!,
-                  AppColors.darkTeal,
+                  widget.gradientColors[2],
                 ],
               ),
             ),
@@ -92,8 +97,7 @@ class _HailPainter extends CustomPainter {
   final Random random;
   final double lightningOpacity;
 
-  _HailPainter(this.drops, this.hailStones, this.random,
-      this.lightningOpacity);
+  _HailPainter(this.drops, this.hailStones, this.random, this.lightningOpacity);
 
   @override
   void paint(Canvas canvas, Size size) {
@@ -169,13 +173,16 @@ class _HailPainter extends CustomPainter {
       if (stone.x > size.width) stone.x = 0;
 
       hailPaint.color = Colors.white.withValues(alpha: stone.opacity * 0.6);
-      hailBorderPaint.color =
-          Colors.white.withValues(alpha: stone.opacity * 0.8);
+      hailBorderPaint.color = Colors.white.withValues(
+        alpha: stone.opacity * 0.8,
+      );
 
+      canvas.drawCircle(Offset(stone.x, stone.y), stone.size / 2, hailPaint);
       canvas.drawCircle(
-          Offset(stone.x, stone.y), stone.size / 2, hailPaint);
-      canvas.drawCircle(
-          Offset(stone.x, stone.y), stone.size / 2, hailBorderPaint);
+        Offset(stone.x, stone.y),
+        stone.size / 2,
+        hailBorderPaint,
+      );
     }
 
     // Lightning flash
@@ -183,8 +190,7 @@ class _HailPainter extends CustomPainter {
       final flashPaint = Paint()
         ..color = Colors.white.withValues(alpha: lightningOpacity * 0.15)
         ..style = PaintingStyle.fill;
-      canvas.drawRect(
-          Rect.fromLTWH(0, 0, size.width, size.height), flashPaint);
+      canvas.drawRect(Rect.fromLTWH(0, 0, size.width, size.height), flashPaint);
     }
   }
 

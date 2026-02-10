@@ -220,9 +220,9 @@ class _LocationTile extends ConsumerWidget {
               style: TextStyle(color: AppColors.cream.withValues(alpha: 0.6)),
             )
           : null,
-      onTap: () {
-        ref.read(savedLocationsProvider.notifier).addLocation(location);
-        Navigator.of(context).maybePop();
+      onTap: () async {
+        await ref.read(savedLocationsProvider.notifier).addLocation(location);
+        if (context.mounted) Navigator.of(context).maybePop(true);
       },
     );
   }

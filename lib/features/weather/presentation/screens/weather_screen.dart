@@ -11,6 +11,7 @@ import '../../../../core/constants/app_colors.dart';
 import '../providers/location_provider.dart';
 import '../providers/weather_provider.dart';
 import '../screens/location_search_screen.dart';
+import '../widgets/animated_background/weather_background.dart';
 import '../widgets/vertical_forecast_pager.dart';
 
 class WeatherScreen extends ConsumerStatefulWidget {
@@ -51,8 +52,8 @@ class _WeatherScreenState extends ConsumerState<WeatherScreen> {
     }
   }
 
-  void _openLocationSearch() {
-    Navigator.of(context).push(
+  Future<void> _openLocationSearch() async {
+    final added = await Navigator.of(context).push<bool>(
       PageRouteBuilder(
         pageBuilder: (context, animation, secondaryAnimation) =>
             const LocationSearchScreen(),
@@ -68,10 +69,41 @@ class _WeatherScreenState extends ConsumerState<WeatherScreen> {
         },
       ),
     );
+
+    if (added == true && mounted) {
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        if (!mounted) return;
+        final savedLocations = ref.read(savedLocationsProvider);
+        final targetPage = savedLocations.length; // GPS is page 0, last saved location is at this index
+        if (_horizontalController.hasClients) {
+          _horizontalController.animateToPage(
+            targetPage,
+            duration: const Duration(milliseconds: 400),
+            curve: Curves.easeInOut,
+          );
+        }
+      });
+    }
   }
 
   void _showSettings() {
     context.push('/settings');
+  }
+
+  Future<bool> _refreshAll() async {
+    final savedLocations = ref.read(savedLocationsProvider);
+    final results = await Future.wait([
+      ref.read(weatherStateProvider.notifier).refresh(),
+      ...savedLocations.map((loc) {
+        final params = (
+          name: loc.name,
+          lat: loc.latitude,
+          lon: loc.longitude,
+        );
+        return ref.read(locationForecastProvider(params).notifier).refresh();
+      }),
+    ]);
+    return results.every((success) => success);
   }
 
   @override
@@ -115,7 +147,9 @@ class _WeatherScreenState extends ConsumerState<WeatherScreen> {
             forecast: forecast,
             cityName: location.cityName,
             quip: quip,
-            onRefresh: () => ref.read(weatherStateProvider.notifier).refresh(),
+            latitude: location.latitude,
+            longitude: location.longitude,
+            onRefresh: _refreshAll,
             onSettings: _showSettings,
           ),
           ...savedLocations.map(
@@ -124,9 +158,55 @@ class _WeatherScreenState extends ConsumerState<WeatherScreen> {
           ),
         ];
 
+        // Determine active weather for background based on current page
+        var bgCondition = forecast.current.condition;
+        var bgIsDay = forecast.current.isDay;
+        var bgTemperature = forecast.current.temperature;
+
+        if (_currentHorizontalPage > 0) {
+          final locIndex = _currentHorizontalPage - 1;
+          if (locIndex < locationStates.length) {
+            locationStates[locIndex].whenOrNull(
+              loaded: (locForecast, _) {
+                bgCondition = locForecast.current.condition;
+                bgIsDay = locForecast.current.isDay;
+                bgTemperature = locForecast.current.temperature;
+              },
+            );
+          }
+        }
+
         return Stack(
           children: [
-            PageView(controller: _horizontalController, children: pages),
+            // Animated background
+            WeatherBackground(
+              condition: bgCondition,
+              isDay: bgIsDay,
+              temperature: bgTemperature,
+            ),
+            // Gradient scrim for text readability
+            Positioned.fill(
+              child: DecoratedBox(
+                decoration: BoxDecoration(
+                  gradient: LinearGradient(
+                    begin: Alignment.topCenter,
+                    end: Alignment.bottomCenter,
+                    colors: [
+                      AppColors.cream.withValues(alpha: 0.15),
+                      AppColors.cream.withValues(alpha: 0.05),
+                      AppColors.cream.withValues(alpha: 0.25),
+                    ],
+                  ),
+                ),
+              ),
+            ),
+            // Logo behind all page content
+            const LogoOverlay(),
+            PageView(
+              controller: _horizontalController,
+              physics: const ClampingScrollPhysics(),
+              children: pages,
+            ),
             Positioned(
               bottom: MediaQuery.paddingOf(context).bottom + 12,
               left: 0,
@@ -155,14 +235,13 @@ class _WeatherScreenState extends ConsumerState<WeatherScreen> {
                     onPressed: _showSettings,
                     icon: Icon(
                       Icons.settings_outlined,
-                      color: AppColors.cream.withValues(alpha: 0.6),
+                      color: AppColors.cream.withValues(alpha: 0.85),
                       size: 24,
                     ),
                   ),
                 ],
               ),
             ),
-            const LogoOverlay(),
           ],
         );
       },

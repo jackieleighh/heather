@@ -2,15 +2,17 @@ import 'package:flutter/material.dart';
 
 import '../../../../core/constants/app_colors.dart';
 import '../../domain/entities/forecast.dart';
-import 'animated_background/weather_background.dart';
 import 'current_weather_page.dart';
 import 'hourly_forecast_page.dart';
+import 'radar_page.dart';
 import 'weekly_forecast_page.dart';
 
 class VerticalForecastPager extends StatefulWidget {
   final Forecast forecast;
   final String cityName;
   final String quip;
+  final double latitude;
+  final double longitude;
   final Future<bool> Function() onRefresh;
   final VoidCallback onSettings;
 
@@ -19,6 +21,8 @@ class VerticalForecastPager extends StatefulWidget {
     required this.forecast,
     required this.cityName,
     required this.quip,
+    required this.latitude,
+    required this.longitude,
     required this.onRefresh,
     required this.onSettings,
   });
@@ -39,35 +43,9 @@ class _VerticalForecastPagerState extends State<VerticalForecastPager> {
 
   @override
   Widget build(BuildContext context) {
-    final weather = widget.forecast.current;
-
     return Stack(
       fit: StackFit.expand,
       children: [
-        // Animated background behind all pages
-        WeatherBackground(
-          condition: weather.condition,
-          isDay: weather.isDay,
-          temperature: weather.temperature,
-        ),
-
-        // Gradient scrim for text readability
-        Positioned.fill(
-          child: DecoratedBox(
-            decoration: BoxDecoration(
-              gradient: LinearGradient(
-                begin: Alignment.topCenter,
-                end: Alignment.bottomCenter,
-                colors: [
-                  AppColors.cream.withValues(alpha: 0.15),
-                  AppColors.cream.withValues(alpha: 0.05),
-                  AppColors.cream.withValues(alpha: 0.25),
-                ],
-              ),
-            ),
-          ),
-        ),
-
         // Vertical PageView
         PageView(
           controller: _pageController,
@@ -88,6 +66,10 @@ class _VerticalForecastPagerState extends State<VerticalForecastPager> {
               parentPageController: _pageController,
             ),
             WeeklyForecastPage(daily: widget.forecast.daily),
+            RadarPage(
+              latitude: widget.latitude,
+              longitude: widget.longitude,
+            ),
           ],
         ),
 
@@ -101,7 +83,7 @@ class _VerticalForecastPagerState extends State<VerticalForecastPager> {
               padding: const EdgeInsets.only(left: 2),
               child: Column(
                 mainAxisSize: MainAxisSize.min,
-                children: List.generate(3, (index) {
+                children: List.generate(4, (index) {
                   final isActive = index == _currentPage;
                   return Padding(
                     padding: const EdgeInsets.symmetric(vertical: 3),
@@ -111,8 +93,8 @@ class _VerticalForecastPagerState extends State<VerticalForecastPager> {
                       height: isActive ? 18 : 6,
                       decoration: BoxDecoration(
                         color: isActive
-                            ? AppColors.cream.withValues(alpha: 0.8)
-                            : AppColors.cream.withValues(alpha: 0.3),
+                            ? AppColors.cream.withValues(alpha: 0.9)
+                            : AppColors.cream.withValues(alpha: 0.5),
                         borderRadius: BorderRadius.circular(3),
                       ),
                     ),

@@ -35,6 +35,8 @@ class SavedLocationsPage extends ConsumerWidget {
         forecast: forecast,
         cityName: location.name,
         quip: quip,
+        latitude: location.latitude,
+        longitude: location.longitude,
         onRefresh: () =>
             ref.read(locationForecastProvider(params).notifier).refresh(),
         onSettings: onSettings,

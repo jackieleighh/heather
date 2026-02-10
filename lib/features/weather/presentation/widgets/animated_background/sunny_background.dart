@@ -40,7 +40,7 @@ class _SunnyBackgroundState extends State<SunnyBackground>
       animation: _controller,
       builder: (context, child) {
         return CustomPaint(
-          painter: _SunnyPainter(_time),
+          foregroundPainter: _SunnyPainter(_time),
           size: Size.infinite,
           child: Container(
             decoration: BoxDecoration(

@@ -38,47 +38,43 @@ class WeatherBackground extends StatelessWidget {
     return AnimatedSwitcher(
       duration: const Duration(milliseconds: 800),
       child: KeyedSubtree(
-        key: ValueKey(
-          condition.isMild
-              ? '${condition.name}_${isDay}_${_tier.name}'
-              : '${condition.name}_$isDay',
-        ),
+        key: ValueKey('${condition.name}_${isDay}_${_tier.name}'),
         child: _buildBackground(),
       ),
     );
   }
 
   Widget _buildBackground() {
-    if (condition.isMild) {
-      final colors = BackgroundGradients.forCondition(condition, _tier);
-      return switch (condition) {
-        WeatherCondition.sunny => isDay
+    final colors = BackgroundGradients.forCondition(condition, _tier);
+    return switch (condition) {
+      WeatherCondition.sunny =>
+        isDay
             ? SunnyBackground(gradientColors: colors)
             : ClearBackground(
                 isDay: isDay,
                 gradientColors: BackgroundGradients.sunnyNight(_tier),
               ),
-        WeatherCondition.mostlySunny =>
-          MostlySunnyBackground(gradientColors: colors),
-        WeatherCondition.partlyCloudy =>
-          PartlyCloudyBackground(gradientColors: colors),
-        WeatherCondition.overcast =>
-          OvercastBackground(gradientColors: colors),
-        _ => const _DefaultBackground(),
-      };
-    }
-
-    return switch (condition) {
-      WeatherCondition.foggy => const FogBackground(),
-      WeatherCondition.drizzle => const DrizzleBackground(),
-      WeatherCondition.rain => const RainBackground(),
-      WeatherCondition.heavyRain => const HeavyRainBackground(),
-      WeatherCondition.freezingRain => const FreezingRainBackground(),
-      WeatherCondition.snow => const SnowBackground(),
-      WeatherCondition.blizzard => const BlizzardBackground(),
-      WeatherCondition.thunderstorm => const ThunderstormBackground(),
-      WeatherCondition.hail => const HailBackground(),
-      _ => const _DefaultBackground(),
+      WeatherCondition.mostlySunny => MostlySunnyBackground(
+        gradientColors: colors,
+      ),
+      WeatherCondition.partlyCloudy => PartlyCloudyBackground(
+        gradientColors: colors,
+      ),
+      WeatherCondition.overcast => OvercastBackground(gradientColors: colors),
+      WeatherCondition.foggy => FogBackground(gradientColors: colors),
+      WeatherCondition.drizzle => DrizzleBackground(gradientColors: colors),
+      WeatherCondition.rain => RainBackground(gradientColors: colors),
+      WeatherCondition.heavyRain => HeavyRainBackground(gradientColors: colors),
+      WeatherCondition.freezingRain => FreezingRainBackground(
+        gradientColors: colors,
+      ),
+      WeatherCondition.snow => SnowBackground(gradientColors: colors),
+      WeatherCondition.blizzard => BlizzardBackground(gradientColors: colors),
+      WeatherCondition.thunderstorm => ThunderstormBackground(
+        gradientColors: colors,
+      ),
+      WeatherCondition.hail => HailBackground(gradientColors: colors),
+      WeatherCondition.unknown => const _DefaultBackground(),
     };
   }
 }

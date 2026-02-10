@@ -2,10 +2,10 @@ import 'dart:math';
 
 import 'package:flutter/material.dart';
 
-import '../../../../../core/constants/app_colors.dart';
-
 class FogBackground extends StatefulWidget {
-  const FogBackground({super.key});
+  final List<Color> gradientColors;
+
+  const FogBackground({super.key, required this.gradientColors});
 
   @override
   State<FogBackground> createState() => _FogBackgroundState();
@@ -40,18 +40,14 @@ class _FogBackgroundState extends State<FogBackground>
       animation: _controller,
       builder: (context, child) {
         return CustomPaint(
-          painter: _FogPainter(_time),
+          foregroundPainter: _FogPainter(_time),
           size: Size.infinite,
           child: Container(
-            decoration: const BoxDecoration(
+            decoration: BoxDecoration(
               gradient: LinearGradient(
                 begin: Alignment.topCenter,
                 end: Alignment.bottomCenter,
-                colors: [
-                  AppColors.mutedTeal,
-                  AppColors.fogSilver,
-                  AppColors.mutedTeal,
-                ],
+                colors: widget.gradientColors,
               ),
             ),
           ),

@@ -2,15 +2,15 @@ import 'dart:math';
 
 import 'package:flutter/material.dart';
 
-import '../../../../../core/constants/app_colors.dart';
 import 'particle.dart';
 
 class FreezingRainBackground extends StatefulWidget {
-  const FreezingRainBackground({super.key});
+  final List<Color> gradientColors;
+
+  const FreezingRainBackground({super.key, required this.gradientColors});
 
   @override
-  State<FreezingRainBackground> createState() =>
-      _FreezingRainBackgroundState();
+  State<FreezingRainBackground> createState() => _FreezingRainBackgroundState();
 }
 
 class _FreezingRainBackgroundState extends State<FreezingRainBackground>
@@ -44,18 +44,14 @@ class _FreezingRainBackgroundState extends State<FreezingRainBackground>
       animation: _controller,
       builder: (context, child) {
         return CustomPaint(
-          painter: _FreezingRainPainter(_drops, _random, _time),
+          foregroundPainter: _FreezingRainPainter(_drops, _random, _time),
           size: Size.infinite,
           child: Container(
-            decoration: const BoxDecoration(
+            decoration: BoxDecoration(
               gradient: LinearGradient(
                 begin: Alignment.topCenter,
                 end: Alignment.bottomCenter,
-                colors: [
-                  AppColors.palePurple,
-                  AppColors.darkTeal,
-                  AppColors.deepPurple,
-                ],
+                colors: widget.gradientColors,
               ),
             ),
           ),
@@ -120,7 +116,9 @@ class _FreezingRainPainter extends CustomPainter {
       ..style = PaintingStyle.fill
       ..maskFilter = const MaskFilter.blur(BlurStyle.normal, 80);
 
-    sheenPaint.color = _icyBlue.withValues(alpha: 0.04 + sin(time * 0.5) * 0.02);
+    sheenPaint.color = _icyBlue.withValues(
+      alpha: 0.04 + sin(time * 0.5) * 0.02,
+    );
     canvas.drawCircle(
       Offset(size.width * 0.3, size.height * 0.7),
       size.width * 0.5,

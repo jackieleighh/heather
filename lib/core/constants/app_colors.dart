@@ -20,7 +20,7 @@ class AppColors {
   static const softMagenta = Color(0xFFF9A8D4);
   static const palePurple = Color(0xFFDDD6FE);
   static const mutedTeal = Color(0xFF5A8F98);
-  static const cream = Color(0xFFFFF8F0);
+  static const cream = Color(0xFFFFFFFF);
   static const fogSilver = Color(0xFF9AADAD);
 
   // Cold tier palette

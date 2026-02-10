@@ -2,11 +2,12 @@ import 'dart:math';
 
 import 'package:flutter/material.dart';
 
-import '../../../../../core/constants/app_colors.dart';
 import 'particle.dart';
 
 class BlizzardBackground extends StatefulWidget {
-  const BlizzardBackground({super.key});
+  final List<Color> gradientColors;
+
+  const BlizzardBackground({super.key, required this.gradientColors});
 
   @override
   State<BlizzardBackground> createState() => _BlizzardBackgroundState();
@@ -43,18 +44,14 @@ class _BlizzardBackgroundState extends State<BlizzardBackground>
       animation: _controller,
       builder: (context, child) {
         return CustomPaint(
-          painter: _BlizzardPainter(_flakes, _random, _time),
+          foregroundPainter: _BlizzardPainter(_flakes, _random, _time),
           size: Size.infinite,
           child: Container(
-            decoration: const BoxDecoration(
+            decoration: BoxDecoration(
               gradient: LinearGradient(
                 begin: Alignment.topCenter,
                 end: Alignment.bottomCenter,
-                colors: [
-                  AppColors.midnightPurple,
-                  AppColors.deepPurple,
-                  AppColors.mutedTeal,
-                ],
+                colors: widget.gradientColors,
               ),
             ),
           ),

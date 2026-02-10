@@ -1,7 +1,9 @@
 import 'package:flutter/material.dart';
+import 'package:pull_to_refresh/pull_to_refresh.dart';
 
 import '../../../../core/constants/app_colors.dart';
 import '../../domain/entities/forecast.dart';
+import '../screens/loading_screen.dart';
 import 'location_header.dart';
 import 'sassy_quip.dart';
 import 'temperature_display.dart';
@@ -31,31 +33,22 @@ class CurrentWeatherPage extends StatefulWidget {
 
 class _CurrentWeatherPageState extends State<CurrentWeatherPage> {
   final _scrollController = ScrollController();
+  final _refreshController = RefreshController();
   static const _overscrollThreshold = 60.0;
   bool _pageChanging = false;
-  bool _refreshing = false;
 
   @override
   void dispose() {
     _scrollController.dispose();
+    _refreshController.dispose();
     super.dispose();
   }
 
   bool _handleScrollNotification(ScrollNotification notification) {
-    if (_pageChanging || _refreshing) return false;
+    if (_pageChanging) return false;
 
     if (notification is ScrollUpdateNotification) {
       final pos = notification.metrics;
-
-      // At top and pulling down → refresh
-      if (pos.pixels < pos.minScrollExtent - _overscrollThreshold) {
-        _refreshing = true;
-        _scrollController.jumpTo(0);
-        widget.onRefresh().then((_) {
-          _refreshing = false;
-        });
-        return true;
-      }
 
       // At bottom and swiping up → next page
       if (pos.pixels > pos.maxScrollExtent + _overscrollThreshold) {
@@ -74,42 +67,74 @@ class _CurrentWeatherPageState extends State<CurrentWeatherPage> {
     return false;
   }
 
+  Future<void> _onRefresh() async {
+    final success = await widget.onRefresh();
+    if (success) {
+      _refreshController.refreshCompleted();
+    } else {
+      _refreshController.refreshFailed();
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     final weather = widget.forecast.current;
+    final textStyle = Theme.of(context).textTheme.bodySmall?.copyWith(
+      color: AppColors.cream.withValues(alpha: 0.7),
+    );
 
     return SafeArea(
       child: NotificationListener<ScrollNotification>(
         onNotification: _handleScrollNotification,
-        child: CustomScrollView(
-          controller: _scrollController,
-          physics: const BouncingScrollPhysics(),
-          slivers: [
-            SliverFillRemaining(
-              hasScrollBody: false,
-              child: Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 28),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.end,
-                  children: [
-                    const SizedBox(height: 56),
-                    const Spacer(flex: 2),
-                    LocationHeader(cityName: widget.cityName),
-                    const SizedBox(height: 4),
-                    TemperatureDisplay(temperature: weather.temperature),
-                    const SizedBox(height: 24),
-                    Align(
-                      alignment: Alignment.centerRight,
-                      child: SassyQuip(quip: widget.quip),
-                    ),
-                    const SizedBox(height: 28),
-                    WeatherDetails(weather: weather),
-                    const Spacer(flex: 5),
-                  ],
+        child: SmartRefresher(
+          controller: _refreshController,
+          enablePullDown: true,
+          enablePullUp: false,
+          onRefresh: _onRefresh,
+          header: CustomHeader(
+            completeDuration: const Duration(milliseconds: 1200),
+            builder: (context, mode) {
+              Widget child;
+              if (mode == RefreshStatus.completed) {
+                child = Text('All caught up', style: textStyle);
+              } else if (mode == RefreshStatus.failed) {
+                child = Text('Yikes! Couldn\'t refresh', style: textStyle);
+              } else {
+                child = const PulsingDots();
+              }
+              return SizedBox(height: 60, child: Center(child: child));
+            },
+          ),
+          child: CustomScrollView(
+            controller: _scrollController,
+            physics: const BouncingScrollPhysics(),
+            slivers: [
+              SliverFillRemaining(
+                hasScrollBody: false,
+                child: Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 28),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.end,
+                    children: [
+                      const SizedBox(height: 56),
+                      const Spacer(flex: 2),
+                      LocationHeader(cityName: widget.cityName),
+                      const SizedBox(height: 4),
+                      TemperatureDisplay(temperature: weather.temperature),
+                      const SizedBox(height: 24),
+                      Align(
+                        alignment: Alignment.centerRight,
+                        child: SassyQuip(quip: widget.quip),
+                      ),
+                      const SizedBox(height: 28),
+                      WeatherDetails(weather: weather),
+                      const Spacer(flex: 5),
+                    ],
+                  ),
                 ),
               ),
-            ),
-          ],
+            ],
+          ),
         ),
       ),
     );

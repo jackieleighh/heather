@@ -2,11 +2,12 @@ import 'dart:math';
 
 import 'package:flutter/material.dart';
 
-import '../../../../../core/constants/app_colors.dart';
 import 'particle.dart';
 
 class SnowBackground extends StatefulWidget {
-  const SnowBackground({super.key});
+  final List<Color> gradientColors;
+
+  const SnowBackground({super.key, required this.gradientColors});
 
   @override
   State<SnowBackground> createState() => _SnowBackgroundState();
@@ -43,18 +44,14 @@ class _SnowBackgroundState extends State<SnowBackground>
       animation: _controller,
       builder: (context, child) {
         return CustomPaint(
-          painter: _SnowPainter(_flakes, _random, _time),
+          foregroundPainter: _SnowPainter(_flakes, _random, _time),
           size: Size.infinite,
           child: Container(
-            decoration: const BoxDecoration(
+            decoration: BoxDecoration(
               gradient: LinearGradient(
                 begin: Alignment.topCenter,
                 end: Alignment.bottomCenter,
-                colors: [
-                  AppColors.palePurple,
-                  AppColors.softMagenta,
-                  AppColors.palePurple,
-                ],
+                colors: widget.gradientColors,
               ),
             ),
           ),

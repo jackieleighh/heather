@@ -2,11 +2,12 @@ import 'dart:math';
 
 import 'package:flutter/material.dart';
 
-import '../../../../../core/constants/app_colors.dart';
 import 'particle.dart';
 
 class DrizzleBackground extends StatefulWidget {
-  const DrizzleBackground({super.key});
+  final List<Color> gradientColors;
+
+  const DrizzleBackground({super.key, required this.gradientColors});
 
   @override
   State<DrizzleBackground> createState() => _DrizzleBackgroundState();
@@ -39,18 +40,14 @@ class _DrizzleBackgroundState extends State<DrizzleBackground>
       animation: _controller,
       builder: (context, child) {
         return CustomPaint(
-          painter: _DrizzlePainter(_drops, _random),
+          foregroundPainter: _DrizzlePainter(_drops, _random),
           size: Size.infinite,
           child: Container(
-            decoration: const BoxDecoration(
+            decoration: BoxDecoration(
               gradient: LinearGradient(
                 begin: Alignment.topCenter,
                 end: Alignment.bottomCenter,
-                colors: [
-                  AppColors.mutedTeal,
-                  AppColors.deepPurple,
-                  AppColors.palePurple,
-                ],
+                colors: widget.gradientColors,
               ),
             ),
           ),

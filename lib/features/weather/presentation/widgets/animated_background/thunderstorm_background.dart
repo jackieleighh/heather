@@ -2,11 +2,12 @@ import 'dart:math';
 
 import 'package:flutter/material.dart';
 
-import '../../../../../core/constants/app_colors.dart';
 import 'particle.dart';
 
 class ThunderstormBackground extends StatefulWidget {
-  const ThunderstormBackground({super.key});
+  final List<Color> gradientColors;
+
+  const ThunderstormBackground({super.key, required this.gradientColors});
 
   @override
   State<ThunderstormBackground> createState() => _ThunderstormBackgroundState();
@@ -55,7 +56,7 @@ class _ThunderstormBackgroundState extends State<ThunderstormBackground>
       animation: _controller,
       builder: (context, child) {
         return CustomPaint(
-          painter: _ThunderstormPainter(_drops, _random, _lightningOpacity),
+          foregroundPainter: _ThunderstormPainter(_drops, _random, _lightningOpacity),
           size: Size.infinite,
           child: Container(
             decoration: BoxDecoration(
@@ -64,16 +65,16 @@ class _ThunderstormBackgroundState extends State<ThunderstormBackground>
                 end: Alignment.bottomCenter,
                 colors: [
                   Color.lerp(
-                    AppColors.midnightPurple,
+                    widget.gradientColors[0],
                     Colors.white,
                     _lightningOpacity * 0.15,
                   )!,
                   Color.lerp(
-                    AppColors.deepPurple,
+                    widget.gradientColors[1],
                     Colors.white,
                     _lightningOpacity * 0.1,
                   )!,
-                  AppColors.darkTeal,
+                  widget.gradientColors[2],
                 ],
               ),
             ),

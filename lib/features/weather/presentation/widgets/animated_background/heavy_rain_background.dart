@@ -2,11 +2,12 @@ import 'dart:math';
 
 import 'package:flutter/material.dart';
 
-import '../../../../../core/constants/app_colors.dart';
 import 'particle.dart';
 
 class HeavyRainBackground extends StatefulWidget {
-  const HeavyRainBackground({super.key});
+  final List<Color> gradientColors;
+
+  const HeavyRainBackground({super.key, required this.gradientColors});
 
   @override
   State<HeavyRainBackground> createState() => _HeavyRainBackgroundState();
@@ -39,18 +40,14 @@ class _HeavyRainBackgroundState extends State<HeavyRainBackground>
       animation: _controller,
       builder: (context, child) {
         return CustomPaint(
-          painter: _HeavyRainPainter(_drops, _random),
+          foregroundPainter: _HeavyRainPainter(_drops, _random),
           size: Size.infinite,
           child: Container(
-            decoration: const BoxDecoration(
+            decoration: BoxDecoration(
               gradient: LinearGradient(
                 begin: Alignment.topCenter,
                 end: Alignment.bottomCenter,
-                colors: [
-                  AppColors.midnightPurple,
-                  AppColors.deepPurple,
-                  AppColors.darkTeal,
-                ],
+                colors: widget.gradientColors,
               ),
             ),
           ),

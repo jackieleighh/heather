@@ -47,7 +47,7 @@ class _ClearBackgroundState extends State<ClearBackground>
       animation: _controller,
       builder: (context, child) {
         return CustomPaint(
-          painter: widget.isDay
+          foregroundPainter: widget.isDay
               ? _DayClearPainter(_time)
               : _NightClearPainter(_stars, _random, _time),
           size: Size.infinite,

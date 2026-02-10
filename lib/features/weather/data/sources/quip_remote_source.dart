@@ -14,11 +14,14 @@ class QuipRemoteSource {
     required Weather weather,
     required String cityName,
     required String apiKey,
+    bool explicit = false,
   }) async {
     try {
       final dio = apiClient.geminiClient(apiKey);
+      final systemPrompt =
+          explicit ? AppStrings.geminiExplicitPrompt : AppStrings.geminiPrompt;
       final prompt =
-          '${AppStrings.geminiPrompt}\n\n'
+          '$systemPrompt\n\n'
           'Current weather: ${weather.description}, '
           '${weather.temperature.round()}°F '
           '(feels like ${weather.feelsLike.round()}°F), '

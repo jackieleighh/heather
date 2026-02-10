@@ -12,10 +12,5 @@ enum WeatherCondition {
   blizzard,
   thunderstorm,
   hail,
-  unknown;
-
-  bool get isMild => switch (this) {
-    sunny || mostlySunny || partlyCloudy || overcast => true,
-    _ => false,
-  };
+  unknown,
 }

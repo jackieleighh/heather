@@ -51,25 +51,60 @@ class WeatherState with _$WeatherState {
 // Main provider
 final weatherStateProvider =
     StateNotifierProvider<WeatherNotifier, WeatherState>((ref) {
-      final explicit = ref.watch(settingsProvider).explicitLanguage;
-      return WeatherNotifier(
+      final explicit = ref.read(settingsProvider).explicitLanguage;
+      final notifier = WeatherNotifier(
         weatherRepo: ref.watch(weatherRepositoryProvider),
         quipRepo: ref.watch(quipRepositoryProvider),
         explicit: explicit,
       );
+
+      ref.listen<SettingsState>(settingsProvider, (previous, next) {
+        if (previous?.explicitLanguage != next.explicitLanguage) {
+          notifier.updateExplicit(next.explicitLanguage);
+        }
+      });
+
+      return notifier;
     });
 
 class WeatherNotifier extends StateNotifier<WeatherState> {
   final WeatherRepositoryImpl weatherRepo;
   final QuipRepositoryImpl quipRepo;
-  final bool explicit;
+  bool _explicit;
 
   WeatherNotifier({
     required this.weatherRepo,
     required this.quipRepo,
-    required this.explicit,
-  }) : super(const WeatherState.loading()) {
+    required bool explicit,
+  })  : _explicit = explicit,
+        super(const WeatherState.loading()) {
     loadWeather();
+  }
+
+  void updateExplicit(bool value) {
+    _explicit = value;
+    _refreshQuip();
+  }
+
+  Future<void> _refreshQuip() async {
+    final current = state;
+    if (current is! _Loaded) return;
+
+    try {
+      final quip = await quipRepo.getQuip(
+        weather: current.forecast.current,
+        cityName: current.location.cityName,
+        explicit: _explicit,
+      );
+      if (!mounted) return;
+      state = WeatherState.loaded(
+        forecast: current.forecast,
+        location: current.location,
+        quip: quip,
+      );
+    } catch (_) {
+      // Keep existing quip on failure
+    }
   }
 
   Future<void> loadWeather() async {
@@ -83,7 +118,7 @@ class WeatherNotifier extends StateNotifier<WeatherState> {
       final quip = await quipRepo.getQuip(
         weather: forecast.current,
         cityName: location.cityName,
-        explicit: explicit,
+        explicit: _explicit,
       );
       if (!mounted) return;
       state = WeatherState.loaded(
@@ -107,7 +142,7 @@ class WeatherNotifier extends StateNotifier<WeatherState> {
       final quip = await quipRepo.getQuip(
         weather: forecast.current,
         cityName: location.cityName,
-        explicit: explicit,
+        explicit: _explicit,
       );
       if (!mounted) return false;
       state = WeatherState.loaded(
@@ -143,8 +178,8 @@ final locationForecastProvider =
       LocationForecastState,
       ({String name, double lat, double lon})
     >((ref, params) {
-      final explicit = ref.watch(settingsProvider).explicitLanguage;
-      return LocationForecastNotifier(
+      final explicit = ref.read(settingsProvider).explicitLanguage;
+      final notifier = LocationForecastNotifier(
         weatherRepo: ref.watch(weatherRepositoryProvider),
         quipRepo: ref.watch(quipRepositoryProvider),
         name: params.name,
@@ -152,6 +187,14 @@ final locationForecastProvider =
         longitude: params.lon,
         explicit: explicit,
       );
+
+      ref.listen<SettingsState>(settingsProvider, (previous, next) {
+        if (previous?.explicitLanguage != next.explicitLanguage) {
+          notifier.updateExplicit(next.explicitLanguage);
+        }
+      });
+
+      return notifier;
     });
 
 class LocationForecastNotifier extends StateNotifier<LocationForecastState> {
@@ -160,7 +203,7 @@ class LocationForecastNotifier extends StateNotifier<LocationForecastState> {
   final String name;
   final double latitude;
   final double longitude;
-  final bool explicit;
+  bool _explicit;
 
   LocationForecastNotifier({
     required this.weatherRepo,
@@ -168,9 +211,35 @@ class LocationForecastNotifier extends StateNotifier<LocationForecastState> {
     required this.name,
     required this.latitude,
     required this.longitude,
-    required this.explicit,
-  }) : super(const LocationForecastState.loading()) {
+    required bool explicit,
+  })  : _explicit = explicit,
+        super(const LocationForecastState.loading()) {
     load();
+  }
+
+  void updateExplicit(bool value) {
+    _explicit = value;
+    _refreshQuip();
+  }
+
+  Future<void> _refreshQuip() async {
+    final current = state;
+    if (current is! _LocationLoaded) return;
+
+    try {
+      final quip = await quipRepo.getQuip(
+        weather: current.forecast.current,
+        cityName: name,
+        explicit: _explicit,
+      );
+      if (!mounted) return;
+      state = LocationForecastState.loaded(
+        forecast: current.forecast,
+        quip: quip,
+      );
+    } catch (_) {
+      // Keep existing quip on failure
+    }
   }
 
   Future<void> load() async {
@@ -183,7 +252,7 @@ class LocationForecastNotifier extends StateNotifier<LocationForecastState> {
       final quip = await quipRepo.getQuip(
         weather: forecast.current,
         cityName: name,
-        explicit: explicit,
+        explicit: _explicit,
       );
       if (!mounted) return;
       state = LocationForecastState.loaded(forecast: forecast, quip: quip);
@@ -202,7 +271,7 @@ class LocationForecastNotifier extends StateNotifier<LocationForecastState> {
       final quip = await quipRepo.getQuip(
         weather: forecast.current,
         cityName: name,
-        explicit: explicit,
+        explicit: _explicit,
       );
       if (!mounted) return false;
       state = LocationForecastState.loaded(forecast: forecast, quip: quip);

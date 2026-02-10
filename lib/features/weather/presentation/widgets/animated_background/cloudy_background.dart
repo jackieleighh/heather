@@ -40,7 +40,7 @@ class _CloudyBackgroundState extends State<CloudyBackground>
       animation: _controller,
       builder: (context, child) {
         return CustomPaint(
-          painter: _CloudyPainter(_time),
+          foregroundPainter: _CloudyPainter(_time),
           size: Size.infinite,
           child: Container(
             decoration: const BoxDecoration(
@@ -68,18 +68,54 @@ class _CloudyPainter extends CustomPainter {
 
   @override
   void paint(Canvas canvas, Size size) {
-    _drawCloud(canvas, size, size.width * 0.2 + sin(time * 0.4) * 30,
-        size.height * 0.1, 80, 0.12);
-    _drawCloud(canvas, size, size.width * 0.75 + sin(time * 0.3 + 1) * 25,
-        size.height * 0.2, 70, 0.1);
-    _drawCloud(canvas, size, size.width * 0.4 + sin(time * 0.5 + 2) * 20,
-        size.height * 0.38, 90, 0.14);
-    _drawCloud(canvas, size, size.width * 0.85 + sin(time * 0.35 + 3) * 35,
-        size.height * 0.55, 65, 0.08);
-    _drawCloud(canvas, size, size.width * 0.15 + sin(time * 0.45 + 4) * 28,
-        size.height * 0.68, 75, 0.1);
-    _drawCloud(canvas, size, size.width * 0.55 + sin(time * 0.38 + 5) * 22,
-        size.height * 0.82, 85, 0.09);
+    _drawCloud(
+      canvas,
+      size,
+      size.width * 0.2 + sin(time * 0.4) * 30,
+      size.height * 0.1,
+      80,
+      0.12,
+    );
+    _drawCloud(
+      canvas,
+      size,
+      size.width * 0.75 + sin(time * 0.3 + 1) * 25,
+      size.height * 0.2,
+      70,
+      0.1,
+    );
+    _drawCloud(
+      canvas,
+      size,
+      size.width * 0.4 + sin(time * 0.5 + 2) * 20,
+      size.height * 0.38,
+      90,
+      0.14,
+    );
+    _drawCloud(
+      canvas,
+      size,
+      size.width * 0.85 + sin(time * 0.35 + 3) * 35,
+      size.height * 0.55,
+      65,
+      0.08,
+    );
+    _drawCloud(
+      canvas,
+      size,
+      size.width * 0.15 + sin(time * 0.45 + 4) * 28,
+      size.height * 0.68,
+      75,
+      0.1,
+    );
+    _drawCloud(
+      canvas,
+      size,
+      size.width * 0.55 + sin(time * 0.38 + 5) * 22,
+      size.height * 0.82,
+      85,
+      0.09,
+    );
   }
 
   void _drawCloud(

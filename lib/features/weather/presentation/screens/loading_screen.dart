@@ -25,7 +25,7 @@ class LoadingScreen extends StatelessWidget {
                   style: Theme.of(context).textTheme.bodyLarge,
                 ),
                 const SizedBox(height: 10),
-                const _PulsingDots(),
+                const PulsingDots(),
                 const SizedBox(height: 12),
                 Text(
                   "there's a 30% chance it's already raining.",
@@ -42,14 +42,14 @@ class LoadingScreen extends StatelessWidget {
   }
 }
 
-class _PulsingDots extends StatefulWidget {
-  const _PulsingDots();
+class PulsingDots extends StatefulWidget {
+  const PulsingDots({super.key});
 
   @override
-  State<_PulsingDots> createState() => _PulsingDotsState();
+  State<PulsingDots> createState() => _PulsingDotsState();
 }
 
-class _PulsingDotsState extends State<_PulsingDots>
+class _PulsingDotsState extends State<PulsingDots>
     with SingleTickerProviderStateMixin {
   late final AnimationController _controller;
 

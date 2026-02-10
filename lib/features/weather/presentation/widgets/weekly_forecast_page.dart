@@ -4,6 +4,7 @@ import 'package:intl/intl.dart';
 import 'package:weather_icons/weather_icons.dart';
 
 import '../../../../core/constants/app_colors.dart';
+import '../../../../core/utils/moon_phase.dart';
 import '../../../../core/utils/weather_icon_mapper.dart';
 import '../../domain/entities/daily_weather.dart';
 
@@ -87,22 +88,19 @@ class _DailyCard extends StatelessWidget {
     return Container(
       clipBehavior: Clip.hardEdge,
       decoration: BoxDecoration(
-        color: AppColors.cream.withValues(alpha: 0.18),
+        color: AppColors.cream.withValues(alpha: 0.25),
         borderRadius: BorderRadius.circular(20),
       ),
       child: Stack(
         children: [
-          // Large faded icon — centered in card
+          // Large faded icon
           Positioned(
             right: -12,
             top: 0,
-            bottom: 0,
-            child: Center(
-              child: Icon(
-                conditionIcon(daily.weatherCode),
-                color: AppColors.cream.withValues(alpha: 0.18),
-                size: 100,
-              ),
+            child: Icon(
+              conditionIcon(daily.weatherCode),
+              color: AppColors.cream.withValues(alpha: 0.3),
+              size: 100,
             ),
           ),
           // Content on top
@@ -113,19 +111,21 @@ class _DailyCard extends StatelessWidget {
               children: [
                 Text(
                   dayStr,
-                  style: GoogleFonts.quicksand(
-                    color: AppColors.cream,
-                    fontWeight: FontWeight.w800,
-                    fontSize: 22,
-                  ),
+                  style: Theme.of(
+                    context,
+                  ).textTheme.bodyLarge?.copyWith(fontWeight: FontWeight.w600),
+                ),
+                Icon(
+                  moonPhaseIcon(daily.date),
+                  size: 20,
+                  color: AppColors.cream.withValues(alpha: 0.7),
                 ),
                 const Spacer(),
                 Text(
                   '${daily.temperatureMax.round()}° / ${daily.temperatureMin.round()}°',
-                  style: GoogleFonts.poppins(
-                    color: AppColors.cream,
-                    fontWeight: FontWeight.w700,
-                    fontSize: 20,
+                  style: Theme.of(context).textTheme.bodyLarge?.copyWith(
+                    fontWeight: FontWeight.w800,
+                    fontSize: 26,
                   ),
                 ),
                 const SizedBox(height: 2),
@@ -134,7 +134,7 @@ class _DailyCard extends StatelessWidget {
                     Icon(
                       WeatherIcons.raindrop,
                       size: 15,
-                      color: AppColors.cream.withValues(alpha: 0.38),
+                      color: AppColors.cream.withValues(alpha: 0.7),
                     ),
                     const SizedBox(width: 3),
                     Text(

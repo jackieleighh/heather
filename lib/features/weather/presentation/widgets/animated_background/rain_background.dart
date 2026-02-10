@@ -2,11 +2,12 @@ import 'dart:math';
 
 import 'package:flutter/material.dart';
 
-import '../../../../../core/constants/app_colors.dart';
 import 'particle.dart';
 
 class RainBackground extends StatefulWidget {
-  const RainBackground({super.key});
+  final List<Color> gradientColors;
+
+  const RainBackground({super.key, required this.gradientColors});
 
   @override
   State<RainBackground> createState() => _RainBackgroundState();
@@ -39,18 +40,14 @@ class _RainBackgroundState extends State<RainBackground>
       animation: _controller,
       builder: (context, child) {
         return CustomPaint(
-          painter: _RainPainter(_drops, _random),
+          foregroundPainter: _RainPainter(_drops, _random),
           size: Size.infinite,
           child: Container(
-            decoration: const BoxDecoration(
+            decoration: BoxDecoration(
               gradient: LinearGradient(
                 begin: Alignment.topCenter,
                 end: Alignment.bottomCenter,
-                colors: [
-                  AppColors.darkTeal,
-                  AppColors.deepPurple,
-                  AppColors.mutedTeal,
-                ],
+                colors: widget.gradientColors,
               ),
             ),
           ),

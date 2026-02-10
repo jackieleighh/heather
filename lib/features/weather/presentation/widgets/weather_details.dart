@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:weather_icons/weather_icons.dart';
 
 import '../../../../core/constants/app_colors.dart';
+import '../../../../core/utils/moon_phase.dart';
 import '../../domain/entities/weather.dart';
 
 class WeatherDetails extends StatelessWidget {
@@ -13,7 +14,7 @@ class WeatherDetails extends StatelessWidget {
   Widget build(BuildContext context) {
     final style = Theme.of(
       context,
-    ).textTheme.bodySmall;
+    ).textTheme.bodySmall?.copyWith(fontWeight: FontWeight.w700);
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.end,
@@ -42,6 +43,12 @@ class WeatherDetails extends StatelessWidget {
             ),
           ],
         ),
+        const SizedBox(height: 10),
+        _DetailChip(
+          icon: moonPhaseIcon(DateTime.now()),
+          label: moonPhaseLabel(getMoonPhase(DateTime.now())),
+          style: style,
+        ),
       ],
     );
   }
@@ -59,8 +66,8 @@ class _DetailChip extends StatelessWidget {
     return Row(
       mainAxisSize: MainAxisSize.min,
       children: [
-        Icon(icon, size: 18, color: AppColors.cream.withValues(alpha: 0.54)),
-        const SizedBox(width: 5),
+        Icon(icon, size: 18, color: AppColors.cream.withValues(alpha: 0.85)),
+        const SizedBox(width: 8),
         Text(label, style: style),
       ],
     );

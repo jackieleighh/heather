@@ -37,6 +37,7 @@ class QuipRepositoryImpl implements QuipRepository {
           weather: weather,
           cityName: cityName,
           apiKey: apiKey,
+          explicit: explicit,
         );
         await _cacheQuip(quip, weather, explicit);
         return quip;
@@ -50,22 +51,13 @@ class QuipRepositoryImpl implements QuipRepository {
 
   String _getLocalQuip(Weather weather, bool explicit) {
     final condition = weather.condition;
+    final tier = TemperatureTier.fromTemperature(weather.temperature);
+    final quipMap = explicit ? AppStrings.explicitQuips : AppStrings.quips;
 
-    if (condition.isMild) {
-      final tier = TemperatureTier.fromTemperature(weather.temperature);
-      final quipMap = explicit
-          ? AppStrings.explicitMildQuips
-          : AppStrings.mildQuips;
-      final quips =
-          quipMap[condition]?[tier] ??
-          quipMap[condition]?[TemperatureTier.shortsWeather]!;
-      if (quips != null) return quips[_random.nextInt(quips.length)];
-    }
-
-    final quipMap = explicit
-        ? AppStrings.explicitSevereQuips
-        : AppStrings.severeQuips;
-    final quips = quipMap[condition] ?? quipMap.values.first;
+    final quips =
+        quipMap[condition]?[tier] ??
+        quipMap[condition]?[TemperatureTier.shortsWeather] ??
+        quipMap.values.first.values.first;
     return quips[_random.nextInt(quips.length)];
   }
 

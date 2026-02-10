@@ -8,8 +8,7 @@ class PartlyCloudyBackground extends StatefulWidget {
   const PartlyCloudyBackground({super.key, required this.gradientColors});
 
   @override
-  State<PartlyCloudyBackground> createState() =>
-      _PartlyCloudyBackgroundState();
+  State<PartlyCloudyBackground> createState() => _PartlyCloudyBackgroundState();
 }
 
 class _PartlyCloudyBackgroundState extends State<PartlyCloudyBackground>
@@ -41,7 +40,7 @@ class _PartlyCloudyBackgroundState extends State<PartlyCloudyBackground>
       animation: _controller,
       builder: (context, child) {
         return CustomPaint(
-          painter: _PartlyCloudyPainter(_time),
+          foregroundPainter: _PartlyCloudyPainter(_time),
           size: Size.infinite,
           child: Container(
             decoration: BoxDecoration(
@@ -79,18 +78,43 @@ class _PartlyCloudyPainter extends CustomPainter {
     canvas.drawCircle(sunCenter, 45, glowPaint);
 
     // Clouds
-    _drawCloud(canvas, size.width * 0.2 + sin(time * 0.4) * 25,
-        size.height * 0.12, 75, 0.12);
-    _drawCloud(canvas, size.width * 0.7 + sin(time * 0.3 + 1) * 20,
-        size.height * 0.25, 65, 0.1);
-    _drawCloud(canvas, size.width * 0.4 + sin(time * 0.5 + 2) * 18,
-        size.height * 0.42, 80, 0.13);
-    _drawCloud(canvas, size.width * 0.15 + sin(time * 0.35 + 3) * 22,
-        size.height * 0.62, 60, 0.08);
+    _drawCloud(
+      canvas,
+      size.width * 0.2 + sin(time * 0.4) * 25,
+      size.height * 0.12,
+      75,
+      0.12,
+    );
+    _drawCloud(
+      canvas,
+      size.width * 0.7 + sin(time * 0.3 + 1) * 20,
+      size.height * 0.25,
+      65,
+      0.1,
+    );
+    _drawCloud(
+      canvas,
+      size.width * 0.4 + sin(time * 0.5 + 2) * 18,
+      size.height * 0.42,
+      80,
+      0.13,
+    );
+    _drawCloud(
+      canvas,
+      size.width * 0.15 + sin(time * 0.35 + 3) * 22,
+      size.height * 0.62,
+      60,
+      0.08,
+    );
   }
 
-  void _drawCloud(Canvas canvas, double cx, double cy, double scale,
-      double opacity) {
+  void _drawCloud(
+    Canvas canvas,
+    double cx,
+    double cy,
+    double scale,
+    double opacity,
+  ) {
     final paint = Paint()
       ..style = PaintingStyle.fill
       ..color = Colors.white.withValues(alpha: opacity)
