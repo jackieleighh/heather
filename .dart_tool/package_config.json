@@ -195,7 +195,7 @@
     },
     {
       "name": "flutter",
-      "rootUri": "file:///Users/jacquelineharnish/develop/flutter/packages/flutter",
+      "rootUri": "file:///Users/jacquelineharnish/fvm/versions/stable/packages/flutter",
       "packageUri": "lib/",
       "languageVersion": "3.8"
     },
@@ -255,13 +255,13 @@
     },
     {
       "name": "flutter_test",
-      "rootUri": "file:///Users/jacquelineharnish/develop/flutter/packages/flutter_test",
+      "rootUri": "file:///Users/jacquelineharnish/fvm/versions/stable/packages/flutter_test",
       "packageUri": "lib/",
       "languageVersion": "3.8"
     },
     {
       "name": "flutter_web_plugins",
-      "rootUri": "file:///Users/jacquelineharnish/develop/flutter/packages/flutter_web_plugins",
+      "rootUri": "file:///Users/jacquelineharnish/fvm/versions/stable/packages/flutter_web_plugins",
       "packageUri": "lib/",
       "languageVersion": "3.8"
     },
@@ -663,7 +663,7 @@
     },
     {
       "name": "sky_engine",
-      "rootUri": "file:///Users/jacquelineharnish/develop/flutter/bin/cache/pkg/sky_engine",
+      "rootUri": "file:///Users/jacquelineharnish/fvm/versions/stable/bin/cache/pkg/sky_engine",
       "packageUri": "lib/",
       "languageVersion": "3.8"
     },
@@ -838,7 +838,7 @@
   ],
   "generator": "pub",
   "generatorVersion": "3.10.8",
-  "flutterRoot": "file:///Users/jacquelineharnish/develop/flutter",
+  "flutterRoot": "file:///Users/jacquelineharnish/fvm/versions/stable",
   "flutterVersion": "3.38.9",
   "pubCache": "file:///Users/jacquelineharnish/.pub-cache"
 }

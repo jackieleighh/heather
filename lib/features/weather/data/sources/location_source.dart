@@ -12,7 +12,7 @@ class LocationSource {
         'Location permission denied',
         sassyMessage:
             "Babe, I can't tell you the weather if I don't know "
-            'where you are! Enable location, pretty please?',
+            'where you are! Enable location, please?',
       );
     }
 
@@ -38,7 +38,7 @@ class LocationSource {
       if (e is LocationException) rethrow;
       throw LocationException(
         e.toString(),
-        sassyMessage: "Can't find you, bestie! Make sure location is on.",
+        sassyMessage: "Yikes! Can't find you, babe. Make sure location is on.",
       );
     }
   }

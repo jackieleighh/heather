@@ -24,7 +24,7 @@ class GeocodingRemoteSource {
     } on DioException catch (e) {
       throw WeatherException(
         e.message ?? 'Failed to search locations',
-        sassyMessage: "Can't find that place, bestie. Try again?",
+        sassyMessage: "Can't find that place, babe. Try again?",
       );
     }
   }

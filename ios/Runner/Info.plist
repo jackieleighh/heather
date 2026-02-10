@@ -46,8 +46,8 @@
 	<key>UIApplicationSupportsIndirectInputEvents</key>
 	<true/>
 	<key>NSLocationWhenInUseUsageDescription</key>
-	<string>Heather needs your location to serve you the sassiest weather updates, bestie!</string>
+	<string>Heather needs your location to serve you the weather updates, babe.</string>
 	<key>NSLocationAlwaysUsageDescription</key>
-	<string>Heather needs your location to keep you posted on weather, even in the background!</string>
+	<string>Heather needs your location to keep you posted on weather, even in the background.</string>
 </dict>
 </plist>
