@@ -17,12 +17,8 @@ class SassyQuip extends StatelessWidget {
         textAlign: TextAlign.right,
         style: Theme.of(
           context,
-        ).textTheme.labelLarge?.copyWith(height: 1.4, shadows: _textShadows),
+        ).textTheme.labelLarge?.copyWith(height: 1.4),
       ),
     );
   }
-
-  static const _textShadows = [
-    Shadow(color: Colors.black45, blurRadius: 8, offset: Offset(0, 2)),
-  ];
 }

@@ -36,8 +36,7 @@ class WeeklyForecastPage extends StatelessWidget {
                     style: GoogleFonts.quicksand(
                       fontSize: 22,
                       fontWeight: FontWeight.w700,
-                      color: Colors.white,
-                      shadows: _textShadows,
+                      color: Colors.black,
                     ),
                   ),
                 ),
@@ -65,9 +64,6 @@ class WeeklyForecastPage extends StatelessWidget {
     );
   }
 
-  static const _textShadows = [
-    Shadow(color: Colors.black26, blurRadius: 8, offset: Offset(0, 2)),
-  ];
 }
 
 class _DailyCard extends StatelessWidget {
@@ -89,7 +85,7 @@ class _DailyCard extends StatelessWidget {
     return Container(
       clipBehavior: Clip.hardEdge,
       decoration: BoxDecoration(
-        color: Colors.white.withValues(alpha: 0.12),
+        color: Colors.black.withValues(alpha: 0.12),
         borderRadius: BorderRadius.circular(20),
       ),
       child: Stack(
@@ -102,7 +98,7 @@ class _DailyCard extends StatelessWidget {
             child: Center(
               child: Icon(
                 conditionIcon(daily.weatherCode),
-                color: Colors.white.withValues(alpha: 0.18),
+                color: Colors.black.withValues(alpha: 0.18),
                 size: 100,
               ),
             ),
@@ -116,34 +112,31 @@ class _DailyCard extends StatelessWidget {
                 Text(
                   dayStr,
                   style: GoogleFonts.quicksand(
-                    color: Colors.white,
+                    color: Colors.black,
                     fontWeight: FontWeight.w800,
                     fontSize: 22,
-                    shadows: _textShadows,
                   ),
                 ),
                 const Spacer(),
                 Text(
                   '${daily.temperatureMax.round()}° / ${daily.temperatureMin.round()}°',
                   style: GoogleFonts.poppins(
-                    color: Colors.white,
+                    color: Colors.black,
                     fontWeight: FontWeight.w700,
                     fontSize: 20,
-                    shadows: _textShadows,
                   ),
                 ),
                 const SizedBox(height: 2),
                 Row(
                   children: [
-                    const Icon(WeatherIcons.raindrop, size: 15, color: Colors.white54),
+                    const Icon(WeatherIcons.raindrop, size: 15, color: Colors.black38),
                     const SizedBox(width: 3),
                     Text(
                       '${daily.precipitationProbabilityMax}%',
                       style: GoogleFonts.poppins(
                         fontSize: 14,
                         fontWeight: FontWeight.w600,
-                        color: Colors.white.withValues(alpha: 0.6),
-                        shadows: _textShadows,
+                        color: Colors.black.withValues(alpha: 0.6),
                       ),
                     ),
                   ],
@@ -156,7 +149,4 @@ class _DailyCard extends StatelessWidget {
     );
   }
 
-  static const _textShadows = [
-    Shadow(color: Colors.black26, blurRadius: 4, offset: Offset(0, 1)),
-  ];
 }

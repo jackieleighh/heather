@@ -80,8 +80,7 @@ class _HourlyForecastPageState extends State<HourlyForecastPage> {
                   style: GoogleFonts.quicksand(
                     fontSize: 22,
                     fontWeight: FontWeight.w700,
-                    color: Colors.white,
-                    shadows: _textShadows,
+                    color: Colors.black,
                   ),
                 ),
               ),
@@ -105,9 +104,6 @@ class _HourlyForecastPageState extends State<HourlyForecastPage> {
     );
   }
 
-  static const _textShadows = [
-    Shadow(color: Colors.black26, blurRadius: 8, offset: Offset(0, 2)),
-  ];
 }
 
 class _HourlyRow extends StatelessWidget {
@@ -118,9 +114,7 @@ class _HourlyRow extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final timeStr = DateFormat('h a').format(hourly.time);
-    final style = Theme.of(context).textTheme.bodyMedium?.copyWith(
-      shadows: _textShadows,
-    );
+    final style = Theme.of(context).textTheme.bodyMedium;
 
     return Padding(
       padding: const EdgeInsets.symmetric(vertical: 8),
@@ -132,7 +126,7 @@ class _HourlyRow extends StatelessWidget {
           ),
           Icon(
             conditionIcon(hourly.weatherCode),
-            color: Colors.white70,
+            color: Colors.black38,
             size: 22,
           ),
           const SizedBox(width: 12),
@@ -143,7 +137,7 @@ class _HourlyRow extends StatelessWidget {
               style: style?.copyWith(fontWeight: FontWeight.w600),
             ),
           ),
-          const Icon(WeatherIcons.raindrop, size: 14, color: Colors.white54),
+          const Icon(WeatherIcons.raindrop, size: 14, color: Colors.black38),
           const SizedBox(width: 4),
           SizedBox(
             width: 36,
@@ -151,18 +145,18 @@ class _HourlyRow extends StatelessWidget {
               '${hourly.precipitationProbability}%',
               style: style?.copyWith(
                 fontSize: 14,
-                color: Colors.white70,
+                color: Colors.black38,
               ),
             ),
           ),
           const Spacer(),
-          const Icon(WeatherIcons.strong_wind, size: 14, color: Colors.white54),
+          const Icon(WeatherIcons.strong_wind, size: 14, color: Colors.black38),
           const SizedBox(width: 4),
           Text(
             '${hourly.windSpeed.round()} mph',
             style: style?.copyWith(
               fontSize: 14,
-              color: Colors.white70,
+              color: Colors.black38,
             ),
           ),
         ],
@@ -170,7 +164,4 @@ class _HourlyRow extends StatelessWidget {
     );
   }
 
-  static const _textShadows = [
-    Shadow(color: Colors.black26, blurRadius: 4, offset: Offset(0, 1)),
-  ];
 }

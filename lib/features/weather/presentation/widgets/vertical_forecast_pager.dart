@@ -103,8 +103,8 @@ class _VerticalForecastPagerState extends State<VerticalForecastPager> {
                     height: isActive ? 18 : 6,
                     decoration: BoxDecoration(
                       color: isActive
-                          ? Colors.white.withValues(alpha: 0.8)
-                          : Colors.white.withValues(alpha: 0.3),
+                          ? Colors.black.withValues(alpha: 0.8)
+                          : Colors.black.withValues(alpha: 0.3),
                       borderRadius: BorderRadius.circular(3),
                     ),
                   ),

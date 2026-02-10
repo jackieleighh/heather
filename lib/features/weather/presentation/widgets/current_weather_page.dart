@@ -32,20 +32,7 @@ class CurrentWeatherPage extends StatelessWidget {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.end,
           children: [
-            // Top bar: refresh + settings
-            Row(
-              mainAxisAlignment: MainAxisAlignment.end,
-              children: [
-                IconButton(
-                  onPressed: onSettings,
-                  icon: Icon(
-                    Icons.settings_outlined,
-                    color: Colors.white.withValues(alpha: 0.7),
-                    size: 26,
-                  ),
-                ),
-              ],
-            ),
+            const SizedBox(height: 56),
             const Spacer(flex: 2),
             LocationHeader(cityName: cityName),
             const SizedBox(height: 4),
@@ -64,7 +51,7 @@ class CurrentWeatherPage extends StatelessWidget {
                 padding: const EdgeInsets.only(bottom: 16),
                 child: Icon(
                   Icons.keyboard_arrow_up,
-                  color: Colors.white.withValues(alpha: 0.4),
+                  color: Colors.black.withValues(alpha: 0.4),
                   size: 28,
                 ),
               ),

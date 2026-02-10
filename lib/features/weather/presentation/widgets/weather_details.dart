@@ -12,7 +12,7 @@ class WeatherDetails extends StatelessWidget {
   Widget build(BuildContext context) {
     final style = Theme.of(
       context,
-    ).textTheme.bodySmall?.copyWith(shadows: _textShadows);
+    ).textTheme.bodySmall;
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.end,
@@ -44,10 +44,6 @@ class WeatherDetails extends StatelessWidget {
       ],
     );
   }
-
-  static const _textShadows = [
-    Shadow(color: Colors.black45, blurRadius: 6, offset: Offset(0, 1)),
-  ];
 }
 
 class _DetailChip extends StatelessWidget {
@@ -62,7 +58,7 @@ class _DetailChip extends StatelessWidget {
     return Row(
       mainAxisSize: MainAxisSize.min,
       children: [
-        Icon(icon, size: 18, color: Colors.white70),
+        Icon(icon, size: 18, color: Colors.black54),
         const SizedBox(width: 5),
         Text(label, style: style),
       ],

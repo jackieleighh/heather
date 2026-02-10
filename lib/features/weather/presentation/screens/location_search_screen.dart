@@ -57,7 +57,7 @@ class _LocationSearchScreenState extends ConsumerState<LocationSearchScreen> {
                 children: [
                   IconButton(
                     onPressed: () => Navigator.of(context).maybePop(),
-                    icon: const Icon(Icons.arrow_back, color: Colors.white),
+                    icon: const Icon(Icons.arrow_back, color: Colors.black),
                   ),
                   const SizedBox(width: 8),
                   Text(
@@ -65,7 +65,7 @@ class _LocationSearchScreenState extends ConsumerState<LocationSearchScreen> {
                     style: GoogleFonts.quicksand(
                       fontSize: 24,
                       fontWeight: FontWeight.w600,
-                      color: Colors.white,
+                      color: Colors.black,
                     ),
                   ),
                 ],
@@ -77,18 +77,18 @@ class _LocationSearchScreenState extends ConsumerState<LocationSearchScreen> {
               child: TextField(
                 controller: _controller,
                 autofocus: true,
-                style: const TextStyle(color: Colors.white),
+                style: const TextStyle(color: Colors.black),
                 decoration: InputDecoration(
                   hintText: 'Search for a city...',
                   hintStyle: TextStyle(
-                    color: Colors.white.withValues(alpha: 0.6),
+                    color: Colors.black.withValues(alpha: 0.6),
                   ),
                   prefixIcon: Icon(
                     Icons.search,
-                    color: Colors.white.withValues(alpha: 0.6),
+                    color: Colors.black.withValues(alpha: 0.6),
                   ),
                   filled: true,
-                  fillColor: Colors.white.withValues(alpha: 0.15),
+                  fillColor: Colors.black.withValues(alpha: 0.15),
                   border: OutlineInputBorder(
                     borderRadius: BorderRadius.circular(16),
                     borderSide: BorderSide.none,
@@ -121,7 +121,7 @@ class _HintView extends StatelessWidget {
           'Search for a city to add to your locations.',
           textAlign: TextAlign.center,
           style: TextStyle(
-            color: Colors.white.withValues(alpha: 0.6),
+            color: Colors.black.withValues(alpha: 0.6),
             fontSize: 16,
           ),
         ),
@@ -141,12 +141,12 @@ class _SearchResults extends ConsumerWidget {
 
     return results.when(
       loading: () => const Center(
-        child: CircularProgressIndicator(color: Colors.white),
+        child: CircularProgressIndicator(color: Colors.black),
       ),
       error: (e, _) => Center(
         child: Text(
           'Something went wrong, bestie.',
-          style: TextStyle(color: Colors.white.withValues(alpha: 0.7)),
+          style: TextStyle(color: Colors.black.withValues(alpha: 0.7)),
         ),
       ),
       data: (locations) {
@@ -154,7 +154,7 @@ class _SearchResults extends ConsumerWidget {
           return Center(
             child: Text(
               'No results found. Try a different search?',
-              style: TextStyle(color: Colors.white.withValues(alpha: 0.7)),
+              style: TextStyle(color: Colors.black.withValues(alpha: 0.7)),
             ),
           );
         }
@@ -188,19 +188,19 @@ class _LocationTile extends ConsumerWidget {
       contentPadding: EdgeInsets.zero,
       leading: Icon(
         Icons.location_on_outlined,
-        color: Colors.white.withValues(alpha: 0.8),
+        color: Colors.black.withValues(alpha: 0.8),
       ),
       title: Text(
         location.name,
         style: const TextStyle(
-          color: Colors.white,
+          color: Colors.black,
           fontWeight: FontWeight.w500,
         ),
       ),
       subtitle: subtitle.isNotEmpty
           ? Text(
               subtitle,
-              style: TextStyle(color: Colors.white.withValues(alpha: 0.6)),
+              style: TextStyle(color: Colors.black.withValues(alpha: 0.6)),
             )
           : null,
       onTap: () {

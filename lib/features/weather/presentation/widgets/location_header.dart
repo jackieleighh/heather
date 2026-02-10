@@ -12,7 +12,7 @@ class LocationHeader extends StatelessWidget {
       children: [
         Icon(
           Icons.location_on_outlined,
-          color: Colors.white.withValues(alpha: 0.9),
+          color: Colors.black.withValues(alpha: 0.9),
           size: 18,
         ),
         const SizedBox(width: 4),
@@ -20,13 +20,9 @@ class LocationHeader extends StatelessWidget {
           cityName,
           style: Theme.of(
             context,
-          ).textTheme.headlineMedium?.copyWith(shadows: _textShadows),
+          ).textTheme.headlineMedium,
         ),
       ],
     );
   }
-
-  static const _textShadows = [
-    Shadow(color: Colors.black45, blurRadius: 10, offset: Offset(0, 2)),
-  ];
 }

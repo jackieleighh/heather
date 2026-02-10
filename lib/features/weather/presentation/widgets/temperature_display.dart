@@ -13,9 +13,7 @@ class TemperatureDisplay extends StatelessWidget {
       children: [
         Text(
           '${temperature.round()}',
-          style: Theme.of(context).textTheme.displayLarge?.copyWith(
-            shadows: _textShadows,
-          ),
+          style: Theme.of(context).textTheme.displayLarge,
         ),
         Padding(
           padding: const EdgeInsets.only(top: 16),
@@ -23,14 +21,10 @@ class TemperatureDisplay extends StatelessWidget {
             '°F',
             style: Theme.of(
               context,
-            ).textTheme.headlineLarge?.copyWith(shadows: _textShadows),
+            ).textTheme.headlineLarge,
           ),
         ),
       ],
     );
   }
-
-  static const _textShadows = [
-    Shadow(color: Colors.black45, blurRadius: 16, offset: Offset(0, 3)),
-  ];
 }
