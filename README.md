@@ -1,2 +1,2 @@
 # heather
-there's a 30% chance it's already raining
+it's heather with the weather.  there's a 30% chance it's already raining :)
