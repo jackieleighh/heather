@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 
+import '../../../../core/constants/app_colors.dart';
 import '../../domain/entities/forecast.dart';
 import 'animated_background/weather_background.dart';
 import 'current_weather_page.dart';
@@ -10,7 +11,7 @@ class VerticalForecastPager extends StatefulWidget {
   final Forecast forecast;
   final String cityName;
   final String quip;
-  final VoidCallback onRefresh;
+  final Future<bool> Function() onRefresh;
   final VoidCallback onSettings;
 
   const VerticalForecastPager({
@@ -44,7 +45,11 @@ class _VerticalForecastPagerState extends State<VerticalForecastPager> {
       fit: StackFit.expand,
       children: [
         // Animated background behind all pages
-        WeatherBackground(condition: weather.condition, isDay: weather.isDay),
+        WeatherBackground(
+          condition: weather.condition,
+          isDay: weather.isDay,
+          temperature: weather.temperature,
+        ),
 
         // Gradient scrim for text readability
         Positioned.fill(
@@ -54,9 +59,9 @@ class _VerticalForecastPagerState extends State<VerticalForecastPager> {
                 begin: Alignment.topCenter,
                 end: Alignment.bottomCenter,
                 colors: [
-                  Colors.black.withValues(alpha: 0.15),
-                  Colors.black.withValues(alpha: 0.05),
-                  Colors.black.withValues(alpha: 0.25),
+                  AppColors.cream.withValues(alpha: 0.15),
+                  AppColors.cream.withValues(alpha: 0.05),
+                  AppColors.cream.withValues(alpha: 0.25),
                 ],
               ),
             ),
@@ -76,6 +81,7 @@ class _VerticalForecastPagerState extends State<VerticalForecastPager> {
               quip: widget.quip,
               onRefresh: widget.onRefresh,
               onSettings: widget.onSettings,
+              parentPageController: _pageController,
             ),
             HourlyForecastPage(
               hourly: widget.forecast.hourly,
@@ -91,25 +97,28 @@ class _VerticalForecastPagerState extends State<VerticalForecastPager> {
           top: 0,
           bottom: 0,
           child: Center(
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
-              children: List.generate(3, (index) {
-                final isActive = index == _currentPage;
-                return Padding(
-                  padding: const EdgeInsets.symmetric(vertical: 3),
-                  child: AnimatedContainer(
-                    duration: const Duration(milliseconds: 200),
-                    width: 6,
-                    height: isActive ? 18 : 6,
-                    decoration: BoxDecoration(
-                      color: isActive
-                          ? Colors.black.withValues(alpha: 0.8)
-                          : Colors.black.withValues(alpha: 0.3),
-                      borderRadius: BorderRadius.circular(3),
+            child: Container(
+              padding: const EdgeInsets.only(left: 2),
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: List.generate(3, (index) {
+                  final isActive = index == _currentPage;
+                  return Padding(
+                    padding: const EdgeInsets.symmetric(vertical: 3),
+                    child: AnimatedContainer(
+                      duration: const Duration(milliseconds: 200),
+                      width: 6,
+                      height: isActive ? 18 : 6,
+                      decoration: BoxDecoration(
+                        color: isActive
+                            ? AppColors.cream.withValues(alpha: 0.8)
+                            : AppColors.cream.withValues(alpha: 0.3),
+                        borderRadius: BorderRadius.circular(3),
+                      ),
                     ),
-                  ),
-                );
-              }),
+                  );
+                }),
+              ),
             ),
           ),
         ),

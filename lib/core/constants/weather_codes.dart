@@ -5,14 +5,26 @@ class WeatherCodes {
 
   static WeatherCondition fromWmo(int code) {
     return switch (code) {
-      0 || 1 => WeatherCondition.clear,
-      2 || 3 => WeatherCondition.cloudy,
-      45 || 48 => WeatherCondition.fog,
-      51 || 53 || 55 || 56 || 57 => WeatherCondition.drizzle,
-      61 || 63 || 65 || 66 || 67 || 80 || 81 || 82 => WeatherCondition.rain,
-      71 || 73 || 75 || 77 || 85 || 86 => WeatherCondition.snow,
-      95 || 96 || 99 => WeatherCondition.thunderstorm,
-      _ => WeatherCondition.clear,
+      0 => WeatherCondition.sunny,
+      1 => WeatherCondition.mostlySunny,
+      2 => WeatherCondition.partlyCloudy,
+      3 => WeatherCondition.overcast,
+      45 || 48 => WeatherCondition.foggy,
+      51 || 53 || 55 => WeatherCondition.drizzle,
+      56 || 57 => WeatherCondition.freezingRain,
+      61 || 63 => WeatherCondition.rain,
+      65 => WeatherCondition.heavyRain,
+      66 || 67 => WeatherCondition.freezingRain,
+      71 || 73 || 77 => WeatherCondition.snow,
+      75 => WeatherCondition.blizzard,
+      80 => WeatherCondition.drizzle,
+      81 => WeatherCondition.rain,
+      82 => WeatherCondition.heavyRain,
+      85 => WeatherCondition.snow,
+      86 => WeatherCondition.blizzard,
+      95 => WeatherCondition.thunderstorm,
+      96 || 99 => WeatherCondition.hail,
+      _ => WeatherCondition.unknown,
     };
   }
 

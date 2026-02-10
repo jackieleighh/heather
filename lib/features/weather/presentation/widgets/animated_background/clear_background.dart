@@ -2,12 +2,15 @@ import 'dart:math';
 
 import 'package:flutter/material.dart';
 
-import '../../../../../core/constants/app_colors.dart';
-
 class ClearBackground extends StatefulWidget {
   final bool isDay;
+  final List<Color> gradientColors;
 
-  const ClearBackground({super.key, required this.isDay});
+  const ClearBackground({
+    super.key,
+    required this.isDay,
+    required this.gradientColors,
+  });
 
   @override
   State<ClearBackground> createState() => _ClearBackgroundState();
@@ -53,17 +56,7 @@ class _ClearBackgroundState extends State<ClearBackground>
               gradient: LinearGradient(
                 begin: Alignment.topCenter,
                 end: Alignment.bottomCenter,
-                colors: widget.isDay
-                    ? const [
-                        AppColors.teal,
-                        AppColors.softMagenta,
-                        AppColors.palePurple,
-                      ]
-                    : const [
-                        AppColors.midnightPurple,
-                        AppColors.deepPurple,
-                        AppColors.darkTeal,
-                      ],
+                colors: widget.gradientColors,
               ),
             ),
           ),

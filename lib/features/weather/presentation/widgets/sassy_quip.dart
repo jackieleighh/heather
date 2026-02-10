@@ -10,14 +10,14 @@ class SassyQuip extends StatelessWidget {
     return Container(
       width: double.infinity,
       constraints: BoxConstraints(
-        maxWidth: MediaQuery.sizeOf(context).width * 0.70,
+        maxWidth: MediaQuery.sizeOf(context).width * 0.80,
       ),
       child: Text(
         quip,
         textAlign: TextAlign.right,
         style: Theme.of(
           context,
-        ).textTheme.labelLarge?.copyWith(height: 1.4),
+        ).textTheme.labelLarge?.copyWith(height: 1.1),
       ),
     );
   }

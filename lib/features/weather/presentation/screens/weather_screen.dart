@@ -1,13 +1,16 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-
+import 'package:flutter_svg/flutter_svg.dart';
+import 'package:go_router/go_router.dart';
+import 'package:heather/features/weather/presentation/widgets/logo_overlay.dart';
 import '../../../../core/constants/app_colors.dart';
 import '../../domain/entities/saved_location.dart';
 import '../providers/location_provider.dart';
 import '../providers/weather_provider.dart';
-import '../widgets/settings_sheet.dart';
+import '../screens/location_search_screen.dart';
 import '../widgets/vertical_forecast_pager.dart';
-import 'location_search_screen.dart';
 
 class WeatherScreen extends ConsumerStatefulWidget {
   const WeatherScreen({super.key});
@@ -21,11 +24,13 @@ class _WeatherScreenState extends ConsumerState<WeatherScreen> {
   bool _minTimeElapsed = false;
   bool _splashComplete = false;
   bool _splashFaded = false;
+  int _currentHorizontalPage = 1;
 
   @override
   void initState() {
     super.initState();
-    _horizontalController = PageController();
+    _horizontalController = PageController(initialPage: 1);
+    _horizontalController.addListener(_onHorizontalPageChanged);
     Future.delayed(const Duration(seconds: 4), () {
       if (mounted) setState(() => _minTimeElapsed = true);
     });
@@ -33,26 +38,39 @@ class _WeatherScreenState extends ConsumerState<WeatherScreen> {
 
   @override
   void dispose() {
+    _horizontalController.removeListener(_onHorizontalPageChanged);
     _horizontalController.dispose();
     super.dispose();
   }
 
-  void _showSettings() {
-    showModalBottomSheet(
-      context: context,
-      backgroundColor: AppColors.cream,
-      isScrollControlled: true,
-      shape: const RoundedRectangleBorder(
-        borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+  void _onHorizontalPageChanged() {
+    final page = _horizontalController.page?.round() ?? 1;
+    if (page != _currentHorizontalPage) {
+      setState(() => _currentHorizontalPage = page);
+    }
+  }
+
+  void _openLocationSearch() {
+    Navigator.of(context).push(
+      PageRouteBuilder(
+        pageBuilder: (context, animation, secondaryAnimation) =>
+            const LocationSearchScreen(),
+        transitionsBuilder: (context, animation, secondaryAnimation, child) {
+          final offset =
+              Tween<Offset>(
+                begin: const Offset(-1.0, 0.0),
+                end: Offset.zero,
+              ).animate(
+                CurvedAnimation(parent: animation, curve: Curves.easeInOut),
+              );
+          return SlideTransition(position: offset, child: child);
+        },
       ),
-      builder: (_) => const SettingsSheet(),
     );
   }
 
-  void _openSearch() {
-    Navigator.of(
-      context,
-    ).push(MaterialPageRoute(builder: (_) => const LocationSearchScreen()));
+  void _showSettings() {
+    context.push('/settings');
   }
 
   @override
@@ -107,21 +125,16 @@ class _WeatherScreenState extends ConsumerState<WeatherScreen> {
 
         return Stack(
           children: [
-            PageView(
-              controller: _horizontalController,
-              physics: const ClampingScrollPhysics(),
-              children: pages,
-            ),
-            if (savedLocations.isNotEmpty)
-              Positioned(
-                bottom: MediaQuery.paddingOf(context).bottom + 12,
-                left: 0,
-                right: 0,
-                child: _HorizontalPageIndicator(
-                  controller: _horizontalController,
-                  count: pages.length,
-                ),
+            PageView(controller: _horizontalController, children: pages),
+            Positioned(
+              bottom: MediaQuery.paddingOf(context).bottom + 12,
+              left: 0,
+              right: 0,
+              child: _HorizontalPageIndicator(
+                controller: _horizontalController,
+                count: pages.length,
               ),
+            ),
             Positioned(
               top: MediaQuery.paddingOf(context).top + 8,
               left: 12,
@@ -130,10 +143,10 @@ class _WeatherScreenState extends ConsumerState<WeatherScreen> {
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
                   IconButton(
-                    onPressed: _openSearch,
+                    onPressed: _openLocationSearch,
                     icon: Icon(
                       Icons.add_location_alt_outlined,
-                      color: Colors.black.withValues(alpha: 0.6),
+                      color: AppColors.cream.withValues(alpha: 0.6),
                       size: 24,
                     ),
                   ),
@@ -141,13 +154,14 @@ class _WeatherScreenState extends ConsumerState<WeatherScreen> {
                     onPressed: _showSettings,
                     icon: Icon(
                       Icons.settings_outlined,
-                      color: Colors.black.withValues(alpha: 0.6),
+                      color: AppColors.cream.withValues(alpha: 0.6),
                       size: 24,
                     ),
                   ),
                 ],
               ),
             ),
+            const LogoOverlay(),
           ],
         );
       },
@@ -189,7 +203,7 @@ class _HorizontalPageIndicator extends StatefulWidget {
 }
 
 class _HorizontalPageIndicatorState extends State<_HorizontalPageIndicator> {
-  int _currentPage = 0;
+  int _currentPage = 1;
 
   @override
   void initState() {
@@ -226,11 +240,21 @@ class _HorizontalPageIndicatorState extends State<_HorizontalPageIndicator> {
             decoration: BoxDecoration(
               shape: BoxShape.circle,
               color: isActive
-                  ? Colors.black.withValues(alpha: 0.9)
-                  : Colors.black.withValues(alpha: 0.35),
+                  ? AppColors.cream.withValues(alpha: 0.9)
+                  : AppColors.cream.withValues(alpha: 0.35),
             ),
             child: isFirst && !isActive
-                ? const Icon(Icons.my_location, size: 4, color: Colors.black54)
+                ? Icon(
+                    Icons.add,
+                    size: 4,
+                    color: AppColors.cream.withValues(alpha: 0.54),
+                  )
+                : index == 1 && !isActive
+                ? Icon(
+                    Icons.my_location,
+                    size: 4,
+                    color: AppColors.cream.withValues(alpha: 0.54),
+                  )
                 : null,
           ),
         );
@@ -279,19 +303,12 @@ class _MiniLoadingView extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Container(
-      decoration: const BoxDecoration(
-        gradient: LinearGradient(
-          begin: Alignment.topCenter,
-          end: Alignment.bottomCenter,
-          colors: [
-            AppColors.chartreuse,
-            AppColors.vibrantPurple,
-            AppColors.magenta,
-          ],
-        ),
-      ),
+      color: AppColors.magenta,
       child: const Center(
-        child: CircularProgressIndicator(color: Colors.black, strokeWidth: 3),
+        child: CircularProgressIndicator(
+          color: AppColors.cream,
+          strokeWidth: 3,
+        ),
       ),
     );
   }
@@ -317,7 +334,11 @@ class _MiniErrorView extends StatelessWidget {
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
-            const Icon(Icons.cloud_off, size: 48, color: Colors.black54),
+            Icon(
+              Icons.cloud_off,
+              size: 48,
+              color: AppColors.cream.withValues(alpha: 0.54),
+            ),
             const SizedBox(height: 16),
             Text(
               'Couldn\'t load this one.',
@@ -328,7 +349,7 @@ class _MiniErrorView extends StatelessWidget {
               onPressed: onRetry,
               style: ElevatedButton.styleFrom(
                 backgroundColor: AppColors.vibrantPurple,
-                foregroundColor: Colors.black,
+                foregroundColor: AppColors.cream,
                 shape: RoundedRectangleBorder(
                   borderRadius: BorderRadius.circular(24),
                 ),
@@ -348,39 +369,50 @@ class _LoadingView extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Container(
-      decoration: const BoxDecoration(
-        gradient: LinearGradient(
-          begin: Alignment.topCenter,
-          end: Alignment.bottomCenter,
-          colors: [
-            AppColors.chartreuse,
-            AppColors.vibrantPurple,
-            AppColors.magenta,
-          ],
-        ),
-      ),
-      child: Center(
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            const Icon(Icons.face_2, size: 80, color: AppColors.midnightPurple),
-            const SizedBox(height: 24),
-            Text('heather', style: Theme.of(context).textTheme.displayMedium),
-            const SizedBox(height: 8),
-            Text(
-              "it's heather with the weather...",
-              style: Theme.of(context).textTheme.bodyLarge,
+      color: AppColors.magenta,
+      child: Stack(
+        children: [
+          Center(
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Text(
+                  'heather',
+                  style: Theme.of(context).textTheme.displayMedium,
+                ),
+                const SizedBox(height: 8),
+                Text(
+                  "it's heather with the weather...",
+                  style: Theme.of(context).textTheme.bodyLarge,
+                ),
+                const SizedBox(height: 24),
+                const _PulsingDots(),
+                const SizedBox(height: 24),
+                Text(
+                  "there's a 30% chance it's already raining.",
+                  style: Theme.of(context).textTheme.bodySmall,
+                ),
+                const SizedBox(height: 24),
+              ],
             ),
-            const SizedBox(height: 24),
-            const _PulsingDots(),
-            const SizedBox(height: 24),
-            Text(
-              "there's a 30% chance it's already raining.",
-              style: Theme.of(context).textTheme.bodySmall,
-            ),
-            const SizedBox(height: 24),
-          ],
-        ),
+          ),
+          Builder(
+            builder: (context) {
+              final screenHeight = MediaQuery.sizeOf(context).height;
+              return Positioned(
+                left: -40,
+                bottom: 0,
+                child: Opacity(
+                  opacity: 0.12,
+                  child: SvgPicture.asset(
+                    'assets/images/heather_logo.svg',
+                    height: screenHeight * 0.45,
+                  ),
+                ),
+              );
+            },
+          ),
+        ],
       ),
     );
   }
@@ -413,7 +445,11 @@ class _ErrorView extends StatelessWidget {
           child: Column(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
-              const Icon(Icons.cloud_off, size: 64, color: Colors.black54),
+              Icon(
+                Icons.cloud_off,
+                size: 64,
+                color: AppColors.cream.withValues(alpha: 0.54),
+              ),
               const SizedBox(height: 24),
               Text('Yikes!', style: Theme.of(context).textTheme.headlineLarge),
               const SizedBox(height: 12),
@@ -435,7 +471,7 @@ class _ErrorView extends StatelessWidget {
                 label: const Text('Try Again, Bestie'),
                 style: ElevatedButton.styleFrom(
                   backgroundColor: AppColors.vibrantPurple,
-                  foregroundColor: Colors.black,
+                  foregroundColor: AppColors.cream,
                   padding: const EdgeInsets.symmetric(
                     horizontal: 24,
                     vertical: 12,
@@ -450,7 +486,9 @@ class _ErrorView extends StatelessWidget {
                 onPressed: onSettings,
                 child: Text(
                   'Settings',
-                  style: TextStyle(color: Colors.black.withValues(alpha: 0.7)),
+                  style: TextStyle(
+                    color: AppColors.cream.withValues(alpha: 0.7),
+                  ),
                 ),
               ),
             ],
@@ -503,7 +541,7 @@ class _PulsingDotsState extends State<_PulsingDots>
                 height: 8,
                 decoration: BoxDecoration(
                   shape: BoxShape.circle,
-                  color: Colors.black.withValues(
+                  color: AppColors.cream.withValues(
                     alpha: i == active ? 0.9 : 0.25,
                   ),
                 ),

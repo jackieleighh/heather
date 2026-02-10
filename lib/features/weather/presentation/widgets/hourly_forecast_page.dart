@@ -3,6 +3,7 @@ import 'package:google_fonts/google_fonts.dart';
 import 'package:intl/intl.dart';
 import 'package:weather_icons/weather_icons.dart';
 
+import '../../../../core/constants/app_colors.dart';
 import '../../../../core/utils/weather_icon_mapper.dart';
 import '../../domain/entities/hourly_weather.dart';
 
@@ -40,10 +41,12 @@ class _HourlyForecastPageState extends State<HourlyForecastPage> {
       // At top and pulling down
       if (pos.pixels < pos.minScrollExtent - _overscrollThreshold) {
         _pageChanging = true;
-        widget.parentPageController.previousPage(
-          duration: const Duration(milliseconds: 300),
-          curve: Curves.easeOut,
-        ).then((_) => _pageChanging = false);
+        widget.parentPageController
+            .previousPage(
+              duration: const Duration(milliseconds: 300),
+              curve: Curves.easeOut,
+            )
+            .then((_) => _pageChanging = false);
         _scrollController.jumpTo(0);
         return true;
       }
@@ -51,10 +54,12 @@ class _HourlyForecastPageState extends State<HourlyForecastPage> {
       // At bottom and pushing up
       if (pos.pixels > pos.maxScrollExtent + _overscrollThreshold) {
         _pageChanging = true;
-        widget.parentPageController.nextPage(
-          duration: const Duration(milliseconds: 300),
-          curve: Curves.easeOut,
-        ).then((_) => _pageChanging = false);
+        widget.parentPageController
+            .nextPage(
+              duration: const Duration(milliseconds: 300),
+              curve: Curves.easeOut,
+            )
+            .then((_) => _pageChanging = false);
         _scrollController.jumpTo(_scrollController.position.maxScrollExtent);
         return true;
       }
@@ -70,9 +75,9 @@ class _HourlyForecastPageState extends State<HourlyForecastPage> {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 28),
+            padding: const EdgeInsets.only(left: 28, right: 64),
             child: SizedBox(
-              height: 56,
+              height: 62,
               child: Align(
                 alignment: Alignment.centerRight,
                 child: Text(
@@ -80,7 +85,7 @@ class _HourlyForecastPageState extends State<HourlyForecastPage> {
                   style: GoogleFonts.quicksand(
                     fontSize: 22,
                     fontWeight: FontWeight.w700,
-                    color: Colors.black,
+                    color: AppColors.cream,
                   ),
                 ),
               ),
@@ -103,7 +108,6 @@ class _HourlyForecastPageState extends State<HourlyForecastPage> {
       ),
     );
   }
-
 }
 
 class _HourlyRow extends StatelessWidget {
@@ -120,13 +124,10 @@ class _HourlyRow extends StatelessWidget {
       padding: const EdgeInsets.symmetric(vertical: 8),
       child: Row(
         children: [
-          SizedBox(
-            width: 60,
-            child: Text(timeStr, style: style),
-          ),
+          SizedBox(width: 60, child: Text(timeStr, style: style)),
           Icon(
             conditionIcon(hourly.weatherCode),
-            color: Colors.black38,
+            color: AppColors.cream.withValues(alpha: 0.38),
             size: 22,
           ),
           const SizedBox(width: 12),
@@ -137,31 +138,32 @@ class _HourlyRow extends StatelessWidget {
               style: style?.copyWith(fontWeight: FontWeight.w600),
             ),
           ),
-          const Icon(WeatherIcons.raindrop, size: 14, color: Colors.black38),
+          Icon(
+            WeatherIcons.raindrop,
+            size: 14,
+            color: AppColors.cream.withValues(alpha: 0.38),
+          ),
           const SizedBox(width: 4),
           SizedBox(
             width: 36,
             child: Text(
               '${hourly.precipitationProbability}%',
-              style: style?.copyWith(
-                fontSize: 14,
-                color: Colors.black38,
-              ),
+              style: style?.copyWith(fontSize: 14),
             ),
           ),
           const Spacer(),
-          const Icon(WeatherIcons.strong_wind, size: 14, color: Colors.black38),
+          Icon(
+            WeatherIcons.strong_wind,
+            size: 14,
+            color: AppColors.cream.withValues(alpha: 0.38),
+          ),
           const SizedBox(width: 4),
           Text(
             '${hourly.windSpeed.round()} mph',
-            style: style?.copyWith(
-              fontSize: 14,
-              color: Colors.black38,
-            ),
+            style: style?.copyWith(fontSize: 14),
           ),
         ],
       ),
     );
   }
-
 }

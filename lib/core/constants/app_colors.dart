@@ -22,4 +22,18 @@ class AppColors {
   static const mutedTeal = Color(0xFF5A8F98);
   static const cream = Color(0xFFFFF8F0);
   static const fogSilver = Color(0xFF9AADAD);
+
+  // Cold tier palette
+  static const icyBlue = Color(0xFF7BA7C2);
+  static const slateBlue = Color(0xFF4A6B82);
+  static const frostLavender = Color(0xFFB8C4D4);
+  static const coldIndigo = Color(0xFF3D4F6F);
+  static const steelGrey = Color(0xFF6B7F8E);
+
+  // Hot tier palette
+  static const burntOrange = Color(0xFFD4621A);
+  static const hotAmber = Color(0xFFE8960F);
+  static const heatPink = Color(0xFFC4386A);
+  static const warmCoral = Color(0xFFE06040);
+  static const goldenYellow = Color(0xFFD4A017);
 }

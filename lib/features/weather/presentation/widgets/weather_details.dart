@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:weather_icons/weather_icons.dart';
 
+import '../../../../core/constants/app_colors.dart';
 import '../../domain/entities/weather.dart';
 
 class WeatherDetails extends StatelessWidget {
@@ -58,7 +59,7 @@ class _DetailChip extends StatelessWidget {
     return Row(
       mainAxisSize: MainAxisSize.min,
       children: [
-        Icon(icon, size: 18, color: Colors.black54),
+        Icon(icon, size: 18, color: AppColors.cream.withValues(alpha: 0.54)),
         const SizedBox(width: 5),
         Text(label, style: style),
       ],

@@ -1,0 +1,111 @@
+import 'dart:math';
+
+import 'package:flutter/material.dart';
+
+import '../../../../../core/constants/app_colors.dart';
+import 'particle.dart';
+
+class HeavyRainBackground extends StatefulWidget {
+  const HeavyRainBackground({super.key});
+
+  @override
+  State<HeavyRainBackground> createState() => _HeavyRainBackgroundState();
+}
+
+class _HeavyRainBackgroundState extends State<HeavyRainBackground>
+    with SingleTickerProviderStateMixin {
+  late final AnimationController _controller;
+  final List<Particle> _drops = [];
+  final Random _random = Random();
+
+  @override
+  void initState() {
+    super.initState();
+    _controller = AnimationController(
+      vsync: this,
+      duration: const Duration(seconds: 1),
+    )..repeat();
+  }
+
+  @override
+  void dispose() {
+    _controller.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return AnimatedBuilder(
+      animation: _controller,
+      builder: (context, child) {
+        return CustomPaint(
+          painter: _HeavyRainPainter(_drops, _random),
+          size: Size.infinite,
+          child: Container(
+            decoration: const BoxDecoration(
+              gradient: LinearGradient(
+                begin: Alignment.topCenter,
+                end: Alignment.bottomCenter,
+                colors: [
+                  AppColors.midnightPurple,
+                  AppColors.deepPurple,
+                  AppColors.darkTeal,
+                ],
+              ),
+            ),
+          ),
+        );
+      },
+    );
+  }
+}
+
+class _HeavyRainPainter extends CustomPainter {
+  final List<Particle> drops;
+  final Random random;
+
+  _HeavyRainPainter(this.drops, this.random);
+
+  @override
+  void paint(Canvas canvas, Size size) {
+    if (drops.isEmpty) {
+      for (var i = 0; i < 350; i++) {
+        drops.add(
+          Particle(
+            x: random.nextDouble() * size.width,
+            y: random.nextDouble() * size.height,
+            speed: 8.0 + random.nextDouble() * 12.0,
+            size: 1.2 + random.nextDouble() * 2.5,
+            opacity: 0.2 + random.nextDouble() * 0.5,
+          ),
+        );
+      }
+    }
+
+    final paint = Paint()..strokeCap = StrokeCap.round;
+
+    for (final drop in drops) {
+      drop.y += drop.speed;
+      drop.x += 1.2;
+
+      if (drop.y > size.height) {
+        drop.y = -10;
+        drop.x = random.nextDouble() * size.width;
+      }
+      if (drop.x > size.width) drop.x = 0;
+
+      paint
+        ..color = Colors.white.withValues(alpha: drop.opacity)
+        ..strokeWidth = drop.size;
+
+      canvas.drawLine(
+        Offset(drop.x, drop.y),
+        Offset(drop.x + 1.2, drop.y + 16 + drop.speed),
+        paint,
+      );
+    }
+  }
+
+  @override
+  bool shouldRepaint(covariant CustomPainter oldDelegate) => true;
+}

@@ -2,10 +2,10 @@ import 'dart:math';
 
 import 'package:flutter/material.dart';
 
-import '../../../../../core/constants/app_colors.dart';
-
 class SunnyBackground extends StatefulWidget {
-  const SunnyBackground({super.key});
+  final List<Color> gradientColors;
+
+  const SunnyBackground({super.key, required this.gradientColors});
 
   @override
   State<SunnyBackground> createState() => _SunnyBackgroundState();
@@ -43,16 +43,11 @@ class _SunnyBackgroundState extends State<SunnyBackground>
           painter: _SunnyPainter(_time),
           size: Size.infinite,
           child: Container(
-            decoration: const BoxDecoration(
+            decoration: BoxDecoration(
               gradient: LinearGradient(
                 begin: Alignment.topRight,
                 end: Alignment.bottomLeft,
-                colors: [
-                  AppColors.chartreuse,
-                  AppColors.mustardYellow,
-                  AppColors.orange,
-                  AppColors.magenta,
-                ],
+                colors: widget.gradientColors,
               ),
             ),
           ),

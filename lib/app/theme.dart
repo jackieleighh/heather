@@ -24,50 +24,50 @@ class HeatherTheme {
     displayLarge: GoogleFonts.poppins(
       fontSize: 160,
       fontWeight: FontWeight.w700,
-      color: Colors.black,
+      color: AppColors.cream,
       height: 1.0,
     ),
     // Loading title
     displayMedium: GoogleFonts.poppins(
       fontSize: 48,
       fontWeight: FontWeight.w600,
-      color: Colors.black,
+      color: AppColors.cream,
     ),
     // °F suffix
     headlineLarge: GoogleFonts.poppins(
       fontSize: 42,
       fontWeight: FontWeight.w500,
-      color: Colors.black,
+      color: AppColors.cream,
     ),
     // City name
     headlineMedium: GoogleFonts.poppins(
       fontSize: 18,
       fontWeight: FontWeight.w500,
-      color: Colors.black,
+      color: AppColors.cream,
     ),
     // Body
     bodyLarge: GoogleFonts.inter(
       fontSize: 20,
       fontWeight: FontWeight.w400,
-      color: Colors.black,
+      color: AppColors.cream,
     ),
     bodyMedium: GoogleFonts.inter(
       fontSize: 18,
       fontWeight: FontWeight.w400,
-      color: Colors.black,
+      color: AppColors.cream,
     ),
     // Meta details
     bodySmall: GoogleFonts.inter(
       fontSize: 18,
       fontWeight: FontWeight.w400,
-      color: Colors.black,
+      color: AppColors.cream,
     ),
     // Quip — no italics, slightly spaced
     labelLarge: GoogleFonts.poppins(
       fontSize: 40,
       fontWeight: FontWeight.w700,
       letterSpacing: 0.3,
-      color: Colors.black,
+      color: AppColors.cream,
     ),
   );
 }
