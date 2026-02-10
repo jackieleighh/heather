@@ -61,7 +61,7 @@ class _LocationSearchScreenState extends ConsumerState<LocationSearchScreen> {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Padding(
-                    padding: const EdgeInsets.fromLTRB(12, 8, 12, 0),
+                    padding: const EdgeInsets.fromLTRB(12, 8, 54, 0),
                     child: SizedBox(
                       height: 48,
                       child: Row(
@@ -69,7 +69,7 @@ class _LocationSearchScreenState extends ConsumerState<LocationSearchScreen> {
                           IconButton(
                             onPressed: () => Navigator.of(context).maybePop(),
                             icon: const Icon(
-                              Icons.arrow_back_ios_new,
+                              Icons.arrow_back_ios,
                               color: AppColors.cream,
                               size: 20,
                             ),
@@ -83,14 +83,6 @@ class _LocationSearchScreenState extends ConsumerState<LocationSearchScreen> {
                                 fontWeight: FontWeight.w700,
                                 color: AppColors.cream,
                               ),
-                            ),
-                          ),
-                          IconButton(
-                            onPressed: () => context.push('/settings'),
-                            icon: Icon(
-                              Icons.settings_outlined,
-                              color: AppColors.cream.withValues(alpha: 0.6),
-                              size: 24,
                             ),
                           ),
                         ],
