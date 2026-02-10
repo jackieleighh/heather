@@ -1,0 +1,189 @@
+import 'package:flutter/material.dart';
+import 'package:google_fonts/google_fonts.dart';
+import 'package:intl/intl.dart';
+
+import '../../../../core/constants/weather_codes.dart';
+import '../../domain/entities/hourly_weather.dart';
+
+class HourlyForecastPage extends StatefulWidget {
+  final List<HourlyWeather> hourly;
+  final PageController parentPageController;
+
+  const HourlyForecastPage({
+    super.key,
+    required this.hourly,
+    required this.parentPageController,
+  });
+
+  @override
+  State<HourlyForecastPage> createState() => _HourlyForecastPageState();
+}
+
+class _HourlyForecastPageState extends State<HourlyForecastPage> {
+  final _scrollController = ScrollController();
+  static const _overscrollThreshold = 60.0;
+  bool _pageChanging = false;
+
+  @override
+  void dispose() {
+    _scrollController.dispose();
+    super.dispose();
+  }
+
+  bool _handleScrollNotification(ScrollNotification notification) {
+    if (_pageChanging) return false;
+
+    if (notification is ScrollUpdateNotification) {
+      final pos = notification.metrics;
+
+      // At top and pulling down
+      if (pos.pixels < pos.minScrollExtent - _overscrollThreshold) {
+        _pageChanging = true;
+        widget.parentPageController.previousPage(
+          duration: const Duration(milliseconds: 300),
+          curve: Curves.easeOut,
+        ).then((_) => _pageChanging = false);
+        _scrollController.jumpTo(0);
+        return true;
+      }
+
+      // At bottom and pushing up
+      if (pos.pixels > pos.maxScrollExtent + _overscrollThreshold) {
+        _pageChanging = true;
+        widget.parentPageController.nextPage(
+          duration: const Duration(milliseconds: 300),
+          curve: Curves.easeOut,
+        ).then((_) => _pageChanging = false);
+        _scrollController.jumpTo(_scrollController.position.maxScrollExtent);
+        return true;
+      }
+    }
+
+    return false;
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return SafeArea(
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 28),
+            child: SizedBox(
+              height: 56,
+              child: Align(
+                alignment: Alignment.centerRight,
+                child: Text(
+                  'Next 24 Hours',
+                  style: GoogleFonts.quicksand(
+                    fontSize: 22,
+                    fontWeight: FontWeight.w700,
+                    color: Colors.white,
+                    shadows: _textShadows,
+                  ),
+                ),
+              ),
+            ),
+          ),
+          Expanded(
+            child: NotificationListener<ScrollNotification>(
+              onNotification: _handleScrollNotification,
+              child: ListView.builder(
+                controller: _scrollController,
+                physics: const BouncingScrollPhysics(),
+                padding: const EdgeInsets.symmetric(horizontal: 28),
+                itemCount: widget.hourly.length,
+                itemBuilder: (context, index) =>
+                    _HourlyRow(hourly: widget.hourly[index]),
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  static const _textShadows = [
+    Shadow(color: Colors.black26, blurRadius: 8, offset: Offset(0, 2)),
+  ];
+}
+
+class _HourlyRow extends StatelessWidget {
+  final HourlyWeather hourly;
+
+  const _HourlyRow({required this.hourly});
+
+  @override
+  Widget build(BuildContext context) {
+    final timeStr = DateFormat('h a').format(hourly.time);
+    final style = Theme.of(context).textTheme.bodyMedium?.copyWith(
+      shadows: _textShadows,
+    );
+
+    return Padding(
+      padding: const EdgeInsets.symmetric(vertical: 8),
+      child: Row(
+        children: [
+          SizedBox(
+            width: 60,
+            child: Text(timeStr, style: style),
+          ),
+          Icon(
+            _conditionIcon(hourly.weatherCode),
+            color: Colors.white70,
+            size: 22,
+          ),
+          const SizedBox(width: 12),
+          SizedBox(
+            width: 50,
+            child: Text(
+              '${hourly.temperature.round()}°',
+              style: style?.copyWith(fontWeight: FontWeight.w600),
+            ),
+          ),
+          const Icon(Icons.water_drop_outlined, size: 14, color: Colors.white54),
+          const SizedBox(width: 4),
+          SizedBox(
+            width: 36,
+            child: Text(
+              '${hourly.precipitationProbability}%',
+              style: style?.copyWith(
+                fontSize: 14,
+                color: Colors.white70,
+              ),
+            ),
+          ),
+          const Spacer(),
+          const Icon(Icons.air, size: 14, color: Colors.white54),
+          const SizedBox(width: 4),
+          Text(
+            '${hourly.windSpeed.round()} mph',
+            style: style?.copyWith(
+              fontSize: 14,
+              color: Colors.white70,
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  IconData _conditionIcon(int code) {
+    final condition = WeatherCodes.fromWmo(code);
+    return switch (condition.name) {
+      'clear' => Icons.wb_sunny_rounded,
+      'cloudy' => Icons.cloud_rounded,
+      'rain' => Icons.umbrella_rounded,
+      'drizzle' => Icons.grain_rounded,
+      'snow' => Icons.ac_unit_rounded,
+      'thunderstorm' => Icons.bolt_rounded,
+      'fog' => Icons.blur_on,
+      _ => Icons.wb_sunny_rounded,
+    };
+  }
+
+  static const _textShadows = [
+    Shadow(color: Colors.black26, blurRadius: 4, offset: Offset(0, 1)),
+  ];
+}

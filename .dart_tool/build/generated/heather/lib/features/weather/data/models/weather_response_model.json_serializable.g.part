@@ -1,0 +1,44 @@
+// **************************************************************************
+// JsonSerializableGenerator
+// **************************************************************************
+
+WeatherResponseModel _$WeatherResponseModelFromJson(
+  Map<String, dynamic> json,
+) => WeatherResponseModel(
+  current: CurrentWeatherModel.fromJson(
+    json['current'] as Map<String, dynamic>,
+  ),
+);
+
+Map<String, dynamic> _$WeatherResponseModelToJson(
+  WeatherResponseModel instance,
+) => <String, dynamic>{'current': instance.current};
+
+CurrentWeatherModel _$CurrentWeatherModelFromJson(Map<String, dynamic> json) =>
+    CurrentWeatherModel(
+      temperature2m: (json['temperature_2m'] as num).toDouble(),
+      relativeHumidity2m: (json['relative_humidity_2m'] as num).toInt(),
+      apparentTemperature: (json['apparent_temperature'] as num).toDouble(),
+      isDay: (json['is_day'] as num).toInt(),
+      precipitation: (json['precipitation'] as num?)?.toDouble() ?? 0.0,
+      rain: (json['rain'] as num?)?.toDouble() ?? 0.0,
+      snowfall: (json['snowfall'] as num?)?.toDouble() ?? 0.0,
+      weatherCode: (json['weather_code'] as num).toInt(),
+      cloudCover: (json['cloud_cover'] as num?)?.toInt() ?? 0,
+      windSpeed10m: (json['wind_speed_10m'] as num).toDouble(),
+    );
+
+Map<String, dynamic> _$CurrentWeatherModelToJson(
+  CurrentWeatherModel instance,
+) => <String, dynamic>{
+  'temperature_2m': instance.temperature2m,
+  'relative_humidity_2m': instance.relativeHumidity2m,
+  'apparent_temperature': instance.apparentTemperature,
+  'is_day': instance.isDay,
+  'precipitation': instance.precipitation,
+  'rain': instance.rain,
+  'snowfall': instance.snowfall,
+  'weather_code': instance.weatherCode,
+  'cloud_cover': instance.cloudCover,
+  'wind_speed_10m': instance.windSpeed10m,
+};
