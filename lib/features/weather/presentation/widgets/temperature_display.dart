@@ -8,6 +8,7 @@ class TemperatureDisplay extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Row(
+      mainAxisAlignment: MainAxisAlignment.end,
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Text(
@@ -30,6 +31,6 @@ class TemperatureDisplay extends StatelessWidget {
   }
 
   static const _textShadows = [
-    Shadow(color: Colors.black26, blurRadius: 12, offset: Offset(0, 3)),
+    Shadow(color: Colors.black45, blurRadius: 16, offset: Offset(0, 3)),
   ];
 }

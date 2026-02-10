@@ -1,8 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:intl/intl.dart';
+import 'package:weather_icons/weather_icons.dart';
 
-import '../../../../core/constants/weather_codes.dart';
+import '../../../../core/utils/weather_icon_mapper.dart';
 import '../../domain/entities/daily_weather.dart';
 
 class WeeklyForecastPage extends StatelessWidget {
@@ -100,8 +101,8 @@ class _DailyCard extends StatelessWidget {
             bottom: 0,
             child: Center(
               child: Icon(
-                _conditionIcon(daily.weatherCode),
-                color: Colors.white.withValues(alpha: 0.13),
+                conditionIcon(daily.weatherCode),
+                color: Colors.white.withValues(alpha: 0.18),
                 size: 100,
               ),
             ),
@@ -134,7 +135,7 @@ class _DailyCard extends StatelessWidget {
                 const SizedBox(height: 2),
                 Row(
                   children: [
-                    const Icon(Icons.water_drop_outlined, size: 15, color: Colors.white54),
+                    const Icon(WeatherIcons.raindrop, size: 15, color: Colors.white54),
                     const SizedBox(width: 3),
                     Text(
                       '${daily.precipitationProbabilityMax}%',
@@ -153,20 +154,6 @@ class _DailyCard extends StatelessWidget {
         ],
       ),
     );
-  }
-
-  IconData _conditionIcon(int code) {
-    final condition = WeatherCodes.fromWmo(code);
-    return switch (condition.name) {
-      'clear' => Icons.wb_sunny_rounded,
-      'cloudy' => Icons.cloud_rounded,
-      'rain' => Icons.umbrella_rounded,
-      'drizzle' => Icons.grain_rounded,
-      'snow' => Icons.ac_unit_rounded,
-      'thunderstorm' => Icons.bolt_rounded,
-      'fog' => Icons.blur_on,
-      _ => Icons.wb_sunny_rounded,
-    };
   }
 
   static const _textShadows = [

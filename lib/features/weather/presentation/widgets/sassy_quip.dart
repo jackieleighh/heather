@@ -10,10 +10,11 @@ class SassyQuip extends StatelessWidget {
     return Container(
       width: double.infinity,
       constraints: BoxConstraints(
-        maxWidth: MediaQuery.sizeOf(context).width * 0.85,
+        maxWidth: MediaQuery.sizeOf(context).width * 0.70,
       ),
       child: Text(
         quip,
+        textAlign: TextAlign.right,
         style: Theme.of(
           context,
         ).textTheme.labelLarge?.copyWith(height: 1.4, shadows: _textShadows),
@@ -22,6 +23,6 @@ class SassyQuip extends StatelessWidget {
   }
 
   static const _textShadows = [
-    Shadow(color: Colors.black26, blurRadius: 6, offset: Offset(0, 1)),
+    Shadow(color: Colors.black45, blurRadius: 8, offset: Offset(0, 2)),
   ];
 }

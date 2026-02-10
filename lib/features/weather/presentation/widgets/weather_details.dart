@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:weather_icons/weather_icons.dart';
 
 import '../../domain/entities/weather.dart';
 
@@ -14,26 +15,27 @@ class WeatherDetails extends StatelessWidget {
     ).textTheme.bodySmall?.copyWith(shadows: _textShadows);
 
     return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
+      crossAxisAlignment: CrossAxisAlignment.end,
       children: [
         Text(weather.description, style: style),
         const SizedBox(height: 10),
         Row(
+          mainAxisAlignment: MainAxisAlignment.end,
           children: [
             _DetailChip(
-              icon: Icons.thermostat_outlined,
+              icon: WeatherIcons.thermometer,
               label: 'Feels ${weather.feelsLike.round()}°',
               style: style,
             ),
             const SizedBox(width: 20),
             _DetailChip(
-              icon: Icons.water_drop_outlined,
+              icon: WeatherIcons.humidity,
               label: '${weather.humidity}%',
               style: style,
             ),
             const SizedBox(width: 20),
             _DetailChip(
-              icon: Icons.air,
+              icon: WeatherIcons.strong_wind,
               label: '${weather.windSpeed.round()} mph',
               style: style,
             ),
@@ -44,7 +46,7 @@ class WeatherDetails extends StatelessWidget {
   }
 
   static const _textShadows = [
-    Shadow(color: Colors.black26, blurRadius: 4, offset: Offset(0, 1)),
+    Shadow(color: Colors.black45, blurRadius: 6, offset: Offset(0, 1)),
   ];
 }
 

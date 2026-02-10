@@ -85,6 +85,7 @@ class _WeatherScreenState extends ConsumerState<WeatherScreen> {
             children: [
               PageView(
                 controller: _horizontalController,
+                physics: const ClampingScrollPhysics(),
                 children: pages,
               ),
               // Horizontal page dots (bottom center)
@@ -227,7 +228,7 @@ class _MiniLoadingView extends StatelessWidget {
         gradient: LinearGradient(
           begin: Alignment.topCenter,
           end: Alignment.bottomCenter,
-          colors: [AppColors.teal, AppColors.vibrantPurple, AppColors.magenta],
+          colors: [AppColors.chartreuse, AppColors.vibrantPurple, AppColors.magenta],
         ),
       ),
       child: const Center(
@@ -292,7 +293,7 @@ class _LoadingView extends StatelessWidget {
         gradient: LinearGradient(
           begin: Alignment.topCenter,
           end: Alignment.bottomCenter,
-          colors: [AppColors.teal, AppColors.vibrantPurple, AppColors.magenta],
+          colors: [AppColors.chartreuse, AppColors.vibrantPurple, AppColors.magenta],
         ),
       ),
       child: Center(

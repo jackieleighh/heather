@@ -30,20 +30,12 @@ class CurrentWeatherPage extends StatelessWidget {
       child: Padding(
         padding: const EdgeInsets.symmetric(horizontal: 28),
         child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
+          crossAxisAlignment: CrossAxisAlignment.end,
           children: [
             // Top bar: refresh + settings
             Row(
               mainAxisAlignment: MainAxisAlignment.end,
               children: [
-                IconButton(
-                  onPressed: onRefresh,
-                  icon: Icon(
-                    Icons.refresh,
-                    color: Colors.white.withValues(alpha: 0.7),
-                    size: 26,
-                  ),
-                ),
                 IconButton(
                   onPressed: onSettings,
                   icon: Icon(
@@ -54,15 +46,18 @@ class CurrentWeatherPage extends StatelessWidget {
                 ),
               ],
             ),
-            const Spacer(flex: 5),
+            const Spacer(flex: 2),
             LocationHeader(cityName: cityName),
             const SizedBox(height: 4),
             TemperatureDisplay(temperature: weather.temperature),
             const SizedBox(height: 24),
-            SassyQuip(quip: quip),
+            Align(
+              alignment: Alignment.centerRight,
+              child: SassyQuip(quip: quip),
+            ),
             const SizedBox(height: 28),
             WeatherDetails(weather: weather),
-            const Spacer(flex: 2),
+            const Spacer(flex: 5),
             // Swipe-up hint
             Center(
               child: Padding(

@@ -20,7 +20,8 @@
         "intl",
         "json_annotation",
         "riverpod_annotation",
-        "shared_preferences"
+        "shared_preferences",
+        "weather_icons"
       ],
       "devDependencies": [
         "build_runner",
@@ -146,6 +147,13 @@
         "stream_channel",
         "test_api",
         "vector_math"
+      ]
+    },
+    {
+      "name": "weather_icons",
+      "version": "3.0.0",
+      "dependencies": [
+        "flutter"
       ]
     },
     {

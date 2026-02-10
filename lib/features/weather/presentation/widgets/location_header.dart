@@ -27,6 +27,6 @@ class LocationHeader extends StatelessWidget {
   }
 
   static const _textShadows = [
-    Shadow(color: Colors.black26, blurRadius: 8, offset: Offset(0, 2)),
+    Shadow(color: Colors.black45, blurRadius: 10, offset: Offset(0, 2)),
   ];
 }

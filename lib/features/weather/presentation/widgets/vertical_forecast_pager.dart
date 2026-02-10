@@ -54,9 +54,9 @@ class _VerticalForecastPagerState extends State<VerticalForecastPager> {
                 begin: Alignment.topCenter,
                 end: Alignment.bottomCenter,
                 colors: [
-                  Colors.black.withValues(alpha: 0.05),
-                  Colors.black.withValues(alpha: 0.0),
                   Colors.black.withValues(alpha: 0.15),
+                  Colors.black.withValues(alpha: 0.05),
+                  Colors.black.withValues(alpha: 0.25),
                 ],
               ),
             ),

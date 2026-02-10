@@ -1,8 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:intl/intl.dart';
+import 'package:weather_icons/weather_icons.dart';
 
-import '../../../../core/constants/weather_codes.dart';
+import '../../../../core/utils/weather_icon_mapper.dart';
 import '../../domain/entities/hourly_weather.dart';
 
 class HourlyForecastPage extends StatefulWidget {
@@ -130,7 +131,7 @@ class _HourlyRow extends StatelessWidget {
             child: Text(timeStr, style: style),
           ),
           Icon(
-            _conditionIcon(hourly.weatherCode),
+            conditionIcon(hourly.weatherCode),
             color: Colors.white70,
             size: 22,
           ),
@@ -142,7 +143,7 @@ class _HourlyRow extends StatelessWidget {
               style: style?.copyWith(fontWeight: FontWeight.w600),
             ),
           ),
-          const Icon(Icons.water_drop_outlined, size: 14, color: Colors.white54),
+          const Icon(WeatherIcons.raindrop, size: 14, color: Colors.white54),
           const SizedBox(width: 4),
           SizedBox(
             width: 36,
@@ -155,7 +156,7 @@ class _HourlyRow extends StatelessWidget {
             ),
           ),
           const Spacer(),
-          const Icon(Icons.air, size: 14, color: Colors.white54),
+          const Icon(WeatherIcons.strong_wind, size: 14, color: Colors.white54),
           const SizedBox(width: 4),
           Text(
             '${hourly.windSpeed.round()} mph',
@@ -167,20 +168,6 @@ class _HourlyRow extends StatelessWidget {
         ],
       ),
     );
-  }
-
-  IconData _conditionIcon(int code) {
-    final condition = WeatherCodes.fromWmo(code);
-    return switch (condition.name) {
-      'clear' => Icons.wb_sunny_rounded,
-      'cloudy' => Icons.cloud_rounded,
-      'rain' => Icons.umbrella_rounded,
-      'drizzle' => Icons.grain_rounded,
-      'snow' => Icons.ac_unit_rounded,
-      'thunderstorm' => Icons.bolt_rounded,
-      'fog' => Icons.blur_on,
-      _ => Icons.wb_sunny_rounded,
-    };
   }
 
   static const _textShadows = [

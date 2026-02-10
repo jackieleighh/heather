@@ -44,7 +44,7 @@ class _LocationSearchScreenState extends ConsumerState<LocationSearchScreen> {
           gradient: LinearGradient(
             begin: Alignment.topCenter,
             end: Alignment.bottomCenter,
-            colors: [AppColors.deepPurple, AppColors.darkTeal],
+            colors: [AppColors.chartreuse, AppColors.vibrantPurple, AppColors.magenta],
           ),
         ),
         child: SafeArea(
