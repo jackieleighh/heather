@@ -1,10 +1,10 @@
 import 'dart:async';
 
 import 'package:flutter/material.dart';
+import 'package:flutter_native_splash/flutter_native_splash.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:heather/features/weather/presentation/screens/error_screen.dart';
-import 'package:heather/features/weather/presentation/screens/loading_screen.dart';
 import 'package:heather/features/weather/presentation/screens/saved_locations_page.dart';
 import 'package:heather/features/weather/presentation/widgets/logo_overlay.dart';
 import '../../../../core/constants/app_colors.dart';
@@ -24,8 +24,7 @@ class WeatherScreen extends ConsumerStatefulWidget {
 class _WeatherScreenState extends ConsumerState<WeatherScreen> {
   late PageController _horizontalController;
   bool _minTimeElapsed = false;
-  bool _splashComplete = false;
-  bool _splashFaded = false;
+  bool _splashRemoved = false;
   int _currentHorizontalPage = 1;
 
   @override
@@ -122,17 +121,18 @@ class _WeatherScreenState extends ConsumerState<WeatherScreen> {
       );
     }
 
-    // Splash completes when min time elapsed + GPS loaded + all locations done loading
+    // Remove native splash when min time elapsed + GPS loaded + all locations done
     final gpsReady = state != const WeatherState.loading();
     final locationsReady = locationStates.every(
       (s) => s != const LocationForecastState.loading(),
     );
-    if (_minTimeElapsed && gpsReady && locationsReady && !_splashComplete) {
-      _splashComplete = true;
+    if (_minTimeElapsed && gpsReady && locationsReady && !_splashRemoved) {
+      _splashRemoved = true;
+      FlutterNativeSplash.remove();
     }
 
     final content = state.when(
-      loading: () => const LoadingScreen(),
+      loading: () => Container(color: AppColors.magenta),
       error: (message) => ErrorScreen(
         message: message,
         onRetry: () => ref.read(weatherStateProvider.notifier).loadWeather(),
@@ -249,24 +249,7 @@ class _WeatherScreenState extends ConsumerState<WeatherScreen> {
       },
     );
 
-    return Scaffold(
-      backgroundColor: Colors.transparent,
-      body: Stack(
-        children: [
-          content,
-          if (!_splashFaded)
-            IgnorePointer(
-              ignoring: _splashComplete,
-              child: AnimatedOpacity(
-                opacity: _splashComplete ? 0.0 : 1.0,
-                duration: const Duration(milliseconds: 700),
-                onEnd: () => setState(() => _splashFaded = true),
-                child: const LoadingScreen(),
-              ),
-            ),
-        ],
-      ),
-    );
+    return Scaffold(backgroundColor: Colors.transparent, body: content);
   }
 }
 

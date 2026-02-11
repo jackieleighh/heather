@@ -1,38 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:heather/features/weather/presentation/widgets/logo_overlay.dart';
-import '../../../../core/constants/app_colors.dart';
-
-class LoadingScreen extends StatelessWidget {
-  const LoadingScreen({super.key});
-
-  @override
-  Widget build(BuildContext context) {
-    return Container(
-      color: AppColors.magenta,
-      child: Stack(
-        children: [
-          Center(
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                Text(
-                  'Heather',
-                  style: Theme.of(context).textTheme.displayMedium,
-                ),
-                const SizedBox(height: 8),
-                Text(
-                  "There's a 30% chance it's already raining.",
-                  style: Theme.of(context).textTheme.headlineSmall,
-                ),
-              ],
-            ),
-          ),
-          const LogoOverlay(),
-        ],
-      ),
-    );
-  }
-}
+import 'package:heather/core/constants/app_colors.dart';
 
 class PulsingDots extends StatefulWidget {
   const PulsingDots({super.key});

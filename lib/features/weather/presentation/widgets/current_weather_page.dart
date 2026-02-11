@@ -1,9 +1,9 @@
 import 'package:flutter/material.dart';
+import 'package:heather/features/weather/presentation/widgets/pulsing_dots.dart';
 import 'package:pull_to_refresh/pull_to_refresh.dart';
 
 import '../../../../core/constants/app_colors.dart';
 import '../../domain/entities/forecast.dart';
-import '../screens/loading_screen.dart';
 import 'location_header.dart';
 import 'sassy_quip.dart';
 import 'temperature_display.dart';
