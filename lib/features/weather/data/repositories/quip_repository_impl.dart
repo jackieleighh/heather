@@ -78,6 +78,7 @@ class QuipRepositoryImpl implements QuipRepository {
 
     final quips =
         quipMap[condition]?[tier] ??
+        quipMap[condition]?[TemperatureTier.flannelWeather] ??
         quipMap[condition]?[TemperatureTier.shortsWeather] ??
         quipMap.values.first.values.first;
     return quips[_random.nextInt(quips.length)];
