@@ -13,9 +13,18 @@ class Forecast with _$Forecast {
   const factory Forecast({
     required Weather current,
     required List<HourlyWeather> hourly,
+    @Default([]) List<HourlyWeather> hourlyToday,
     required List<DailyWeather> daily,
     required int utcOffsetSeconds,
   }) = _Forecast;
+
+  /// Current time at the forecast location, as a local-flagged DateTime
+  /// so comparisons with API-parsed times (also local-flagged) work correctly.
+  DateTime get locationNow {
+    final deviceNow = DateTime.now();
+    final locationOffset = Duration(seconds: utcOffsetSeconds);
+    return deviceNow.add(locationOffset - deviceNow.timeZoneOffset);
+  }
 
   /// Whether it's currently daytime at this location,
   /// computed from sunrise/sunset rather than the stale API snapshot.

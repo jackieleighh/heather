@@ -64,66 +64,101 @@ class _PartlyCloudyPainter extends CustomPainter {
 
   @override
   void paint(Canvas canvas, Size size) {
+    final w = size.width;
+    final h = size.height;
+
     // Sun glow peeking through
-    final sunCenter = Offset(size.width * 0.75, size.height * 0.12);
+    final sunCenter = Offset(w * 0.75, h * 0.12);
     final glowPaint = Paint()
       ..style = PaintingStyle.fill
-      ..maskFilter = const MaskFilter.blur(BlurStyle.normal, 45);
+      ..maskFilter = const MaskFilter.blur(BlurStyle.normal, 55);
 
-    glowPaint.color = Colors.white.withValues(alpha: 0.1 + sin(time) * 0.03);
-    canvas.drawCircle(sunCenter, 100, glowPaint);
+    glowPaint.color = Colors.white.withValues(alpha: 0.08 + sin(time) * 0.02);
+    canvas.drawCircle(sunCenter, 90, glowPaint);
 
-    glowPaint.color = Colors.white.withValues(alpha: 0.15);
-    glowPaint.maskFilter = const MaskFilter.blur(BlurStyle.normal, 20);
-    canvas.drawCircle(sunCenter, 45, glowPaint);
+    glowPaint.color = Colors.white.withValues(alpha: 0.12);
+    glowPaint.maskFilter = const MaskFilter.blur(BlurStyle.normal, 22);
+    canvas.drawCircle(sunCenter, 40, glowPaint);
 
-    // Clouds
-    _drawCloud(
-      canvas,
-      size.width * 0.2 + sin(time * 0.4) * 25,
-      size.height * 0.12,
-      75,
-      0.12,
-    );
-    _drawCloud(
-      canvas,
-      size.width * 0.7 + sin(time * 0.3 + 1) * 20,
-      size.height * 0.25,
-      65,
-      0.1,
-    );
-    _drawCloud(
-      canvas,
-      size.width * 0.4 + sin(time * 0.5 + 2) * 18,
-      size.height * 0.42,
-      80,
-      0.13,
-    );
-    _drawCloud(
-      canvas,
-      size.width * 0.15 + sin(time * 0.35 + 3) * 22,
-      size.height * 0.62,
-      60,
-      0.08,
-    );
-  }
-
-  void _drawCloud(
-    Canvas canvas,
-    double cx,
-    double cy,
-    double scale,
-    double opacity,
-  ) {
-    final paint = Paint()
+    // Base haze — very large, very diffuse to unify the cloud layer
+    final hazePaint = Paint()
       ..style = PaintingStyle.fill
-      ..color = Colors.white.withValues(alpha: opacity)
-      ..maskFilter = const MaskFilter.blur(BlurStyle.normal, 35);
+      ..maskFilter = const MaskFilter.blur(BlurStyle.normal, 120);
 
-    canvas.drawCircle(Offset(cx, cy), scale, paint);
-    canvas.drawCircle(Offset(cx - scale * 0.65, cy + 8), scale * 0.7, paint);
-    canvas.drawCircle(Offset(cx + scale * 0.7, cy + 5), scale * 0.8, paint);
-    canvas.drawCircle(Offset(cx + scale * 0.25, cy - 15), scale * 0.55, paint);
+    hazePaint.color = Colors.white.withValues(alpha: 0.06);
+    canvas.drawOval(
+      Rect.fromCenter(
+        center: Offset(w * 0.4 + sin(time * 0.2) * 30, h * 0.2),
+        width: w * 1.2,
+        height: h * 0.35,
+      ),
+      hazePaint,
+    );
+    hazePaint.color = Colors.white.withValues(alpha: 0.05);
+    canvas.drawOval(
+      Rect.fromCenter(
+        center: Offset(w * 0.5 + sin(time * 0.15 + 1) * 25, h * 0.55),
+        width: w * 1.0,
+        height: h * 0.3,
+      ),
+      hazePaint,
+    );
+
+    // Cloud masses — large overlapping ovals with heavy blur
+    final cloudPaint = Paint()
+      ..style = PaintingStyle.fill
+      ..maskFilter = const MaskFilter.blur(BlurStyle.normal, 80);
+
+    // Upper cloud band
+    cloudPaint.color = Colors.white.withValues(alpha: 0.08);
+    canvas.drawOval(
+      Rect.fromCenter(
+        center: Offset(w * 0.25 + sin(time * 0.3) * 20, h * 0.12),
+        width: w * 0.6,
+        height: h * 0.15,
+      ),
+      cloudPaint,
+    );
+    cloudPaint.color = Colors.white.withValues(alpha: 0.09);
+    canvas.drawOval(
+      Rect.fromCenter(
+        center: Offset(w * 0.65 + sin(time * 0.25 + 1) * 25, h * 0.18),
+        width: w * 0.55,
+        height: h * 0.14,
+      ),
+      cloudPaint,
+    );
+
+    // Middle cloud band
+    cloudPaint.color = Colors.white.withValues(alpha: 0.07);
+    canvas.drawOval(
+      Rect.fromCenter(
+        center: Offset(w * 0.4 + sin(time * 0.35 + 2) * 18, h * 0.38),
+        width: w * 0.7,
+        height: h * 0.16,
+      ),
+      cloudPaint,
+    );
+
+    // Lower clouds — lighter
+    cloudPaint.color = Colors.white.withValues(alpha: 0.05);
+    canvas.drawOval(
+      Rect.fromCenter(
+        center: Offset(w * 0.55 + sin(time * 0.28 + 3) * 22, h * 0.65),
+        width: w * 0.6,
+        height: h * 0.14,
+      ),
+      cloudPaint,
+    );
+    cloudPaint.color = Colors.white.withValues(alpha: 0.04);
+    canvas.drawOval(
+      Rect.fromCenter(
+        center: Offset(w * 0.3 + sin(time * 0.32 + 4) * 20, h * 0.82),
+        width: w * 0.5,
+        height: h * 0.12,
+      ),
+      cloudPaint,
+    );
   }
 
   @override

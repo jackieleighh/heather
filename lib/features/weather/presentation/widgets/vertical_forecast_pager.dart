@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import '../../../../core/constants/app_colors.dart';
 import '../../domain/entities/forecast.dart';
 import 'current_weather_page.dart';
+import 'details_page.dart';
 import 'hourly_forecast_page.dart';
 import 'radar_page.dart';
 import 'weekly_forecast_page.dart';
@@ -61,11 +62,19 @@ class _VerticalForecastPagerState extends State<VerticalForecastPager> {
               onSettings: widget.onSettings,
               parentPageController: _pageController,
             ),
+            DetailsPage(
+              forecast: widget.forecast,
+              latitude: widget.latitude,
+              longitude: widget.longitude,
+            ),
             HourlyForecastPage(
               hourly: widget.forecast.hourly,
               parentPageController: _pageController,
             ),
-            WeeklyForecastPage(daily: widget.forecast.daily),
+            WeeklyForecastPage(
+              daily: widget.forecast.daily,
+              utcOffsetSeconds: widget.forecast.utcOffsetSeconds,
+            ),
             RadarPage(latitude: widget.latitude, longitude: widget.longitude),
           ],
         ),
@@ -80,7 +89,7 @@ class _VerticalForecastPagerState extends State<VerticalForecastPager> {
               padding: const EdgeInsets.only(left: 10),
               child: Column(
                 mainAxisSize: MainAxisSize.min,
-                children: List.generate(4, (index) {
+                children: List.generate(5, (index) {
                   final isActive = index == _currentPage;
                   return Padding(
                     padding: const EdgeInsets.symmetric(vertical: 3),

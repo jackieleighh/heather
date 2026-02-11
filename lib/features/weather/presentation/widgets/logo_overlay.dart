@@ -12,7 +12,7 @@ class LogoOverlay extends StatelessWidget {
       bottom: 0,
       child: IgnorePointer(
         child: Opacity(
-          opacity: 0.12,
+          opacity: 0.05,
           child: SvgPicture.asset(
             'assets/images/heather_logo.svg',
             height: screenHeight * 0.45,

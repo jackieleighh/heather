@@ -122,3 +122,44 @@ const _waningCrescentIcons = [
   WeatherIcons.moon_waning_crescent_5,
   WeatherIcons.moon_waning_crescent_6,
 ];
+
+/// Returns the approximate date of the next new moon after [from].
+/// If currently in a new-moon window, skips past it to find the truly next one.
+DateTime nextNewMoon([DateTime? from]) {
+  var date = from ?? DateTime.now();
+  date = DateTime(date.year, date.month, date.day);
+  var i = 0;
+  // Skip past current new-moon window if we're in one
+  while (i <= 3 && getMoonPhase(date.add(Duration(days: i))) == MoonPhase.newMoon) {
+    i++;
+  }
+  for (; i <= 60; i++) {
+    final d = date.add(Duration(days: i));
+    if (getMoonPhase(d) == MoonPhase.newMoon) return d;
+  }
+  // Fallback
+  final age = moonAge(date);
+  final daysUntil = (_synodicMonth - age) % _synodicMonth;
+  return date.add(Duration(days: daysUntil.round()));
+}
+
+/// Returns the approximate date of the next full moon after [from].
+/// If currently in a full-moon window, skips past it to find the truly next one.
+DateTime nextFullMoon([DateTime? from]) {
+  var date = from ?? DateTime.now();
+  date = DateTime(date.year, date.month, date.day);
+  var i = 0;
+  // Skip past current full-moon window if we're in one
+  while (i <= 3 && getMoonPhase(date.add(Duration(days: i))) == MoonPhase.fullMoon) {
+    i++;
+  }
+  for (; i <= 60; i++) {
+    final d = date.add(Duration(days: i));
+    if (getMoonPhase(d) == MoonPhase.fullMoon) return d;
+  }
+  // Fallback
+  final age = moonAge(date);
+  const halfCycle = _synodicMonth / 2;
+  final daysUntil = (halfCycle - age) % _synodicMonth;
+  return date.add(Duration(days: daysUntil.round()));
+}

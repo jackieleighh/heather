@@ -38,9 +38,9 @@ class TemperatureDisplay extends StatelessWidget {
         ),
         Text(
           '${high.round()}° / ${low.round()}°',
-          style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-            color: AppColors.cream.withValues(alpha: 0.7),
-            fontWeight: FontWeight.w500,
+          style: Theme.of(context).textTheme.titleMedium?.copyWith(
+            color: AppColors.cream.withValues(alpha: 0.9),
+            fontWeight: FontWeight.w600,
           ),
         ),
       ],

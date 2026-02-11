@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:weather_icons/weather_icons.dart';
 
 import '../../../../core/constants/app_colors.dart';
-import '../../../../core/utils/moon_phase.dart';
 import '../../domain/entities/weather.dart';
 
 class WeatherDetails extends StatelessWidget {
@@ -14,42 +13,50 @@ class WeatherDetails extends StatelessWidget {
   Widget build(BuildContext context) {
     final style = Theme.of(
       context,
-    ).textTheme.bodySmall?.copyWith(fontWeight: FontWeight.w700);
+    ).textTheme.bodySmall?.copyWith(fontWeight: FontWeight.w600, fontSize: 14);
 
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.end,
-      children: [
-        Text(weather.description, style: style),
-        const SizedBox(height: 10),
-        Row(
-          mainAxisAlignment: MainAxisAlignment.end,
-          children: [
-            _DetailChip(
-              icon: WeatherIcons.thermometer,
-              label: 'Feels ${weather.feelsLike.round()}°',
-              style: style,
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+      decoration: BoxDecoration(
+        color: AppColors.cream.withValues(alpha: 0.1),
+        borderRadius: BorderRadius.circular(16),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.end,
+        children: [
+          Text(
+            weather.description,
+            style: style?.copyWith(
+              fontWeight: FontWeight.w700,
+              fontSize: 18,
+              color: AppColors.cream,
             ),
-            const SizedBox(width: 20),
-            _DetailChip(
-              icon: WeatherIcons.humidity,
-              label: '${weather.humidity}%',
-              style: style,
-            ),
-            const SizedBox(width: 20),
-            _DetailChip(
-              icon: WeatherIcons.strong_wind,
-              label: '${weather.windSpeed.round()} mph',
-              style: style,
-            ),
-          ],
-        ),
-        const SizedBox(height: 10),
-        _DetailChip(
-          icon: moonPhaseIcon(DateTime.now()),
-          label: moonPhaseLabel(getMoonPhase(DateTime.now())),
-          style: style,
-        ),
-      ],
+          ),
+          const SizedBox(height: 10),
+          Row(
+            mainAxisAlignment: MainAxisAlignment.end,
+            children: [
+              _DetailChip(
+                icon: WeatherIcons.thermometer,
+                label: 'Feels ${weather.feelsLike.round()}°',
+                style: style,
+              ),
+              const SizedBox(width: 16),
+              _DetailChip(
+                icon: WeatherIcons.humidity,
+                label: '${weather.humidity}%',
+                style: style,
+              ),
+              const SizedBox(width: 16),
+              _DetailChip(
+                icon: WeatherIcons.windy,
+                label: '${weather.windSpeed.round()} mph',
+                style: style,
+              ),
+            ],
+          ),
+        ],
+      ),
     );
   }
 }
@@ -66,8 +73,8 @@ class _DetailChip extends StatelessWidget {
     return Row(
       mainAxisSize: MainAxisSize.min,
       children: [
-        Icon(icon, size: 18, color: AppColors.cream.withValues(alpha: 0.85)),
-        const SizedBox(width: 8),
+        Icon(icon, size: 14, color: AppColors.cream.withValues(alpha: 0.6)),
+        const SizedBox(width: 6),
         Text(label, style: style),
       ],
     );

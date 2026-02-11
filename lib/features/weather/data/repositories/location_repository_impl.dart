@@ -31,4 +31,8 @@ class LocationRepositoryImpl implements LocationRepository {
   Future<List<SavedLocation>> searchLocations(String query) {
     return geocodingSource.searchLocations(query);
   }
+
+  Future<void> reorderLocations(List<SavedLocation> locations) {
+    return localSource.saveLocations(locations);
+  }
 }

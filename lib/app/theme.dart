@@ -70,7 +70,7 @@ class HeatherTheme {
     ),
     // Quip — no italics, slightly spaced
     labelLarge: GoogleFonts.poppins(
-      fontSize: 40,
+      fontSize: 30,
       fontWeight: FontWeight.w700,
       letterSpacing: 0.3,
       color: AppColors.cream,

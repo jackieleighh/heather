@@ -10,7 +10,7 @@ class SassyQuip extends StatelessWidget {
     return Container(
       width: double.infinity,
       constraints: BoxConstraints(
-        maxWidth: MediaQuery.sizeOf(context).width * 0.80,
+        maxWidth: MediaQuery.sizeOf(context).width * 0.92,
       ),
       child: Text(
         quip,

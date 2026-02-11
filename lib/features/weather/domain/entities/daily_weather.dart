@@ -16,5 +16,6 @@ class DailyWeather with _$DailyWeather {
     required int precipitationProbabilityMax,
     required DateTime sunrise,
     required DateTime sunset,
+    required double uvIndexMax,
   }) = _DailyWeather;
 }

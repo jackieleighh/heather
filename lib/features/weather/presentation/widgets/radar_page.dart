@@ -2,6 +2,7 @@ import 'dart:async';
 import 'dart:io';
 import 'dart:typed_data';
 import 'package:flutter/material.dart';
+import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:flutter_map/flutter_map.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:google_fonts/google_fonts.dart';
@@ -31,6 +32,30 @@ class _RadarPageState extends ConsumerState<RadarPage> {
 
   final Map<String, Uint8List> _tileCache = {};
   final HttpClient _tileHttpClient = HttpClient();
+  final String _owmApiKey = dotenv.env['OWM_API_KEY'] ?? '';
+
+  MarkerLayer get _locationMarker => MarkerLayer(
+    markers: [
+      Marker(
+        point: LatLng(widget.latitude, widget.longitude),
+        width: 16,
+        height: 16,
+        child: Container(
+          decoration: BoxDecoration(
+            color: AppColors.cream,
+            shape: BoxShape.circle,
+            boxShadow: [
+              BoxShadow(
+                color: Colors.black.withValues(alpha: 0.3),
+                blurRadius: 4,
+                spreadRadius: 1,
+              ),
+            ],
+          ),
+        ),
+      ),
+    ],
+  );
 
   @override
   void dispose() {
@@ -128,7 +153,7 @@ class _RadarPageState extends ConsumerState<RadarPage> {
 
     return SafeArea(
       child: Padding(
-        padding: const EdgeInsets.fromLTRB(16, 0, 16, 30),
+        padding: const EdgeInsets.fromLTRB(26, 0, 26, 30),
         child: Column(
           children: [
             // Header
@@ -139,7 +164,7 @@ class _RadarPageState extends ConsumerState<RadarPage> {
                 child: Align(
                   alignment: Alignment.centerRight,
                   child: Text(
-                    'Radar',
+                    'Maps',
                     style: GoogleFonts.quicksand(
                       fontSize: 22,
                       fontWeight: FontWeight.w700,
@@ -150,30 +175,73 @@ class _RadarPageState extends ConsumerState<RadarPage> {
               ),
             ),
             const SizedBox(height: 8),
-            // Map
+            // Wind map
             Expanded(
-              child: Container(
-                padding: const EdgeInsets.symmetric(horizontal: 16),
-                child: manifestAsync.when(
-                  loading: () => Container(
-                    color: AppColors.cream.withValues(alpha: 0.25),
-                    child: const Center(
-                      child: CircularProgressIndicator(
-                        color: AppColors.cream,
-                        strokeWidth: 3,
+              child: _MapCard(
+                label: 'Wind',
+                child: _owmApiKey.isEmpty
+                    ? Center(
+                        child: Text(
+                          'OWM_API_KEY required',
+                          style: GoogleFonts.quicksand(
+                            fontSize: 16,
+                            fontWeight: FontWeight.w600,
+                            color: AppColors.cream.withValues(alpha: 0.7),
+                          ),
+                        ),
+                      )
+                    : ClipRRect(
+                        borderRadius: BorderRadius.circular(16),
+                        child: FlutterMap(
+                          options: MapOptions(
+                            initialCenter: LatLng(
+                              widget.latitude,
+                              widget.longitude,
+                            ),
+                            initialZoom: 7.0,
+                            interactionOptions: const InteractionOptions(
+                              flags:
+                                  InteractiveFlag.all & ~InteractiveFlag.rotate,
+                            ),
+                          ),
+                          children: [
+                            TileLayer(
+                              urlTemplate:
+                                  'https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png',
+                              subdomains: const ['a', 'b', 'c', 'd'],
+                              retinaMode:
+                                  MediaQuery.of(context).devicePixelRatio > 1.0,
+                            ),
+                            TileLayer(
+                              urlTemplate:
+                                  'https://tile.openweathermap.org/map/wind_new/{z}/{x}/{y}.png?appid=$_owmApiKey',
+                              userAgentPackageName: 'com.heather.app',
+                            ),
+                            _locationMarker,
+                          ],
+                        ),
                       ),
+              ),
+            ),
+            const SizedBox(height: 10),
+            // Radar map
+            Expanded(
+              child: _MapCard(
+                label: 'Precipitation',
+                child: manifestAsync.when(
+                  loading: () => const Center(
+                    child: CircularProgressIndicator(
+                      color: AppColors.cream,
+                      strokeWidth: 3,
                     ),
                   ),
-                  error: (_, _) => Container(
-                    color: AppColors.cream.withValues(alpha: 0.25),
-                    child: Center(
-                      child: Text(
-                        'Radar unavailable',
-                        style: GoogleFonts.quicksand(
-                          fontSize: 16,
-                          fontWeight: FontWeight.w600,
-                          color: AppColors.cream.withValues(alpha: 0.7),
-                        ),
+                  error: (_, _) => Center(
+                    child: Text(
+                      'Radar unavailable',
+                      style: GoogleFonts.quicksand(
+                        fontSize: 16,
+                        fontWeight: FontWeight.w600,
+                        color: AppColors.cream.withValues(alpha: 0.7),
                       ),
                     ),
                   ),
@@ -186,7 +254,7 @@ class _RadarPageState extends ConsumerState<RadarPage> {
                     return Stack(
                       children: [
                         ClipRRect(
-                          borderRadius: BorderRadius.circular(20),
+                          borderRadius: BorderRadius.circular(16),
                           child: FlutterMap(
                             options: MapOptions(
                               initialCenter: LatLng(
@@ -201,7 +269,6 @@ class _RadarPageState extends ConsumerState<RadarPage> {
                               ),
                             ),
                             children: [
-                              // Light CartoDB base tiles
                               TileLayer(
                                 urlTemplate:
                                     'https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png',
@@ -210,7 +277,6 @@ class _RadarPageState extends ConsumerState<RadarPage> {
                                     MediaQuery.of(context).devicePixelRatio >
                                     1.0,
                               ),
-                              // RainViewer radar overlay
                               Opacity(
                                 opacity: 0.6,
                                 child: TileLayer(
@@ -222,46 +288,18 @@ class _RadarPageState extends ConsumerState<RadarPage> {
                                   ),
                                 ),
                               ),
-                              // Location marker
-                              MarkerLayer(
-                                markers: [
-                                  Marker(
-                                    point: LatLng(
-                                      widget.latitude,
-                                      widget.longitude,
-                                    ),
-                                    width: 16,
-                                    height: 16,
-                                    child: Container(
-                                      decoration: BoxDecoration(
-                                        color: AppColors.cream,
-                                        shape: BoxShape.circle,
-                                        boxShadow: [
-                                          BoxShadow(
-                                            color: Colors.black.withValues(
-                                              alpha: 0.3,
-                                            ),
-                                            blurRadius: 4,
-                                            spreadRadius: 1,
-                                          ),
-                                        ],
-                                      ),
-                                    ),
-                                  ),
-                                ],
-                              ),
+                              _locationMarker,
                             ],
                           ),
                         ),
-                        // Control bar
                         Positioned(
                           left: 0,
                           right: 0,
                           bottom: 0,
                           child: ClipRRect(
                             borderRadius: const BorderRadius.only(
-                              bottomLeft: Radius.circular(20),
-                              bottomRight: Radius.circular(20),
+                              bottomLeft: Radius.circular(16),
+                              bottomRight: Radius.circular(16),
                             ),
                             child: _ControlBar(
                               frame: frame,
@@ -319,7 +357,7 @@ class _ControlBar extends StatelessWidget {
 
     return Container(
       decoration: BoxDecoration(color: Colors.black.withValues(alpha: 0.25)),
-      padding: const EdgeInsets.fromLTRB(16, 12, 8, 10),
+      padding: const EdgeInsets.fromLTRB(16, 6, 8, 0),
       child: Column(
         mainAxisSize: MainAxisSize.min,
         children: [
@@ -329,97 +367,142 @@ class _ControlBar extends StatelessWidget {
             child: Text(
               timeLabel,
               style: GoogleFonts.inter(
-                fontSize: 14,
+                fontSize: 13,
                 fontWeight: FontWeight.w700,
                 color: AppColors.cream,
               ),
             ),
           ),
           // Slider + now indicator + play button
-          Row(
-            children: [
-              Expanded(
-                child: LayoutBuilder(
-                  builder: (context, constraints) {
-                    // Slider's track is inset by the overlay radius (24px each side)
-                    const trackPadding = 24.0;
-                    final trackWidth = constraints.maxWidth - trackPadding * 2;
-                    final nowFraction = frameCount > 1
-                        ? nowIndex / (frameCount - 1)
-                        : 0.5;
-                    final nowX = trackPadding + nowFraction * trackWidth;
+          Transform.translate(
+            offset: const Offset(0, -8),
+            child: Row(
+              children: [
+                Expanded(
+                  child: LayoutBuilder(
+                    builder: (context, constraints) {
+                      const trackPadding = 24.0;
+                      final trackWidth =
+                          constraints.maxWidth - trackPadding * 2;
+                      final nowFraction = frameCount > 1
+                          ? nowIndex / (frameCount - 1)
+                          : 0.5;
+                      final nowX = trackPadding + nowFraction * trackWidth;
 
-                    return Stack(
-                      children: [
-                        SliderTheme(
-                          data: SliderThemeData(
-                            activeTrackColor: AppColors.cream.withValues(
-                              alpha: 0.85,
+                      return Stack(
+                        children: [
+                          SliderTheme(
+                            data: SliderThemeData(
+                              activeTrackColor: AppColors.cream.withValues(
+                                alpha: 0.8,
+                              ),
+                              inactiveTrackColor: AppColors.cream.withValues(
+                                alpha: 0.2,
+                              ),
+                              thumbColor: AppColors.cream,
+                              overlayColor: AppColors.cream.withValues(
+                                alpha: 0.1,
+                              ),
+                              trackHeight: 2,
+                              thumbShape: const RoundSliderThumbShape(
+                                enabledThumbRadius: 5,
+                              ),
                             ),
-                            inactiveTrackColor: AppColors.cream.withValues(
-                              alpha: 0.25,
-                            ),
-                            thumbColor: AppColors.cream,
-                            overlayColor: AppColors.cream.withValues(
-                              alpha: 0.15,
-                            ),
-                            trackHeight: 3,
-                            thumbShape: const RoundSliderThumbShape(
-                              enabledThumbRadius: 6,
+                            child: Slider(
+                              value: currentIndex.toDouble(),
+                              min: 0,
+                              max: (frameCount - 1).toDouble(),
+                              divisions: frameCount - 1,
+                              onChanged: onSliderChanged,
                             ),
                           ),
-                          child: Slider(
-                            value: currentIndex.toDouble(),
-                            min: 0,
-                            max: (frameCount - 1).toDouble(),
-                            divisions: frameCount - 1,
-                            onChanged: onSliderChanged,
-                          ),
-                        ),
-                        // "Now" indicator
-                        Positioned(
-                          left: nowX - 1,
-                          top: 0,
-                          bottom: 0,
-                          child: IgnorePointer(
-                            child: Center(
-                              child: Container(
-                                width: 2,
-                                height: 16,
-                                decoration: BoxDecoration(
-                                  color: AppColors.cream,
-                                  borderRadius: BorderRadius.circular(1),
+                          // "Now" indicator
+                          Positioned(
+                            left: nowX - 1,
+                            top: 0,
+                            bottom: 0,
+                            child: IgnorePointer(
+                              child: Center(
+                                child: Container(
+                                  width: 2,
+                                  height: 14,
+                                  decoration: BoxDecoration(
+                                    color: AppColors.cream,
+                                    borderRadius: BorderRadius.circular(1),
+                                  ),
                                 ),
                               ),
                             ),
                           ),
-                        ),
-                        Positioned(
-                          left: nowX - 14,
-                          top: 32,
-                          child: Text(
-                            'Now',
-                            style: GoogleFonts.inter(
-                              fontSize: 12,
-                              fontWeight: FontWeight.w600,
-                              color: AppColors.cream.withValues(alpha: 0.85),
+                          Positioned(
+                            left: nowX - 14,
+                            top: 32,
+                            child: Text(
+                              'Now',
+                              style: GoogleFonts.inter(
+                                fontSize: 11,
+                                fontWeight: FontWeight.w600,
+                                color: AppColors.cream.withValues(alpha: 0.8),
+                              ),
                             ),
                           ),
-                        ),
-                      ],
-                    );
-                  },
+                        ],
+                      );
+                    },
+                  ),
+                ),
+                GestureDetector(
+                  onTap: onPlayPause,
+                  child: Icon(
+                    isPlaying ? Icons.pause_rounded : Icons.play_arrow_rounded,
+                    color: AppColors.cream.withValues(alpha: 0.8),
+                    size: 26,
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class _MapCard extends StatelessWidget {
+  final String label;
+  final Widget child;
+
+  const _MapCard({required this.label, required this.child});
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      clipBehavior: Clip.hardEdge,
+      decoration: BoxDecoration(
+        color: AppColors.cream.withValues(alpha: 0.1),
+        borderRadius: BorderRadius.circular(20),
+      ),
+      child: Stack(
+        children: [
+          Positioned.fill(child: child),
+          Positioned(
+            top: 8,
+            left: 12,
+            child: Container(
+              padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+              decoration: BoxDecoration(
+                color: Colors.black.withValues(alpha: 0.35),
+                borderRadius: BorderRadius.circular(8),
+              ),
+              child: Text(
+                label,
+                style: GoogleFonts.inter(
+                  fontSize: 12,
+                  fontWeight: FontWeight.w600,
+                  color: AppColors.cream,
                 ),
               ),
-              GestureDetector(
-                onTap: onPlayPause,
-                child: Icon(
-                  isPlaying ? Icons.pause_rounded : Icons.play_arrow_rounded,
-                  color: AppColors.cream.withValues(alpha: 0.85),
-                  size: 28,
-                ),
-              ),
-            ],
+            ),
           ),
         ],
       ),

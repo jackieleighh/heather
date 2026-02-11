@@ -4,7 +4,6 @@ import 'package:intl/intl.dart';
 import 'package:weather_icons/weather_icons.dart';
 
 import '../../../../core/constants/app_colors.dart';
-import '../../../../core/utils/moon_phase.dart';
 import '../../../../core/utils/weather_icon_mapper.dart';
 import '../../domain/entities/hourly_weather.dart';
 
@@ -94,26 +93,13 @@ class _HourlyForecastPageState extends State<HourlyForecastPage> {
               height: 62,
               child: Align(
                 alignment: Alignment.centerRight,
-                child: Flex(
-                  direction: Axis.horizontal,
-                  mainAxisAlignment: MainAxisAlignment.end,
-                  crossAxisAlignment: CrossAxisAlignment.center,
-                  children: [
-                    Icon(
-                      moonPhaseIcon(DateTime.now()),
-                      size: 20,
-                      color: AppColors.cream.withValues(alpha: 0.7),
-                    ),
-                    const SizedBox(width: 6),
-                    Text(
-                      'Next 24 Hours',
-                      style: GoogleFonts.quicksand(
-                        fontSize: 22,
-                        fontWeight: FontWeight.w700,
-                        color: AppColors.cream,
-                      ),
-                    ),
-                  ],
+                child: Text(
+                  'Next 24 Hours',
+                  style: GoogleFonts.quicksand(
+                    fontSize: 22,
+                    fontWeight: FontWeight.w700,
+                    color: AppColors.cream,
+                  ),
                 ),
               ),
             ),
@@ -165,48 +151,55 @@ class _HourlyRow extends StatelessWidget {
     ).textTheme.bodyMedium?.copyWith(fontWeight: FontWeight.w600);
 
     return Padding(
-      padding: const EdgeInsets.symmetric(vertical: 8),
-      child: Row(
-        children: [
-          SizedBox(width: 60, child: Text(timeStr, style: style)),
-          Icon(
-            conditionIcon(hourly.weatherCode),
-            color: AppColors.cream.withValues(alpha: 0.8),
-            size: 22,
-          ),
-          const SizedBox(width: 12),
-          SizedBox(
-            width: 50,
-            child: Text(
-              '${hourly.temperature.round()}°',
-              style: style?.copyWith(fontWeight: FontWeight.w800),
+      padding: const EdgeInsets.only(bottom: 6),
+      child: Container(
+        padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
+        decoration: BoxDecoration(
+          color: AppColors.cream.withValues(alpha: 0.1),
+          borderRadius: BorderRadius.circular(16),
+        ),
+        child: Row(
+          children: [
+            SizedBox(width: 60, child: Text(timeStr, style: style)),
+            Icon(
+              conditionIcon(hourly.weatherCode),
+              color: AppColors.cream.withValues(alpha: 0.8),
+              size: 22,
             ),
-          ),
-          Icon(
-            WeatherIcons.raindrop,
-            size: 14,
-            color: AppColors.cream.withValues(alpha: 0.7),
-          ),
-          const SizedBox(width: 4),
-          SizedBox(
-            width: 36,
-            child: Text(
-              '${hourly.precipitationProbability}%',
+            const SizedBox(width: 12),
+            SizedBox(
+              width: 50,
+              child: Text(
+                '${hourly.temperature.round()}°',
+                style: style?.copyWith(fontWeight: FontWeight.w800),
+              ),
+            ),
+            Icon(
+              WeatherIcons.raindrop,
+              size: 14,
+              color: AppColors.cream.withValues(alpha: 0.7),
+            ),
+            const SizedBox(width: 4),
+            SizedBox(
+              width: 36,
+              child: Text(
+                '${hourly.precipitationProbability}%',
+                style: style?.copyWith(fontSize: 14),
+              ),
+            ),
+            const Spacer(),
+            Text(
+              '${hourly.windSpeed.round()} mph',
               style: style?.copyWith(fontSize: 14),
             ),
-          ),
-          const Spacer(),
-          Text(
-            '${hourly.windSpeed.round()} mph',
-            style: style?.copyWith(fontSize: 14),
-          ),
-          const SizedBox(width: 8),
-          Icon(
-            WeatherIcons.strong_wind,
-            size: 14,
-            color: AppColors.cream.withValues(alpha: 0.7),
-          ),
-        ],
+            const SizedBox(width: 8),
+            Icon(
+              WeatherIcons.windy,
+              size: 14,
+              color: AppColors.cream.withValues(alpha: 0.7),
+            ),
+          ],
+        ),
       ),
     );
   }

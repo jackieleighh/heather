@@ -10,8 +10,13 @@ import '../../domain/entities/daily_weather.dart';
 
 class WeeklyForecastPage extends StatelessWidget {
   final List<DailyWeather> daily;
+  final int utcOffsetSeconds;
 
-  const WeeklyForecastPage({super.key, required this.daily});
+  const WeeklyForecastPage({
+    super.key,
+    required this.daily,
+    required this.utcOffsetSeconds,
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -44,7 +49,14 @@ class WeeklyForecastPage extends StatelessWidget {
                 child: Padding(
                   padding: const EdgeInsets.only(bottom: 10),
                   child: Row(
-                    children: [Expanded(child: _DailyCard(daily: row))],
+                    children: [
+                      Expanded(
+                        child: _DailyCard(
+                          daily: row,
+                          utcOffsetSeconds: utcOffsetSeconds,
+                        ),
+                      ),
+                    ],
                   ),
                 ),
               ),
@@ -58,12 +70,15 @@ class WeeklyForecastPage extends StatelessWidget {
 
 class _DailyCard extends StatelessWidget {
   final DailyWeather daily;
+  final int utcOffsetSeconds;
 
-  const _DailyCard({required this.daily});
+  const _DailyCard({required this.daily, required this.utcOffsetSeconds});
 
   @override
   Widget build(BuildContext context) {
-    final now = DateTime.now();
+    final deviceNow = DateTime.now();
+    final locationOffset = Duration(seconds: utcOffsetSeconds);
+    final now = deviceNow.add(locationOffset - deviceNow.timeZoneOffset);
     final today = DateTime(now.year, now.month, now.day);
     final dayDiff = daily.date.difference(today).inDays;
     final dayStr = switch (dayDiff) {
@@ -92,12 +107,13 @@ class _DailyCard extends StatelessWidget {
           ),
           // Content on top
           Padding(
-            padding: const EdgeInsets.all(14),
+            padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
+              mainAxisAlignment: MainAxisAlignment.end,
               children: [
-                Flex(
-                  direction: Axis.horizontal,
+                Row(
+                  crossAxisAlignment: CrossAxisAlignment.center,
                   children: [
                     Text(
                       dayStr,
@@ -113,9 +129,9 @@ class _DailyCard extends StatelessWidget {
                     ),
                   ],
                 ),
-                Flex(
-                  direction: Axis.horizontal,
-                  crossAxisAlignment: CrossAxisAlignment.end,
+                Row(
+                  crossAxisAlignment: CrossAxisAlignment.baseline,
+                  textBaseline: TextBaseline.alphabetic,
                   children: [
                     Text(
                       '${daily.temperatureMax.round()}° / ${daily.temperatureMin.round()}°',
@@ -124,26 +140,23 @@ class _DailyCard extends StatelessWidget {
                         fontSize: 26,
                       ),
                     ),
-                    const SizedBox(width: 6),
-                    Flex(
-                      direction: Axis.horizontal,
-                      crossAxisAlignment: CrossAxisAlignment.center,
-                      children: [
-                        Icon(
-                          WeatherIcons.raindrop,
-                          size: 15,
-                          color: AppColors.cream.withValues(alpha: 0.7),
-                        ),
-                        const SizedBox(width: 3),
-                        Text(
-                          '${daily.precipitationProbabilityMax}%',
-                          style: GoogleFonts.poppins(
-                            fontSize: 14,
-                            fontWeight: FontWeight.w600,
-                            color: AppColors.cream,
-                          ),
-                        ),
-                      ],
+                    const SizedBox(width: 8),
+                    Padding(
+                      padding: const EdgeInsets.only(bottom: 2),
+                      child: Icon(
+                        WeatherIcons.raindrop,
+                        size: 13,
+                        color: AppColors.cream.withValues(alpha: 0.7),
+                      ),
+                    ),
+                    const SizedBox(width: 3),
+                    Text(
+                      '${daily.precipitationProbabilityMax}%',
+                      style: GoogleFonts.poppins(
+                        fontSize: 14,
+                        fontWeight: FontWeight.w600,
+                        color: AppColors.cream,
+                      ),
                     ),
                   ],
                 ),

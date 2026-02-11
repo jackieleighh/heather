@@ -77,87 +77,109 @@ class SettingsScreen extends ConsumerWidget {
                             ),
                           )
                         else
-                          ...savedLocations.map(
-                            (loc) => Dismissible(
-                              key: Key(loc.id),
-                              direction: DismissDirection.endToStart,
-                              background: Container(
-                                alignment: Alignment.centerRight,
-                                padding: const EdgeInsets.only(right: 20),
-                                decoration: BoxDecoration(
-                                  color: Colors.red[700],
-                                  borderRadius: BorderRadius.circular(12),
-                                ),
-                                child: const Icon(
-                                  Icons.delete,
-                                  color: Colors.white,
-                                ),
-                              ),
-                              onDismissed: (_) {
-                                ref
-                                    .read(savedLocationsProvider.notifier)
-                                    .removeLocation(loc.id);
-                              },
-                              child: Container(
-                                margin: const EdgeInsets.only(bottom: 8),
-                                decoration: BoxDecoration(
-                                  color: AppColors.cream.withValues(
-                                    alpha: 0.15,
+                          ReorderableListView.builder(
+                            shrinkWrap: true,
+                            physics: const NeverScrollableScrollPhysics(),
+                            proxyDecorator: (child, index, animation) {
+                              return Material(
+                                color: Colors.transparent,
+                                elevation: 0,
+                                child: child,
+                              );
+                            },
+                            onReorder: (oldIndex, newIndex) {
+                              ref
+                                  .read(savedLocationsProvider.notifier)
+                                  .reorderLocations(oldIndex, newIndex);
+                            },
+                            itemCount: savedLocations.length,
+                            itemBuilder: (context, index) {
+                              final loc = savedLocations[index];
+                              return Dismissible(
+                                key: Key(loc.id),
+                                direction: DismissDirection.endToStart,
+                                background: Container(
+                                  alignment: Alignment.centerRight,
+                                  padding: const EdgeInsets.only(right: 20),
+                                  decoration: BoxDecoration(
+                                    color: Colors.red[700],
+                                    borderRadius: BorderRadius.circular(12),
                                   ),
-                                  borderRadius: BorderRadius.circular(12),
-                                ),
-                                child: ListTile(
-                                  contentPadding: const EdgeInsets.symmetric(
-                                    horizontal: 16,
+                                  child: const Icon(
+                                    Icons.delete,
+                                    color: Colors.white,
                                   ),
-                                  leading: Icon(
-                                    Icons.location_on_outlined,
+                                ),
+                                onDismissed: (_) {
+                                  ref
+                                      .read(savedLocationsProvider.notifier)
+                                      .removeLocation(loc.id);
+                                },
+                                child: Container(
+                                  margin: const EdgeInsets.only(bottom: 8),
+                                  decoration: BoxDecoration(
                                     color: AppColors.cream.withValues(
-                                      alpha: 0.7,
+                                      alpha: 0.15,
                                     ),
-                                    size: 22,
+                                    borderRadius: BorderRadius.circular(12),
                                   ),
-                                  title: Text(
-                                    loc.name,
-                                    style: GoogleFonts.poppins(
-                                      fontSize: 15,
-                                      fontWeight: FontWeight.w500,
-                                      color: AppColors.cream,
+                                  child: ListTile(
+                                    contentPadding: const EdgeInsets.symmetric(
+                                      horizontal: 16,
                                     ),
-                                  ),
-                                  subtitle: loc.country.isNotEmpty
-                                      ? Text(
-                                          [
-                                            if (loc.admin1 != null &&
-                                                loc.admin1!.isNotEmpty)
-                                              loc.admin1!,
-                                            loc.country,
-                                          ].join(', '),
-                                          style: GoogleFonts.poppins(
-                                            fontSize: 12,
-                                            color: AppColors.cream.withValues(
-                                              alpha: 0.6,
-                                            ),
-                                          ),
-                                        )
-                                      : null,
-                                  trailing: IconButton(
-                                    icon: Icon(
-                                      Icons.delete_outline,
-                                      color: AppColors.cream.withValues(
-                                        alpha: 0.6,
+                                    leading: ReorderableDragStartListener(
+                                      index: index,
+                                      child: Icon(
+                                        Icons.drag_handle,
+                                        color: AppColors.cream.withValues(
+                                          alpha: 0.5,
+                                        ),
+                                        size: 20,
                                       ),
-                                      size: 20,
                                     ),
-                                    onPressed: () {
-                                      ref
-                                          .read(savedLocationsProvider.notifier)
-                                          .removeLocation(loc.id);
-                                    },
+                                    title: Text(
+                                      loc.name,
+                                      style: GoogleFonts.poppins(
+                                        fontSize: 15,
+                                        fontWeight: FontWeight.w500,
+                                        color: AppColors.cream,
+                                      ),
+                                    ),
+                                    subtitle: loc.country.isNotEmpty
+                                        ? Text(
+                                            [
+                                              if (loc.admin1 != null &&
+                                                  loc.admin1!.isNotEmpty)
+                                                loc.admin1!,
+                                              loc.country,
+                                            ].join(', '),
+                                            style: GoogleFonts.poppins(
+                                              fontSize: 12,
+                                              color: AppColors.cream.withValues(
+                                                alpha: 0.6,
+                                              ),
+                                            ),
+                                          )
+                                        : null,
+                                    trailing: IconButton(
+                                      icon: Icon(
+                                        Icons.delete_outline,
+                                        color: AppColors.cream.withValues(
+                                          alpha: 0.6,
+                                        ),
+                                        size: 20,
+                                      ),
+                                      onPressed: () {
+                                        ref
+                                            .read(
+                                                savedLocationsProvider.notifier)
+                                            .removeLocation(loc.id);
+                                      },
+                                    ),
                                   ),
                                 ),
-                              ),
-                            ),
+                              );
+                            },
                           ),
 
                         const SizedBox(height: 24),
@@ -256,6 +278,9 @@ class SettingsScreen extends ConsumerWidget {
                                 ),
                                 inactiveThumbColor: AppColors.cream.withValues(
                                   alpha: 0.4,
+                                ),
+                                trackOutlineColor: WidgetStatePropertyAll(
+                                  AppColors.cream.withValues(alpha: 0.1),
                                 ),
                                 onChanged: (value) async {
                                   final granted = await ref

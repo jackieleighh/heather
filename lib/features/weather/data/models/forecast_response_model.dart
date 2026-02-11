@@ -29,21 +29,34 @@ class ForecastResponseModel {
   Map<String, dynamic> toJson() => _$ForecastResponseModelToJson(this);
 
   Forecast toEntity() {
-    final now = DateTime.now();
+    final deviceNow = DateTime.now();
+    final locationOffset = Duration(seconds: utcOffsetSeconds);
+    final now = deviceNow.add(locationOffset - deviceNow.timeZoneOffset);
+
+    final todayStart = DateTime(now.year, now.month, now.day);
+    final todayEnd = todayStart.add(const Duration(days: 1));
 
     final hourlyEntities = <HourlyWeather>[];
+    final hourlyTodayEntities = <HourlyWeather>[];
     for (var i = 0; i < hourly.time.length; i++) {
       final time = DateTime.parse(hourly.time[i]);
-      if (time.isBefore(now)) continue;
-      if (hourlyEntities.length >= 24) break;
-      hourlyEntities.add(HourlyWeather(
+      final entity = HourlyWeather(
         time: time,
         temperature: hourly.temperature2m[i],
         precipitationProbability: hourly.precipitationProbability[i],
         weatherCode: hourly.weatherCode[i],
         condition: WeatherCodes.fromWmo(hourly.weatherCode[i]),
         windSpeed: hourly.windSpeed10m[i],
-      ));
+      );
+      // All hours of today (midnight to midnight)
+      if (!time.isBefore(todayStart) && time.isBefore(todayEnd)) {
+        hourlyTodayEntities.add(entity);
+      }
+      // Current + future hours only (for hourly forecast page)
+      final currentHour = DateTime(now.year, now.month, now.day, now.hour);
+      if (time.isBefore(currentHour)) continue;
+      if (hourlyEntities.length >= 24) continue;
+      hourlyEntities.add(entity);
     }
 
     final dailyEntities = <DailyWeather>[];
@@ -58,6 +71,7 @@ class ForecastResponseModel {
         precipitationProbabilityMax: daily.precipitationProbabilityMax[i],
         sunrise: DateTime.parse(daily.sunrise[i]),
         sunset: DateTime.parse(daily.sunset[i]),
+        uvIndexMax: i < daily.uvIndexMax.length ? daily.uvIndexMax[i] : 0.0,
       ));
     }
 
@@ -75,6 +89,7 @@ class ForecastResponseModel {
         cloudCover: current.cloudCover,
       ),
       hourly: hourlyEntities,
+      hourlyToday: hourlyTodayEntities,
       daily: dailyEntities,
       utcOffsetSeconds: utcOffsetSeconds,
     );
@@ -166,6 +181,8 @@ class DailyResponseModel {
   final List<int> precipitationProbabilityMax;
   final List<String> sunrise;
   final List<String> sunset;
+  @JsonKey(name: 'uv_index_max', defaultValue: [])
+  final List<double> uvIndexMax;
 
   const DailyResponseModel({
     required this.time,
@@ -176,6 +193,7 @@ class DailyResponseModel {
     required this.precipitationProbabilityMax,
     required this.sunrise,
     required this.sunset,
+    required this.uvIndexMax,
   });
 
   factory DailyResponseModel.fromJson(Map<String, dynamic> json) =>

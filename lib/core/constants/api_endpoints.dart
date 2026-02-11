@@ -15,11 +15,22 @@ class ApiEndpoints {
       '&hourly=temperature_2m,precipitation_probability,weather_code,'
       'wind_speed_10m'
       '&daily=weather_code,temperature_2m_max,temperature_2m_min,'
-      'precipitation_sum,precipitation_probability_max,sunrise,sunset'
+      'precipitation_sum,precipitation_probability_max,sunrise,sunset,'
+      'uv_index_max'
       '&temperature_unit=fahrenheit'
       '&wind_speed_unit=mph'
       '&timezone=auto'
       '&forecast_days=7';
+
+  static const airQualityBase =
+      'https://air-quality-api.open-meteo.com/v1/air-quality';
+
+  static String airQuality({
+    required double latitude,
+    required double longitude,
+  }) =>
+      '$airQualityBase?latitude=$latitude&longitude=$longitude'
+      '&current=us_aqi';
 
   static String geocoding({
     required String query,

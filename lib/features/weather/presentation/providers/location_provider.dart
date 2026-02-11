@@ -41,6 +41,15 @@ class SavedLocationsNotifier extends StateNotifier<List<SavedLocation>> {
     await repository.removeLocation(id);
     state = await repository.getSavedLocations();
   }
+
+  Future<void> reorderLocations(int oldIndex, int newIndex) async {
+    final locations = [...state];
+    if (newIndex > oldIndex) newIndex--;
+    final item = locations.removeAt(oldIndex);
+    locations.insert(newIndex, item);
+    state = locations;
+    await repository.reorderLocations(locations);
+  }
 }
 
 final locationSearchProvider =
