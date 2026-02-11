@@ -12,6 +12,8 @@ import '../../data/sources/quip_remote_source.dart';
 import '../../data/sources/weather_remote_source.dart';
 import '../../domain/entities/forecast.dart';
 import '../../domain/entities/location_info.dart';
+import '../../domain/entities/weather.dart';
+import 'location_provider.dart';
 import 'settings_provider.dart';
 
 part 'weather_provider.freezed.dart';
@@ -66,6 +68,8 @@ final weatherStateProvider =
       ref.listen<SettingsState>(settingsProvider, (previous, next) {
         if (previous?.explicitLanguage != next.explicitLanguage) {
           notifier.updateExplicit(next.explicitLanguage);
+          // Batch-refresh Gemini quips for all locations with new tone
+          ref.read(batchQuipLoaderProvider).loadBatchQuips();
         }
         final notifChanged = previous?.notificationsEnabled !=
                 next.notificationsEnabled ||
@@ -103,7 +107,33 @@ class WeatherNotifier extends StateNotifier<WeatherState> {
 
   void updateExplicit(bool value) {
     _explicit = value;
-    _refreshQuip();
+    // Swap to a local quip immediately; batch loader will upgrade to Gemini
+    final current = state;
+    current.whenOrNull(
+      loaded: (forecast, location, _) {
+        state = WeatherState.loaded(
+          forecast: forecast,
+          location: location,
+          quip: quipRepo.getLocalQuip(
+            weather: forecast.current,
+            explicit: _explicit,
+          ),
+        );
+      },
+    );
+  }
+
+  void updateQuip(String quip) {
+    state.whenOrNull(
+      loaded: (forecast, location, _) {
+        state = WeatherState.loaded(
+          forecast: forecast,
+          location: location,
+          quip: quip,
+        );
+        _scheduleNotificationIfNeeded();
+      },
+    );
   }
 
   void updateNotificationSettings({
@@ -137,27 +167,6 @@ class WeatherNotifier extends StateNotifier<WeatherState> {
     );
   }
 
-  Future<void> _refreshQuip() async {
-    final current = state;
-    if (current is! _Loaded) return;
-
-    try {
-      final quip = await quipRepo.getQuip(
-        weather: current.forecast.current,
-        cityName: current.location.cityName,
-        explicit: _explicit,
-      );
-      if (!mounted) return;
-      state = WeatherState.loaded(
-        forecast: current.forecast,
-        location: current.location,
-        quip: quip,
-      );
-    } catch (_) {
-      // Keep existing quip on failure
-    }
-  }
-
   Future<void> loadWeather() async {
     state = const WeatherState.loading();
     try {
@@ -166,9 +175,9 @@ class WeatherNotifier extends StateNotifier<WeatherState> {
         latitude: location.latitude,
         longitude: location.longitude,
       );
-      final quip = await quipRepo.getQuip(
+      // Use instant local quip; batch loader will upgrade to Gemini
+      final quip = quipRepo.getLocalQuip(
         weather: forecast.current,
-        cityName: location.cityName,
         explicit: _explicit,
       );
       if (!mounted) return;
@@ -191,9 +200,8 @@ class WeatherNotifier extends StateNotifier<WeatherState> {
         latitude: location.latitude,
         longitude: location.longitude,
       );
-      final quip = await quipRepo.getQuip(
+      final quip = quipRepo.getLocalQuip(
         weather: forecast.current,
-        cityName: location.cityName,
         explicit: _explicit,
       );
       if (!mounted) return false;
@@ -272,27 +280,25 @@ class LocationForecastNotifier extends StateNotifier<LocationForecastState> {
 
   void updateExplicit(bool value) {
     _explicit = value;
-    _refreshQuip();
+    state.whenOrNull(
+      loaded: (forecast, _) {
+        state = LocationForecastState.loaded(
+          forecast: forecast,
+          quip: quipRepo.getLocalQuip(
+            weather: forecast.current,
+            explicit: _explicit,
+          ),
+        );
+      },
+    );
   }
 
-  Future<void> _refreshQuip() async {
-    final current = state;
-    if (current is! _LocationLoaded) return;
-
-    try {
-      final quip = await quipRepo.getQuip(
-        weather: current.forecast.current,
-        cityName: name,
-        explicit: _explicit,
-      );
-      if (!mounted) return;
-      state = LocationForecastState.loaded(
-        forecast: current.forecast,
-        quip: quip,
-      );
-    } catch (_) {
-      // Keep existing quip on failure
-    }
+  void updateQuip(String quip) {
+    state.whenOrNull(
+      loaded: (forecast, _) {
+        state = LocationForecastState.loaded(forecast: forecast, quip: quip);
+      },
+    );
   }
 
   Future<void> load() async {
@@ -302,9 +308,8 @@ class LocationForecastNotifier extends StateNotifier<LocationForecastState> {
         latitude: latitude,
         longitude: longitude,
       );
-      final quip = await quipRepo.getQuip(
+      final quip = quipRepo.getLocalQuip(
         weather: forecast.current,
-        cityName: name,
         explicit: _explicit,
       );
       if (!mounted) return;
@@ -321,9 +326,8 @@ class LocationForecastNotifier extends StateNotifier<LocationForecastState> {
         latitude: latitude,
         longitude: longitude,
       );
-      final quip = await quipRepo.getQuip(
+      final quip = quipRepo.getLocalQuip(
         weather: forecast.current,
-        cityName: name,
         explicit: _explicit,
       );
       if (!mounted) return false;
@@ -335,6 +339,69 @@ class LocationForecastNotifier extends StateNotifier<LocationForecastState> {
         state = LocationForecastState.error(e.toString());
       }
       return false;
+    }
+  }
+}
+
+// ── Batch quip loader ─────────────────────────────────────────────
+
+final batchQuipLoaderProvider = Provider<BatchQuipLoader>((ref) {
+  return BatchQuipLoader(ref);
+});
+
+class BatchQuipLoader {
+  final Ref _ref;
+
+  BatchQuipLoader(this._ref);
+
+  Future<void> loadBatchQuips() async {
+    final weatherState = _ref.read(weatherStateProvider);
+    final savedLocations = _ref.read(savedLocationsProvider);
+    final settings = _ref.read(settingsProvider);
+    final quipRepo = _ref.read(quipRepositoryProvider);
+
+    final locations = <({Weather weather, String cityName})>[];
+    String? gpsCityName;
+
+    weatherState.whenOrNull(
+      loaded: (forecast, location, _) {
+        gpsCityName = location.cityName;
+        locations.add((
+          weather: forecast.current,
+          cityName: location.cityName,
+        ));
+      },
+    );
+
+    for (final loc in savedLocations) {
+      final params = (name: loc.name, lat: loc.latitude, lon: loc.longitude);
+      final locState = _ref.read(locationForecastProvider(params));
+      locState.whenOrNull(
+        loaded: (forecast, _) {
+          locations.add((weather: forecast.current, cityName: loc.name));
+        },
+      );
+    }
+
+    if (locations.isEmpty) return;
+
+    final quips = await quipRepo.getBatchQuips(
+      locations: locations,
+      explicit: settings.explicitLanguage,
+    );
+
+    // Distribute quips to each notifier
+    if (gpsCityName != null && quips.containsKey(gpsCityName)) {
+      _ref.read(weatherStateProvider.notifier).updateQuip(quips[gpsCityName]!);
+    }
+
+    for (final loc in savedLocations) {
+      if (quips.containsKey(loc.name)) {
+        final params = (name: loc.name, lat: loc.latitude, lon: loc.longitude);
+        _ref
+            .read(locationForecastProvider(params).notifier)
+            .updateQuip(quips[loc.name]!);
+      }
     }
   }
 }

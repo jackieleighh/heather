@@ -66,7 +66,7 @@ class BackgroundGradients {
       AppColors.frostLavender,
       AppColors.coldIndigo,
     ],
-    TemperatureTier.prettyCold: [
+    TemperatureTier.jacketWeather: [
       AppColors.slateBlue,
       AppColors.icyBlue,
       AppColors.frostLavender,
@@ -103,7 +103,7 @@ class BackgroundGradients {
       AppColors.slateBlue,
       AppColors.mutedTeal,
     ],
-    TemperatureTier.prettyCold: [
+    TemperatureTier.jacketWeather: [
       AppColors.coldIndigo,
       AppColors.slateBlue,
       AppColors.mutedTeal,
@@ -139,19 +139,19 @@ class BackgroundGradients {
       AppColors.slateBlue,
     ],
     TemperatureTier.freezing: [
+      AppColors.coldIndigo,
       AppColors.slateBlue,
       AppColors.steelGrey,
-      AppColors.frostLavender,
     ],
-    TemperatureTier.prettyCold: [
+    TemperatureTier.jacketWeather: [
+      AppColors.slateBlue,
       AppColors.steelGrey,
-      AppColors.frostLavender,
-      AppColors.palePurple,
+      AppColors.mutedTeal,
     ],
     TemperatureTier.flannelWeather: [
       AppColors.teal,
       AppColors.mutedTeal,
-      AppColors.palePurple,
+      AppColors.slateBlue,
     ],
     TemperatureTier.shortsWeather: [
       AppColors.mustardYellow,
@@ -177,7 +177,7 @@ class BackgroundGradients {
       AppColors.coldIndigo,
       AppColors.slateBlue,
     ],
-    TemperatureTier.prettyCold: [
+    TemperatureTier.jacketWeather: [
       AppColors.midnightPurple,
       AppColors.slateBlue,
       AppColors.coldIndigo,
@@ -209,22 +209,22 @@ class BackgroundGradients {
     TemperatureTier.freezing: [
       AppColors.coldIndigo,
       AppColors.slateBlue,
-      AppColors.frostLavender,
-    ],
-    TemperatureTier.prettyCold: [
-      AppColors.slateBlue,
       AppColors.steelGrey,
-      AppColors.frostLavender,
+    ],
+    TemperatureTier.jacketWeather: [
+      AppColors.coldIndigo,
+      AppColors.slateBlue,
+      AppColors.mutedTeal,
     ],
     TemperatureTier.flannelWeather: [
       AppColors.deepPurple,
       AppColors.mutedTeal,
-      AppColors.fogSilver,
+      AppColors.slateBlue,
     ],
     TemperatureTier.shortsWeather: [
       AppColors.mutedTeal,
       AppColors.deepPurple,
-      AppColors.palePurple,
+      AppColors.slateBlue,
     ],
     TemperatureTier.scorcher: [
       AppColors.goldenYellow,
@@ -245,7 +245,7 @@ class BackgroundGradients {
       AppColors.coldIndigo,
       AppColors.steelGrey,
     ],
-    TemperatureTier.prettyCold: [
+    TemperatureTier.jacketWeather: [
       AppColors.midnightPurple,
       AppColors.coldIndigo,
       AppColors.slateBlue,
@@ -279,7 +279,7 @@ class BackgroundGradients {
       AppColors.frostLavender,
       AppColors.coldIndigo,
     ],
-    TemperatureTier.prettyCold: [
+    TemperatureTier.jacketWeather: [
       AppColors.slateBlue,
       AppColors.frostLavender,
       AppColors.slateBlue,
@@ -313,7 +313,7 @@ class BackgroundGradients {
       AppColors.coldIndigo,
       AppColors.steelGrey,
     ],
-    TemperatureTier.prettyCold: [
+    TemperatureTier.jacketWeather: [
       AppColors.midnightPurple,
       AppColors.slateBlue,
       AppColors.steelGrey,
@@ -347,7 +347,7 @@ class BackgroundGradients {
       AppColors.deepPurple,
       AppColors.frostLavender,
     ],
-    TemperatureTier.prettyCold: [
+    TemperatureTier.jacketWeather: [
       AppColors.slateBlue,
       AppColors.deepPurple,
       AppColors.frostLavender,
@@ -381,7 +381,7 @@ class BackgroundGradients {
       AppColors.coldIndigo,
       AppColors.steelGrey,
     ],
-    TemperatureTier.prettyCold: [
+    TemperatureTier.jacketWeather: [
       AppColors.midnightPurple,
       AppColors.coldIndigo,
       AppColors.slateBlue,
@@ -415,7 +415,7 @@ class BackgroundGradients {
       AppColors.slateBlue,
       AppColors.steelGrey,
     ],
-    TemperatureTier.prettyCold: [
+    TemperatureTier.jacketWeather: [
       AppColors.slateBlue,
       AppColors.mutedTeal,
       AppColors.steelGrey,
@@ -449,7 +449,7 @@ class BackgroundGradients {
       AppColors.coldIndigo,
       AppColors.steelGrey,
     ],
-    TemperatureTier.prettyCold: [
+    TemperatureTier.jacketWeather: [
       AppColors.midnightPurple,
       AppColors.coldIndigo,
       AppColors.slateBlue,
@@ -489,7 +489,7 @@ class BackgroundGradients {
       AppColors.icyBlue,
       AppColors.slateBlue,
     ],
-    TemperatureTier.prettyCold: [
+    TemperatureTier.jacketWeather: [
       AppColors.slateBlue,
       AppColors.icyBlue,
       AppColors.deepPurple,
@@ -523,7 +523,7 @@ class BackgroundGradients {
       AppColors.coldIndigo,
       AppColors.steelGrey,
     ],
-    TemperatureTier.prettyCold: [
+    TemperatureTier.jacketWeather: [
       AppColors.midnightPurple,
       AppColors.coldIndigo,
       AppColors.slateBlue,
@@ -557,7 +557,7 @@ class BackgroundGradients {
       AppColors.icyBlue,
       AppColors.frostLavender,
     ],
-    TemperatureTier.prettyCold: [
+    TemperatureTier.jacketWeather: [
       AppColors.slateBlue,
       AppColors.frostLavender,
       AppColors.palePurple,
@@ -591,7 +591,7 @@ class BackgroundGradients {
       AppColors.coldIndigo,
       AppColors.steelGrey,
     ],
-    TemperatureTier.prettyCold: [
+    TemperatureTier.jacketWeather: [
       AppColors.midnightPurple,
       AppColors.coldIndigo,
       AppColors.slateBlue,
@@ -625,7 +625,7 @@ class BackgroundGradients {
       AppColors.coldIndigo,
       AppColors.steelGrey,
     ],
-    TemperatureTier.prettyCold: [
+    TemperatureTier.jacketWeather: [
       AppColors.coldIndigo,
       AppColors.deepPurple,
       AppColors.steelGrey,
@@ -659,7 +659,7 @@ class BackgroundGradients {
       AppColors.coldIndigo,
       AppColors.steelGrey,
     ],
-    TemperatureTier.prettyCold: [
+    TemperatureTier.jacketWeather: [
       AppColors.midnightPurple,
       AppColors.coldIndigo,
       AppColors.slateBlue,
@@ -693,7 +693,7 @@ class BackgroundGradients {
       AppColors.coldIndigo,
       AppColors.slateBlue,
     ],
-    TemperatureTier.prettyCold: [
+    TemperatureTier.jacketWeather: [
       AppColors.midnightPurple,
       AppColors.darkTeal,
       AppColors.coldIndigo,
@@ -727,7 +727,7 @@ class BackgroundGradients {
       AppColors.coldIndigo,
       AppColors.slateBlue,
     ],
-    TemperatureTier.prettyCold: [
+    TemperatureTier.jacketWeather: [
       AppColors.midnightPurple,
       AppColors.coldIndigo,
       AppColors.deepPurple,
@@ -761,7 +761,7 @@ class BackgroundGradients {
       AppColors.slateBlue,
       AppColors.steelGrey,
     ],
-    TemperatureTier.prettyCold: [
+    TemperatureTier.jacketWeather: [
       AppColors.coldIndigo,
       AppColors.slateBlue,
       AppColors.icyBlue,
@@ -795,7 +795,7 @@ class BackgroundGradients {
       AppColors.coldIndigo,
       AppColors.steelGrey,
     ],
-    TemperatureTier.prettyCold: [
+    TemperatureTier.jacketWeather: [
       AppColors.midnightPurple,
       AppColors.coldIndigo,
       AppColors.slateBlue,

@@ -25,6 +25,7 @@ class _WeatherScreenState extends ConsumerState<WeatherScreen> {
   late PageController _horizontalController;
   bool _minTimeElapsed = false;
   bool _splashRemoved = false;
+  int _batchedLocationCount = -1;
   int _currentHorizontalPage = 1;
 
   @override
@@ -99,6 +100,10 @@ class _WeatherScreenState extends ConsumerState<WeatherScreen> {
         return ref.read(locationForecastProvider(params).notifier).refresh();
       }),
     ]);
+    // Batch-fetch fresh Gemini quips for all locations
+    if (mounted) {
+      ref.read(batchQuipLoaderProvider).loadBatchQuips();
+    }
     return results.every((success) => success);
   }
 
@@ -129,6 +134,19 @@ class _WeatherScreenState extends ConsumerState<WeatherScreen> {
     if (_minTimeElapsed && gpsReady && locationsReady && !_splashRemoved) {
       _splashRemoved = true;
       FlutterNativeSplash.remove();
+    }
+
+    // Batch-fetch Gemini quips once all weather data is loaded.
+    // Re-triggers when saved locations change (count tracks the set).
+    if (gpsReady && locationsReady) {
+      final currentCount = 1 + savedLocations.length;
+      if (currentCount != _batchedLocationCount) {
+        _batchedLocationCount = currentCount;
+        WidgetsBinding.instance.addPostFrameCallback((_) {
+          if (!mounted) return;
+          ref.read(batchQuipLoaderProvider).loadBatchQuips();
+        });
+      }
     }
 
     final content = state.when(
@@ -189,14 +207,14 @@ class _WeatherScreenState extends ConsumerState<WeatherScreen> {
                     end: Alignment.bottomCenter,
                     colors: bgIsDay
                         ? [
-                            AppColors.cream.withValues(alpha: 0.15),
-                            AppColors.cream.withValues(alpha: 0.05),
-                            AppColors.cream.withValues(alpha: 0.25),
-                          ]
-                        : [
                             AppColors.cream.withValues(alpha: 0.08),
                             AppColors.cream.withValues(alpha: 0.02),
                             AppColors.cream.withValues(alpha: 0.12),
+                          ]
+                        : [
+                            AppColors.cream.withValues(alpha: 0.05),
+                            AppColors.cream.withValues(alpha: 0.01),
+                            AppColors.cream.withValues(alpha: 0.08),
                           ],
                   ),
                 ),
