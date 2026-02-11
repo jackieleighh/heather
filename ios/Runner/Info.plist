@@ -49,6 +49,8 @@
 		<string>Heather needs your location to serve you the weather updates, babe.</string>
 		<key>NSLocationAlwaysUsageDescription</key>
 		<string>Heather needs your location to keep you posted on weather, even in the background.</string>
+		<key>NSLocationAlwaysAndWhenInUseUsageDescription</key>
+		<string>Heather needs your location to keep you posted on weather, even in the background.</string>
 		<key>UIStatusBarHidden</key>
 		<true/>
 		<key>UIViewControllerBasedStatusBarAppearance</key>
