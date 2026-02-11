@@ -45,18 +45,17 @@ class WeatherBackground extends StatelessWidget {
   }
 
   Widget _buildBackground() {
-    final colors = BackgroundGradients.forCondition(condition, _tier);
+    final colors =
+        BackgroundGradients.forCondition(condition, _tier, isDay: isDay);
     return switch (condition) {
       WeatherCondition.sunny =>
         isDay
             ? SunnyBackground(gradientColors: colors)
-            : ClearBackground(
-                isDay: isDay,
-                gradientColors: BackgroundGradients.sunnyNight(_tier),
-              ),
-      WeatherCondition.mostlySunny => MostlySunnyBackground(
-        gradientColors: colors,
-      ),
+            : ClearBackground(isDay: isDay, gradientColors: colors),
+      WeatherCondition.mostlySunny =>
+        isDay
+            ? MostlySunnyBackground(gradientColors: colors)
+            : ClearBackground(isDay: isDay, gradientColors: colors),
       WeatherCondition.partlyCloudy => PartlyCloudyBackground(
         gradientColors: colors,
       ),

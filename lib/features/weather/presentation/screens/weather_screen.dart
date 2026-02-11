@@ -184,18 +184,24 @@ class _WeatherScreenState extends ConsumerState<WeatherScreen> {
               isDay: bgIsDay,
               temperature: bgTemperature,
             ),
-            // Gradient scrim for text readability
+            // Gradient scrim for text readability (lighter at night)
             Positioned.fill(
               child: DecoratedBox(
                 decoration: BoxDecoration(
                   gradient: LinearGradient(
                     begin: Alignment.topCenter,
                     end: Alignment.bottomCenter,
-                    colors: [
-                      AppColors.cream.withValues(alpha: 0.15),
-                      AppColors.cream.withValues(alpha: 0.05),
-                      AppColors.cream.withValues(alpha: 0.25),
-                    ],
+                    colors: bgIsDay
+                        ? [
+                            AppColors.cream.withValues(alpha: 0.15),
+                            AppColors.cream.withValues(alpha: 0.05),
+                            AppColors.cream.withValues(alpha: 0.25),
+                          ]
+                        : [
+                            AppColors.cream.withValues(alpha: 0.08),
+                            AppColors.cream.withValues(alpha: 0.02),
+                            AppColors.cream.withValues(alpha: 0.12),
+                          ],
                   ),
                 ),
               ),

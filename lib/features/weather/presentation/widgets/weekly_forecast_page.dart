@@ -15,12 +15,6 @@ class WeeklyForecastPage extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    // Build rows of 2
-    final rows = <List<DailyWeather>>[];
-    for (var i = 0; i < daily.length; i += 2) {
-      rows.add(daily.sublist(i, (i + 2).clamp(0, daily.length)));
-    }
-
     return SafeArea(
       child: Padding(
         padding: const EdgeInsets.fromLTRB(16, 0, 16, 12),
@@ -45,19 +39,12 @@ class WeeklyForecastPage extends StatelessWidget {
               ),
             ),
             const SizedBox(height: 8),
-            ...rows.map(
+            ...daily.map(
               (row) => Expanded(
                 child: Padding(
                   padding: const EdgeInsets.only(bottom: 10),
                   child: Row(
-                    children: [
-                      Expanded(child: _DailyCard(daily: row[0])),
-                      const SizedBox(width: 10),
-                      if (row.length > 1)
-                        Expanded(child: _DailyCard(daily: row[1]))
-                      else
-                        const Expanded(child: SizedBox()),
-                    ],
+                    children: [Expanded(child: _DailyCard(daily: row))],
                   ),
                 ),
               ),
@@ -88,19 +75,19 @@ class _DailyCard extends StatelessWidget {
     return Container(
       clipBehavior: Clip.hardEdge,
       decoration: BoxDecoration(
-        color: AppColors.cream.withValues(alpha: 0.25),
+        color: AppColors.cream.withValues(alpha: 0.1),
         borderRadius: BorderRadius.circular(20),
       ),
       child: Stack(
         children: [
           // Large faded icon
           Positioned(
-            right: -12,
+            right: 0,
             top: 0,
             child: Icon(
               conditionIcon(daily.weatherCode),
-              color: AppColors.cream.withValues(alpha: 0.3),
-              size: 100,
+              color: AppColors.cream.withValues(alpha: 0.7),
+              size: 80,
             ),
           ),
           // Content on top
@@ -109,41 +96,53 @@ class _DailyCard extends StatelessWidget {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Text(
-                  dayStr,
-                  style: Theme.of(
-                    context,
-                  ).textTheme.bodyLarge?.copyWith(fontWeight: FontWeight.w600),
-                ),
-                Icon(
-                  moonPhaseIcon(daily.date),
-                  size: 20,
-                  color: AppColors.cream.withValues(alpha: 0.7),
-                ),
-                const Spacer(),
-                Text(
-                  '${daily.temperatureMax.round()}° / ${daily.temperatureMin.round()}°',
-                  style: Theme.of(context).textTheme.bodyLarge?.copyWith(
-                    fontWeight: FontWeight.w800,
-                    fontSize: 26,
-                  ),
-                ),
-                const SizedBox(height: 2),
-                Row(
+                Flex(
+                  direction: Axis.horizontal,
                   children: [
-                    Icon(
-                      WeatherIcons.raindrop,
-                      size: 15,
-                      color: AppColors.cream.withValues(alpha: 0.7),
-                    ),
-                    const SizedBox(width: 3),
                     Text(
-                      '${daily.precipitationProbabilityMax}%',
-                      style: GoogleFonts.poppins(
-                        fontSize: 14,
+                      dayStr,
+                      style: Theme.of(context).textTheme.bodyLarge?.copyWith(
                         fontWeight: FontWeight.w600,
-                        color: AppColors.cream,
                       ),
+                    ),
+                    const SizedBox(width: 6),
+                    Icon(
+                      moonPhaseIcon(daily.date),
+                      size: 20,
+                      color: AppColors.cream.withValues(alpha: 0.8),
+                    ),
+                  ],
+                ),
+                Flex(
+                  direction: Axis.horizontal,
+                  crossAxisAlignment: CrossAxisAlignment.end,
+                  children: [
+                    Text(
+                      '${daily.temperatureMax.round()}° / ${daily.temperatureMin.round()}°',
+                      style: Theme.of(context).textTheme.bodyLarge?.copyWith(
+                        fontWeight: FontWeight.w800,
+                        fontSize: 26,
+                      ),
+                    ),
+                    Flex(
+                      direction: Axis.horizontal,
+                      crossAxisAlignment: CrossAxisAlignment.end,
+                      children: [
+                        Icon(
+                          WeatherIcons.raindrop,
+                          size: 15,
+                          color: AppColors.cream.withValues(alpha: 0.7),
+                        ),
+                        const SizedBox(width: 3),
+                        Text(
+                          '${daily.precipitationProbabilityMax}%',
+                          style: GoogleFonts.poppins(
+                            fontSize: 14,
+                            fontWeight: FontWeight.w600,
+                            color: AppColors.cream,
+                          ),
+                        ),
+                      ],
                     ),
                   ],
                 ),
