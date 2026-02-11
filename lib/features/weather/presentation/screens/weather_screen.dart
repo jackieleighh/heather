@@ -33,7 +33,7 @@ class _WeatherScreenState extends ConsumerState<WeatherScreen> {
     super.initState();
     _horizontalController = PageController(initialPage: 1);
     _horizontalController.addListener(_onHorizontalPageChanged);
-    Future.delayed(const Duration(seconds: 4), () {
+    Future.delayed(const Duration(seconds: 3), () {
       if (mounted) setState(() => _minTimeElapsed = true);
     });
   }
@@ -74,7 +74,8 @@ class _WeatherScreenState extends ConsumerState<WeatherScreen> {
       WidgetsBinding.instance.addPostFrameCallback((_) {
         if (!mounted) return;
         final savedLocations = ref.read(savedLocationsProvider);
-        final targetPage = savedLocations.length; // GPS is page 0, last saved location is at this index
+        final targetPage = savedLocations
+            .length; // GPS is page 0, last saved location is at this index
         if (_horizontalController.hasClients) {
           _horizontalController.animateToPage(
             targetPage,
@@ -95,11 +96,7 @@ class _WeatherScreenState extends ConsumerState<WeatherScreen> {
     final results = await Future.wait([
       ref.read(weatherStateProvider.notifier).refresh(),
       ...savedLocations.map((loc) {
-        final params = (
-          name: loc.name,
-          lat: loc.latitude,
-          lon: loc.longitude,
-        );
+        final params = (name: loc.name, lat: loc.latitude, lon: loc.longitude);
         return ref.read(locationForecastProvider(params).notifier).refresh();
       }),
     ]);
@@ -139,7 +136,6 @@ class _WeatherScreenState extends ConsumerState<WeatherScreen> {
       error: (message) => ErrorScreen(
         message: message,
         onRetry: () => ref.read(weatherStateProvider.notifier).loadWeather(),
-        onSettings: _showSettings,
       ),
       loaded: (forecast, location, quip) {
         final pages = <Widget>[
@@ -160,7 +156,7 @@ class _WeatherScreenState extends ConsumerState<WeatherScreen> {
 
         // Determine active weather for background based on current page
         var bgCondition = forecast.current.condition;
-        var bgIsDay = forecast.current.isDay;
+        var bgIsDay = forecast.isCurrentlyDay;
         var bgTemperature = forecast.current.temperature;
 
         if (_currentHorizontalPage > 0) {
@@ -169,7 +165,7 @@ class _WeatherScreenState extends ConsumerState<WeatherScreen> {
             locationStates[locIndex].whenOrNull(
               loaded: (locForecast, _) {
                 bgCondition = locForecast.current.condition;
-                bgIsDay = locForecast.current.isDay;
+                bgIsDay = locForecast.isCurrentlyDay;
                 bgTemperature = locForecast.current.temperature;
               },
             );
@@ -214,7 +210,7 @@ class _WeatherScreenState extends ConsumerState<WeatherScreen> {
               children: pages,
             ),
             Positioned(
-              bottom: MediaQuery.paddingOf(context).bottom + 12,
+              bottom: MediaQuery.paddingOf(context).bottom,
               left: 0,
               right: 0,
               child: _HorizontalPageIndicator(
@@ -263,7 +259,7 @@ class _WeatherScreenState extends ConsumerState<WeatherScreen> {
               ignoring: _splashComplete,
               child: AnimatedOpacity(
                 opacity: _splashComplete ? 0.0 : 1.0,
-                duration: const Duration(milliseconds: 2000),
+                duration: const Duration(milliseconds: 700),
                 onEnd: () => setState(() => _splashFaded = true),
                 child: const LoadingScreen(),
               ),

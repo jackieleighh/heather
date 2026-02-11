@@ -26,8 +26,7 @@ class SavedLocationsPage extends ConsumerWidget {
 
     return state.when(
       loading: () => const _MiniLoadingView(),
-      error: (message) => _MiniErrorView(
-        message: message,
+      error: (_) => _MiniErrorView(
         onRetry: () =>
             ref.read(locationForecastProvider(params).notifier).load(),
       ),
@@ -63,10 +62,9 @@ class _MiniLoadingView extends StatelessWidget {
 }
 
 class _MiniErrorView extends StatelessWidget {
-  final String message;
   final VoidCallback onRetry;
 
-  const _MiniErrorView({required this.message, required this.onRetry});
+  const _MiniErrorView({required this.onRetry});
 
   @override
   Widget build(BuildContext context) {

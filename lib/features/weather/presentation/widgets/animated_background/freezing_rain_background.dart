@@ -80,13 +80,15 @@ class _FreezingRainPainter extends CustomPainter {
             y: random.nextDouble() * size.height,
             speed: 3.0 + random.nextDouble() * 7.0,
             size: 1.0 + random.nextDouble() * 2.0,
-            opacity: 0.25 + random.nextDouble() * 0.5,
+            opacity: 0.1 + random.nextDouble() * 0.3,
           ),
         );
       }
     }
 
-    final paint = Paint()..strokeCap = StrokeCap.round;
+    final paint = Paint()
+      ..strokeCap = StrokeCap.butt
+      ..blendMode = BlendMode.plus;
 
     for (final drop in drops) {
       drop.y += drop.speed;

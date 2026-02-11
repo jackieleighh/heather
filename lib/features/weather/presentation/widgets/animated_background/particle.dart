@@ -6,7 +6,6 @@ class Particle {
   double speed;
   double size;
   double opacity;
-  double angle;
   double wobble;
 
   Particle({
@@ -15,7 +14,6 @@ class Particle {
     required this.speed,
     required this.size,
     this.opacity = 1.0,
-    this.angle = 0.0,
     this.wobble = 0.0,
   });
 

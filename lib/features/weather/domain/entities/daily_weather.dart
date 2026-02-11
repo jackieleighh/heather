@@ -14,5 +14,7 @@ class DailyWeather with _$DailyWeather {
     required WeatherCondition condition,
     required double precipitationSum,
     required int precipitationProbabilityMax,
+    required DateTime sunrise,
+    required DateTime sunset,
   }) = _DailyWeather;
 }

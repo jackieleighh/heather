@@ -137,7 +137,7 @@ class _NightClearPainter extends CustomPainter {
 
     for (final star in stars) {
       final twinkle = (sin(time * star.twinkleSpeed + star.phase) + 1) / 2;
-      final opacity = 0.3 + twinkle * 0.7;
+      final opacity = 0.1 + twinkle * 0.3;
 
       paint.color = Colors.white.withValues(alpha: opacity);
       canvas.drawCircle(

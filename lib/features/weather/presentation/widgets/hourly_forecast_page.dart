@@ -26,11 +26,24 @@ class _HourlyForecastPageState extends State<HourlyForecastPage> {
   final _scrollController = ScrollController();
   static const _overscrollThreshold = 60.0;
   bool _pageChanging = false;
+  double _topFade = 0.0;
+
+  @override
+  void initState() {
+    super.initState();
+    _scrollController.addListener(_updateTopFade);
+  }
 
   @override
   void dispose() {
+    _scrollController.removeListener(_updateTopFade);
     _scrollController.dispose();
     super.dispose();
+  }
+
+  void _updateTopFade() {
+    final t = (_scrollController.offset / 40.0).clamp(0.0, 1.0);
+    if (t != _topFade) setState(() => _topFade = t);
   }
 
   bool _handleScrollNotification(ScrollNotification notification) {
@@ -106,18 +119,33 @@ class _HourlyForecastPageState extends State<HourlyForecastPage> {
             ),
           ),
           Expanded(
-            child: NotificationListener<ScrollNotification>(
-              onNotification: _handleScrollNotification,
-              child: ListView.builder(
-                controller: _scrollController,
-                physics: const BouncingScrollPhysics(),
-                padding: const EdgeInsets.symmetric(horizontal: 28),
-                itemCount: widget.hourly.length,
-                itemBuilder: (context, index) =>
-                    _HourlyRow(hourly: widget.hourly[index]),
+            child: ShaderMask(
+              shaderCallback: (bounds) => LinearGradient(
+                begin: Alignment.topCenter,
+                end: Alignment.bottomCenter,
+                colors: [
+                  Colors.white.withValues(alpha: 1.0 - _topFade),
+                  Colors.white,
+                  Colors.white,
+                  Colors.transparent,
+                ],
+                stops: const [0.0, 0.05, 0.95, 1.0],
+              ).createShader(bounds),
+              blendMode: BlendMode.dstIn,
+              child: NotificationListener<ScrollNotification>(
+                onNotification: _handleScrollNotification,
+                child: ListView.builder(
+                  controller: _scrollController,
+                  physics: const BouncingScrollPhysics(),
+                  padding: const EdgeInsets.symmetric(horizontal: 28),
+                  itemCount: widget.hourly.length,
+                  itemBuilder: (context, index) =>
+                      _HourlyRow(hourly: widget.hourly[index]),
+                ),
               ),
             ),
           ),
+          const SizedBox(height: 12),
         ],
       ),
     );

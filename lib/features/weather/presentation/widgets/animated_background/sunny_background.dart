@@ -71,22 +71,31 @@ class _SunnyPainter extends CustomPainter {
       ..style = PaintingStyle.fill
       ..maskFilter = const MaskFilter.blur(BlurStyle.normal, 40);
 
-    glowPaint.color = Colors.white.withValues(alpha: 0.15 + sin(time) * 0.05);
+    glowPaint.color = Colors.white.withValues(alpha: 0.3 + sin(time) * 0.05);
     canvas.drawCircle(center, 120, glowPaint);
 
-    glowPaint.color = Colors.white.withValues(alpha: 0.2 + sin(time) * 0.05);
+    glowPaint.color = Colors.white.withValues(alpha: 0.45 + sin(time) * 0.05);
     canvas.drawCircle(center, 70, glowPaint);
 
-    // Sun rays
+    // Sun rays — soft, varied, organic
     final rayPaint = Paint()
       ..style = PaintingStyle.stroke
-      ..strokeWidth = 2.5
-      ..color = Colors.white.withValues(alpha: 0.12);
+      ..strokeCap = StrokeCap.round
+      ..maskFilter = const MaskFilter.blur(BlurStyle.normal, 6);
 
-    for (var i = 0; i < 12; i++) {
-      final angle = (i * pi / 6) + time * 0.3;
-      final innerRadius = 60.0 + sin(time * 2 + i) * 5;
-      final outerRadius = 140.0 + sin(time + i * 0.5) * 20;
+    for (var i = 0; i < 10; i++) {
+      final baseAngle = i * pi / 5;
+      // Each ray drifts at its own speed
+      final angle = baseAngle + time * (0.12 + i * 0.008);
+      // Breathing inner/outer radii per ray
+      final innerRadius = 65.0 + sin(time * 0.8 + i * 1.1) * 8;
+      final outerRadius = 135.0 + sin(time * 0.5 + i * 0.7) * 25;
+      final width = 6.0 + sin(time * 0.6 + i * 2.0) * 2.5;
+      final opacity = 0.18 + sin(time * 0.4 + i * 1.5).abs() * 0.12;
+
+      rayPaint
+        ..strokeWidth = width
+        ..color = Colors.white.withValues(alpha: opacity);
 
       canvas.drawLine(
         Offset(
@@ -99,17 +108,6 @@ class _SunnyPainter extends CustomPainter {
         ),
         rayPaint,
       );
-    }
-
-    // Shimmer particles
-    final shimmerPaint = Paint()..style = PaintingStyle.fill;
-    for (var i = 0; i < 20; i++) {
-      final px = (sin(time * 0.5 + i * 1.3) * 0.5 + 0.5) * size.width;
-      final py = (cos(time * 0.3 + i * 1.7) * 0.5 + 0.5) * size.height;
-      final opacity = (sin(time * 2 + i) * 0.5 + 0.5) * 0.15;
-
-      shimmerPaint.color = Colors.white.withValues(alpha: opacity);
-      canvas.drawCircle(Offset(px, py), 2, shimmerPaint);
     }
   }
 

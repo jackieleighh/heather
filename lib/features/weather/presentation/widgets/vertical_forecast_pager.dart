@@ -66,21 +66,18 @@ class _VerticalForecastPagerState extends State<VerticalForecastPager> {
               parentPageController: _pageController,
             ),
             WeeklyForecastPage(daily: widget.forecast.daily),
-            RadarPage(
-              latitude: widget.latitude,
-              longitude: widget.longitude,
-            ),
+            RadarPage(latitude: widget.latitude, longitude: widget.longitude),
           ],
         ),
 
         // Page indicator dots
         Positioned(
-          right: 12,
+          right: 10,
           top: 0,
           bottom: 0,
           child: Center(
             child: Container(
-              padding: const EdgeInsets.only(left: 2),
+              padding: const EdgeInsets.only(left: 10),
               child: Column(
                 mainAxisSize: MainAxisSize.min,
                 children: List.generate(4, (index) {

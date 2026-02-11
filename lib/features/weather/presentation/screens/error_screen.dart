@@ -4,13 +4,11 @@ import '../../../../core/constants/app_colors.dart';
 class ErrorScreen extends StatelessWidget {
   final String message;
   final VoidCallback onRetry;
-  final VoidCallback onSettings;
 
   const ErrorScreen({
     super.key,
     required this.message,
     required this.onRetry,
-    required this.onSettings,
   });
 
   @override

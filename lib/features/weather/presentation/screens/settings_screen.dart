@@ -63,13 +63,13 @@ class SettingsScreen extends ConsumerWidget {
                       ),
                       children: [
                         // ── Saved Locations ──
-                        const _SectionHeader(title: 'Saved Locations'),
+                        const _SectionHeader(title: 'Saved locations'),
                         const SizedBox(height: 4),
                         if (savedLocations.isEmpty)
                           Padding(
                             padding: const EdgeInsets.only(bottom: 16),
                             child: Text(
-                              'No saved locations yet. Swipe left on the main screen to add cities.',
+                              'Um... No saved locations yet.  This is awkward.',
                               style: GoogleFonts.poppins(
                                 fontSize: 13,
                                 color: AppColors.cream.withValues(alpha: 0.6),
@@ -176,7 +176,7 @@ class SettingsScreen extends ConsumerWidget {
                               vertical: 4,
                             ),
                             title: Text(
-                              'R Rated',
+                              'Explicit and kinda mean',
                               style: GoogleFonts.poppins(
                                 fontSize: 15,
                                 fontWeight: FontWeight.w500,
@@ -230,7 +230,7 @@ class SettingsScreen extends ConsumerWidget {
                                   vertical: 4,
                                 ),
                                 title: Text(
-                                  'Daily Weather Alert',
+                                  'Daily weather alert',
                                   style: GoogleFonts.poppins(
                                     fontSize: 15,
                                     fontWeight: FontWeight.w500,
@@ -238,7 +238,7 @@ class SettingsScreen extends ConsumerWidget {
                                   ),
                                 ),
                                 subtitle: Text(
-                                  'Get a daily weather quip from Heather.',
+                                  'Get a daily weather update from Heather.',
                                   style: GoogleFonts.poppins(
                                     fontSize: 12,
                                     color: AppColors.cream.withValues(
@@ -281,7 +281,7 @@ class SettingsScreen extends ConsumerWidget {
                                     horizontal: 16,
                                   ),
                                   title: Text(
-                                    'Notification Time',
+                                    'Notification time',
                                     style: GoogleFonts.poppins(
                                       fontSize: 15,
                                       fontWeight: FontWeight.w500,

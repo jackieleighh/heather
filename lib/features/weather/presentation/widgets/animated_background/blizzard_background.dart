@@ -78,7 +78,7 @@ class _BlizzardPainter extends CustomPainter {
             y: random.nextDouble() * size.height,
             speed: 2.0 + random.nextDouble() * 5.0,
             size: 2.0 + random.nextDouble() * 6.0,
-            opacity: 0.3 + random.nextDouble() * 0.7,
+            opacity: 0.1 + random.nextDouble() * 0.3,
             wobble: random.nextDouble() * 2 * pi,
           ),
         );

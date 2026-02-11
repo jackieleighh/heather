@@ -45,6 +45,12 @@ class HeatherTheme {
       fontWeight: FontWeight.w500,
       color: AppColors.cream,
     ),
+    // Loading tagline
+    headlineSmall: GoogleFonts.poppins(
+      fontSize: 14,
+      fontWeight: FontWeight.w500,
+      color: AppColors.cream,
+    ),
     // Body
     bodyLarge: GoogleFonts.inter(
       fontSize: 20,

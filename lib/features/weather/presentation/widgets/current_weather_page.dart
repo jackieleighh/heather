@@ -120,7 +120,11 @@ class _CurrentWeatherPageState extends State<CurrentWeatherPage> {
                       const Spacer(flex: 2),
                       LocationHeader(cityName: widget.cityName),
                       const SizedBox(height: 4),
-                      TemperatureDisplay(temperature: weather.temperature),
+                      TemperatureDisplay(
+                        temperature: weather.temperature,
+                        high: widget.forecast.daily.first.temperatureMax,
+                        low: widget.forecast.daily.first.temperatureMin,
+                      ),
                       const SizedBox(height: 24),
                       Align(
                         alignment: Alignment.centerRight,

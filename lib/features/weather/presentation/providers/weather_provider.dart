@@ -124,9 +124,11 @@ class WeatherNotifier extends StateNotifier<WeatherState> {
       return;
     }
 
-    final temp = current.forecast.current.temperature.round();
+    final today = current.forecast.daily.first;
+    final high = today.temperatureMax.round();
+    final low = today.temperatureMin.round();
     final description = current.forecast.current.description.toLowerCase();
-    final body = "It's $temp degrees and $description. ${current.quip}";
+    final body = 'H:$high° L:$low° and $description. ${current.quip}';
     NotificationService().scheduleDailyNotification(
       hour: _notificationTime.hour,
       minute: _notificationTime.minute,

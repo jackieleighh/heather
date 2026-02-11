@@ -78,7 +78,7 @@ class _SnowPainter extends CustomPainter {
             y: random.nextDouble() * size.height,
             speed: 0.5 + random.nextDouble() * 2.0,
             size: 2.0 + random.nextDouble() * 5.0,
-            opacity: 0.4 + random.nextDouble() * 0.6,
+            opacity: 0.1 + random.nextDouble() * 0.3,
             wobble: random.nextDouble() * 2 * pi,
           ),
         );

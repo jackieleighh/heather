@@ -17,7 +17,7 @@ class WeeklyForecastPage extends StatelessWidget {
   Widget build(BuildContext context) {
     return SafeArea(
       child: Padding(
-        padding: const EdgeInsets.fromLTRB(16, 0, 16, 12),
+        padding: const EdgeInsets.fromLTRB(16, 0, 26, 12),
         child: Column(
           children: [
             // Header row — aligned with top icon bar
@@ -124,9 +124,10 @@ class _DailyCard extends StatelessWidget {
                         fontSize: 26,
                       ),
                     ),
+                    const SizedBox(width: 6),
                     Flex(
                       direction: Axis.horizontal,
-                      crossAxisAlignment: CrossAxisAlignment.end,
+                      crossAxisAlignment: CrossAxisAlignment.center,
                       children: [
                         Icon(
                           WeatherIcons.raindrop,

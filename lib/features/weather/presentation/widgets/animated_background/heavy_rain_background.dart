@@ -66,20 +66,22 @@ class _HeavyRainPainter extends CustomPainter {
   @override
   void paint(Canvas canvas, Size size) {
     if (drops.isEmpty) {
-      for (var i = 0; i < 350; i++) {
+      for (var i = 0; i < 200; i++) {
         drops.add(
           Particle(
             x: random.nextDouble() * size.width,
             y: random.nextDouble() * size.height,
-            speed: 8.0 + random.nextDouble() * 12.0,
-            size: 1.2 + random.nextDouble() * 2.5,
-            opacity: 0.2 + random.nextDouble() * 0.5,
+            speed: 6.0 + random.nextDouble() * 8.0,
+            size: 1.0 + random.nextDouble() * 2.0,
+            opacity: 0.1 + random.nextDouble() * 0.3,
           ),
         );
       }
     }
 
-    final paint = Paint()..strokeCap = StrokeCap.round;
+    final paint = Paint()
+      ..strokeCap = StrokeCap.butt
+      ..blendMode = BlendMode.plus;
 
     for (final drop in drops) {
       drop.y += drop.speed;

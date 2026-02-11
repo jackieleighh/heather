@@ -66,20 +66,22 @@ class _RainPainter extends CustomPainter {
   @override
   void paint(Canvas canvas, Size size) {
     if (drops.isEmpty) {
-      for (var i = 0; i < 200; i++) {
+      for (var i = 0; i < 120; i++) {
         drops.add(
           Particle(
             x: random.nextDouble() * size.width,
             y: random.nextDouble() * size.height,
-            speed: 4.0 + random.nextDouble() * 8.0,
-            size: 1.0 + random.nextDouble() * 2.0,
-            opacity: 0.2 + random.nextDouble() * 0.5,
+            speed: 4.0 + random.nextDouble() * 5.0,
+            size: 0.8 + random.nextDouble() * 1.5,
+            opacity: 0.1 + random.nextDouble() * 0.3,
           ),
         );
       }
     }
 
-    final paint = Paint()..strokeCap = StrokeCap.round;
+    final paint = Paint()
+      ..strokeCap = StrokeCap.butt
+      ..blendMode = BlendMode.plus;
 
     for (final drop in drops) {
       drop.y += drop.speed;

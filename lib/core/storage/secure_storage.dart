@@ -19,7 +19,4 @@ class SecureStorage {
     return _storage.read(key: _geminiKeyKey);
   }
 
-  Future<void> deleteGeminiKey() async {
-    await _storage.delete(key: _geminiKeyKey);
-  }
 }

@@ -13,11 +13,14 @@ class ForecastResponseModel {
   final CurrentWeatherModel current;
   final HourlyResponseModel hourly;
   final DailyResponseModel daily;
+  @JsonKey(name: 'utc_offset_seconds', defaultValue: 0)
+  final int utcOffsetSeconds;
 
   const ForecastResponseModel({
     required this.current,
     required this.hourly,
     required this.daily,
+    required this.utcOffsetSeconds,
   });
 
   factory ForecastResponseModel.fromJson(Map<String, dynamic> json) =>
@@ -53,6 +56,8 @@ class ForecastResponseModel {
         condition: WeatherCodes.fromWmo(daily.weatherCode[i]),
         precipitationSum: daily.precipitationSum[i],
         precipitationProbabilityMax: daily.precipitationProbabilityMax[i],
+        sunrise: DateTime.parse(daily.sunrise[i]),
+        sunset: DateTime.parse(daily.sunset[i]),
       ));
     }
 
@@ -71,6 +76,7 @@ class ForecastResponseModel {
       ),
       hourly: hourlyEntities,
       daily: dailyEntities,
+      utcOffsetSeconds: utcOffsetSeconds,
     );
   }
 }
@@ -158,6 +164,8 @@ class DailyResponseModel {
   final List<double> precipitationSum;
   @JsonKey(name: 'precipitation_probability_max')
   final List<int> precipitationProbabilityMax;
+  final List<String> sunrise;
+  final List<String> sunset;
 
   const DailyResponseModel({
     required this.time,
@@ -166,6 +174,8 @@ class DailyResponseModel {
     required this.temperature2mMin,
     required this.precipitationSum,
     required this.precipitationProbabilityMax,
+    required this.sunrise,
+    required this.sunset,
   });
 
   factory DailyResponseModel.fromJson(Map<String, dynamic> json) =>

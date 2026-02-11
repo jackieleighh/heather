@@ -101,70 +101,27 @@ class _HailPainter extends CustomPainter {
 
   @override
   void paint(Canvas canvas, Size size) {
-    // Rain drops
-    if (drops.isEmpty) {
-      for (var i = 0; i < 200; i++) {
-        drops.add(
-          Particle(
-            x: random.nextDouble() * size.width,
-            y: random.nextDouble() * size.height,
-            speed: 6.0 + random.nextDouble() * 8.0,
-            size: 1.0 + random.nextDouble() * 1.5,
-            opacity: 0.15 + random.nextDouble() * 0.3,
-          ),
-        );
-      }
-    }
-
-    // Hail stones
     if (hailStones.isEmpty) {
-      for (var i = 0; i < 40; i++) {
+      for (var i = 0; i < 120; i++) {
         hailStones.add(
           Particle(
             x: random.nextDouble() * size.width,
             y: random.nextDouble() * size.height,
-            speed: 5.0 + random.nextDouble() * 8.0,
-            size: 3.0 + random.nextDouble() * 5.0,
-            opacity: 0.5 + random.nextDouble() * 0.5,
-            wobble: random.nextDouble() * 2 * pi,
+            speed: 4.0 + random.nextDouble() * 8.0,
+            size: 2.0 + random.nextDouble() * 4.0,
+            opacity: 0.1 + random.nextDouble() * 0.3,
           ),
         );
       }
     }
 
-    // Draw rain
-    final rainPaint = Paint()..strokeCap = StrokeCap.round;
-
-    for (final drop in drops) {
-      drop.y += drop.speed;
-      drop.x += 1.2;
-
-      if (drop.y > size.height) {
-        drop.y = -10;
-        drop.x = random.nextDouble() * size.width;
-      }
-      if (drop.x > size.width) drop.x = 0;
-
-      rainPaint
-        ..color = Colors.white.withValues(alpha: drop.opacity)
-        ..strokeWidth = drop.size;
-
-      canvas.drawLine(
-        Offset(drop.x, drop.y),
-        Offset(drop.x + 1.2, drop.y + 14 + drop.speed),
-        rainPaint,
-      );
-    }
-
-    // Draw hail stones
-    final hailPaint = Paint()..style = PaintingStyle.fill;
-    final hailBorderPaint = Paint()
-      ..style = PaintingStyle.stroke
-      ..strokeWidth = 0.8;
+    final paint = Paint()
+      ..style = PaintingStyle.fill
+      ..blendMode = BlendMode.plus;
 
     for (final stone in hailStones) {
       stone.y += stone.speed;
-      stone.x += 0.8;
+      stone.x += 0.5;
 
       if (stone.y > size.height) {
         stone.y = -10;
@@ -172,17 +129,8 @@ class _HailPainter extends CustomPainter {
       }
       if (stone.x > size.width) stone.x = 0;
 
-      hailPaint.color = Colors.white.withValues(alpha: stone.opacity * 0.6);
-      hailBorderPaint.color = Colors.white.withValues(
-        alpha: stone.opacity * 0.8,
-      );
-
-      canvas.drawCircle(Offset(stone.x, stone.y), stone.size / 2, hailPaint);
-      canvas.drawCircle(
-        Offset(stone.x, stone.y),
-        stone.size / 2,
-        hailBorderPaint,
-      );
+      paint.color = Colors.white.withValues(alpha: stone.opacity);
+      canvas.drawCircle(Offset(stone.x, stone.y), stone.size / 2, paint);
     }
 
     // Lightning flash

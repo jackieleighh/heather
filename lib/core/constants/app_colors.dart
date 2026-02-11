@@ -36,4 +36,5 @@ class AppColors {
   static const heatPink = Color(0xFFC4386A);
   static const warmCoral = Color(0xFFE06040);
   static const goldenYellow = Color(0xFFD4A017);
+  static const orangeRed = Color(0xFFdb0000);
 }

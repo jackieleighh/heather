@@ -73,13 +73,15 @@ class _DrizzlePainter extends CustomPainter {
             y: random.nextDouble() * size.height,
             speed: 2.0 + random.nextDouble() * 4.0,
             size: 0.8 + random.nextDouble() * 1.2,
-            opacity: 0.15 + random.nextDouble() * 0.3,
+            opacity: 0.1 + random.nextDouble() * 0.3,
           ),
         );
       }
     }
 
-    final paint = Paint()..strokeCap = StrokeCap.round;
+    final paint = Paint()
+      ..strokeCap = StrokeCap.butt
+      ..blendMode = BlendMode.plus;
 
     for (final drop in drops) {
       drop.y += drop.speed;
