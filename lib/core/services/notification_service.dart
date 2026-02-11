@@ -1,3 +1,5 @@
+import 'dart:math';
+
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import 'package:flutter_timezone/flutter_timezone.dart';
 import 'package:timezone/data/latest_all.dart' as tz;
@@ -11,6 +13,33 @@ class NotificationService {
   static const _channelId = 'heather_daily_weather';
   static const _channelName = 'Daily Weather';
   static const _notificationId = 0;
+
+  static final _random = Random();
+
+  static const _titles = [
+    'Wake up, babe',
+    'Weather check',
+    'Your daily briefing',
+    'Heads up',
+    'Before you leave...',
+    'Real quick',
+    'Outside report',
+    'Read this first',
+    'Hot take on today',
+    'The sky called',
+    'Dress accordingly',
+    'You\'re welcome',
+    'Today\'s damage report',
+    'Breaking weather news',
+    'Outfit advisory',
+    'FYI',
+    'Weather report incoming',
+    'Got your weather, bestie',
+    'Rise and shine, babe',
+    'Best day ever',
+  ];
+
+  static String get randomTitle => _titles[_random.nextInt(_titles.length)];
 
   final _plugin = FlutterLocalNotificationsPlugin();
   bool _initialized = false;

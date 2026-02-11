@@ -71,8 +71,8 @@ final weatherStateProvider =
           // Batch-refresh Gemini quips for all locations with new tone
           ref.read(batchQuipLoaderProvider).loadBatchQuips();
         }
-        final notifChanged = previous?.notificationsEnabled !=
-                next.notificationsEnabled ||
+        final notifChanged =
+            previous?.notificationsEnabled != next.notificationsEnabled ||
             previous?.notificationTime != next.notificationTime;
         if (notifChanged) {
           notifier.updateNotificationSettings(
@@ -98,10 +98,10 @@ class WeatherNotifier extends StateNotifier<WeatherState> {
     required bool explicit,
     required bool notificationsEnabled,
     required TimeOfDay notificationTime,
-  })  : _explicit = explicit,
-        _notificationsEnabled = notificationsEnabled,
-        _notificationTime = notificationTime,
-        super(const WeatherState.loading()) {
+  }) : _explicit = explicit,
+       _notificationsEnabled = notificationsEnabled,
+       _notificationTime = notificationTime,
+       super(const WeatherState.loading()) {
     loadWeather();
   }
 
@@ -162,7 +162,7 @@ class WeatherNotifier extends StateNotifier<WeatherState> {
     NotificationService().scheduleDailyNotification(
       hour: _notificationTime.hour,
       minute: _notificationTime.minute,
-      title: 'Heather',
+      title: NotificationService.randomTitle,
       body: body,
     );
   }
@@ -273,8 +273,8 @@ class LocationForecastNotifier extends StateNotifier<LocationForecastState> {
     required this.latitude,
     required this.longitude,
     required bool explicit,
-  })  : _explicit = explicit,
-        super(const LocationForecastState.loading()) {
+  }) : _explicit = explicit,
+       super(const LocationForecastState.loading()) {
     load();
   }
 
@@ -366,10 +366,7 @@ class BatchQuipLoader {
     weatherState.whenOrNull(
       loaded: (forecast, location, _) {
         gpsCityName = location.cityName;
-        locations.add((
-          weather: forecast.current,
-          cityName: location.cityName,
-        ));
+        locations.add((weather: forecast.current, cityName: location.cityName));
       },
     );
 
