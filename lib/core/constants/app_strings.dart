@@ -239,7 +239,7 @@ class AppStrings {
         'No sun and brisk air. It\'s 40 degrees, not the apocalypse. Grab a jacket.',
         'Cloudy and cold-ish. A solid jacket means you have no reason to stay in.',
         'Overcast in the 30s-40s. Jacket weather\'s the only vibe today. Get out.',
-        'Grey and bracing. Go get a coffee and stop complaining about the chill.',
+        'Grey and gloomy. Go get a coffee and stop complaining about the chill.',
         'The clouds are out and it\'s definitely jacket weather. Go be productive.',
       ],
       TemperatureTier.flannelWeather: [
@@ -1065,7 +1065,7 @@ class AppStrings {
         'No sun and brisk air. It\'s 40 degrees, not the apocalypse. Grab a jacket.',
         'Cloudy and cold-ish. A solid jacket means you have no reason to stay in.',
         'Overcast in the 30s-40s. Jacket weather’s the only vibe today. Get out.',
-        'Grey and bracing. Go get a coffee and stop complaining about the chill.',
+        'Grey and gloomy. Go get a coffee and stop complaining about the chill.',
         'The clouds are out and it\'s definitely jacket weather. Go be productive.',
       ],
       TemperatureTier.flannelWeather: [

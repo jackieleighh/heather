@@ -64,7 +64,9 @@ class _MostlySunnyPainter extends CustomPainter {
 
   @override
   void paint(Canvas canvas, Size size) {
-    final center = Offset(size.width * 0.8, size.height * 0.12);
+    final w = size.width;
+    final h = size.height;
+    final center = Offset(w * 0.8, h * 0.12);
 
     // Sun glow
     final glowPaint = Paint()
@@ -101,19 +103,75 @@ class _MostlySunnyPainter extends CustomPainter {
       );
     }
 
-    // A few wispy clouds
-    final cloudPaint = Paint()
+    // Light cumulus clouds — visible but not dominant
+    _drawCloud(
+      canvas,
+      center: Offset(w * 0.15 + sin(time * 0.2) * 20, h * 0.18),
+      scale: w * 0.38,
+      alpha: 0.30,
+    );
+
+    _drawCloud(
+      canvas,
+      center: Offset(w * 0.58 + sin(time * 0.17 + 1.5) * 18, h * 0.38),
+      scale: w * 0.42,
+      alpha: 0.28,
+    );
+
+    _drawCloud(
+      canvas,
+      center: Offset(w * 0.30 + sin(time * 0.14 + 3.0) * 15, h * 0.62),
+      scale: w * 0.35,
+      alpha: 0.22,
+    );
+  }
+
+  void _drawCloud(
+    Canvas canvas, {
+    required Offset center,
+    required double scale,
+    required double alpha,
+  }) {
+    final paint = Paint()
       ..style = PaintingStyle.fill
-      ..color = Colors.white.withValues(alpha: 0.08)
-      ..maskFilter = const MaskFilter.blur(BlurStyle.normal, 35);
+      ..maskFilter = MaskFilter.blur(BlurStyle.normal, scale * 0.06);
 
-    final cx1 = size.width * 0.25 + sin(time * 0.3) * 20;
-    canvas.drawCircle(Offset(cx1, size.height * 0.3), 50, cloudPaint);
-    canvas.drawCircle(Offset(cx1 + 40, size.height * 0.3 + 5), 40, cloudPaint);
+    // Flat base
+    paint.color = Colors.white.withValues(alpha: alpha * 0.7);
+    canvas.drawOval(
+      Rect.fromCenter(
+        center: Offset(center.dx, center.dy + scale * 0.10),
+        width: scale * 1.3,
+        height: scale * 0.28,
+      ),
+      paint,
+    );
 
-    final cx2 = size.width * 0.65 + sin(time * 0.25 + 2) * 25;
-    canvas.drawCircle(Offset(cx2, size.height * 0.55), 45, cloudPaint);
-    canvas.drawCircle(Offset(cx2 - 35, size.height * 0.55 + 8), 35, cloudPaint);
+    // Main lobes
+    paint.color = Colors.white.withValues(alpha: alpha);
+    canvas.drawCircle(
+      Offset(center.dx - scale * 0.25, center.dy),
+      scale * 0.24,
+      paint,
+    );
+    canvas.drawCircle(
+      Offset(center.dx, center.dy - scale * 0.08),
+      scale * 0.30,
+      paint,
+    );
+    canvas.drawCircle(
+      Offset(center.dx + scale * 0.28, center.dy + scale * 0.02),
+      scale * 0.22,
+      paint,
+    );
+
+    // Top accent puff
+    paint.color = Colors.white.withValues(alpha: alpha * 0.8);
+    canvas.drawCircle(
+      Offset(center.dx + scale * 0.04, center.dy - scale * 0.20),
+      scale * 0.18,
+      paint,
+    );
   }
 
   @override

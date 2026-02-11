@@ -2,8 +2,10 @@ import 'package:flutter/material.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:flutter_native_splash/flutter_native_splash.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 import 'app/app.dart';
+import 'app/router.dart';
 import 'core/services/notification_service.dart';
 import 'core/storage/secure_storage.dart';
 
@@ -18,5 +20,13 @@ Future<void> main() async {
     await SecureStorage().saveGeminiKey(geminiKey);
   }
 
-  runApp(const ProviderScope(child: HeatherApp()));
+  final prefs = await SharedPreferences.getInstance();
+  final onboardingCompleted = prefs.getBool('onboarding_completed') ?? false;
+  final router = buildRouter(onboardingCompleted: onboardingCompleted);
+
+  runApp(
+    ProviderScope(
+      child: HeatherApp(router: router),
+    ),
+  );
 }

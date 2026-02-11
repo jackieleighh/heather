@@ -8,6 +8,7 @@ const _explicitLanguageKey = 'explicit_language';
 const _notificationsEnabledKey = 'notifications_enabled';
 const _notificationHourKey = 'notification_hour';
 const _notificationMinuteKey = 'notification_minute';
+const _onboardingCompletedKey = 'onboarding_completed';
 
 final settingsProvider = StateNotifierProvider<SettingsNotifier, SettingsState>(
   (ref) {
@@ -19,22 +20,26 @@ class SettingsState {
   final bool explicitLanguage;
   final bool notificationsEnabled;
   final TimeOfDay notificationTime;
+  final bool onboardingCompleted;
 
   const SettingsState({
     this.explicitLanguage = false,
     this.notificationsEnabled = false,
     this.notificationTime = const TimeOfDay(hour: 7, minute: 0),
+    this.onboardingCompleted = false,
   });
 
   SettingsState copyWith({
     bool? explicitLanguage,
     bool? notificationsEnabled,
     TimeOfDay? notificationTime,
+    bool? onboardingCompleted,
   }) {
     return SettingsState(
       explicitLanguage: explicitLanguage ?? this.explicitLanguage,
       notificationsEnabled: notificationsEnabled ?? this.notificationsEnabled,
       notificationTime: notificationTime ?? this.notificationTime,
+      onboardingCompleted: onboardingCompleted ?? this.onboardingCompleted,
     );
   }
 }
@@ -51,10 +56,13 @@ class SettingsNotifier extends StateNotifier<SettingsState> {
         prefs.getBool(_notificationsEnabledKey) ?? false;
     final hour = prefs.getInt(_notificationHourKey) ?? 7;
     final minute = prefs.getInt(_notificationMinuteKey) ?? 0;
+    final onboardingCompleted =
+        prefs.getBool(_onboardingCompletedKey) ?? false;
     state = SettingsState(
       explicitLanguage: explicit,
       notificationsEnabled: notificationsEnabled,
       notificationTime: TimeOfDay(hour: hour, minute: minute),
+      onboardingCompleted: onboardingCompleted,
     );
   }
 
@@ -84,5 +92,11 @@ class SettingsNotifier extends StateNotifier<SettingsState> {
     await prefs.setInt(_notificationHourKey, time.hour);
     await prefs.setInt(_notificationMinuteKey, time.minute);
     state = state.copyWith(notificationTime: time);
+  }
+
+  Future<void> completeOnboarding() async {
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setBool(_onboardingCompletedKey, true);
+    state = state.copyWith(onboardingCompleted: true);
   }
 }

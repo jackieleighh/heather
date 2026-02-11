@@ -356,7 +356,9 @@ class _ControlBar extends StatelessWidget {
     final timeLabel = formatRelativeTime(frame.time);
 
     return Container(
-      decoration: BoxDecoration(color: Colors.black.withValues(alpha: 0.25)),
+      decoration: BoxDecoration(
+        color: AppColors.midnightPurple.withValues(alpha: 0.65),
+      ),
       padding: const EdgeInsets.fromLTRB(16, 6, 8, 0),
       child: Column(
         mainAxisSize: MainAxisSize.min,
@@ -481,24 +483,44 @@ class _MapCard extends StatelessWidget {
       decoration: BoxDecoration(
         color: AppColors.cream.withValues(alpha: 0.1),
         borderRadius: BorderRadius.circular(20),
+        border: Border.all(
+          color: AppColors.cream.withValues(alpha: 0.12),
+        ),
       ),
       child: Stack(
         children: [
           Positioned.fill(child: child),
+          // Subtle tint overlay to blend with app palette
+          Positioned.fill(
+            child: IgnorePointer(
+              child: DecoratedBox(
+                decoration: BoxDecoration(
+                  gradient: LinearGradient(
+                    begin: Alignment.topLeft,
+                    end: Alignment.bottomRight,
+                    colors: [
+                      AppColors.teal.withValues(alpha: 0.08),
+                      AppColors.vibrantPurple.withValues(alpha: 0.06),
+                    ],
+                  ),
+                ),
+              ),
+            ),
+          ),
           Positioned(
-            top: 8,
+            top: 10,
             left: 12,
             child: Container(
-              padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+              padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
               decoration: BoxDecoration(
-                color: Colors.black.withValues(alpha: 0.35),
+                color: AppColors.midnightPurple.withValues(alpha: 0.7),
                 borderRadius: BorderRadius.circular(8),
               ),
               child: Text(
                 label,
-                style: GoogleFonts.inter(
+                style: GoogleFonts.quicksand(
                   fontSize: 12,
-                  fontWeight: FontWeight.w600,
+                  fontWeight: FontWeight.w700,
                   color: AppColors.cream,
                 ),
               ),

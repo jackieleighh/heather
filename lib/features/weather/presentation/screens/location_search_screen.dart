@@ -43,7 +43,7 @@ class _LocationSearchScreenState extends ConsumerState<LocationSearchScreen> {
   void _onSearchChanged(String value) {
     _debounce?.cancel();
     _debounce = Timer(const Duration(milliseconds: 400), () {
-      setState(() => _query = value);
+      if (mounted) setState(() => _query = value);
     });
   }
 
@@ -134,8 +134,7 @@ class _LocationSearchScreenState extends ConsumerState<LocationSearchScreen> {
                     ),
                   ),
                   const SizedBox(height: 16),
-                  if (_query.trim().length >= 2)
-                    Expanded(child: _SearchResults(query: _query)),
+                  Expanded(child: _SearchResults(query: _query)),
                 ],
               ),
             ),
@@ -147,19 +146,50 @@ class _LocationSearchScreenState extends ConsumerState<LocationSearchScreen> {
   }
 }
 
-class _SearchResults extends ConsumerWidget {
+class _SearchResults extends ConsumerStatefulWidget {
   final String query;
 
   const _SearchResults({required this.query});
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
-    final results = ref.watch(locationSearchProvider(query));
+  ConsumerState<_SearchResults> createState() => _SearchResultsState();
+}
+
+class _SearchResultsState extends ConsumerState<_SearchResults> {
+  List<SavedLocation> _lastResults = [];
+
+  @override
+  Widget build(BuildContext context) {
+    final trimmed = widget.query.trim();
+
+    if (trimmed.length < 2) {
+      return AnimatedSwitcher(
+        duration: const Duration(milliseconds: 200),
+        child: Center(
+          key: const ValueKey('hint'),
+          child: Text(
+            'Type a city name to search',
+            style: TextStyle(color: AppColors.cream.withValues(alpha: 0.4)),
+          ),
+        ),
+      );
+    }
+
+    final results = ref.watch(locationSearchProvider(trimmed));
 
     return results.when(
-      loading: () => const Center(
-        child: CircularProgressIndicator(color: AppColors.cream),
-      ),
+      loading: () {
+        // Keep showing previous results with a loading bar instead of a spinner
+        if (_lastResults.isNotEmpty) {
+          return _buildList(_lastResults, loading: true);
+        }
+        return const Center(
+          child: CircularProgressIndicator(
+            color: AppColors.cream,
+            strokeWidth: 3,
+          ),
+        );
+      },
       error: (e, _) => Center(
         child: Text(
           'Yikes! Something went wrong.',
@@ -167,22 +197,46 @@ class _SearchResults extends ConsumerWidget {
         ),
       ),
       data: (locations) {
+        _lastResults = locations;
         if (locations.isEmpty) {
-          return Center(
-            child: Text(
-              'No results found. Try a different search?',
-              style: TextStyle(color: AppColors.cream.withValues(alpha: 0.7)),
+          return AnimatedSwitcher(
+            duration: const Duration(milliseconds: 200),
+            child: Center(
+              key: const ValueKey('empty'),
+              child: Text(
+                'No results found. Try a different search?',
+                style:
+                    TextStyle(color: AppColors.cream.withValues(alpha: 0.7)),
+              ),
             ),
           );
         }
-
-        return ListView.builder(
-          padding: const EdgeInsets.symmetric(horizontal: 28),
-          itemCount: locations.length,
-          itemBuilder: (context, index) =>
-              _LocationTile(location: locations[index]),
-        );
+        return _buildList(locations);
       },
+    );
+  }
+
+  Widget _buildList(List<SavedLocation> locations, {bool loading = false}) {
+    return Column(
+      children: [
+        if (loading)
+          ClipRRect(
+            borderRadius: BorderRadius.circular(2),
+            child: const LinearProgressIndicator(
+              color: AppColors.cream,
+              backgroundColor: Colors.transparent,
+              minHeight: 2,
+            ),
+          ),
+        Expanded(
+          child: ListView.builder(
+            padding: const EdgeInsets.symmetric(horizontal: 28),
+            itemCount: locations.length,
+            itemBuilder: (context, index) =>
+                _LocationTile(location: locations[index]),
+          ),
+        ),
+      ],
     );
   }
 }

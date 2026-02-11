@@ -692,6 +692,7 @@ class _MoonCard extends StatelessWidget {
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
     final phase = getMoonPhase(now);
+    final illumination = moonIllumination(now).round();
     final nextFull = nextFullMoon(now);
     final nextNew = nextNewMoon(now);
     final dateFmt = DateFormat('MMM d');
@@ -729,13 +730,26 @@ class _MoonCard extends StatelessWidget {
                 ),
               ),
               const Spacer(),
-              Text(
-                moonPhaseLabel(phase),
-                style: GoogleFonts.poppins(
-                  fontSize: 14,
-                  fontWeight: FontWeight.w700,
-                  color: AppColors.cream,
-                ),
+              Column(
+                crossAxisAlignment: CrossAxisAlignment.end,
+                children: [
+                  Text(
+                    moonPhaseLabel(phase),
+                    style: GoogleFonts.poppins(
+                      fontSize: 14,
+                      fontWeight: FontWeight.w700,
+                      color: AppColors.cream,
+                    ),
+                  ),
+                  Text(
+                    '$illumination% illuminated',
+                    style: GoogleFonts.poppins(
+                      fontSize: 12,
+                      fontWeight: FontWeight.w500,
+                      color: AppColors.cream.withValues(alpha: 0.6),
+                    ),
+                  ),
+                ],
               ),
             ],
           ),

@@ -8,7 +8,8 @@ class PartlyCloudyBackground extends StatefulWidget {
   const PartlyCloudyBackground({super.key, required this.gradientColors});
 
   @override
-  State<PartlyCloudyBackground> createState() => _PartlyCloudyBackgroundState();
+  State<PartlyCloudyBackground> createState() =>
+      _PartlyCloudyBackgroundState();
 }
 
 class _PartlyCloudyBackgroundState extends State<PartlyCloudyBackground>
@@ -67,97 +68,116 @@ class _PartlyCloudyPainter extends CustomPainter {
     final w = size.width;
     final h = size.height;
 
-    // Sun glow peeking through
+    // Sun glow peeking through gaps
     final sunCenter = Offset(w * 0.75, h * 0.12);
     final glowPaint = Paint()
       ..style = PaintingStyle.fill
-      ..maskFilter = const MaskFilter.blur(BlurStyle.normal, 55);
+      ..maskFilter = const MaskFilter.blur(BlurStyle.normal, 40);
 
-    glowPaint.color = Colors.white.withValues(alpha: 0.08 + sin(time) * 0.02);
-    canvas.drawCircle(sunCenter, 90, glowPaint);
+    glowPaint.color =
+        Colors.white.withValues(alpha: 0.18 + sin(time * 0.8) * 0.04);
+    canvas.drawCircle(sunCenter, 80, glowPaint);
 
-    glowPaint.color = Colors.white.withValues(alpha: 0.12);
-    glowPaint.maskFilter = const MaskFilter.blur(BlurStyle.normal, 22);
-    canvas.drawCircle(sunCenter, 40, glowPaint);
+    glowPaint.color = Colors.white.withValues(alpha: 0.22);
+    glowPaint.maskFilter = const MaskFilter.blur(BlurStyle.normal, 16);
+    canvas.drawCircle(sunCenter, 35, glowPaint);
 
-    // Base haze — very large, very diffuse to unify the cloud layer
-    final hazePaint = Paint()
+    // Cumulus clouds — each built from overlapping circles
+    _drawCloud(
+      canvas,
+      center: Offset(w * 0.2 + sin(time * 0.18) * 25, h * 0.08),
+      scale: w * 0.40,
+      alpha: 0.35,
+    );
+
+    _drawCloud(
+      canvas,
+      center: Offset(w * 0.65 + sin(time * 0.15 + 1.2) * 20, h * 0.20),
+      scale: w * 0.48,
+      alpha: 0.38,
+    );
+
+    _drawCloud(
+      canvas,
+      center: Offset(w * 0.10 + sin(time * 0.12 + 2.5) * 30, h * 0.38),
+      scale: w * 0.42,
+      alpha: 0.32,
+    );
+
+    _drawCloud(
+      canvas,
+      center: Offset(w * 0.75 + sin(time * 0.14 + 3.8) * 18, h * 0.55),
+      scale: w * 0.36,
+      alpha: 0.28,
+    );
+
+    _drawCloud(
+      canvas,
+      center: Offset(w * 0.40 + sin(time * 0.16 + 5.0) * 22, h * 0.72),
+      scale: w * 0.34,
+      alpha: 0.24,
+    );
+  }
+
+  /// Draws a single cumulus cloud as a cluster of overlapping soft circles.
+  void _drawCloud(
+    Canvas canvas, {
+    required Offset center,
+    required double scale,
+    required double alpha,
+  }) {
+    final paint = Paint()
       ..style = PaintingStyle.fill
-      ..maskFilter = const MaskFilter.blur(BlurStyle.normal, 120);
+      ..maskFilter = MaskFilter.blur(BlurStyle.normal, scale * 0.06);
 
-    hazePaint.color = Colors.white.withValues(alpha: 0.06);
+    // Flat base — wide oval anchoring the bottom
+    paint.color = Colors.white.withValues(alpha: alpha * 0.75);
     canvas.drawOval(
       Rect.fromCenter(
-        center: Offset(w * 0.4 + sin(time * 0.2) * 30, h * 0.2),
-        width: w * 1.2,
-        height: h * 0.35,
+        center: Offset(center.dx, center.dy + scale * 0.12),
+        width: scale * 1.4,
+        height: scale * 0.35,
       ),
-      hazePaint,
-    );
-    hazePaint.color = Colors.white.withValues(alpha: 0.05);
-    canvas.drawOval(
-      Rect.fromCenter(
-        center: Offset(w * 0.5 + sin(time * 0.15 + 1) * 25, h * 0.55),
-        width: w * 1.0,
-        height: h * 0.3,
-      ),
-      hazePaint,
+      paint,
     );
 
-    // Cloud masses — large overlapping ovals with heavy blur
-    final cloudPaint = Paint()
-      ..style = PaintingStyle.fill
-      ..maskFilter = const MaskFilter.blur(BlurStyle.normal, 80);
+    // Main body — overlapping circles that form the puffy top
+    paint.color = Colors.white.withValues(alpha: alpha);
 
-    // Upper cloud band
-    cloudPaint.color = Colors.white.withValues(alpha: 0.08);
-    canvas.drawOval(
-      Rect.fromCenter(
-        center: Offset(w * 0.25 + sin(time * 0.3) * 20, h * 0.12),
-        width: w * 0.6,
-        height: h * 0.15,
-      ),
-      cloudPaint,
-    );
-    cloudPaint.color = Colors.white.withValues(alpha: 0.09);
-    canvas.drawOval(
-      Rect.fromCenter(
-        center: Offset(w * 0.65 + sin(time * 0.25 + 1) * 25, h * 0.18),
-        width: w * 0.55,
-        height: h * 0.14,
-      ),
-      cloudPaint,
+    // Left lobe
+    canvas.drawCircle(
+      Offset(center.dx - scale * 0.30, center.dy),
+      scale * 0.30,
+      paint,
     );
 
-    // Middle cloud band
-    cloudPaint.color = Colors.white.withValues(alpha: 0.07);
-    canvas.drawOval(
-      Rect.fromCenter(
-        center: Offset(w * 0.4 + sin(time * 0.35 + 2) * 18, h * 0.38),
-        width: w * 0.7,
-        height: h * 0.16,
-      ),
-      cloudPaint,
+    // Center lobe (tallest)
+    canvas.drawCircle(
+      Offset(center.dx, center.dy - scale * 0.12),
+      scale * 0.36,
+      paint,
     );
 
-    // Lower clouds — lighter
-    cloudPaint.color = Colors.white.withValues(alpha: 0.05);
-    canvas.drawOval(
-      Rect.fromCenter(
-        center: Offset(w * 0.55 + sin(time * 0.28 + 3) * 22, h * 0.65),
-        width: w * 0.6,
-        height: h * 0.14,
-      ),
-      cloudPaint,
+    // Right lobe
+    canvas.drawCircle(
+      Offset(center.dx + scale * 0.32, center.dy + scale * 0.02),
+      scale * 0.28,
+      paint,
     );
-    cloudPaint.color = Colors.white.withValues(alpha: 0.04);
-    canvas.drawOval(
-      Rect.fromCenter(
-        center: Offset(w * 0.3 + sin(time * 0.32 + 4) * 20, h * 0.82),
-        width: w * 0.5,
-        height: h * 0.12,
-      ),
-      cloudPaint,
+
+    // Small accent puff — top center for height
+    paint.color = Colors.white.withValues(alpha: alpha * 0.85);
+    canvas.drawCircle(
+      Offset(center.dx + scale * 0.05, center.dy - scale * 0.24),
+      scale * 0.22,
+      paint,
+    );
+
+    // Small accent puff — right shoulder
+    canvas.drawCircle(
+      Offset(center.dx + scale * 0.44, center.dy + scale * 0.05),
+      scale * 0.18,
+      paint,
     );
   }
 

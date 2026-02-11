@@ -118,7 +118,10 @@ class _CurrentWeatherPageState extends State<CurrentWeatherPage> {
                     children: [
                       const SizedBox(height: 56),
                       const Spacer(flex: 3),
-                      LocationHeader(cityName: widget.cityName),
+                      LocationHeader(
+                        cityName: widget.cityName,
+                        localTime: widget.forecast.locationNow,
+                      ),
                       const SizedBox(height: 8),
                       TemperatureDisplay(
                         temperature: weather.temperature,

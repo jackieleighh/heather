@@ -1,3 +1,5 @@
+import 'dart:math' as math;
+
 import 'package:weather_icons/weather_icons.dart';
 import 'package:flutter/widgets.dart';
 
@@ -15,7 +17,7 @@ enum MoonPhase {
 /// Length of one synodic month (new moon to new moon) in days.
 const _synodicMonth = 29.53058770576;
 
-/// A known new moon: Jan 18, 2026 19:53 UTC.
+/// A known new moon: Jan 18, 2026 19:51 UTC.
 final _referenceNewMoon = DateTime.utc(2026, 1, 18, 19, 51);
 
 /// Returns the number of days into the current lunar cycle (0 – ~29.53).
@@ -24,19 +26,33 @@ double moonAge(DateTime date) {
   return days % _synodicMonth;
 }
 
+/// Returns the approximate illumination percentage (0–100) for a given [date].
+///
+/// Uses the cosine model: 0% at new moon (fraction 0), 100% at full moon
+/// (fraction 0.5).
+double moonIllumination(DateTime date) {
+  final age = moonAge(date);
+  final fraction = age / _synodicMonth;
+  return (1 - math.cos(2 * math.pi * fraction)) / 2 * 100;
+}
+
 /// Returns the [MoonPhase] for a given [date].
+///
+/// Principal phases (new, quarters, full) get a narrow ±0.04 window
+/// (~2.4 days) centred on their astronomical moment, with intermediate
+/// phases (crescents, gibbous) filling the rest (~5 days each).
 MoonPhase getMoonPhase(DateTime date) {
   final age = moonAge(date);
   final fraction = age / _synodicMonth; // 0.0 – 1.0
 
-  if (fraction < 0.0625) return MoonPhase.newMoon;
-  if (fraction < 0.1875) return MoonPhase.waxingCrescent;
-  if (fraction < 0.3125) return MoonPhase.firstQuarter;
-  if (fraction < 0.4375) return MoonPhase.waxingGibbous;
-  if (fraction < 0.5625) return MoonPhase.fullMoon;
-  if (fraction < 0.6875) return MoonPhase.waningGibbous;
-  if (fraction < 0.8125) return MoonPhase.thirdQuarter;
-  if (fraction < 0.9375) return MoonPhase.waningCrescent;
+  if (fraction < 0.04) return MoonPhase.newMoon;
+  if (fraction < 0.21) return MoonPhase.waxingCrescent;
+  if (fraction < 0.29) return MoonPhase.firstQuarter;
+  if (fraction < 0.46) return MoonPhase.waxingGibbous;
+  if (fraction < 0.54) return MoonPhase.fullMoon;
+  if (fraction < 0.71) return MoonPhase.waningGibbous;
+  if (fraction < 0.79) return MoonPhase.thirdQuarter;
+  if (fraction < 0.96) return MoonPhase.waningCrescent;
   return MoonPhase.newMoon;
 }
 
@@ -60,24 +76,24 @@ IconData moonPhaseIcon(DateTime date) {
   final age = moonAge(date);
   final fraction = age / _synodicMonth;
 
-  if (fraction < 0.0625) return WeatherIcons.moon_new;
-  if (fraction < 0.1875) {
-    final sub = _subIndex(fraction, 0.0625, 0.1875);
+  if (fraction < 0.04) return WeatherIcons.moon_new;
+  if (fraction < 0.21) {
+    final sub = _subIndex(fraction, 0.04, 0.21);
     return _waxingCrescentIcons[sub];
   }
-  if (fraction < 0.3125) return WeatherIcons.moon_first_quarter;
-  if (fraction < 0.4375) {
-    final sub = _subIndex(fraction, 0.3125, 0.4375);
+  if (fraction < 0.29) return WeatherIcons.moon_first_quarter;
+  if (fraction < 0.46) {
+    final sub = _subIndex(fraction, 0.29, 0.46);
     return _waxingGibbousIcons[sub];
   }
-  if (fraction < 0.5625) return WeatherIcons.moon_full;
-  if (fraction < 0.6875) {
-    final sub = _subIndex(fraction, 0.5625, 0.6875);
+  if (fraction < 0.54) return WeatherIcons.moon_full;
+  if (fraction < 0.71) {
+    final sub = _subIndex(fraction, 0.54, 0.71);
     return _waningGibbousIcons[sub];
   }
-  if (fraction < 0.8125) return WeatherIcons.moon_third_quarter;
-  if (fraction < 0.9375) {
-    final sub = _subIndex(fraction, 0.8125, 0.9375);
+  if (fraction < 0.79) return WeatherIcons.moon_third_quarter;
+  if (fraction < 0.96) {
+    final sub = _subIndex(fraction, 0.79, 0.96);
     return _waningCrescentIcons[sub];
   }
   return WeatherIcons.moon_new;
@@ -124,42 +140,24 @@ const _waningCrescentIcons = [
 ];
 
 /// Returns the approximate date of the next new moon after [from].
-/// If currently in a new-moon window, skips past it to find the truly next one.
+/// Computes the exact moment from the lunar cycle rather than scanning days.
 DateTime nextNewMoon([DateTime? from]) {
-  var date = from ?? DateTime.now();
-  date = DateTime(date.year, date.month, date.day);
-  var i = 0;
-  // Skip past current new-moon window if we're in one
-  while (i <= 3 && getMoonPhase(date.add(Duration(days: i))) == MoonPhase.newMoon) {
-    i++;
-  }
-  for (; i <= 60; i++) {
-    final d = date.add(Duration(days: i));
-    if (getMoonPhase(d) == MoonPhase.newMoon) return d;
-  }
-  // Fallback
+  final date = from ?? DateTime.now();
   final age = moonAge(date);
-  final daysUntil = (_synodicMonth - age) % _synodicMonth;
-  return date.add(Duration(days: daysUntil.round()));
+  var daysUntil = _synodicMonth - age;
+  if (daysUntil < 1.0) daysUntil += _synodicMonth;
+  final moment = date.add(Duration(minutes: (daysUntil * 1440).round()));
+  return DateTime(moment.year, moment.month, moment.day);
 }
 
 /// Returns the approximate date of the next full moon after [from].
-/// If currently in a full-moon window, skips past it to find the truly next one.
+/// Computes the exact moment from the lunar cycle rather than scanning days.
 DateTime nextFullMoon([DateTime? from]) {
-  var date = from ?? DateTime.now();
-  date = DateTime(date.year, date.month, date.day);
-  var i = 0;
-  // Skip past current full-moon window if we're in one
-  while (i <= 3 && getMoonPhase(date.add(Duration(days: i))) == MoonPhase.fullMoon) {
-    i++;
-  }
-  for (; i <= 60; i++) {
-    final d = date.add(Duration(days: i));
-    if (getMoonPhase(d) == MoonPhase.fullMoon) return d;
-  }
-  // Fallback
+  final date = from ?? DateTime.now();
   final age = moonAge(date);
-  const halfCycle = _synodicMonth / 2;
-  final daysUntil = (halfCycle - age) % _synodicMonth;
-  return date.add(Duration(days: daysUntil.round()));
+  var daysUntil = _synodicMonth / 2 - age;
+  if (daysUntil <= 0) daysUntil += _synodicMonth;
+  if (daysUntil < 1.0) daysUntil += _synodicMonth;
+  final moment = date.add(Duration(minutes: (daysUntil * 1440).round()));
+  return DateTime(moment.year, moment.month, moment.day);
 }

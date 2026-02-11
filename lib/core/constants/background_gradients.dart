@@ -75,7 +75,7 @@ class BackgroundGradients {
     TemperatureTier.flannelWeather: [
       AppColors.icyBlue,
       AppColors.chartreuse,
-      AppColors.mustardYellow,
+      // AppColors.mustardYellow,
       AppColors.hotAmber,
     ],
     TemperatureTier.shortsWeather: [
@@ -344,12 +344,12 @@ class BackgroundGradients {
     ],
     TemperatureTier.freezing: [
       AppColors.coldIndigo,
-      AppColors.deepPurple,
+      AppColors.steelGrey,
       AppColors.frostLavender,
     ],
     TemperatureTier.jacketWeather: [
       AppColors.slateBlue,
-      AppColors.deepPurple,
+      AppColors.coldIndigo,
       AppColors.frostLavender,
     ],
     TemperatureTier.flannelWeather: [

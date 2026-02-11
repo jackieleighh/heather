@@ -1,10 +1,12 @@
 import 'package:flutter/material.dart';
+import 'package:go_router/go_router.dart';
 
-import 'router.dart';
 import 'theme.dart';
 
 class HeatherApp extends StatelessWidget {
-  const HeatherApp({super.key});
+  final GoRouter router;
+
+  const HeatherApp({super.key, required this.router});
 
   @override
   Widget build(BuildContext context) {

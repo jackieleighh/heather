@@ -67,34 +67,42 @@ class _OvercastPainter extends CustomPainter {
     final w = size.width;
     final h = size.height;
 
-    // Full-screen haze layers — creates a uniform cloudy base
+    // Diffuse sun glow — barely visible through the blanket
+    final glowPaint = Paint()
+      ..style = PaintingStyle.fill
+      ..maskFilter = const MaskFilter.blur(BlurStyle.normal, 50);
+    glowPaint.color =
+        Colors.white.withValues(alpha: 0.14 + sin(time * 0.6) * 0.03);
+    canvas.drawCircle(Offset(w * 0.75, h * 0.12), 100, glowPaint);
+
+    // Base haze — full-width blanket that unifies the cloud layer
     final hazePaint = Paint()
       ..style = PaintingStyle.fill
-      ..maskFilter = const MaskFilter.blur(BlurStyle.normal, 150);
+      ..maskFilter = const MaskFilter.blur(BlurStyle.normal, 55);
 
-    hazePaint.color = Colors.white.withValues(alpha: 0.1);
+    hazePaint.color = Colors.white.withValues(alpha: 0.22);
     canvas.drawOval(
       Rect.fromCenter(
-        center: Offset(w * 0.5 + sin(time * 0.15) * 30, h * 0.25),
-        width: w * 1.4,
+        center: Offset(w * 0.5 + sin(time * 0.15) * 30, h * 0.22),
+        width: w * 1.5,
         height: h * 0.45,
       ),
       hazePaint,
     );
-    hazePaint.color = Colors.white.withValues(alpha: 0.08);
+    hazePaint.color = Colors.white.withValues(alpha: 0.20);
     canvas.drawOval(
       Rect.fromCenter(
-        center: Offset(w * 0.5 + sin(time * 0.12 + 2) * 25, h * 0.6),
-        width: w * 1.3,
-        height: h * 0.4,
+        center: Offset(w * 0.5 + sin(time * 0.12 + 2) * 25, h * 0.58),
+        width: w * 1.4,
+        height: h * 0.40,
       ),
       hazePaint,
     );
-    hazePaint.color = Colors.white.withValues(alpha: 0.06);
+    hazePaint.color = Colors.white.withValues(alpha: 0.18);
     canvas.drawOval(
       Rect.fromCenter(
         center: Offset(w * 0.5 + sin(time * 0.18 + 4) * 20, h * 0.85),
-        width: w * 1.2,
+        width: w * 1.3,
         height: h * 0.35,
       ),
       hazePaint,
@@ -103,22 +111,22 @@ class _OvercastPainter extends CustomPainter {
     // Dense cloud masses — overlapping wide ovals
     final cloudPaint = Paint()
       ..style = PaintingStyle.fill
-      ..maskFilter = const MaskFilter.blur(BlurStyle.normal, 100);
+      ..maskFilter = const MaskFilter.blur(BlurStyle.normal, 40);
 
     // Upper band — heaviest
-    cloudPaint.color = Colors.white.withValues(alpha: 0.1);
+    cloudPaint.color = Colors.white.withValues(alpha: 0.28);
     canvas.drawOval(
       Rect.fromCenter(
-        center: Offset(w * 0.3 + sin(time * 0.25) * 20, h * 0.08),
+        center: Offset(w * 0.3 + sin(time * 0.25) * 20, h * 0.10),
         width: w * 0.8,
         height: h * 0.18,
       ),
       cloudPaint,
     );
-    cloudPaint.color = Colors.white.withValues(alpha: 0.12);
+    cloudPaint.color = Colors.white.withValues(alpha: 0.30);
     canvas.drawOval(
       Rect.fromCenter(
-        center: Offset(w * 0.7 + sin(time * 0.2 + 1) * 25, h * 0.15),
+        center: Offset(w * 0.7 + sin(time * 0.2 + 1) * 25, h * 0.16),
         width: w * 0.75,
         height: h * 0.16,
       ),
@@ -126,10 +134,10 @@ class _OvercastPainter extends CustomPainter {
     );
 
     // Mid-upper band
-    cloudPaint.color = Colors.white.withValues(alpha: 0.1);
+    cloudPaint.color = Colors.white.withValues(alpha: 0.25);
     canvas.drawOval(
       Rect.fromCenter(
-        center: Offset(w * 0.45 + sin(time * 0.3 + 2) * 22, h * 0.28),
+        center: Offset(w * 0.45 + sin(time * 0.3 + 2) * 22, h * 0.30),
         width: w * 0.85,
         height: h * 0.17,
       ),
@@ -137,19 +145,19 @@ class _OvercastPainter extends CustomPainter {
     );
 
     // Center band
-    cloudPaint.color = Colors.white.withValues(alpha: 0.09);
+    cloudPaint.color = Colors.white.withValues(alpha: 0.22);
     canvas.drawOval(
       Rect.fromCenter(
-        center: Offset(w * 0.55 + sin(time * 0.22 + 3) * 18, h * 0.42),
-        width: w * 0.8,
+        center: Offset(w * 0.55 + sin(time * 0.22 + 3) * 18, h * 0.45),
+        width: w * 0.80,
         height: h * 0.16,
       ),
       cloudPaint,
     );
-    cloudPaint.color = Colors.white.withValues(alpha: 0.08);
+    cloudPaint.color = Colors.white.withValues(alpha: 0.20);
     canvas.drawOval(
       Rect.fromCenter(
-        center: Offset(w * 0.35 + sin(time * 0.28 + 4) * 24, h * 0.55),
+        center: Offset(w * 0.35 + sin(time * 0.28 + 4) * 24, h * 0.58),
         width: w * 0.75,
         height: h * 0.15,
       ),
@@ -157,19 +165,19 @@ class _OvercastPainter extends CustomPainter {
     );
 
     // Lower band
-    cloudPaint.color = Colors.white.withValues(alpha: 0.07);
+    cloudPaint.color = Colors.white.withValues(alpha: 0.18);
     canvas.drawOval(
       Rect.fromCenter(
-        center: Offset(w * 0.6 + sin(time * 0.24 + 5) * 20, h * 0.7),
-        width: w * 0.7,
+        center: Offset(w * 0.6 + sin(time * 0.24 + 5) * 20, h * 0.72),
+        width: w * 0.70,
         height: h * 0.14,
       ),
       cloudPaint,
     );
-    cloudPaint.color = Colors.white.withValues(alpha: 0.06);
+    cloudPaint.color = Colors.white.withValues(alpha: 0.16);
     canvas.drawOval(
       Rect.fromCenter(
-        center: Offset(w * 0.4 + sin(time * 0.26 + 6) * 22, h * 0.85),
+        center: Offset(w * 0.4 + sin(time * 0.26 + 6) * 22, h * 0.88),
         width: w * 0.75,
         height: h * 0.15,
       ),

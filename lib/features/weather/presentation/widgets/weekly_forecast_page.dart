@@ -81,6 +81,7 @@ class _DailyCard extends StatelessWidget {
     final now = deviceNow.add(locationOffset - deviceNow.timeZoneOffset);
     final today = DateTime(now.year, now.month, now.day);
     final dayDiff = daily.date.difference(today).inDays;
+    final dateStr = '${daily.date.month}/${daily.date.day}';
     final dayStr = switch (dayDiff) {
       0 => 'Today',
       1 => 'Tmrw',
@@ -107,13 +108,14 @@ class _DailyCard extends StatelessWidget {
           ),
           // Content on top
           Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
+            padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               mainAxisAlignment: MainAxisAlignment.end,
               children: [
                 Row(
-                  crossAxisAlignment: CrossAxisAlignment.center,
+                  crossAxisAlignment: CrossAxisAlignment.baseline,
+                  textBaseline: TextBaseline.alphabetic,
                   children: [
                     Text(
                       dayStr,
@@ -122,10 +124,13 @@ class _DailyCard extends StatelessWidget {
                       ),
                     ),
                     const SizedBox(width: 6),
-                    Icon(
-                      moonPhaseIcon(daily.date),
-                      size: 20,
-                      color: AppColors.cream.withValues(alpha: 0.8),
+                    Text(
+                      dateStr,
+                      style: GoogleFonts.poppins(
+                        fontSize: 13,
+                        fontWeight: FontWeight.w500,
+                        color: AppColors.cream.withValues(alpha: 0.5),
+                      ),
                     ),
                   ],
                 ),
@@ -152,6 +157,24 @@ class _DailyCard extends StatelessWidget {
                     const SizedBox(width: 3),
                     Text(
                       '${daily.precipitationProbabilityMax}%',
+                      style: GoogleFonts.poppins(
+                        fontSize: 14,
+                        fontWeight: FontWeight.w600,
+                        color: AppColors.cream,
+                      ),
+                    ),
+                    const SizedBox(width: 10),
+                    Padding(
+                      padding: const EdgeInsets.only(bottom: 2),
+                      child: Icon(
+                        moonPhaseIcon(daily.date),
+                        size: 16,
+                        color: AppColors.cream.withValues(alpha: 0.7),
+                      ),
+                    ),
+                    const SizedBox(width: 3),
+                    Text(
+                      '${moonIllumination(daily.date).round()}%',
                       style: GoogleFonts.poppins(
                         fontSize: 14,
                         fontWeight: FontWeight.w600,
