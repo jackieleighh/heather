@@ -18,5 +18,4 @@ class SecureStorage {
   Future<String?> getGeminiKey() async {
     return _storage.read(key: _geminiKeyKey);
   }
-
 }
