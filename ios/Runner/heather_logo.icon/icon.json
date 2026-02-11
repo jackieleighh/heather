@@ -1,0 +1,47 @@
+{
+  "fill" : {
+    "automatic-gradient" : "display-p3:0.68297,0.22874,0.47499,1.00000"
+  },
+  "groups" : [
+    {
+      "layers" : [
+        {
+          "image-name" : "text.svg",
+          "name" : "text",
+          "position" : {
+            "scale" : 3.2,
+            "translation-in-points" : [
+              86.41718444824221,
+              -318.7421875
+            ]
+          }
+        },
+        {
+          "image-name" : "heather_logo.svg",
+          "name" : "heather_logo",
+          "position" : {
+            "scale" : 0.75,
+            "translation-in-points" : [
+              -156.84375,
+              146.90625
+            ]
+          }
+        }
+      ],
+      "shadow" : {
+        "kind" : "neutral",
+        "opacity" : 0.5
+      },
+      "translucency" : {
+        "enabled" : true,
+        "value" : 0.5
+      }
+    }
+  ],
+  "supported-platforms" : {
+    "circles" : [
+      "watchOS"
+    ],
+    "squares" : "shared"
+  }
+}
