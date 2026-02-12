@@ -5,6 +5,7 @@ import 'package:freezed_annotation/freezed_annotation.dart';
 import '../../../../core/constants/persona.dart';
 import '../../../../core/network/api_client.dart';
 import '../../../../core/services/notification_service.dart';
+import '../../../../core/services/widget_service.dart';
 import '../../../../core/storage/secure_storage.dart';
 import '../../data/repositories/quip_repository_impl.dart';
 import '../../data/repositories/weather_repository_impl.dart';
@@ -137,6 +138,7 @@ class WeatherNotifier extends StateNotifier<WeatherState> {
             persona: _persona,
           ),
         );
+        _pushToWidget();
       },
     );
   }
@@ -150,6 +152,7 @@ class WeatherNotifier extends StateNotifier<WeatherState> {
           quip: quip,
         );
         _scheduleNotificationIfNeeded();
+        _pushToWidget();
       },
     );
   }
@@ -185,6 +188,17 @@ class WeatherNotifier extends StateNotifier<WeatherState> {
     );
   }
 
+  void _pushToWidget() {
+    final current = state;
+    if (current is! _Loaded) return;
+    WidgetService.updateWidget(
+      forecast: current.forecast,
+      location: current.location,
+      quip: current.quip,
+      persona: _persona,
+    );
+  }
+
   Future<void> loadWeather() async {
     state = const WeatherState.loading();
     try {
@@ -206,6 +220,7 @@ class WeatherNotifier extends StateNotifier<WeatherState> {
         quip: quip,
       );
       _scheduleNotificationIfNeeded();
+      _pushToWidget();
     } catch (e) {
       if (!mounted) return;
       state = WeatherState.error(e.toString());
@@ -231,6 +246,7 @@ class WeatherNotifier extends StateNotifier<WeatherState> {
         quip: quip,
       );
       _scheduleNotificationIfNeeded();
+      _pushToWidget();
       return true;
     } catch (e) {
       if (!mounted) return false;

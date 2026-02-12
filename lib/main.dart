@@ -7,6 +7,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 import 'app/app.dart';
 import 'app/router.dart';
 import 'core/services/notification_service.dart';
+import 'core/services/widget_service.dart';
 import 'core/storage/secure_storage.dart';
 
 Future<void> main() async {
@@ -14,6 +15,7 @@ Future<void> main() async {
   FlutterNativeSplash.preserve(widgetsBinding: binding);
   await dotenv.load(fileName: '.env');
   await NotificationService().init();
+  await WidgetService.init();
 
   final geminiKey = dotenv.env['GEMINI_API_KEY'];
   if (geminiKey != null && geminiKey.isNotEmpty) {
