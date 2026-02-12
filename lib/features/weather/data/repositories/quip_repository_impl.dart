@@ -3,7 +3,7 @@ import 'dart:math';
 import 'package:flutter/foundation.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
-import '../../../../core/constants/app_strings.dart';
+import '../../../../core/constants/persona.dart';
 import '../../../../core/storage/secure_storage.dart';
 import '../../domain/entities/temperature_tier.dart';
 import '../../domain/entities/weather.dart';
@@ -18,21 +18,27 @@ class QuipRepositoryImpl implements QuipRepository {
   QuipRepositoryImpl({required this.remoteSource, required this.secureStorage});
 
   @override
-  String getLocalQuip({required Weather weather, bool explicit = false}) {
-    return _pickLocalQuip(weather, explicit);
+  String getLocalQuip({
+    required Weather weather,
+    bool explicit = false,
+    Persona persona = Persona.heather,
+  }) {
+    return _pickLocalQuip(weather, explicit, persona);
   }
 
   @override
   Future<Map<String, String>> getBatchQuips({
     required List<({Weather weather, String cityName})> locations,
     bool explicit = false,
+    Persona persona = Persona.heather,
   }) async {
     final results = <String, String>{};
     final uncached = <({Weather weather, String cityName})>[];
 
     // Check per-location cache
     for (final loc in locations) {
-      final cached = await _getCachedQuip(loc.cityName, loc.weather, explicit);
+      final cached =
+          await _getCachedQuip(loc.cityName, loc.weather, explicit, persona);
       if (cached != null) {
         results[loc.cityName] = cached;
       } else {
@@ -50,11 +56,18 @@ class QuipRepositoryImpl implements QuipRepository {
           locations: uncached,
           apiKey: apiKey,
           explicit: explicit,
+          persona: persona,
         );
         for (var i = 0; i < uncached.length; i++) {
           final cityName = uncached[i].cityName;
           results[cityName] = quips[i];
-          await _cacheQuip(cityName, quips[i], uncached[i].weather, explicit);
+          await _cacheQuip(
+            cityName,
+            quips[i],
+            uncached[i].weather,
+            explicit,
+            persona,
+          );
         }
         return results;
       } catch (e) {
@@ -66,15 +79,15 @@ class QuipRepositoryImpl implements QuipRepository {
 
     // Local fallback for anything still missing
     for (final loc in uncached) {
-      results[loc.cityName] = _pickLocalQuip(loc.weather, explicit);
+      results[loc.cityName] = _pickLocalQuip(loc.weather, explicit, persona);
     }
     return results;
   }
 
-  String _pickLocalQuip(Weather weather, bool explicit) {
+  String _pickLocalQuip(Weather weather, bool explicit, Persona persona) {
     final condition = weather.condition;
     final tier = TemperatureTier.fromTemperature(weather.temperature);
-    final quipMap = explicit ? AppStrings.explicitQuips : AppStrings.quips;
+    final quipMap = persona.quipMap(altTone: explicit);
 
     final quips =
         quipMap[condition]?[tier] ??
@@ -86,34 +99,47 @@ class QuipRepositoryImpl implements QuipRepository {
 
   // ── Per-location caching ──────────────────────────────────────────
 
-  String _quipKey(String city) => 'cached_quip_$city';
-  String _conditionKey(String city) => 'cached_quip_condition_$city';
-  String _tempKey(String city) => 'cached_quip_temp_$city';
-  String _explicitKey(String city) => 'cached_quip_explicit_$city';
+  String _quipKey(String city, Persona persona) =>
+      'cached_quip_${persona.name}_$city';
+  String _conditionKey(String city, Persona persona) =>
+      'cached_quip_condition_${persona.name}_$city';
+  String _tempKey(String city, Persona persona) =>
+      'cached_quip_temp_${persona.name}_$city';
+  String _explicitKey(String city, Persona persona) =>
+      'cached_quip_explicit_${persona.name}_$city';
 
   Future<void> _cacheQuip(
     String cityName,
     String quip,
     Weather weather,
     bool explicit,
+    Persona persona,
   ) async {
     final prefs = await SharedPreferences.getInstance();
-    await prefs.setString(_quipKey(cityName), quip);
-    await prefs.setString(_conditionKey(cityName), weather.condition.name);
-    await prefs.setInt(_tempKey(cityName), weather.temperature.round());
-    await prefs.setBool(_explicitKey(cityName), explicit);
+    await prefs.setString(_quipKey(cityName, persona), quip);
+    await prefs.setString(
+      _conditionKey(cityName, persona),
+      weather.condition.name,
+    );
+    await prefs.setInt(
+      _tempKey(cityName, persona),
+      weather.temperature.round(),
+    );
+    await prefs.setBool(_explicitKey(cityName, persona), explicit);
   }
 
   Future<String?> _getCachedQuip(
     String cityName,
     Weather weather,
     bool explicit,
+    Persona persona,
   ) async {
     final prefs = await SharedPreferences.getInstance();
-    final cached = prefs.getString(_quipKey(cityName));
-    final condition = prefs.getString(_conditionKey(cityName));
-    final temp = prefs.getInt(_tempKey(cityName));
-    final cachedExplicit = prefs.getBool(_explicitKey(cityName)) ?? false;
+    final cached = prefs.getString(_quipKey(cityName, persona));
+    final condition = prefs.getString(_conditionKey(cityName, persona));
+    final temp = prefs.getInt(_tempKey(cityName, persona));
+    final cachedExplicit =
+        prefs.getBool(_explicitKey(cityName, persona)) ?? false;
 
     if (cached == null || condition == null || temp == null) return null;
     if (cachedExplicit != explicit) return null;

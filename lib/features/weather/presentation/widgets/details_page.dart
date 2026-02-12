@@ -76,14 +76,22 @@ class DetailsPage extends ConsumerWidget {
                 ),
               ),
             ),
-            // Conditions
+            // Conditions — daily precipitation + wind overview
             Expanded(
               child: Padding(
                 padding: const EdgeInsets.only(bottom: 10),
                 child: _ConditionsCard(
-                  windSpeed: forecast.current.windSpeed,
-                  humidity: forecast.current.humidity,
                   precipitationIn: today.precipitationSum / 25.4,
+                  precipitationProbability: today.precipitationProbabilityMax,
+                  windSpeed: forecast.current.windSpeed,
+                  hourlyPrecipProb: forecast.hourlyToday
+                      .map((h) => h.precipitationProbability)
+                      .toList(),
+                  hourlyWind: forecast.hourlyToday
+                      .map((h) => h.windSpeed)
+                      .toList(),
+                  hours: forecast.hourlyToday.map((h) => h.time).toList(),
+                  now: now,
                 ),
               ),
             ),
@@ -444,17 +452,25 @@ class _TempLinePainter extends CustomPainter {
       temps != old.temps || now != old.now;
 }
 
-// --- Conditions card (wind, precip, humidity) ---
+// --- Conditions card (daily precip bar graph + wind) ---
 
 class _ConditionsCard extends StatelessWidget {
-  final double windSpeed;
-  final int humidity;
   final double precipitationIn;
+  final int precipitationProbability;
+  final double windSpeed;
+  final List<int> hourlyPrecipProb;
+  final List<double> hourlyWind;
+  final List<DateTime> hours;
+  final DateTime now;
 
   const _ConditionsCard({
-    required this.windSpeed,
-    required this.humidity,
     required this.precipitationIn,
+    required this.precipitationProbability,
+    required this.windSpeed,
+    required this.hourlyPrecipProb,
+    required this.hourlyWind,
+    required this.hours,
+    required this.now,
   });
 
   @override
@@ -463,79 +479,198 @@ class _ConditionsCard extends StatelessWidget {
     final precipLabel = precipitationIn < 0.01
         ? '0 in'
         : '${precipitationIn.toStringAsFixed(2)} in';
+    final maxWind = hourlyWind.isEmpty
+        ? windSpeed
+        : hourlyWind.reduce(math.max);
 
     return _CardContainer(
-      backgroundIcon: WeatherIcons.windy,
+      backgroundIcon: WeatherIcons.rain,
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
-        mainAxisAlignment: MainAxisAlignment.center,
         children: [
           Row(
             children: [
               Icon(
-                WeatherIcons.windy,
+                WeatherIcons.raindrop,
                 size: 18,
                 color: AppColors.cream.withValues(alpha: 0.8),
               ),
               const SizedBox(width: 8),
               Text(
-                'Conditions',
+                'Precip',
                 style: theme.textTheme.bodyLarge?.copyWith(
                   fontWeight: FontWeight.w600,
+                ),
+              ),
+              const Spacer(),
+              Text(
+                precipLabel,
+                style: GoogleFonts.poppins(
+                  fontSize: 14,
+                  fontWeight: FontWeight.w700,
+                  color: AppColors.cream,
+                ),
+              ),
+              const SizedBox(width: 4),
+              Text(
+                '$precipitationProbability% chance',
+                style: GoogleFonts.poppins(
+                  fontSize: 14,
+                  fontWeight: FontWeight.w600,
+                  color: AppColors.cream.withValues(alpha: 0.6),
+                ),
+              ),
+            ],
+          ),
+          Row(
+            children: [
+              Icon(
+                WeatherIcons.windy,
+                size: 14,
+                color: AppColors.cream.withValues(alpha: 0.6),
+              ),
+              const SizedBox(width: 6),
+              Text(
+                '${windSpeed.round()} mph now',
+                style: GoogleFonts.poppins(
+                  fontSize: 12,
+                  fontWeight: FontWeight.w500,
+                  color: AppColors.cream.withValues(alpha: 0.6),
+                ),
+              ),
+              const SizedBox(width: 8),
+              Text(
+                'up to ${maxWind.round()} mph',
+                style: GoogleFonts.poppins(
+                  fontSize: 12,
+                  fontWeight: FontWeight.w500,
+                  color: AppColors.cream.withValues(alpha: 0.4),
                 ),
               ),
             ],
           ),
           const SizedBox(height: 4),
-          Row(
-            children: [
-              Icon(
-                WeatherIcons.windy,
-                size: 16,
-                color: AppColors.cream.withValues(alpha: 0.7),
+          Expanded(
+            child: CustomPaint(
+              size: Size.infinite,
+              painter: _PrecipBarPainter(
+                precipProb: hourlyPrecipProb,
+                hours: hours,
+                now: now,
               ),
-              const SizedBox(width: 6),
-              Text(
-                '${windSpeed.round()} mph',
-                style: theme.textTheme.bodyLarge?.copyWith(
-                  fontWeight: FontWeight.w800,
-                  fontSize: 20,
-                ),
-              ),
-              const SizedBox(width: 16),
-              Icon(
-                WeatherIcons.raindrop,
-                size: 18,
-                color: AppColors.cream.withValues(alpha: 0.7),
-              ),
-              const SizedBox(width: 6),
-              Text(
-                precipLabel,
-                style: theme.textTheme.bodyLarge?.copyWith(
-                  fontWeight: FontWeight.w800,
-                  fontSize: 20,
-                ),
-              ),
-              const SizedBox(width: 16),
-              Icon(
-                WeatherIcons.humidity,
-                size: 12,
-                color: AppColors.cream.withValues(alpha: 0.7),
-              ),
-              const SizedBox(width: 6),
-              Text(
-                '$humidity%',
-                style: theme.textTheme.bodyLarge?.copyWith(
-                  fontWeight: FontWeight.w800,
-                  fontSize: 20,
-                ),
-              ),
-            ],
+            ),
           ),
         ],
       ),
     );
   }
+}
+
+class _PrecipBarPainter extends CustomPainter {
+  final List<int> precipProb;
+  final List<DateTime> hours;
+  final DateTime now;
+
+  _PrecipBarPainter({
+    required this.precipProb,
+    required this.hours,
+    required this.now,
+  });
+
+  @override
+  void paint(Canvas canvas, Size size) {
+    if (precipProb.isEmpty) return;
+
+    const padBottom = 14.0;
+    const padLeft = 28.0;
+    final graphH = size.height - padBottom;
+    final graphW = size.width - padLeft;
+    final barCount = precipProb.length;
+    final barW = graphW / barCount;
+
+    // Y-axis percentage labels
+    final yLabelStyle = TextStyle(
+      color: AppColors.cream.withValues(alpha: 0.4),
+      fontSize: 9,
+      fontWeight: FontWeight.w500,
+    );
+    for (final pct in [100, 50, 0]) {
+      final y = graphH * (1 - pct / 100.0);
+      final tp = TextPainter(
+        text: TextSpan(text: '$pct%', style: yLabelStyle),
+        textDirection: TextDirection.ltr,
+      )..layout();
+      tp.paint(canvas, Offset(0, y - tp.height / 2));
+
+      // Subtle grid line
+      canvas.drawLine(
+        Offset(padLeft, y),
+        Offset(size.width, y),
+        Paint()..color = AppColors.cream.withValues(alpha: 0.06),
+      );
+    }
+
+    // Precipitation probability bars
+    for (var i = 0; i < barCount; i++) {
+      final pct = precipProb[i] / 100.0;
+      final barH = math.max(graphH * pct, pct > 0 ? 2.0 : 0.0);
+      final x = padLeft + i * barW;
+      final y = graphH - barH;
+
+      canvas.drawRRect(
+        RRect.fromRectAndRadius(
+          Rect.fromLTWH(x + 1, y, barW - 2, barH),
+          const Radius.circular(2),
+        ),
+        Paint()..color = AppColors.cream.withValues(alpha: 0.2 + 0.35 * pct),
+      );
+    }
+
+    // "Now" indicator line
+    if (hours.length >= 2) {
+      if (!now.isBefore(hours.first) && !now.isAfter(hours.last)) {
+        final totalMs =
+            hours.last.difference(hours.first).inMilliseconds.toDouble();
+        if (totalMs > 0) {
+          final nowMs = now.difference(hours.first).inMilliseconds.toDouble();
+          final nowX = padLeft + graphW * (nowMs / totalMs);
+          canvas.drawLine(
+            Offset(nowX, 0),
+            Offset(nowX, graphH),
+            Paint()
+              ..color = AppColors.cream.withValues(alpha: 0.5)
+              ..strokeWidth = 1,
+          );
+        }
+      }
+    }
+
+    // Hour labels
+    final labelStyle = TextStyle(
+      color: AppColors.cream.withValues(alpha: 0.5),
+      fontSize: 9,
+      fontWeight: FontWeight.w500,
+    );
+    for (var i = 0; i < hours.length; i++) {
+      if (i % 6 != 0 && i != hours.length - 1) continue;
+      final tp = TextPainter(
+        text: TextSpan(
+          text: DateFormat('ha').format(hours[i]).toLowerCase(),
+          style: labelStyle,
+        ),
+        textDirection: TextDirection.ltr,
+      )..layout();
+      final x = (padLeft + i * barW + barW / 2 - tp.width / 2).clamp(
+        padLeft,
+        size.width - tp.width,
+      );
+      tp.paint(canvas, Offset(x, size.height - padBottom + 2));
+    }
+  }
+
+  @override
+  bool shouldRepaint(covariant _PrecipBarPainter old) =>
+      precipProb != old.precipProb || now != old.now;
 }
 
 // --- Air Quality card with muted scale ---

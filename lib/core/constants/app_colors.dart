@@ -4,7 +4,7 @@ class AppColors {
   AppColors._();
 
   // Hero colors
-  static const magenta = Color(0xFFAD1568);
+  static const magenta = Color(0xFFad0062);
   static const vibrantPurple = Color(0xFF6A3FBF);
   static const mustardYellow = Color(0xFFB07E00);
   static const teal = Color(0xFF0088A3);

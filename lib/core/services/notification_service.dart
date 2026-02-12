@@ -5,6 +5,8 @@ import 'package:flutter_timezone/flutter_timezone.dart';
 import 'package:timezone/data/latest_all.dart' as tz;
 import 'package:timezone/timezone.dart' as tz;
 
+import '../constants/persona.dart';
+
 class NotificationService {
   static final NotificationService _instance = NotificationService._();
   factory NotificationService() => _instance;
@@ -16,7 +18,7 @@ class NotificationService {
 
   static final _random = Random();
 
-  static const _titles = [
+  static const _heatherTitles = [
     'Wake up, babe',
     'Weather check',
     'Your daily briefing',
@@ -39,7 +41,60 @@ class NotificationService {
     'Best day ever',
   ];
 
-  static String get randomTitle => _titles[_random.nextInt(_titles.length)];
+  static const _jadeTitles = [
+    'Good morning',
+    'Weather vibes',
+    'Your daily forecast',
+    'Heads up',
+    'Before you head out...',
+    'Real quick',
+    'Outside check',
+    'Read this first',
+    'Today\'s vibe check',
+    'The sky\'s doing a thing',
+    'Dress for the mood',
+    'You\'re welcome',
+    'Today\'s forecast',
+    'Weather update',
+    'Just so you know',
+    'FYI',
+    'Weather incoming',
+    'Got your weather',
+    'Rise and shine',
+    'Here\'s the deal',
+  ];
+
+  static const _lunaTitles = [
+    'Good morning, sunshine',
+    'Weather thoughts',
+    'A sky update for you',
+    'Hey guess what',
+    'Before you go outside...',
+    'Oh also',
+    'Outside is happening',
+    'Read this first',
+    'The sky has feelings today',
+    'The clouds told me something',
+    'Dress for the universe',
+    'You\'re welcome',
+    'Today\'s sky report',
+    'Weather news of sorts',
+    'The wind whispered this',
+    'So anyway',
+    'Weather from the cosmos',
+    'I checked the sky for you',
+    'Wakey wakey',
+    'The earth says hi',
+  ];
+
+  static String randomTitle({Persona persona = Persona.heather}) {
+    final titles = switch (persona) {
+      Persona.heather => _heatherTitles,
+      Persona.jade => _jadeTitles,
+      Persona.luna => _lunaTitles,
+    };
+    return titles[_random.nextInt(titles.length)];
+  }
 
   final _plugin = FlutterLocalNotificationsPlugin();
   bool _initialized = false;

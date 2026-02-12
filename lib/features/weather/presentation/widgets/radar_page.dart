@@ -33,6 +33,7 @@ class _RadarPageState extends ConsumerState<RadarPage> {
   final Map<String, Uint8List> _tileCache = {};
   final HttpClient _tileHttpClient = HttpClient();
   final String _owmApiKey = dotenv.env['OWM_API_KEY'] ?? '';
+  final String _waqiToken = dotenv.env['WAQI_TOKEN'] ?? '';
 
   MarkerLayer get _locationMarker => MarkerLayer(
     markers: [
@@ -223,7 +224,59 @@ class _RadarPageState extends ConsumerState<RadarPage> {
                       ),
               ),
             ),
-            const SizedBox(height: 10),
+            const SizedBox(height: 8),
+            // Air quality map
+            Expanded(
+              child: _MapCard(
+                label: 'Air Quality',
+                child: _waqiToken.isEmpty
+                    ? Center(
+                        child: Text(
+                          'WAQI_TOKEN required',
+                          style: GoogleFonts.quicksand(
+                            fontSize: 16,
+                            fontWeight: FontWeight.w600,
+                            color: AppColors.cream.withValues(alpha: 0.7),
+                          ),
+                        ),
+                      )
+                    : ClipRRect(
+                        borderRadius: BorderRadius.circular(16),
+                        child: FlutterMap(
+                          options: MapOptions(
+                            initialCenter: LatLng(
+                              widget.latitude,
+                              widget.longitude,
+                            ),
+                            initialZoom: 7.0,
+                            interactionOptions: const InteractionOptions(
+                              flags:
+                                  InteractiveFlag.all & ~InteractiveFlag.rotate,
+                            ),
+                          ),
+                          children: [
+                            TileLayer(
+                              urlTemplate:
+                                  'https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png',
+                              subdomains: const ['a', 'b', 'c', 'd'],
+                              retinaMode:
+                                  MediaQuery.of(context).devicePixelRatio > 1.0,
+                            ),
+                            Opacity(
+                              opacity: 0.6,
+                              child: TileLayer(
+                                urlTemplate:
+                                    'https://tiles.aqicn.org/tiles/usepa-aqi/{z}/{x}/{y}.png?token=$_waqiToken',
+                                userAgentPackageName: 'com.heather.app',
+                              ),
+                            ),
+                            _locationMarker,
+                          ],
+                        ),
+                      ),
+              ),
+            ),
+            const SizedBox(height: 8),
             // Radar map
             Expanded(
               child: _MapCard(
@@ -357,111 +410,83 @@ class _ControlBar extends StatelessWidget {
 
     return Container(
       decoration: BoxDecoration(
-        color: AppColors.midnightPurple.withValues(alpha: 0.65),
+        color: AppColors.midnightPurple.withValues(alpha: 0.45),
       ),
-      padding: const EdgeInsets.fromLTRB(16, 6, 8, 0),
-      child: Column(
-        mainAxisSize: MainAxisSize.min,
+      padding: const EdgeInsets.fromLTRB(12, 4, 6, 0),
+      child: Row(
         children: [
-          // Time label
-          Align(
-            alignment: Alignment.centerLeft,
-            child: Text(
-              timeLabel,
-              style: GoogleFonts.inter(
-                fontSize: 13,
-                fontWeight: FontWeight.w700,
-                color: AppColors.cream,
-              ),
+          Text(
+            timeLabel,
+            style: GoogleFonts.inter(
+              fontSize: 11,
+              fontWeight: FontWeight.w700,
+              color: AppColors.cream,
             ),
           ),
-          // Slider + now indicator + play button
-          Transform.translate(
-            offset: const Offset(0, -8),
-            child: Row(
-              children: [
-                Expanded(
-                  child: LayoutBuilder(
-                    builder: (context, constraints) {
-                      const trackPadding = 24.0;
-                      final trackWidth =
-                          constraints.maxWidth - trackPadding * 2;
-                      final nowFraction = frameCount > 1
-                          ? nowIndex / (frameCount - 1)
-                          : 0.5;
-                      final nowX = trackPadding + nowFraction * trackWidth;
+          const SizedBox(width: 4),
+          Expanded(
+            child: LayoutBuilder(
+              builder: (context, constraints) {
+                const trackPadding = 14.0;
+                final trackWidth = constraints.maxWidth - trackPadding * 2;
+                final nowFraction =
+                    frameCount > 1 ? nowIndex / (frameCount - 1) : 0.5;
+                final nowX = trackPadding + nowFraction * trackWidth;
 
-                      return Stack(
-                        children: [
-                          SliderTheme(
-                            data: SliderThemeData(
-                              activeTrackColor: AppColors.cream.withValues(
-                                alpha: 0.8,
-                              ),
-                              inactiveTrackColor: AppColors.cream.withValues(
-                                alpha: 0.2,
-                              ),
-                              thumbColor: AppColors.cream,
-                              overlayColor: AppColors.cream.withValues(
-                                alpha: 0.1,
-                              ),
-                              trackHeight: 2,
-                              thumbShape: const RoundSliderThumbShape(
-                                enabledThumbRadius: 5,
-                              ),
-                            ),
-                            child: Slider(
-                              value: currentIndex.toDouble(),
-                              min: 0,
-                              max: (frameCount - 1).toDouble(),
-                              divisions: frameCount - 1,
-                              onChanged: onSliderChanged,
-                            ),
-                          ),
-                          // "Now" indicator
-                          Positioned(
-                            left: nowX - 1,
-                            top: 0,
-                            bottom: 0,
-                            child: IgnorePointer(
-                              child: Center(
-                                child: Container(
-                                  width: 2,
-                                  height: 14,
-                                  decoration: BoxDecoration(
-                                    color: AppColors.cream,
-                                    borderRadius: BorderRadius.circular(1),
-                                  ),
-                                ),
-                              ),
+                return Stack(
+                  children: [
+                    SliderTheme(
+                      data: SliderThemeData(
+                        activeTrackColor: AppColors.cream.withValues(
+                          alpha: 0.8,
+                        ),
+                        inactiveTrackColor: AppColors.cream.withValues(
+                          alpha: 0.2,
+                        ),
+                        thumbColor: AppColors.cream,
+                        overlayColor: AppColors.cream.withValues(alpha: 0.1),
+                        trackHeight: 1.5,
+                        thumbShape: const RoundSliderThumbShape(
+                          enabledThumbRadius: 4,
+                        ),
+                      ),
+                      child: Slider(
+                        value: currentIndex.toDouble(),
+                        min: 0,
+                        max: (frameCount - 1).toDouble(),
+                        divisions: frameCount - 1,
+                        onChanged: onSliderChanged,
+                      ),
+                    ),
+                    // "Now" indicator
+                    Positioned(
+                      left: nowX - 1,
+                      top: 0,
+                      bottom: 0,
+                      child: IgnorePointer(
+                        child: Center(
+                          child: Container(
+                            width: 2,
+                            height: 10,
+                            decoration: BoxDecoration(
+                              color: AppColors.cream,
+                              borderRadius: BorderRadius.circular(1),
                             ),
                           ),
-                          Positioned(
-                            left: nowX - 14,
-                            top: 32,
-                            child: Text(
-                              'Now',
-                              style: GoogleFonts.inter(
-                                fontSize: 11,
-                                fontWeight: FontWeight.w600,
-                                color: AppColors.cream.withValues(alpha: 0.8),
-                              ),
-                            ),
-                          ),
-                        ],
-                      );
-                    },
-                  ),
-                ),
-                GestureDetector(
-                  onTap: onPlayPause,
-                  child: Icon(
-                    isPlaying ? Icons.pause_rounded : Icons.play_arrow_rounded,
-                    color: AppColors.cream.withValues(alpha: 0.8),
-                    size: 26,
-                  ),
-                ),
-              ],
+                        ),
+                      ),
+                    ),
+                  ],
+                );
+              },
+            ),
+          ),
+          GestureDetector(
+            onTap: onPlayPause,
+            child: Icon(
+              isPlaying ? Icons.pause_rounded : Icons.play_arrow_rounded,
+              color: AppColors.cream.withValues(alpha: 0.8),
+              size: 20,
             ),
           ),
         ],
@@ -481,10 +506,10 @@ class _MapCard extends StatelessWidget {
     return Container(
       clipBehavior: Clip.hardEdge,
       decoration: BoxDecoration(
-        color: AppColors.cream.withValues(alpha: 0.1),
+        color: AppColors.cream.withValues(alpha: 0.06),
         borderRadius: BorderRadius.circular(20),
         border: Border.all(
-          color: AppColors.cream.withValues(alpha: 0.12),
+          color: AppColors.cream.withValues(alpha: 0.08),
         ),
       ),
       child: Stack(
@@ -499,8 +524,8 @@ class _MapCard extends StatelessWidget {
                     begin: Alignment.topLeft,
                     end: Alignment.bottomRight,
                     colors: [
-                      AppColors.teal.withValues(alpha: 0.08),
-                      AppColors.vibrantPurple.withValues(alpha: 0.06),
+                      AppColors.teal.withValues(alpha: 0.04),
+                      AppColors.vibrantPurple.withValues(alpha: 0.03),
                     ],
                   ),
                 ),
@@ -513,7 +538,7 @@ class _MapCard extends StatelessWidget {
             child: Container(
               padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
               decoration: BoxDecoration(
-                color: AppColors.midnightPurple.withValues(alpha: 0.7),
+                color: AppColors.midnightPurple.withValues(alpha: 0.5),
                 borderRadius: BorderRadius.circular(8),
               ),
               child: Text(

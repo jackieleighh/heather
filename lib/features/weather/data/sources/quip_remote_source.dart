@@ -1,7 +1,7 @@
 import 'package:dio/dio.dart';
 import 'package:flutter/foundation.dart';
 
-import '../../../../core/constants/app_strings.dart';
+import '../../../../core/constants/persona.dart';
 import '../../../../core/errors/app_exception.dart';
 import '../../../../core/network/api_client.dart';
 import '../../domain/entities/weather.dart';
@@ -16,12 +16,12 @@ class QuipRemoteSource {
     required List<({Weather weather, String cityName})> locations,
     required String apiKey,
     bool explicit = false,
+    Persona persona = Persona.heather,
   }) async {
     assert(locations.isNotEmpty);
 
     final dio = apiClient.geminiClient(apiKey);
-    final systemPrompt =
-        explicit ? AppStrings.geminiExplicitPrompt : AppStrings.geminiPrompt;
+    final systemPrompt = persona.prompt(altTone: explicit);
 
     // Single location — use simpler prompt for cleaner output
     if (locations.length == 1) {
@@ -92,26 +92,10 @@ class QuipRemoteSource {
       'generationConfig': {'maxOutputTokens': maxTokens, 'temperature': 1.0},
     };
 
-    Response response;
-    try {
-      response = await dio.post(
-        '/models/gemini-2.0-flash:generateContent',
-        data: body,
-      );
-    } on DioException catch (e) {
-      // Retry once on 429 using the delay Gemini asks for (capped at 30s)
-      if (e.response?.statusCode == 429) {
-        final delay = _parseRetryDelay(e.response?.data);
-        debugPrint('Gemini 429 — retrying in ${delay.inSeconds}s');
-        await Future.delayed(delay);
-        response = await dio.post(
-          '/models/gemini-2.0-flash:generateContent',
-          data: body,
-        );
-      } else {
-        rethrow;
-      }
-    }
+    final response = await dio.post(
+      '/models/gemini-2.0-flash:generateContent',
+      data: body,
+    );
 
     final data = response.data as Map<String, dynamic>;
     final candidates = data['candidates'] as List<dynamic>;
@@ -122,21 +106,6 @@ class QuipRemoteSource {
     if (parts.isEmpty) throw const QuipException('Empty quip');
 
     return (parts[0]['text'] as String).trim();
-  }
-
-  Duration _parseRetryDelay(dynamic data) {
-    try {
-      if (data is Map<String, dynamic>) {
-        final error = data['error'] as Map<String, dynamic>?;
-        final message = error?['message'] as String? ?? '';
-        final match = RegExp(r'retry in ([\d.]+)s').firstMatch(message);
-        if (match != null) {
-          final seconds = double.parse(match.group(1)!).ceil();
-          return Duration(seconds: seconds.clamp(1, 30));
-        }
-      }
-    } catch (_) {}
-    return const Duration(seconds: 15);
   }
 
   List<String> _parseBatchResponse(String text, int expected) {

@@ -4,6 +4,7 @@ import 'package:google_fonts/google_fonts.dart';
 import 'package:heather/features/weather/presentation/widgets/logo_overlay.dart';
 
 import '../../../../core/constants/app_colors.dart';
+import '../../../../core/constants/persona.dart';
 import '../providers/location_provider.dart';
 import '../providers/settings_provider.dart';
 
@@ -184,6 +185,26 @@ class SettingsScreen extends ConsumerWidget {
 
                         const SizedBox(height: 24),
 
+                        // ── Persona ──
+                        const _SectionHeader(title: 'Persona'),
+                        const SizedBox(height: 4),
+                        ...Persona.values.map(
+                          (p) => Padding(
+                            padding: const EdgeInsets.only(bottom: 8),
+                            child: _PersonaTile(
+                              persona: p,
+                              selected: settings.persona == p,
+                              onTap: () {
+                                ref
+                                    .read(settingsProvider.notifier)
+                                    .setPersona(p);
+                              },
+                            ),
+                          ),
+                        ),
+
+                        const SizedBox(height: 24),
+
                         // ── Preferences ──
                         const _SectionHeader(title: 'Preferences'),
                         const SizedBox(height: 4),
@@ -198,7 +219,7 @@ class SettingsScreen extends ConsumerWidget {
                               vertical: 4,
                             ),
                             title: Text(
-                              'Explicit and kinda mean',
+                              settings.persona.altToneLabel,
                               style: GoogleFonts.poppins(
                                 fontSize: 15,
                                 fontWeight: FontWeight.w500,
@@ -206,7 +227,7 @@ class SettingsScreen extends ConsumerWidget {
                               ),
                             ),
                             subtitle: Text(
-                              "Heather won't hold back on the language.",
+                              settings.persona.altToneSubtitle,
                               style: GoogleFonts.poppins(
                                 fontSize: 12,
                                 color: AppColors.cream.withValues(alpha: 0.6),
@@ -260,7 +281,7 @@ class SettingsScreen extends ConsumerWidget {
                                   ),
                                 ),
                                 subtitle: Text(
-                                  'Get a daily weather update from Heather.',
+                                  'Get a daily weather update from ${settings.persona.displayName}.',
                                   style: GoogleFonts.poppins(
                                     fontSize: 12,
                                     color: AppColors.cream.withValues(
@@ -428,6 +449,94 @@ class SettingsScreen extends ConsumerWidget {
               ),
             ),
             const LogoOverlay(),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+class _PersonaTile extends StatelessWidget {
+  final Persona persona;
+  final bool selected;
+  final VoidCallback onTap;
+
+  const _PersonaTile({
+    required this.persona,
+    required this.selected,
+    required this.onTap,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return GestureDetector(
+      onTap: onTap,
+      child: AnimatedContainer(
+        duration: const Duration(milliseconds: 200),
+        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+        decoration: BoxDecoration(
+          color: selected
+              ? AppColors.cream.withValues(alpha: 0.25)
+              : AppColors.cream.withValues(alpha: 0.1),
+          borderRadius: BorderRadius.circular(12),
+          border: Border.all(
+            color: selected
+                ? AppColors.cream.withValues(alpha: 0.6)
+                : Colors.transparent,
+            width: 1.5,
+          ),
+        ),
+        child: Row(
+          children: [
+            Container(
+              width: 36,
+              height: 36,
+              decoration: BoxDecoration(
+                color: selected
+                    ? AppColors.cream.withValues(alpha: 0.3)
+                    : AppColors.cream.withValues(alpha: 0.15),
+                shape: BoxShape.circle,
+              ),
+              child: Center(
+                child: Text(
+                  persona.initial,
+                  style: GoogleFonts.quicksand(
+                    fontSize: 16,
+                    fontWeight: FontWeight.w700,
+                    color: AppColors.cream,
+                  ),
+                ),
+              ),
+            ),
+            const SizedBox(width: 12),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    persona.displayName,
+                    style: GoogleFonts.poppins(
+                      fontSize: 15,
+                      fontWeight: FontWeight.w500,
+                      color: AppColors.cream,
+                    ),
+                  ),
+                  Text(
+                    persona.introLine,
+                    style: GoogleFonts.poppins(
+                      fontSize: 12,
+                      color: AppColors.cream.withValues(alpha: 0.6),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+            if (selected)
+              Icon(
+                Icons.check_circle,
+                color: AppColors.cream.withValues(alpha: 0.8),
+                size: 22,
+              ),
           ],
         ),
       ),

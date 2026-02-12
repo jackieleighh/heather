@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:freezed_annotation/freezed_annotation.dart';
 
+import '../../../../core/constants/persona.dart';
 import '../../../../core/network/api_client.dart';
 import '../../../../core/services/notification_service.dart';
 import '../../../../core/storage/secure_storage.dart';
@@ -55,20 +56,24 @@ class WeatherState with _$WeatherState {
 // Main provider
 final weatherStateProvider =
     StateNotifierProvider<WeatherNotifier, WeatherState>((ref) {
-      final explicit = ref.read(settingsProvider).explicitLanguage;
       final settings = ref.read(settingsProvider);
       final notifier = WeatherNotifier(
         weatherRepo: ref.watch(weatherRepositoryProvider),
         quipRepo: ref.watch(quipRepositoryProvider),
-        explicit: explicit,
+        explicit: settings.explicitLanguage,
+        persona: settings.persona,
         notificationsEnabled: settings.notificationsEnabled,
         notificationTime: settings.notificationTime,
       );
 
       ref.listen<SettingsState>(settingsProvider, (previous, next) {
-        if (previous?.explicitLanguage != next.explicitLanguage) {
+        final toneOrPersonaChanged =
+            previous?.explicitLanguage != next.explicitLanguage ||
+            previous?.persona != next.persona;
+        if (toneOrPersonaChanged) {
           notifier.updateExplicit(next.explicitLanguage);
-          // Batch-refresh Gemini quips for all locations with new tone
+          notifier.updatePersona(next.persona);
+          // Batch-refresh Gemini quips for all locations with new tone/persona
           ref.read(batchQuipLoaderProvider).loadBatchQuips();
         }
         final notifChanged =
@@ -89,6 +94,7 @@ class WeatherNotifier extends StateNotifier<WeatherState> {
   final WeatherRepositoryImpl weatherRepo;
   final QuipRepositoryImpl quipRepo;
   bool _explicit;
+  Persona _persona;
   bool _notificationsEnabled;
   TimeOfDay _notificationTime;
 
@@ -96,9 +102,11 @@ class WeatherNotifier extends StateNotifier<WeatherState> {
     required this.weatherRepo,
     required this.quipRepo,
     required bool explicit,
+    required Persona persona,
     required bool notificationsEnabled,
     required TimeOfDay notificationTime,
   }) : _explicit = explicit,
+       _persona = persona,
        _notificationsEnabled = notificationsEnabled,
        _notificationTime = notificationTime,
        super(const WeatherState.loading()) {
@@ -107,6 +115,15 @@ class WeatherNotifier extends StateNotifier<WeatherState> {
 
   void updateExplicit(bool value) {
     _explicit = value;
+    _swapLocalQuip();
+  }
+
+  void updatePersona(Persona persona) {
+    _persona = persona;
+    _swapLocalQuip();
+  }
+
+  void _swapLocalQuip() {
     // Swap to a local quip immediately; batch loader will upgrade to Gemini
     final current = state;
     current.whenOrNull(
@@ -117,6 +134,7 @@ class WeatherNotifier extends StateNotifier<WeatherState> {
           quip: quipRepo.getLocalQuip(
             weather: forecast.current,
             explicit: _explicit,
+            persona: _persona,
           ),
         );
       },
@@ -162,7 +180,7 @@ class WeatherNotifier extends StateNotifier<WeatherState> {
     NotificationService().scheduleDailyNotification(
       hour: _notificationTime.hour,
       minute: _notificationTime.minute,
-      title: NotificationService.randomTitle,
+      title: NotificationService.randomTitle(persona: _persona),
       body: body,
     );
   }
@@ -179,6 +197,7 @@ class WeatherNotifier extends StateNotifier<WeatherState> {
       final quip = quipRepo.getLocalQuip(
         weather: forecast.current,
         explicit: _explicit,
+        persona: _persona,
       );
       if (!mounted) return;
       state = WeatherState.loaded(
@@ -203,6 +222,7 @@ class WeatherNotifier extends StateNotifier<WeatherState> {
       final quip = quipRepo.getLocalQuip(
         weather: forecast.current,
         explicit: _explicit,
+        persona: _persona,
       );
       if (!mounted) return false;
       state = WeatherState.loaded(
@@ -239,19 +259,22 @@ final locationForecastProvider =
       LocationForecastState,
       ({String name, double lat, double lon})
     >((ref, params) {
-      final explicit = ref.read(settingsProvider).explicitLanguage;
+      final settings = ref.read(settingsProvider);
       final notifier = LocationForecastNotifier(
         weatherRepo: ref.watch(weatherRepositoryProvider),
         quipRepo: ref.watch(quipRepositoryProvider),
         name: params.name,
         latitude: params.lat,
         longitude: params.lon,
-        explicit: explicit,
+        explicit: settings.explicitLanguage,
+        persona: settings.persona,
       );
 
       ref.listen<SettingsState>(settingsProvider, (previous, next) {
-        if (previous?.explicitLanguage != next.explicitLanguage) {
+        if (previous?.explicitLanguage != next.explicitLanguage ||
+            previous?.persona != next.persona) {
           notifier.updateExplicit(next.explicitLanguage);
+          notifier.updatePersona(next.persona);
         }
       });
 
@@ -265,6 +288,7 @@ class LocationForecastNotifier extends StateNotifier<LocationForecastState> {
   final double latitude;
   final double longitude;
   bool _explicit;
+  Persona _persona;
 
   LocationForecastNotifier({
     required this.weatherRepo,
@@ -273,13 +297,24 @@ class LocationForecastNotifier extends StateNotifier<LocationForecastState> {
     required this.latitude,
     required this.longitude,
     required bool explicit,
+    required Persona persona,
   }) : _explicit = explicit,
+       _persona = persona,
        super(const LocationForecastState.loading()) {
     load();
   }
 
   void updateExplicit(bool value) {
     _explicit = value;
+    _swapLocalQuip();
+  }
+
+  void updatePersona(Persona persona) {
+    _persona = persona;
+    _swapLocalQuip();
+  }
+
+  void _swapLocalQuip() {
     state.whenOrNull(
       loaded: (forecast, _) {
         state = LocationForecastState.loaded(
@@ -287,6 +322,7 @@ class LocationForecastNotifier extends StateNotifier<LocationForecastState> {
           quip: quipRepo.getLocalQuip(
             weather: forecast.current,
             explicit: _explicit,
+            persona: _persona,
           ),
         );
       },
@@ -311,6 +347,7 @@ class LocationForecastNotifier extends StateNotifier<LocationForecastState> {
       final quip = quipRepo.getLocalQuip(
         weather: forecast.current,
         explicit: _explicit,
+        persona: _persona,
       );
       if (!mounted) return;
       state = LocationForecastState.loaded(forecast: forecast, quip: quip);
@@ -329,6 +366,7 @@ class LocationForecastNotifier extends StateNotifier<LocationForecastState> {
       final quip = quipRepo.getLocalQuip(
         weather: forecast.current,
         explicit: _explicit,
+        persona: _persona,
       );
       if (!mounted) return false;
       state = LocationForecastState.loaded(forecast: forecast, quip: quip);
@@ -366,7 +404,10 @@ class BatchQuipLoader {
     weatherState.whenOrNull(
       loaded: (forecast, location, _) {
         gpsCityName = location.cityName;
-        locations.add((weather: forecast.current, cityName: location.cityName));
+        locations.add((
+          weather: forecast.current.copyWith(isDay: forecast.isCurrentlyDay),
+          cityName: location.cityName,
+        ));
       },
     );
 
@@ -375,7 +416,10 @@ class BatchQuipLoader {
       final locState = _ref.read(locationForecastProvider(params));
       locState.whenOrNull(
         loaded: (forecast, _) {
-          locations.add((weather: forecast.current, cityName: loc.name));
+          locations.add((
+            weather: forecast.current.copyWith(isDay: forecast.isCurrentlyDay),
+            cityName: loc.name,
+          ));
         },
       );
     }
@@ -385,6 +429,7 @@ class BatchQuipLoader {
     final quips = await quipRepo.getBatchQuips(
       locations: locations,
       explicit: settings.explicitLanguage,
+      persona: settings.persona,
     );
 
     // Distribute quips to each notifier
