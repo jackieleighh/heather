@@ -426,7 +426,7 @@ class _TempLinePainter extends CustomPainter {
 
     // Hour labels
     final labelStyle = TextStyle(
-      color: AppColors.cream.withValues(alpha: 0.5),
+      color: AppColors.cream.withValues(alpha: 0.75),
       fontSize: 9,
       fontWeight: FontWeight.w500,
     );
@@ -497,7 +497,7 @@ class _ConditionsCard extends StatelessWidget {
               ),
               const SizedBox(width: 8),
               Text(
-                'Precip',
+                'Conditions',
                 style: theme.textTheme.bodyLarge?.copyWith(
                   fontWeight: FontWeight.w600,
                 ),
@@ -522,34 +522,38 @@ class _ConditionsCard extends StatelessWidget {
               ),
             ],
           ),
-          Row(
-            children: [
-              Icon(
-                WeatherIcons.windy,
-                size: 14,
-                color: AppColors.cream.withValues(alpha: 0.6),
-              ),
-              const SizedBox(width: 6),
-              Text(
-                '${windSpeed.round()} mph now',
-                style: GoogleFonts.poppins(
-                  fontSize: 12,
-                  fontWeight: FontWeight.w500,
-                  color: AppColors.cream.withValues(alpha: 0.6),
+          Transform.translate(
+            offset: const Offset(0, -4),
+            child: Row(
+              children: [
+                const Spacer(),
+                Icon(
+                  WeatherIcons.windy,
+                  size: 14,
+                  color: AppColors.cream.withValues(alpha: 0.85),
                 ),
-              ),
-              const SizedBox(width: 8),
-              Text(
-                'up to ${maxWind.round()} mph',
-                style: GoogleFonts.poppins(
-                  fontSize: 12,
-                  fontWeight: FontWeight.w500,
-                  color: AppColors.cream.withValues(alpha: 0.4),
+                const SizedBox(width: 6),
+                Text(
+                  '${windSpeed.round()} mph now',
+                  style: GoogleFonts.poppins(
+                    fontSize: 12,
+                    fontWeight: FontWeight.w500,
+                    color: AppColors.cream.withValues(alpha: 0.85),
+                  ),
                 ),
-              ),
-            ],
+                const SizedBox(width: 8),
+                Text(
+                  'up to ${maxWind.round()} mph',
+                  style: GoogleFonts.poppins(
+                    fontSize: 12,
+                    fontWeight: FontWeight.w500,
+                    color: AppColors.cream.withValues(alpha: 0.65),
+                  ),
+                ),
+              ],
+            ),
           ),
-          const SizedBox(height: 4),
+          const SizedBox(height: 8),
           Expanded(
             child: CustomPaint(
               size: Size.infinite,
@@ -590,7 +594,7 @@ class _PrecipBarPainter extends CustomPainter {
 
     // Y-axis percentage labels
     final yLabelStyle = TextStyle(
-      color: AppColors.cream.withValues(alpha: 0.4),
+      color: AppColors.cream.withValues(alpha: 0.7),
       fontSize: 9,
       fontWeight: FontWeight.w500,
     );
@@ -606,7 +610,7 @@ class _PrecipBarPainter extends CustomPainter {
       canvas.drawLine(
         Offset(padLeft, y),
         Offset(size.width, y),
-        Paint()..color = AppColors.cream.withValues(alpha: 0.06),
+        Paint()..color = AppColors.cream.withValues(alpha: 0.12),
       );
     }
 
@@ -622,7 +626,7 @@ class _PrecipBarPainter extends CustomPainter {
           Rect.fromLTWH(x + 1, y, barW - 2, barH),
           const Radius.circular(2),
         ),
-        Paint()..color = AppColors.cream.withValues(alpha: 0.2 + 0.35 * pct),
+        Paint()..color = AppColors.cream.withValues(alpha: 0.35 + 0.45 * pct),
       );
     }
 
@@ -638,7 +642,7 @@ class _PrecipBarPainter extends CustomPainter {
             Offset(nowX, 0),
             Offset(nowX, graphH),
             Paint()
-              ..color = AppColors.cream.withValues(alpha: 0.5)
+              ..color = AppColors.cream.withValues(alpha: 0.75)
               ..strokeWidth = 1,
           );
         }
@@ -647,7 +651,7 @@ class _PrecipBarPainter extends CustomPainter {
 
     // Hour labels
     final labelStyle = TextStyle(
-      color: AppColors.cream.withValues(alpha: 0.5),
+      color: AppColors.cream.withValues(alpha: 0.75),
       fontSize: 9,
       fontWeight: FontWeight.w500,
     );
