@@ -8,6 +8,7 @@ struct LargeWidgetView: View {
         switch data.persona {
         case "jade": return "jade_logo"
         case "luna": return "luna_logo"
+        case "aurelia": return "aurelia_logo"
         default: return "heather_logo"
         }
     }
@@ -17,6 +18,7 @@ struct LargeWidgetView: View {
             ZStack(alignment: .bottomTrailing) {
                 // Persona logo overlay
                 Image(personaLogoName)
+                    .renderingMode(.template)
                     .resizable()
                     .scaledToFit()
                     .frame(width: 150, height: 150)

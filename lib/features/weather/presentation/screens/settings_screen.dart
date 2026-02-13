@@ -73,7 +73,7 @@ class SettingsScreen extends ConsumerWidget {
                               'Um... No saved locations yet.  This is awkward.',
                               style: GoogleFonts.poppins(
                                 fontSize: 13,
-                                color: AppColors.cream.withValues(alpha: 0.6),
+                                color: AppColors.cream.withValues(alpha: 0.7),
                               ),
                             ),
                           )
@@ -173,7 +173,8 @@ class SettingsScreen extends ConsumerWidget {
                                       onPressed: () {
                                         ref
                                             .read(
-                                                savedLocationsProvider.notifier)
+                                              savedLocationsProvider.notifier,
+                                            )
                                             .removeLocation(loc.id);
                                       },
                                     ),
@@ -208,51 +209,26 @@ class SettingsScreen extends ConsumerWidget {
                         // ── Preferences ──
                         const _SectionHeader(title: 'Preferences'),
                         const SizedBox(height: 4),
-                        Container(
-                          decoration: BoxDecoration(
-                            color: AppColors.cream.withValues(alpha: 0.15),
-                            borderRadius: BorderRadius.circular(12),
-                          ),
-                          child: SwitchListTile(
-                            contentPadding: const EdgeInsets.symmetric(
-                              horizontal: 16,
-                              vertical: 4,
-                            ),
-                            title: Text(
-                              settings.persona.altToneLabel,
-                              style: GoogleFonts.poppins(
-                                fontSize: 15,
-                                fontWeight: FontWeight.w500,
-                                color: AppColors.cream,
-                              ),
-                            ),
-                            subtitle: Text(
-                              settings.persona.altToneSubtitle,
-                              style: GoogleFonts.poppins(
-                                fontSize: 12,
-                                color: AppColors.cream.withValues(alpha: 0.6),
-                              ),
-                            ),
-                            value: settings.explicitLanguage,
-                            activeTrackColor: AppColors.cream.withValues(
-                              alpha: 0.3,
-                            ),
-                            activeThumbColor: AppColors.cream,
-                            inactiveTrackColor: AppColors.cream.withValues(
-                              alpha: 0.1,
-                            ),
-                            inactiveThumbColor: AppColors.cream.withValues(
-                              alpha: 0.4,
-                            ),
-                            trackOutlineColor: WidgetStatePropertyAll(
-                              AppColors.cream.withValues(alpha: 0.1),
-                            ),
-                            onChanged: (value) {
-                              ref
-                                  .read(settingsProvider.notifier)
-                                  .setExplicitLanguage(value);
-                            },
-                          ),
+                        _ToneTile(
+                          label: settings.persona.toneLabel,
+                          subtitle: settings.persona.toneSubtitle,
+                          selected: !settings.explicitLanguage,
+                          onTap: () {
+                            ref
+                                .read(settingsProvider.notifier)
+                                .setExplicitLanguage(false);
+                          },
+                        ),
+                        const SizedBox(height: 8),
+                        _ToneTile(
+                          label: settings.persona.altToneLabel,
+                          subtitle: settings.persona.altToneSubtitle,
+                          selected: settings.explicitLanguage,
+                          onTap: () {
+                            ref
+                                .read(settingsProvider.notifier)
+                                .setExplicitLanguage(true);
+                          },
                         ),
 
                         const SizedBox(height: 24),
@@ -544,6 +520,75 @@ class _PersonaTile extends StatelessWidget {
   }
 }
 
+class _ToneTile extends StatelessWidget {
+  final String label;
+  final String subtitle;
+  final bool selected;
+  final VoidCallback onTap;
+
+  const _ToneTile({
+    required this.label,
+    required this.subtitle,
+    required this.selected,
+    required this.onTap,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return GestureDetector(
+      onTap: onTap,
+      child: AnimatedContainer(
+        duration: const Duration(milliseconds: 200),
+        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+        decoration: BoxDecoration(
+          color: selected
+              ? AppColors.cream.withValues(alpha: 0.25)
+              : AppColors.cream.withValues(alpha: 0.1),
+          borderRadius: BorderRadius.circular(12),
+          border: Border.all(
+            color: selected
+                ? AppColors.cream.withValues(alpha: 0.6)
+                : Colors.transparent,
+            width: 1.5,
+          ),
+        ),
+        child: Row(
+          children: [
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    label,
+                    style: GoogleFonts.poppins(
+                      fontSize: 15,
+                      fontWeight: FontWeight.w500,
+                      color: AppColors.cream,
+                    ),
+                  ),
+                  Text(
+                    subtitle,
+                    style: GoogleFonts.poppins(
+                      fontSize: 12,
+                      color: AppColors.cream.withValues(alpha: 0.6),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+            if (selected)
+              Icon(
+                Icons.check_circle,
+                color: AppColors.cream.withValues(alpha: 0.8),
+                size: 22,
+              ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
 class _SectionHeader extends StatelessWidget {
   final String title;
 
@@ -559,7 +604,7 @@ class _SectionHeader extends StatelessWidget {
           fontSize: 13,
           fontWeight: FontWeight.w600,
           letterSpacing: 0.5,
-          color: AppColors.cream.withValues(alpha: 0.5),
+          color: AppColors.cream.withValues(alpha: 0.7),
         ),
       ),
     );

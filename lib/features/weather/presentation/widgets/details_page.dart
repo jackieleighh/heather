@@ -477,8 +477,8 @@ class _ConditionsCard extends StatelessWidget {
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
     final precipLabel = precipitationIn < 0.01
-        ? '0 in'
-        : '${precipitationIn.toStringAsFixed(2)} in';
+        ? '0"'
+        : '${precipitationIn.toStringAsFixed(2)}"';
     final maxWind = hourlyWind.isEmpty
         ? windSpeed
         : hourlyWind.reduce(math.max);
@@ -633,8 +633,10 @@ class _PrecipBarPainter extends CustomPainter {
     // "Now" indicator line
     if (hours.length >= 2) {
       if (!now.isBefore(hours.first) && !now.isAfter(hours.last)) {
-        final totalMs =
-            hours.last.difference(hours.first).inMilliseconds.toDouble();
+        final totalMs = hours.last
+            .difference(hours.first)
+            .inMilliseconds
+            .toDouble();
         if (totalMs > 0) {
           final nowMs = now.difference(hours.first).inMilliseconds.toDouble();
           final nowX = padLeft + graphW * (nowMs / totalMs);

@@ -128,17 +128,17 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
         ),
         const SizedBox(height: 32),
         _ToneOption(
-          label: _persona.altToneLabel,
-          subtitle: _persona.altToneSubtitle,
-          selected: _explicitLanguage == true,
-          onTap: () => setState(() => _explicitLanguage = true),
-        ),
-        const SizedBox(height: 12),
-        _ToneOption(
           label: _persona.toneLabel,
           subtitle: _persona.toneSubtitle,
           selected: _explicitLanguage == false,
           onTap: () => setState(() => _explicitLanguage = false),
+        ),
+        const SizedBox(height: 12),
+        _ToneOption(
+          label: _persona.altToneLabel,
+          subtitle: _persona.altToneSubtitle,
+          selected: _explicitLanguage == true,
+          onTap: () => setState(() => _explicitLanguage = true),
         ),
         const Spacer(flex: 3),
         if (_explicitLanguage != null)

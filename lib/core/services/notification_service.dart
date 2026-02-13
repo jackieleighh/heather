@@ -36,13 +36,13 @@ class NotificationService {
     'Outfit advisory',
     'FYI',
     'Weather report incoming',
-    'Got your weather, bestie',
+    'Got your weather, babe',
     'Rise and shine, babe',
     'Best day ever',
   ];
 
   static const _jadeTitles = [
-    'Good morning',
+    'Morning babe',
     'Weather vibes',
     'Your daily forecast',
     'Heads up',
@@ -56,7 +56,6 @@ class NotificationService {
     'You\'re welcome',
     'Today\'s forecast',
     'Weather update',
-    'Just so you know',
     'FYI',
     'Weather incoming',
     'Got your weather',
@@ -87,11 +86,35 @@ class NotificationService {
     'The earth says hi',
   ];
 
+  static const _aureliaTitles = [
+    'Good morning, sunshine',
+    'Weather thoughts',
+    'A sky update for you',
+    'Hey guess what',
+    'Before you go outside...',
+    'Oh also',
+    'Outside is happening',
+    'Read this first',
+    'The sky has feelings today',
+    'The clouds told me something',
+    'Dress for the universe',
+    'You\'re welcome',
+    'Today\'s sky report',
+    'Weather news of sorts',
+    'The wind whispered this',
+    'So anyway',
+    'Weather from the cosmos',
+    'I checked the sky for you',
+    'Wakey wakey',
+    'The earth says hi',
+  ];
+
   static String randomTitle({Persona persona = Persona.heather}) {
     final titles = switch (persona) {
       Persona.heather => _heatherTitles,
       Persona.jade => _jadeTitles,
       Persona.luna => _lunaTitles,
+      Persona.aurelia => _aureliaTitles,
     };
     return titles[_random.nextInt(titles.length)];
   }

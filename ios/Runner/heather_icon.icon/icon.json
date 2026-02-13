@@ -22,26 +22,18 @@
             "scale" : 3.5,
             "translation-in-points" : [
               -1.0681152389224735e-05,
-              -241.19374732971198
+              -261.03766079718616
             ]
           }
         },
         {
-          "fill-specializations" : [
-            {
-              "appearance" : "dark",
-              "value" : {
-                "solid" : "srgb:1.00000,1.00000,1.00000,1.00000"
-              }
-            }
-          ],
-          "image-name" : "heather_logo.svg",
-          "name" : "heather_logo",
+          "image-name" : "heather_logo 2.svg",
+          "name" : "heather_logo 2",
           "position" : {
-            "scale" : 1,
+            "scale" : 0.3,
             "translation-in-points" : [
-              2.5,
-              237.0078125
+              3.1499999999998636,
+              145.18718060432104
             ]
           }
         }
