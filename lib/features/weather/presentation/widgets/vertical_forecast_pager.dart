@@ -3,7 +3,7 @@ import 'package:flutter/material.dart';
 import '../../../../core/constants/app_colors.dart';
 import '../../domain/entities/forecast.dart';
 import 'current_weather_page.dart';
-import 'details_page.dart';
+import 'details_page/details_page.dart';
 import 'hourly_forecast_page.dart';
 import 'radar_page.dart';
 import 'weekly_forecast_page.dart';

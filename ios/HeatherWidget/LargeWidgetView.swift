@@ -16,6 +16,12 @@ struct LargeWidgetView: View {
     var body: some View {
         WidgetView() {
             ZStack(alignment: .bottomTrailing) {
+                WeatherEffectOverlay(
+                    conditionName: data.conditionName,
+                    isDay: data.isDay,
+                    scale: 1.0
+                )
+
                 // Persona logo overlay
                 Image(personaLogoName)
                     .renderingMode(.template)
