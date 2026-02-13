@@ -219,7 +219,7 @@ class _WeatherScreenState extends ConsumerState<WeatherScreen> {
           children: [
             // Animated background
             WeatherBackground(
-              condition: WeatherCondition.partlyCloudy, // bgCondition,
+              condition: bgCondition,
               isDay: bgIsDay,
               temperature: bgTemperature,
             ),
