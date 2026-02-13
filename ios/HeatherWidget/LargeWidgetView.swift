@@ -27,8 +27,8 @@ struct LargeWidgetView: View {
                     .renderingMode(.template)
                     .resizable()
                     .scaledToFit()
-                    .frame(width: 150, height: 150)
-                    .opacity(0.15)
+                    .frame(width: 160, height: 160)
+                    .opacity(0.2)
                     .offset(x:20,y:16)
 
                 VStack(alignment: .leading, spacing: 8) {

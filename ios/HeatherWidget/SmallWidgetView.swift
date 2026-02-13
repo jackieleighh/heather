@@ -27,7 +27,7 @@ struct SmallWidgetView: View {
                     .renderingMode(.template)
                     .resizable()
                     .scaledToFit()
-                    .frame(width: 80, height: 80)
+                    .frame(width: 100, height: 100)
                     .opacity(0.2)
                     .offset(x:20,y:16)
 
