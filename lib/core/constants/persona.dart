@@ -33,7 +33,7 @@ enum Persona {
     displayName: 'Jade',
     initial: 'J',
     toneLabel: 'Chill af',
-    altToneLabel: 'A little cynical',
+    altToneLabel: 'Cynical & unrefined',
     toneSubtitle: 'Laid back, cool, good energy.',
     altToneSubtitle: 'Sarcastic, over it, needs a joint.',
     introLine: "I'm Jade. Here with the vibes.",
