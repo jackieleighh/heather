@@ -11,7 +11,7 @@ class ApiEndpoints {
       '$weatherBase?latitude=$latitude&longitude=$longitude'
       '&current=temperature_2m,relative_humidity_2m,apparent_temperature,'
       'is_day,precipitation,rain,snowfall,weather_code,cloud_cover,'
-      'wind_speed_10m'
+      'wind_speed_10m,uv_index'
       '&hourly=temperature_2m,precipitation_probability,weather_code,'
       'wind_speed_10m'
       '&daily=weather_code,temperature_2m_max,temperature_2m_min,'

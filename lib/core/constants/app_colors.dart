@@ -15,6 +15,7 @@ class AppColors {
   static const deepPurple = Color(0xFF2E1065);
   static const darkTeal = Color(0xFF0C4A5E);
   static const midnightPurple = Color(0xFF1A0A2E);
+  static const darkMagenta = Color(0xFF7d0047);
 
   // Light / muted variants
   static const softMagenta = Color(0xFFF9A8D4);

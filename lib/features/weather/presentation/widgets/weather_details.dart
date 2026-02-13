@@ -53,6 +53,12 @@ class WeatherDetails extends StatelessWidget {
                 label: '${weather.windSpeed.round()} mph',
                 style: style,
               ),
+              const SizedBox(width: 16),
+              _DetailChip(
+                icon: WeatherIcons.day_sunny,
+                label: 'UV ${weather.uvIndex.round()}',
+                style: style,
+              ),
             ],
           ),
         ],

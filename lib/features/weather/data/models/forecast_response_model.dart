@@ -87,6 +87,7 @@ class ForecastResponseModel {
         isDay: current.isDay == 1,
         precipitation: current.precipitation,
         cloudCover: current.cloudCover,
+        uvIndex: current.uvIndex,
       ),
       hourly: hourlyEntities,
       hourlyToday: hourlyTodayEntities,
@@ -118,6 +119,8 @@ class CurrentWeatherModel {
   final int cloudCover;
   @JsonKey(name: 'wind_speed_10m')
   final double windSpeed10m;
+  @JsonKey(name: 'uv_index', defaultValue: 0.0)
+  final double uvIndex;
 
   const CurrentWeatherModel({
     required this.temperature2m,
@@ -130,6 +133,7 @@ class CurrentWeatherModel {
     required this.weatherCode,
     required this.cloudCover,
     required this.windSpeed10m,
+    required this.uvIndex,
   });
 
   factory CurrentWeatherModel.fromJson(Map<String, dynamic> json) =>

@@ -17,5 +17,6 @@ class Weather with _$Weather {
     required bool isDay,
     required double precipitation,
     required int cloudCover,
+    required double uvIndex,
   }) = _Weather;
 }

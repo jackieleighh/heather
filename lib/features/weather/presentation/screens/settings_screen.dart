@@ -328,21 +328,18 @@ class SettingsScreen extends ConsumerWidget {
                                           data: Theme.of(context).copyWith(
                                             timePickerTheme: TimePickerThemeData(
                                               backgroundColor:
-                                                  AppColors.midnightPurple,
+                                                  AppColors.darkMagenta,
                                               hourMinuteTextColor:
                                                   AppColors.cream,
-                                              hourMinuteColor: AppColors
-                                                  .vibrantPurple
+                                              hourMinuteColor: AppColors.magenta
                                                   .withValues(alpha: 0.3),
                                               dayPeriodTextColor:
                                                   AppColors.cream,
-                                              dayPeriodColor: AppColors
-                                                  .vibrantPurple
+                                              dayPeriodColor: AppColors.magenta
                                                   .withValues(alpha: 0.3),
-                                              dialHandColor:
-                                                  AppColors.vibrantPurple,
+                                              dialHandColor: AppColors.magenta,
                                               dialBackgroundColor: AppColors
-                                                  .vibrantPurple
+                                                  .magenta
                                                   .withValues(alpha: 0.15),
                                               dialTextColor: AppColors.cream,
                                               entryModeIconColor: AppColors

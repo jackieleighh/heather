@@ -5,11 +5,7 @@ class ErrorScreen extends StatelessWidget {
   final String message;
   final VoidCallback onRetry;
 
-  const ErrorScreen({
-    super.key,
-    required this.message,
-    required this.onRetry,
-  });
+  const ErrorScreen({super.key, required this.message, required this.onRetry});
 
   @override
   Widget build(BuildContext context) {
@@ -43,7 +39,7 @@ class ErrorScreen extends StatelessWidget {
                   style: Theme.of(context).textTheme.bodySmall,
                 ),
                 style: ElevatedButton.styleFrom(
-                  backgroundColor: AppColors.vibrantPurple,
+                  backgroundColor: AppColors.darkMagenta,
                   foregroundColor: AppColors.cream,
                   padding: const EdgeInsets.symmetric(
                     horizontal: 24,

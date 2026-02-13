@@ -18,7 +18,7 @@ class LogoOverlay extends ConsumerWidget {
       bottom: 0,
       child: IgnorePointer(
         child: Opacity(
-          opacity: 0.3,
+          opacity: 0.2,
           child: persona == Persona.luna
               ? SvgPicture.asset(
                   'assets/images/luna_logo.svg',

@@ -66,8 +66,8 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
                 child: _step == 0
                     ? _buildPersonaStep()
                     : _step == 1
-                        ? _buildToneStep()
-                        : _buildNotificationsStep(),
+                    ? _buildToneStep()
+                    : _buildNotificationsStep(),
               ),
             ),
           ),
@@ -103,10 +103,7 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
           ),
         ),
         const Spacer(flex: 3),
-        _BottomButton(
-          label: 'Next',
-          onTap: () => setState(() => _step = 1),
-        ),
+        _BottomButton(label: 'Next', onTap: () => setState(() => _step = 1)),
         const SizedBox(height: 48),
       ],
     );
@@ -227,16 +224,19 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
                         return Theme(
                           data: Theme.of(context).copyWith(
                             timePickerTheme: TimePickerThemeData(
-                              backgroundColor: AppColors.midnightPurple,
+                              backgroundColor: AppColors.darkMagenta,
                               hourMinuteTextColor: AppColors.cream,
-                              hourMinuteColor: AppColors.vibrantPurple
-                                  .withValues(alpha: 0.3),
+                              hourMinuteColor: AppColors.magenta.withValues(
+                                alpha: 0.3,
+                              ),
                               dayPeriodTextColor: AppColors.cream,
-                              dayPeriodColor: AppColors.vibrantPurple
-                                  .withValues(alpha: 0.3),
-                              dialHandColor: AppColors.vibrantPurple,
-                              dialBackgroundColor: AppColors.vibrantPurple
-                                  .withValues(alpha: 0.15),
+                              dayPeriodColor: AppColors.magenta.withValues(
+                                alpha: 0.3,
+                              ),
+                              dialHandColor: AppColors.magenta,
+                              dialBackgroundColor: AppColors.magenta.withValues(
+                                alpha: 0.15,
+                              ),
                               dialTextColor: AppColors.cream,
                               entryModeIconColor: AppColors.cream.withValues(
                                 alpha: 0.6,

@@ -69,6 +69,7 @@ class RainCard extends StatelessWidget {
               ),
             ],
           ),
+          const SizedBox(height: 4),
           Expanded(
             child: CustomPaint(
               size: Size.infinite,

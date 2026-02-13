@@ -94,7 +94,7 @@ class _MiniErrorView extends StatelessWidget {
             ElevatedButton(
               onPressed: onRetry,
               style: ElevatedButton.styleFrom(
-                backgroundColor: AppColors.vibrantPurple,
+                backgroundColor: AppColors.darkMagenta,
                 foregroundColor: AppColors.cream,
                 shape: RoundedRectangleBorder(
                   borderRadius: BorderRadius.circular(24),

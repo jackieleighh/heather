@@ -26,23 +26,32 @@ class _HourlyForecastPageState extends State<HourlyForecastPage> {
   static const _overscrollThreshold = 60.0;
   bool _pageChanging = false;
   double _topFade = 0.0;
+  double _bottomFade = 1.0;
 
   @override
   void initState() {
     super.initState();
-    _scrollController.addListener(_updateTopFade);
+    _scrollController.addListener(_updateFades);
   }
 
   @override
   void dispose() {
-    _scrollController.removeListener(_updateTopFade);
+    _scrollController.removeListener(_updateFades);
     _scrollController.dispose();
     super.dispose();
   }
 
-  void _updateTopFade() {
-    final t = (_scrollController.offset / 40.0).clamp(0.0, 1.0);
-    if (t != _topFade) setState(() => _topFade = t);
+  void _updateFades() {
+    final pos = _scrollController.position;
+    final top = (pos.pixels / 40.0).clamp(0.0, 1.0);
+    final remaining = pos.maxScrollExtent - pos.pixels;
+    final bottom = (remaining / 40.0).clamp(0.0, 1.0);
+    if (top != _topFade || bottom != _bottomFade) {
+      setState(() {
+        _topFade = top;
+        _bottomFade = bottom;
+      });
+    }
   }
 
   bool _handleScrollNotification(ScrollNotification notification) {
@@ -113,7 +122,7 @@ class _HourlyForecastPageState extends State<HourlyForecastPage> {
                   Colors.white.withValues(alpha: 1.0 - _topFade),
                   Colors.white,
                   Colors.white,
-                  Colors.transparent,
+                  Colors.white.withValues(alpha: 1.0 - _bottomFade),
                 ],
                 stops: const [0.0, 0.05, 0.95, 1.0],
               ).createShader(bounds),
