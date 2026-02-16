@@ -9,8 +9,9 @@ import './card_container.dart';
 
 class ConditionsCard extends StatefulWidget {
   final List<HourlyWeather> hourly;
+  final bool compact;
 
-  const ConditionsCard({super.key, required this.hourly});
+  const ConditionsCard({super.key, required this.hourly, this.compact = false});
 
   @override
   State<ConditionsCard> createState() => _ConditionsCardState();
@@ -60,19 +61,23 @@ class _ConditionsCardState extends State<ConditionsCard> {
             children: [
               Icon(
                 WeatherIcons.cloud,
-                size: 18,
+                size: widget.compact ? 12 : 18,
                 color: AppColors.cream.withValues(alpha: 0.8),
               ),
-              const SizedBox(width: 8),
+              SizedBox(width: widget.compact ? 5 : 8),
               Text(
                 'Conditions',
-                style: theme.textTheme.bodyLarge?.copyWith(
-                  fontWeight: FontWeight.w600,
-                ),
+                style: widget.compact
+                    ? theme.textTheme.bodySmall?.copyWith(
+                        fontWeight: FontWeight.w600,
+                      )
+                    : theme.textTheme.bodyLarge?.copyWith(
+                        fontWeight: FontWeight.w600,
+                      ),
               ),
             ],
           ),
-          const SizedBox(height: 2),
+          SizedBox(height: widget.compact ? 1 : 2),
           Expanded(
             child: ShaderMask(
               shaderCallback: (bounds) {
@@ -100,7 +105,7 @@ class _ConditionsCardState extends State<ConditionsCard> {
                     'ha',
                   ).format(h.time).toLowerCase();
                   return Padding(
-                    padding: const EdgeInsets.only(right: 14),
+                    padding: const EdgeInsets.only(right: 12),
                     child: Column(
                       mainAxisAlignment: MainAxisAlignment.center,
                       mainAxisSize: MainAxisSize.min,
@@ -109,21 +114,19 @@ class _ConditionsCardState extends State<ConditionsCard> {
                           '${h.temperature.round()}°',
                           style: theme.textTheme.bodyMedium?.copyWith(
                             fontWeight: FontWeight.w700,
-                            fontSize: 12,
+                            fontSize: 11,
                           ),
                         ),
-                        const SizedBox(height: 2),
                         Icon(
                           conditionIcon(h.weatherCode),
                           color: AppColors.cream,
-                          size: 20,
+                          size: 18,
                         ),
-                        const SizedBox(height: 2),
                         Text(
                           hourLabel,
                           style: theme.textTheme.bodySmall?.copyWith(
                             color: AppColors.cream.withValues(alpha: 0.8),
-                            fontSize: 10,
+                            fontSize: 9,
                           ),
                         ),
                       ],

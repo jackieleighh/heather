@@ -10,13 +10,15 @@ import './card_container.dart';
 class TemperatureCard extends StatelessWidget {
   final List<double> temps;
   final List<DateTime> hours;
-  final DateTime now;
+  final DateTime? now;
+  final bool compact;
 
   const TemperatureCard({
     super.key,
     required this.temps,
     required this.hours,
-    required this.now,
+    this.now,
+    this.compact = false,
   });
 
   @override
@@ -36,21 +38,25 @@ class TemperatureCard extends StatelessWidget {
             children: [
               Icon(
                 WeatherIcons.thermometer,
-                size: 18,
+                size: compact ? 12 : 18,
                 color: AppColors.cream.withValues(alpha: 0.8),
               ),
-              const SizedBox(width: 8),
+              SizedBox(width: compact ? 5 : 8),
               Text(
                 'Temp',
-                style: theme.textTheme.bodyLarge?.copyWith(
-                  fontWeight: FontWeight.w600,
-                ),
+                style: compact
+                    ? theme.textTheme.bodySmall?.copyWith(
+                        fontWeight: FontWeight.w600,
+                      )
+                    : theme.textTheme.bodyLarge?.copyWith(
+                        fontWeight: FontWeight.w600,
+                      ),
               ),
               const Spacer(),
               Text(
                 '${hi.round()}°',
                 style: GoogleFonts.poppins(
-                  fontSize: 14,
+                  fontSize: compact ? 11 : 14,
                   fontWeight: FontWeight.w700,
                   color: AppColors.cream,
                 ),
@@ -58,14 +64,14 @@ class TemperatureCard extends StatelessWidget {
               Text(
                 ' / ${lo.round()}°',
                 style: GoogleFonts.poppins(
-                  fontSize: 14,
+                  fontSize: compact ? 11 : 14,
                   fontWeight: FontWeight.w600,
                   color: AppColors.cream.withValues(alpha: 0.6),
                 ),
               ),
             ],
           ),
-          const SizedBox(height: 4),
+          SizedBox(height: compact ? 2 : 4),
           Expanded(
             child: CustomPaint(
               size: Size.infinite,
@@ -81,12 +87,12 @@ class TemperatureCard extends StatelessWidget {
 class _TempLinePainter extends CustomPainter {
   final List<double> temps;
   final List<DateTime> hours;
-  final DateTime now;
+  final DateTime? now;
 
   _TempLinePainter({
     required this.temps,
     required this.hours,
-    required this.now,
+    this.now,
   });
 
   @override
@@ -146,29 +152,27 @@ class _TempLinePainter extends CustomPainter {
     );
 
     // "Now" dot — interpolate position along the hour axis
-    if (hours.length >= 2) {
+    final nowTime = now;
+    if (nowTime != null && hours.length >= 2) {
       double dotX;
       double dotY;
 
-      if (now.isBefore(hours.first)) {
-        // Before first data point — pin to start
+      if (nowTime.isBefore(hours.first)) {
         dotX = points.first.dx;
         dotY = points.first.dy;
-      } else if (now.isAfter(hours.last)) {
-        // After last data point — pin to end
+      } else if (nowTime.isAfter(hours.last)) {
         dotX = points.last.dx;
         dotY = points.last.dy;
       } else {
-        // Find the two surrounding hours
         var idx = 0;
         for (var i = 0; i < hours.length - 1; i++) {
-          if (!now.isBefore(hours[i]) && now.isBefore(hours[i + 1])) {
+          if (!nowTime.isBefore(hours[i]) && nowTime.isBefore(hours[i + 1])) {
             idx = i;
             break;
           }
         }
         final segFraction = hours[idx + 1].difference(hours[idx]).inSeconds > 0
-            ? now.difference(hours[idx]).inSeconds /
+            ? nowTime.difference(hours[idx]).inSeconds /
                   hours[idx + 1].difference(hours[idx]).inSeconds
             : 0.0;
         dotX =

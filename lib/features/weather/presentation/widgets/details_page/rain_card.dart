@@ -12,7 +12,8 @@ class RainCard extends StatelessWidget {
   final int precipitationProbability;
   final List<int> hourlyPrecipProb;
   final List<DateTime> hours;
-  final DateTime now;
+  final DateTime? now;
+  final bool compact;
 
   const RainCard({
     super.key,
@@ -20,7 +21,8 @@ class RainCard extends StatelessWidget {
     required this.precipitationProbability,
     required this.hourlyPrecipProb,
     required this.hours,
-    required this.now,
+    this.now,
+    this.compact = false,
   });
 
   @override
@@ -39,21 +41,25 @@ class RainCard extends StatelessWidget {
             children: [
               Icon(
                 WeatherIcons.raindrop,
-                size: 18,
+                size: compact ? 12 : 18,
                 color: AppColors.cream.withValues(alpha: 0.8),
               ),
-              const SizedBox(width: 8),
+              SizedBox(width: compact ? 5 : 8),
               Text(
                 'Rain',
-                style: theme.textTheme.bodyLarge?.copyWith(
-                  fontWeight: FontWeight.w600,
-                ),
+                style: compact
+                    ? theme.textTheme.bodySmall?.copyWith(
+                        fontWeight: FontWeight.w600,
+                      )
+                    : theme.textTheme.bodyLarge?.copyWith(
+                        fontWeight: FontWeight.w600,
+                      ),
               ),
               const Spacer(),
               Text(
                 precipLabel,
                 style: GoogleFonts.poppins(
-                  fontSize: 14,
+                  fontSize: compact ? 11 : 14,
                   fontWeight: FontWeight.w700,
                   color: AppColors.cream,
                 ),
@@ -62,14 +68,14 @@ class RainCard extends StatelessWidget {
               Text(
                 '$precipitationProbability% chance',
                 style: GoogleFonts.poppins(
-                  fontSize: 14,
+                  fontSize: compact ? 11 : 14,
                   fontWeight: FontWeight.w600,
                   color: AppColors.cream.withValues(alpha: 0.6),
                 ),
               ),
             ],
           ),
-          const SizedBox(height: 4),
+          SizedBox(height: compact ? 2 : 4),
           Expanded(
             child: CustomPaint(
               size: Size.infinite,
@@ -89,12 +95,12 @@ class RainCard extends StatelessWidget {
 class _PrecipBarPainter extends CustomPainter {
   final List<int> precipProb;
   final List<DateTime> hours;
-  final DateTime now;
+  final DateTime? now;
 
   _PrecipBarPainter({
     required this.precipProb,
     required this.hours,
-    required this.now,
+    this.now,
   });
 
   @override
@@ -147,14 +153,16 @@ class _PrecipBarPainter extends CustomPainter {
     }
 
     // "Now" indicator line
-    if (hours.length >= 2) {
-      if (!now.isBefore(hours.first) && !now.isAfter(hours.last)) {
+    final nowTime = now;
+    if (nowTime != null && hours.length >= 2) {
+      if (!nowTime.isBefore(hours.first) && !nowTime.isAfter(hours.last)) {
         final totalMs = hours.last
             .difference(hours.first)
             .inMilliseconds
             .toDouble();
         if (totalMs > 0) {
-          final nowMs = now.difference(hours.first).inMilliseconds.toDouble();
+          final nowMs =
+              nowTime.difference(hours.first).inMilliseconds.toDouble();
           final nowX = padLeft + graphW * (nowMs / totalMs);
           canvas.drawLine(
             Offset(nowX, 0),

@@ -14,6 +14,7 @@ class Forecast with _$Forecast {
     required Weather current,
     required List<HourlyWeather> hourly,
     @Default([]) List<HourlyWeather> hourlyToday,
+    @Default([]) List<HourlyWeather> hourlyAll,
     required List<DailyWeather> daily,
     required int utcOffsetSeconds,
   }) = _Forecast;
@@ -48,5 +49,14 @@ class Forecast with _$Forecast {
         todayDaily.sunset.hour * 60 + todayDaily.sunset.minute;
 
     return localMinutes >= sunriseMinutes && localMinutes < sunsetMinutes;
+  }
+
+  /// Returns hourly data for a specific date, filtered from hourlyAll.
+  List<HourlyWeather> hourlyForDay(DateTime date) {
+    final dayStart = DateTime(date.year, date.month, date.day);
+    final dayEnd = dayStart.add(const Duration(days: 1));
+    return hourlyAll
+        .where((h) => !h.time.isBefore(dayStart) && h.time.isBefore(dayEnd))
+        .toList();
   }
 }

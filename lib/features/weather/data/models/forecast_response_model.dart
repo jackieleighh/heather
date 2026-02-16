@@ -38,6 +38,7 @@ class ForecastResponseModel {
 
     final hourlyEntities = <HourlyWeather>[];
     final hourlyTodayEntities = <HourlyWeather>[];
+    final hourlyAllEntities = <HourlyWeather>[];
     for (var i = 0; i < hourly.time.length; i++) {
       final time = DateTime.parse(hourly.time[i]);
       final entity = HourlyWeather(
@@ -49,6 +50,7 @@ class ForecastResponseModel {
         windSpeed: hourly.windSpeed10m[i],
         uvIndex: i < hourly.uvIndex.length ? hourly.uvIndex[i] : 0.0,
       );
+      hourlyAllEntities.add(entity);
       // All hours of today (midnight to midnight)
       if (!time.isBefore(todayStart) && time.isBefore(todayEnd)) {
         hourlyTodayEntities.add(entity);
@@ -92,6 +94,7 @@ class ForecastResponseModel {
       ),
       hourly: hourlyEntities,
       hourlyToday: hourlyTodayEntities,
+      hourlyAll: hourlyAllEntities,
       daily: dailyEntities,
       utcOffsetSeconds: utcOffsetSeconds,
     );

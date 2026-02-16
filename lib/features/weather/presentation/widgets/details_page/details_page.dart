@@ -55,26 +55,19 @@ class DetailsPage extends ConsumerWidget {
             Expanded(
               child: Padding(
                 padding: const EdgeInsets.only(bottom: 5),
-                child: AirCard(
-                  aqi: aqi.whenOrNull(data: (v) => v),
-                  isLoading: aqi.isLoading,
-                  windSpeed: forecast.current.windSpeed,
-                  hourlyWind: forecast.hourlyToday
-                      .map((h) => h.windSpeed)
-                      .toList(),
-                ),
-              ),
-            ),
-            Expanded(
-              child: Padding(
-                padding: const EdgeInsets.only(bottom: 5),
                 child: ConditionsCard(hourly: forecast.hourly),
               ),
             ),
             Expanded(
               child: Padding(
                 padding: const EdgeInsets.only(bottom: 5),
-                child: MoonCard(now: now),
+                child: TemperatureCard(
+                  temps: forecast.hourlyToday
+                      .map((h) => h.temperature)
+                      .toList(),
+                  hours: forecast.hourlyToday.map((h) => h.time).toList(),
+                  now: now,
+                ),
               ),
             ),
             Expanded(
@@ -94,6 +87,19 @@ class DetailsPage extends ConsumerWidget {
             Expanded(
               child: Padding(
                 padding: const EdgeInsets.only(bottom: 5),
+                child: AirCard(
+                  aqi: aqi.whenOrNull(data: (v) => v),
+                  isLoading: aqi.isLoading,
+                  windSpeed: forecast.current.windSpeed,
+                  hourlyWind: forecast.hourlyToday
+                      .map((h) => h.windSpeed)
+                      .toList(),
+                ),
+              ),
+            ),
+            Expanded(
+              child: Padding(
+                padding: const EdgeInsets.only(bottom: 5),
                 child: SunCard(
                   sunrise: today.sunrise,
                   sunset: today.sunset,
@@ -107,13 +113,7 @@ class DetailsPage extends ConsumerWidget {
             Expanded(
               child: Padding(
                 padding: const EdgeInsets.only(bottom: 5),
-                child: TemperatureCard(
-                  temps: forecast.hourlyToday
-                      .map((h) => h.temperature)
-                      .toList(),
-                  hours: forecast.hourlyToday.map((h) => h.time).toList(),
-                  now: now,
-                ),
+                child: MoonCard(now: now),
               ),
             ),
           ],

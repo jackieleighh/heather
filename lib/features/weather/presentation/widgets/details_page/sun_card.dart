@@ -13,7 +13,7 @@ class SunCard extends StatelessWidget {
   final double uvIndex;
   final List<double> hourlyUv;
   final List<DateTime> hours;
-  final DateTime now;
+  final DateTime? now;
 
   const SunCard({
     super.key,
@@ -22,7 +22,7 @@ class SunCard extends StatelessWidget {
     required this.uvIndex,
     required this.hourlyUv,
     required this.hours,
-    required this.now,
+    this.now,
   });
 
   @override
@@ -136,12 +136,12 @@ class SunCard extends StatelessWidget {
 class _UvLinePainter extends CustomPainter {
   final List<double> uvValues;
   final List<DateTime> hours;
-  final DateTime now;
+  final DateTime? now;
 
   _UvLinePainter({
     required this.uvValues,
     required this.hours,
-    required this.now,
+    this.now,
   });
 
   @override
@@ -202,26 +202,27 @@ class _UvLinePainter extends CustomPainter {
     );
 
     // "Now" dot
-    if (hours.length >= 2) {
+    final nowTime = now;
+    if (nowTime != null && hours.length >= 2) {
       double dotX;
       double dotY;
 
-      if (now.isBefore(hours.first)) {
+      if (nowTime.isBefore(hours.first)) {
         dotX = points.first.dx;
         dotY = points.first.dy;
-      } else if (now.isAfter(hours.last)) {
+      } else if (nowTime.isAfter(hours.last)) {
         dotX = points.last.dx;
         dotY = points.last.dy;
       } else {
         var idx = 0;
         for (var i = 0; i < hours.length - 1; i++) {
-          if (!now.isBefore(hours[i]) && now.isBefore(hours[i + 1])) {
+          if (!nowTime.isBefore(hours[i]) && nowTime.isBefore(hours[i + 1])) {
             idx = i;
             break;
           }
         }
         final segFraction = hours[idx + 1].difference(hours[idx]).inSeconds > 0
-            ? now.difference(hours[idx]).inSeconds /
+            ? nowTime.difference(hours[idx]).inSeconds /
                   hours[idx + 1].difference(hours[idx]).inSeconds
             : 0.0;
         dotX =

@@ -70,8 +70,9 @@ class _VerticalForecastPagerState extends State<VerticalForecastPager> {
               longitude: widget.longitude,
             ),
             WeeklyForecastPage(
-              daily: widget.forecast.daily,
-              utcOffsetSeconds: widget.forecast.utcOffsetSeconds,
+              forecast: widget.forecast,
+              latitude: widget.latitude,
+              longitude: widget.longitude,
             ),
             RadarPage(latitude: widget.latitude, longitude: widget.longitude),
           ],
