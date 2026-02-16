@@ -103,7 +103,12 @@ struct LargeWidgetView: View {
                         DetailPill(label: "Feels", value: "\(data.feelsLike)°")
                         DetailPill(label: "Humidity", value: "\(data.humidity)%")
                         DetailPill(label: "Wind", value: "\(data.windSpeed) mph")
-                        DetailPill(label: "UV", value: "\(data.uvIndex)")
+                        if data.isDay {
+                            DetailPill(label: "UV", value: "\(data.uvIndex)")
+                        } else {
+                            let phase = getMoonPhase()
+                            DetailPill(label: "Moon", value: phase.rawValue)
+                        }
                     }
                 }
                 .foregroundStyle(.white)

@@ -6,6 +6,7 @@ import 'package:pull_to_refresh/pull_to_refresh.dart';
 import '../../../../core/constants/app_colors.dart';
 import '../../domain/entities/forecast.dart';
 import '../providers/alert_provider.dart';
+import '../providers/settings_provider.dart';
 import 'alert_card.dart';
 import 'location_header.dart';
 import 'sassy_quip.dart';
@@ -137,7 +138,10 @@ class _CurrentWeatherPageState extends ConsumerState<CurrentWeatherPage> {
                       ),
                       if (alerts.isNotEmpty) ...[
                         const SizedBox(height: 10),
-                        AlertCard(alerts: alerts),
+                        AlertCard(
+                          alerts: alerts,
+                          heroColor: ref.watch(settingsProvider).persona.heroColor,
+                        ),
                       ],
                       const SizedBox(height: 8),
                       TemperatureDisplay(

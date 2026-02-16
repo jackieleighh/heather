@@ -1,9 +1,11 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:intl/intl.dart';
 
 import '../../../../core/constants/app_colors.dart';
 import '../../domain/entities/weather_alert.dart';
+import '../providers/settings_provider.dart';
 
 void showAlertDetailSheet(BuildContext context, List<WeatherAlert> alerts) {
   showModalBottomSheet(
@@ -14,22 +16,23 @@ void showAlertDetailSheet(BuildContext context, List<WeatherAlert> alerts) {
   );
 }
 
-class AlertDetailSheet extends StatelessWidget {
+class AlertDetailSheet extends ConsumerWidget {
   final List<WeatherAlert> alerts;
 
   const AlertDetailSheet({super.key, required this.alerts});
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
+    final heroColor = ref.watch(settingsProvider).persona.heroColor;
     return DraggableScrollableSheet(
       initialChildSize: 0.7,
       minChildSize: 0.4,
       maxChildSize: 0.95,
       builder: (context, scrollController) {
         return Container(
-          decoration: const BoxDecoration(
-            color: Color(0xFF1A1A2E),
-            borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
+          decoration: BoxDecoration(
+            color: heroColor,
+            borderRadius: const BorderRadius.vertical(top: Radius.circular(24)),
           ),
           child: Column(
             children: [
@@ -47,8 +50,10 @@ class AlertDetailSheet extends StatelessWidget {
               ),
               // Title
               Padding(
-                padding:
-                    const EdgeInsets.symmetric(horizontal: 20, vertical: 8),
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 20,
+                  vertical: 8,
+                ),
                 child: Row(
                   children: [
                     Text(
@@ -62,7 +67,9 @@ class AlertDetailSheet extends StatelessWidget {
                     const SizedBox(width: 8),
                     Container(
                       padding: const EdgeInsets.symmetric(
-                          horizontal: 8, vertical: 2),
+                        horizontal: 8,
+                        vertical: 2,
+                      ),
                       decoration: BoxDecoration(
                         color: AppColors.cream.withValues(alpha: 0.15),
                         borderRadius: BorderRadius.circular(12),
@@ -83,8 +90,10 @@ class AlertDetailSheet extends StatelessWidget {
               Expanded(
                 child: ListView.separated(
                   controller: scrollController,
-                  padding:
-                      const EdgeInsets.symmetric(horizontal: 20, vertical: 8),
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 20,
+                    vertical: 8,
+                  ),
                   itemCount: alerts.length,
                   separatorBuilder: (_, _) => const SizedBox(height: 16),
                   itemBuilder: (context, index) =>
@@ -125,8 +134,7 @@ class _AlertDetailCard extends StatelessWidget {
           Row(
             children: [
               Container(
-                padding:
-                    const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
+                padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
                 decoration: BoxDecoration(
                   color: alert.severity.color.withValues(alpha: 0.25),
                   borderRadius: BorderRadius.circular(8),

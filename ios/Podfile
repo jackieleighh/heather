@@ -4,6 +4,14 @@ platform :ios, '13.0'
 # CocoaPods analytics sends network stats synchronously affecting flutter build latency.
 ENV['COCOAPODS_DISABLE_STATS'] = 'true'
 
+# Xcode 26 uses project object version 70 which xcodeproj gem doesn't support yet.
+# Patch the mapping until xcodeproj releases a fix.
+require 'xcodeproj'
+updated = Xcodeproj::Constants::COMPATIBILITY_VERSION_BY_OBJECT_VERSION.dup
+updated[70] = 'Xcode 26.0'
+Xcodeproj::Constants.send(:remove_const, :COMPATIBILITY_VERSION_BY_OBJECT_VERSION)
+Xcodeproj::Constants.const_set(:COMPATIBILITY_VERSION_BY_OBJECT_VERSION, updated.freeze)
+
 project 'Runner', {
   'Debug' => :debug,
   'Profile' => :release,

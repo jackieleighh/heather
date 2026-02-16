@@ -7,8 +7,9 @@ import '../screens/alert_detail_sheet.dart';
 
 class AlertCard extends StatelessWidget {
   final List<WeatherAlert> alerts;
+  final Color heroColor;
 
-  const AlertCard({super.key, required this.alerts});
+  const AlertCard({super.key, required this.alerts, required this.heroColor});
 
   @override
   Widget build(BuildContext context) {
@@ -23,10 +24,10 @@ class AlertCard extends StatelessWidget {
         width: double.infinity,
         padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
         decoration: BoxDecoration(
-          color: primary.severity.color.withValues(alpha: 0.2),
+          color: heroColor.withValues(alpha: 0.2),
           borderRadius: BorderRadius.circular(16),
           border: Border.all(
-            color: primary.severity.color.withValues(alpha: 0.4),
+            color: heroColor.withValues(alpha: 0.4),
             width: 1,
           ),
         ),

@@ -76,7 +76,12 @@ struct MediumWidgetView: View {
                         MediumDetailPill(label: "Feels", value: "\(data.feelsLike)°")
                         MediumDetailPill(label: "Humidity", value: "\(data.humidity)%")
                         MediumDetailPill(label: "Wind", value: "\(data.windSpeed) mph")
-                        MediumDetailPill(label: "UV", value: "\(data.uvIndex)")
+                        if data.isDay {
+                            MediumDetailPill(label: "UV", value: "\(data.uvIndex)")
+                        } else {
+                            let phase = getMoonPhase()
+                            MediumDetailPill(label: "Moon", value: phase.rawValue)
+                        }
                     }
                 }
                 .foregroundStyle(.white)

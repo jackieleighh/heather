@@ -532,6 +532,12 @@ class _MapCard extends StatelessWidget {
               ),
             ),
           ),
+          // Subtle edge fade
+          Positioned.fill(
+            child: IgnorePointer(
+              child: CustomPaint(painter: _EdgeFadePainter()),
+            ),
+          ),
           Positioned(
             top: 10,
             left: 12,
@@ -555,4 +561,61 @@ class _MapCard extends StatelessWidget {
       ),
     );
   }
+}
+
+class _EdgeFadePainter extends CustomPainter {
+  @override
+  void paint(Canvas canvas, Size size) {
+    const fade = 18.0;
+    const edgeColor = Color(0x18808895);
+    const clear = Color(0x00808895);
+
+    // Top
+    canvas.drawRect(
+      Rect.fromLTWH(0, 0, size.width, fade),
+      Paint()
+        ..shader = const LinearGradient(
+          begin: Alignment.topCenter,
+          end: Alignment.bottomCenter,
+          colors: [edgeColor, clear],
+        ).createShader(Rect.fromLTWH(0, 0, size.width, fade)),
+    );
+    // Bottom
+    canvas.drawRect(
+      Rect.fromLTWH(0, size.height - fade, size.width, fade),
+      Paint()
+        ..shader = const LinearGradient(
+          begin: Alignment.bottomCenter,
+          end: Alignment.topCenter,
+          colors: [edgeColor, clear],
+        ).createShader(
+          Rect.fromLTWH(0, size.height - fade, size.width, fade),
+        ),
+    );
+    // Left
+    canvas.drawRect(
+      Rect.fromLTWH(0, 0, fade, size.height),
+      Paint()
+        ..shader = const LinearGradient(
+          begin: Alignment.centerLeft,
+          end: Alignment.centerRight,
+          colors: [edgeColor, clear],
+        ).createShader(Rect.fromLTWH(0, 0, fade, size.height)),
+    );
+    // Right
+    canvas.drawRect(
+      Rect.fromLTWH(size.width - fade, 0, fade, size.height),
+      Paint()
+        ..shader = const LinearGradient(
+          begin: Alignment.centerRight,
+          end: Alignment.centerLeft,
+          colors: [edgeColor, clear],
+        ).createShader(
+          Rect.fromLTWH(size.width - fade, 0, fade, size.height),
+        ),
+    );
+  }
+
+  @override
+  bool shouldRepaint(covariant CustomPainter oldDelegate) => false;
 }

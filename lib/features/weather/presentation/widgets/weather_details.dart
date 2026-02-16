@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:weather_icons/weather_icons.dart';
 
 import '../../../../core/constants/app_colors.dart';
+import '../../../../core/utils/moon_phase.dart';
 import '../../domain/entities/weather.dart';
 
 class WeatherDetails extends StatelessWidget {
@@ -54,11 +55,18 @@ class WeatherDetails extends StatelessWidget {
                 style: style,
               ),
               const SizedBox(width: 16),
-              _DetailChip(
-                icon: WeatherIcons.day_sunny,
-                label: 'UV ${weather.uvIndex.round()}',
-                style: style,
-              ),
+              if (weather.isDay)
+                _DetailChip(
+                  icon: WeatherIcons.day_sunny,
+                  label: 'UV ${weather.uvIndex.round()}',
+                  style: style,
+                )
+              else
+                _DetailChip(
+                  icon: moonPhaseIcon(DateTime.now()),
+                  label: '${moonIllumination(DateTime.now()).round()}%',
+                  style: style,
+                ),
             ],
           ),
         ],
