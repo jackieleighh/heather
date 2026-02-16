@@ -30,7 +30,7 @@ class CardContainer extends StatelessWidget {
               size: 80,
             ),
           ),
-          Padding(padding: const EdgeInsets.all(14), child: child),
+          Padding(padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10), child: child),
         ],
       ),
     );

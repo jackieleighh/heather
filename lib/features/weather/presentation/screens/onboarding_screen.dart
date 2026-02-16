@@ -52,27 +52,34 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
     }
   }
 
+  Color get _accentColor => _persona.heroColor;
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: AppColors.magenta,
-      body: Stack(
-        children: [
-          SafeArea(
-            child: Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 32),
-              child: AnimatedSwitcher(
-                duration: const Duration(milliseconds: 300),
-                child: _step == 0
-                    ? _buildPersonaStep()
-                    : _step == 1
-                    ? _buildToneStep()
-                    : _buildNotificationsStep(),
+      backgroundColor: Colors.transparent,
+      body: AnimatedContainer(
+        duration: const Duration(milliseconds: 400),
+        curve: Curves.easeInOut,
+        color: _accentColor,
+        child: Stack(
+          children: [
+            SafeArea(
+              child: Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 32),
+                child: AnimatedSwitcher(
+                  duration: const Duration(milliseconds: 300),
+                  child: _step == 0
+                      ? _buildPersonaStep()
+                      : _step == 1
+                      ? _buildToneStep()
+                      : _buildNotificationsStep(),
+                ),
               ),
             ),
-          ),
-          const LogoOverlay(),
-        ],
+            const LogoOverlay(),
+          ],
+        ),
       ),
     );
   }
@@ -103,7 +110,11 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
           ),
         ),
         const Spacer(flex: 3),
-        _BottomButton(label: 'Next', onTap: () => setState(() => _step = 1)),
+        _BottomButton(
+          label: 'Next',
+          accentColor: _accentColor,
+          onTap: () => setState(() => _step = 1),
+        ),
         const SizedBox(height: 48),
       ],
     );
@@ -139,7 +150,11 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
         ),
         const Spacer(flex: 3),
         if (_explicitLanguage != null)
-          _BottomButton(label: 'Next', onTap: () => setState(() => _step = 2)),
+          _BottomButton(
+            label: 'Next',
+            accentColor: _accentColor,
+            onTap: () => setState(() => _step = 2),
+          ),
         const SizedBox(height: 48),
       ],
     );
@@ -226,15 +241,15 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
                             timePickerTheme: TimePickerThemeData(
                               backgroundColor: AppColors.darkMagenta,
                               hourMinuteTextColor: AppColors.cream,
-                              hourMinuteColor: AppColors.magenta.withValues(
+                              hourMinuteColor: _accentColor.withValues(
                                 alpha: 0.3,
                               ),
                               dayPeriodTextColor: AppColors.cream,
-                              dayPeriodColor: AppColors.magenta.withValues(
+                              dayPeriodColor: _accentColor.withValues(
                                 alpha: 0.3,
                               ),
-                              dialHandColor: AppColors.magenta,
-                              dialBackgroundColor: AppColors.magenta.withValues(
+                              dialHandColor: _accentColor,
+                              dialBackgroundColor: _accentColor.withValues(
                                 alpha: 0.15,
                               ),
                               dialTextColor: AppColors.cream,
@@ -291,7 +306,11 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
           ),
         ),
         const Spacer(flex: 3),
-        _BottomButton(label: "Let's go", onTap: _finish),
+        _BottomButton(
+          label: "Let's go",
+          accentColor: _accentColor,
+          onTap: _finish,
+        ),
         const SizedBox(height: 48),
       ],
     );
@@ -314,7 +333,7 @@ class _PersonaCard extends StatelessWidget {
     return GestureDetector(
       onTap: onTap,
       child: AnimatedContainer(
-        duration: const Duration(milliseconds: 200),
+        duration: const Duration(milliseconds: 300),
         padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
         decoration: BoxDecoration(
           color: selected
@@ -460,8 +479,13 @@ class _ToneOption extends StatelessWidget {
 class _BottomButton extends StatelessWidget {
   final String label;
   final VoidCallback onTap;
+  final Color accentColor;
 
-  const _BottomButton({required this.label, required this.onTap});
+  const _BottomButton({
+    required this.label,
+    required this.onTap,
+    required this.accentColor,
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -471,7 +495,7 @@ class _BottomButton extends StatelessWidget {
         onPressed: onTap,
         style: ElevatedButton.styleFrom(
           backgroundColor: AppColors.cream,
-          foregroundColor: AppColors.magenta,
+          foregroundColor: accentColor,
           padding: const EdgeInsets.symmetric(vertical: 16),
           shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(12),

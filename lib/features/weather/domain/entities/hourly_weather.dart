@@ -13,5 +13,6 @@ class HourlyWeather with _$HourlyWeather {
     required int weatherCode,
     required WeatherCondition condition,
     required double windSpeed,
+    @Default(0.0) double uvIndex,
   }) = _HourlyWeather;
 }

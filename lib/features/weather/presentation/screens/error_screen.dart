@@ -10,7 +10,7 @@ class ErrorScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Container(
-      decoration: const BoxDecoration(color: AppColors.magenta),
+      decoration: BoxDecoration(color: Theme.of(context).colorScheme.secondary),
       child: SafeArea(
         child: Padding(
           padding: const EdgeInsets.all(32),

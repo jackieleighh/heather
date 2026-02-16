@@ -1,7 +1,9 @@
+import 'dart:math' as math;
+
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:heather/core/constants/app_colors.dart';
-import 'package:intl/intl.dart';
+import 'package:intl/intl.dart' hide TextDirection;
 import 'package:weather_icons/weather_icons.dart';
 import './card_container.dart';
 
@@ -9,12 +11,18 @@ class SunCard extends StatelessWidget {
   final DateTime sunrise;
   final DateTime sunset;
   final double uvIndex;
+  final List<double> hourlyUv;
+  final List<DateTime> hours;
+  final DateTime now;
 
   const SunCard({
     super.key,
     required this.sunrise,
     required this.sunset,
     required this.uvIndex,
+    required this.hourlyUv,
+    required this.hours,
+    required this.now,
   });
 
   @override
@@ -26,7 +34,6 @@ class SunCard extends StatelessWidget {
       backgroundIcon: WeatherIcons.day_sunny,
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
-        mainAxisAlignment: MainAxisAlignment.center,
         children: [
           Row(
             children: [
@@ -43,10 +50,47 @@ class SunCard extends StatelessWidget {
                 ),
               ),
               const Spacer(),
+              Row(
+                children: [
+                  Icon(
+                    WeatherIcons.sunrise,
+                    size: 13,
+                    color: AppColors.cream.withValues(alpha: 0.7),
+                  ),
+                  const SizedBox(width: 4),
+                  Text(
+                    timeFmt.format(sunrise),
+                    style: theme.textTheme.bodyMedium?.copyWith(
+                      fontWeight: FontWeight.w800,
+                      fontSize: 15,
+                    ),
+                  ),
+                  const SizedBox(width: 14),
+                  Icon(
+                    WeatherIcons.sunset,
+                    size: 13,
+                    color: AppColors.cream.withValues(alpha: 0.7),
+                  ),
+                  const SizedBox(width: 4),
+                  Text(
+                    timeFmt.format(sunset),
+                    style: theme.textTheme.bodyMedium?.copyWith(
+                      fontWeight: FontWeight.w800,
+                      fontSize: 15,
+                    ),
+                  ),
+                ],
+              ),
+            ],
+          ),
+          const SizedBox(height: 2),
+          Row(
+            children: [
+              const Spacer(),
               Text(
                 'UV ${uvIndex.round()}',
                 style: GoogleFonts.poppins(
-                  fontSize: 14,
+                  fontSize: 12,
                   fontWeight: FontWeight.w700,
                   color: AppColors.cream,
                 ),
@@ -55,45 +99,26 @@ class SunCard extends StatelessWidget {
               Text(
                 _uvLabel(uvIndex),
                 style: GoogleFonts.poppins(
-                  fontSize: 14,
+                  fontSize: 12,
                   fontWeight: FontWeight.w600,
                   color: AppColors.cream.withValues(alpha: 0.6),
                 ),
               ),
             ],
           ),
-          const SizedBox(height: 4),
-          Row(
-            children: [
-              Icon(
-                WeatherIcons.sunrise,
-                size: 16,
-                color: AppColors.cream.withValues(alpha: 0.7),
-              ),
-              const SizedBox(width: 6),
-              Text(
-                timeFmt.format(sunrise),
-                style: theme.textTheme.bodyLarge?.copyWith(
-                  fontWeight: FontWeight.w800,
-                  fontSize: 22,
+          if (hourlyUv.length >= 2) ...[
+            const SizedBox(height: 2),
+            Expanded(
+              child: CustomPaint(
+                size: Size.infinite,
+                painter: _UvLinePainter(
+                  uvValues: hourlyUv,
+                  hours: hours,
+                  now: now,
                 ),
               ),
-              const SizedBox(width: 20),
-              Icon(
-                WeatherIcons.sunset,
-                size: 16,
-                color: AppColors.cream.withValues(alpha: 0.7),
-              ),
-              const SizedBox(width: 6),
-              Text(
-                timeFmt.format(sunset),
-                style: theme.textTheme.bodyLarge?.copyWith(
-                  fontWeight: FontWeight.w800,
-                  fontSize: 22,
-                ),
-              ),
-            ],
-          ),
+            ),
+          ],
         ],
       ),
     );
@@ -106,4 +131,138 @@ class SunCard extends StatelessWidget {
     if (uv < 11) return 'Very High';
     return 'Extreme';
   }
+}
+
+class _UvLinePainter extends CustomPainter {
+  final List<double> uvValues;
+  final List<DateTime> hours;
+  final DateTime now;
+
+  _UvLinePainter({
+    required this.uvValues,
+    required this.hours,
+    required this.now,
+  });
+
+  @override
+  void paint(Canvas canvas, Size size) {
+    if (uvValues.length < 2) return;
+
+    final hi = uvValues.reduce(math.max);
+    final maxY = math.max(
+      hi,
+      3.0,
+    ); // minimum scale of 3 so low UV days look right
+    if (maxY == 0) return;
+
+    const padTop = 2.0;
+    const padBottom = 14.0;
+    const padLeft = 20.0;
+    final graphH = size.height - padTop - padBottom;
+    final graphW = size.width - padLeft;
+    final stepX = graphW / (uvValues.length - 1);
+
+    final points = <Offset>[];
+    for (var i = 0; i < uvValues.length; i++) {
+      final x = padLeft + i * stepX;
+      final y = padTop + graphH * (1 - (uvValues[i] / maxY).clamp(0.0, 1.0));
+      points.add(Offset(x, y));
+    }
+
+    // Y-axis labels
+    final yLabelStyle = TextStyle(
+      color: AppColors.cream.withValues(alpha: 0.7),
+      fontSize: 10,
+      fontWeight: FontWeight.w600,
+    );
+    for (final val in [maxY, maxY / 2, 0.0]) {
+      final y = padTop + graphH * (1 - val / maxY);
+      final tp = TextPainter(
+        text: TextSpan(text: '${val.round()}', style: yLabelStyle),
+        textDirection: TextDirection.ltr,
+      )..layout();
+      tp.paint(canvas, Offset(0, y - tp.height / 2));
+    }
+
+    final linePath = Path()..moveTo(points.first.dx, points.first.dy);
+    for (var i = 1; i < points.length; i++) {
+      final prev = points[i - 1];
+      final curr = points[i];
+      final cpx = (prev.dx + curr.dx) / 2;
+      linePath.cubicTo(cpx, prev.dy, cpx, curr.dy, curr.dx, curr.dy);
+    }
+
+    canvas.drawPath(
+      linePath,
+      Paint()
+        ..color = AppColors.cream.withValues(alpha: 0.9)
+        ..strokeWidth = 2
+        ..style = PaintingStyle.stroke
+        ..strokeCap = StrokeCap.round,
+    );
+
+    // "Now" dot
+    if (hours.length >= 2) {
+      double dotX;
+      double dotY;
+
+      if (now.isBefore(hours.first)) {
+        dotX = points.first.dx;
+        dotY = points.first.dy;
+      } else if (now.isAfter(hours.last)) {
+        dotX = points.last.dx;
+        dotY = points.last.dy;
+      } else {
+        var idx = 0;
+        for (var i = 0; i < hours.length - 1; i++) {
+          if (!now.isBefore(hours[i]) && now.isBefore(hours[i + 1])) {
+            idx = i;
+            break;
+          }
+        }
+        final segFraction = hours[idx + 1].difference(hours[idx]).inSeconds > 0
+            ? now.difference(hours[idx]).inSeconds /
+                  hours[idx + 1].difference(hours[idx]).inSeconds
+            : 0.0;
+        dotX =
+            points[idx].dx +
+            (points[idx + 1].dx - points[idx].dx) * segFraction;
+        final interpUv =
+            uvValues[idx] + (uvValues[idx + 1] - uvValues[idx]) * segFraction;
+        dotY = padTop + graphH * (1 - (interpUv / maxY).clamp(0.0, 1.0));
+      }
+
+      canvas.drawCircle(
+        Offset(dotX, dotY),
+        4,
+        Paint()..color = AppColors.cream,
+      );
+    }
+
+    // Hour labels
+    final labelStyle = TextStyle(
+      color: AppColors.cream.withValues(alpha: 0.8),
+      fontSize: 10,
+      fontWeight: FontWeight.w600,
+    );
+    for (var i = 0; i < hours.length; i++) {
+      if (i % 6 != 0 && i != hours.length - 1) continue;
+      final tp = TextPainter(
+        text: TextSpan(
+          text: DateFormat('ha').format(hours[i]).toLowerCase(),
+          style: labelStyle,
+        ),
+        textDirection: TextDirection.ltr,
+      )..layout();
+      final x = (padLeft + i * stepX - tp.width / 2).clamp(
+        padLeft,
+        size.width - tp.width,
+      );
+      tp.paint(canvas, Offset(x, size.height - padBottom + 2));
+    }
+  }
+
+  @override
+  bool shouldRepaint(covariant _UvLinePainter old) =>
+      uvValues != old.uvValues || now != old.now;
 }

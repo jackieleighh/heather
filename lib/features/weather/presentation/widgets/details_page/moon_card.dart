@@ -76,34 +76,34 @@ class MoonCard extends StatelessWidget {
               ),
             ],
           ),
-          const SizedBox(height: 4),
+          const SizedBox(height: 2),
           Row(
             children: [
               Icon(
                 firstIcon,
-                size: 16,
+                size: 13,
                 color: AppColors.cream.withValues(alpha: 0.7),
               ),
-              const SizedBox(width: 6),
+              const SizedBox(width: 4),
               Text(
                 _relativeLabel(firstLabel, first, now, dateFmt),
-                style: theme.textTheme.bodyLarge?.copyWith(
+                style: theme.textTheme.bodyMedium?.copyWith(
                   fontWeight: FontWeight.w800,
-                  fontSize: 20,
+                  fontSize: 14,
                 ),
               ),
-              const SizedBox(width: 16),
+              const SizedBox(width: 12),
               Icon(
                 secondIcon,
-                size: 16,
+                size: 13,
                 color: AppColors.cream.withValues(alpha: 0.7),
               ),
-              const SizedBox(width: 6),
+              const SizedBox(width: 4),
               Text(
                 _relativeLabel(secondLabel, second, now, dateFmt),
-                style: theme.textTheme.bodyLarge?.copyWith(
+                style: theme.textTheme.bodyMedium?.copyWith(
                   fontWeight: FontWeight.w800,
-                  fontSize: 20,
+                  fontSize: 14,
                 ),
               ),
             ],

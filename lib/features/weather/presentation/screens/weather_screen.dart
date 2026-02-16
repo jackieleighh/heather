@@ -4,11 +4,13 @@ import 'package:flutter/material.dart';
 import 'package:flutter_native_splash/flutter_native_splash.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
-import 'package:heather/features/weather/domain/entities/weather_condition.dart';
 import 'package:heather/features/weather/presentation/screens/error_screen.dart';
 import 'package:heather/features/weather/presentation/screens/saved_locations_page.dart';
 import 'package:heather/features/weather/presentation/widgets/logo_overlay.dart';
 import '../../../../core/constants/app_colors.dart';
+import '../../../../core/services/fcm_service.dart';
+import '../../../../core/services/widget_service.dart';
+import '../providers/alert_provider.dart';
 import '../providers/location_provider.dart';
 import '../providers/weather_provider.dart';
 import '../screens/location_search_screen.dart';
@@ -24,11 +26,10 @@ class WeatherScreen extends ConsumerStatefulWidget {
 
 class _WeatherScreenState extends ConsumerState<WeatherScreen> {
   late PageController _horizontalController;
+  StreamSubscription<void>? _widgetTapSub;
   bool _minTimeElapsed = false;
   bool _splashRemoved = false;
-  bool _quipsLoaded = false;
-  bool _quipsLoading = false;
-  int _batchedLocationCount = -1;
+  bool _deviceRegistered = false;
   int _currentHorizontalPage = 0;
 
   @override
@@ -36,6 +37,12 @@ class _WeatherScreenState extends ConsumerState<WeatherScreen> {
     super.initState();
     _horizontalController = PageController(initialPage: 0);
     _horizontalController.addListener(_onHorizontalPageChanged);
+    _widgetTapSub = WidgetService.widgetTapped.stream.listen((_) {
+      if (!mounted) return;
+      if (_horizontalController.hasClients) {
+        _horizontalController.jumpTo(0);
+      }
+    });
     Future.delayed(const Duration(seconds: 3), () {
       if (mounted) setState(() => _minTimeElapsed = true);
     });
@@ -43,6 +50,7 @@ class _WeatherScreenState extends ConsumerState<WeatherScreen> {
 
   @override
   void dispose() {
+    _widgetTapSub?.cancel();
     _horizontalController.removeListener(_onHorizontalPageChanged);
     _horizontalController.dispose();
     super.dispose();
@@ -95,6 +103,7 @@ class _WeatherScreenState extends ConsumerState<WeatherScreen> {
   }
 
   Future<bool> _refreshAll() async {
+    ref.invalidate(alertsProvider);
     final savedLocations = ref.read(savedLocationsProvider);
     final results = await Future.wait([
       ref.read(weatherStateProvider.notifier).refresh(),
@@ -103,10 +112,6 @@ class _WeatherScreenState extends ConsumerState<WeatherScreen> {
         return ref.read(locationForecastProvider(params).notifier).refresh();
       }),
     ]);
-    // Single Gemini call for all locations — await before completing refresh
-    if (mounted) {
-      await ref.read(batchQuipLoaderProvider).loadBatchQuips();
-    }
     return results.every((success) => success);
   }
 
@@ -135,52 +140,28 @@ class _WeatherScreenState extends ConsumerState<WeatherScreen> {
       (s) => s != const LocationForecastState.loading(),
     );
 
-    // Once all weather data is loaded, fetch Gemini quips (single batch call).
-    // Await completion before removing splash — page doesn't show until quips
-    // are ready (Gemini or local fallback).
-    if (gpsReady && locationsReady && !_quipsLoaded && !_quipsLoading) {
-      _quipsLoading = true;
-      WidgetsBinding.instance.addPostFrameCallback((_) async {
-        if (!mounted) return;
-        await ref.read(batchQuipLoaderProvider).loadBatchQuips();
-        if (mounted) {
-          setState(() {
-            _quipsLoaded = true;
-            _quipsLoading = false;
-          });
-        }
-      });
-    }
-
-    // Re-trigger batch quips when saved locations change after initial load
-    if (_quipsLoaded && gpsReady && locationsReady) {
-      final currentCount = 1 + savedLocations.length;
-      if (currentCount != _batchedLocationCount) {
-        _batchedLocationCount = currentCount;
-        WidgetsBinding.instance.addPostFrameCallback((_) {
-          if (!mounted) return;
-          ref.read(batchQuipLoaderProvider).loadBatchQuips();
-        });
-      }
-    }
-
-    // Remove native splash when min time elapsed + all data loaded + quips ready
-    if (_minTimeElapsed &&
-        gpsReady &&
-        locationsReady &&
-        _quipsLoaded &&
-        !_splashRemoved) {
+    // Remove native splash when min time elapsed + all data loaded
+    if (_minTimeElapsed && gpsReady && locationsReady && !_splashRemoved) {
       _splashRemoved = true;
       FlutterNativeSplash.remove();
     }
 
     final content = state.when(
-      loading: () => Container(color: AppColors.magenta),
+      loading: () => Container(color: Theme.of(context).colorScheme.secondary),
       error: (message) => ErrorScreen(
         message: message,
         onRetry: () => ref.read(weatherStateProvider.notifier).loadWeather(),
       ),
       loaded: (forecast, location, quip) {
+        // Register device with cloud function for push alerts (once per session)
+        if (!_deviceRegistered) {
+          _deviceRegistered = true;
+          FcmService().registerDevice(
+            latitude: location.latitude,
+            longitude: location.longitude,
+          );
+        }
+
         final pages = <Widget>[
           VerticalForecastPager(
             forecast: forecast,

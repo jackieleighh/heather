@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 
-import '../../../../../core/constants/app_colors.dart';
 import '../../../../../core/constants/background_gradients.dart';
 import '../../../domain/entities/temperature_tier.dart';
 import '../../../domain/entities/weather_condition.dart';
@@ -52,11 +51,12 @@ class WeatherBackground extends StatelessWidget {
         isDay
             ? SunnyBackground(gradientColors: colors)
             : ClearBackground(isDay: isDay, gradientColors: colors),
-      WeatherCondition.mostlySunny =>
-        isDay
-            ? MostlySunnyBackground(gradientColors: colors)
-            : ClearBackground(isDay: isDay, gradientColors: colors),
+      WeatherCondition.mostlySunny => MostlySunnyBackground(
+        isDay: isDay,
+        gradientColors: colors,
+      ),
       WeatherCondition.partlyCloudy => PartlyCloudyBackground(
+        isDay: isDay,
         gradientColors: colors,
       ),
       WeatherCondition.overcast => OvercastBackground(gradientColors: colors),
@@ -83,6 +83,6 @@ class _DefaultBackground extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Container(color: AppColors.magenta);
+    return Container(color: Theme.of(context).colorScheme.secondary);
   }
 }

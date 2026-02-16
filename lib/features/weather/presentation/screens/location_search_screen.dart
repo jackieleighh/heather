@@ -52,7 +52,7 @@ class _LocationSearchScreenState extends ConsumerState<LocationSearchScreen> {
     return Scaffold(
       backgroundColor: Colors.transparent,
       body: Container(
-        color: AppColors.magenta,
+        color: Theme.of(context).colorScheme.secondary,
         child: Stack(
           children: [
             SafeArea(
@@ -113,6 +113,8 @@ class _LocationSearchScreenState extends ConsumerState<LocationSearchScreen> {
                         controller: _controller,
                         focusNode: _focusNode,
                         autofocus: true,
+                        autocorrect: false,
+                        enableSuggestions: false,
                         style: const TextStyle(color: AppColors.deepPurple),
                         decoration: InputDecoration(
                           hintText: 'Search for a city...',
@@ -230,6 +232,7 @@ class _SearchResultsState extends ConsumerState<_SearchResults> {
           ),
         Expanded(
           child: ListView.builder(
+            keyboardDismissBehavior: ScrollViewKeyboardDismissBehavior.onDrag,
             padding: const EdgeInsets.symmetric(horizontal: 28),
             itemCount: locations.length,
             itemBuilder: (context, index) =>

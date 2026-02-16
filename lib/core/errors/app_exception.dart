@@ -16,6 +16,6 @@ class WeatherException extends AppException {
   const WeatherException(super.message, {super.sassyMessage});
 }
 
-class QuipException extends AppException {
-  const QuipException(super.message, {super.sassyMessage});
+class AlertException extends AppException {
+  const AlertException(super.message, {super.sassyMessage});
 }

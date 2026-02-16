@@ -50,7 +50,7 @@ class _MiniLoadingView extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Container(
-      color: AppColors.magenta,
+      color: Theme.of(context).colorScheme.secondary,
       child: const Center(
         child: CircularProgressIndicator(
           color: AppColors.cream,

@@ -111,8 +111,8 @@ class _PrecipBarPainter extends CustomPainter {
     // Y-axis percentage labels
     final yLabelStyle = TextStyle(
       color: AppColors.cream.withValues(alpha: 0.7),
-      fontSize: 9,
-      fontWeight: FontWeight.w500,
+      fontSize: 10,
+      fontWeight: FontWeight.w600,
     );
     for (final pct in [100, 50, 0]) {
       final y = graphH * (1 - pct / 100.0);
@@ -170,8 +170,8 @@ class _PrecipBarPainter extends CustomPainter {
     // Hour labels
     final labelStyle = TextStyle(
       color: AppColors.cream.withValues(alpha: 0.75),
-      fontSize: 9,
-      fontWeight: FontWeight.w500,
+      fontSize: 10,
+      fontWeight: FontWeight.w600,
     );
     for (var i = 0; i < hours.length; i++) {
       if (i % 6 != 0 && i != hours.length - 1) continue;

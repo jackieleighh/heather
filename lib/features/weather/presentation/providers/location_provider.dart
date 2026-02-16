@@ -1,13 +1,13 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
+import '../../../../core/network/api_client.dart';
 import '../../data/repositories/location_repository_impl.dart';
 import '../../data/sources/geocoding_remote_source.dart';
 import '../../data/sources/saved_locations_local_source.dart';
 import '../../domain/entities/saved_location.dart';
-import 'weather_provider.dart';
 
 final locationRepositoryProvider = Provider<LocationRepositoryImpl>((ref) {
-  final apiClient = ref.watch(apiClientProvider);
+  final apiClient = ApiClient();
   return LocationRepositoryImpl(
     geocodingSource: GeocodingRemoteSource(dio: apiClient.weatherClient),
     localSource: SavedLocationsLocalSource(),

@@ -13,7 +13,7 @@ class ApiEndpoints {
       'is_day,precipitation,rain,snowfall,weather_code,cloud_cover,'
       'wind_speed_10m,uv_index'
       '&hourly=temperature_2m,precipitation_probability,weather_code,'
-      'wind_speed_10m'
+      'wind_speed_10m,uv_index'
       '&daily=weather_code,temperature_2m_max,temperature_2m_min,'
       'precipitation_sum,precipitation_probability_max,sunrise,sunset,'
       'uv_index_max'
@@ -31,6 +31,14 @@ class ApiEndpoints {
   }) =>
       '$airQualityBase?latitude=$latitude&longitude=$longitude'
       '&current=us_aqi';
+
+  static const nwsAlertsBase = 'https://api.weather.gov/alerts/active';
+
+  static String nwsAlerts({
+    required double latitude,
+    required double longitude,
+  }) =>
+      '$nwsAlertsBase?point=$latitude,$longitude';
 
   static String geocoding({
     required String query,

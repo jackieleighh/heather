@@ -11,6 +11,7 @@ const _notificationHourKey = 'notification_hour';
 const _notificationMinuteKey = 'notification_minute';
 const _onboardingCompletedKey = 'onboarding_completed';
 const _personaKey = 'persona';
+const _severeAlertsEnabledKey = 'severe_alerts_enabled';
 
 final settingsProvider = StateNotifierProvider<SettingsNotifier, SettingsState>(
   (ref) {
@@ -24,6 +25,7 @@ class SettingsState {
   final TimeOfDay notificationTime;
   final bool onboardingCompleted;
   final Persona persona;
+  final bool severeAlertsEnabled;
 
   const SettingsState({
     this.explicitLanguage = false,
@@ -31,6 +33,7 @@ class SettingsState {
     this.notificationTime = const TimeOfDay(hour: 7, minute: 0),
     this.onboardingCompleted = false,
     this.persona = Persona.heather,
+    this.severeAlertsEnabled = true,
   });
 
   SettingsState copyWith({
@@ -39,6 +42,7 @@ class SettingsState {
     TimeOfDay? notificationTime,
     bool? onboardingCompleted,
     Persona? persona,
+    bool? severeAlertsEnabled,
   }) {
     return SettingsState(
       explicitLanguage: explicitLanguage ?? this.explicitLanguage,
@@ -46,6 +50,7 @@ class SettingsState {
       notificationTime: notificationTime ?? this.notificationTime,
       onboardingCompleted: onboardingCompleted ?? this.onboardingCompleted,
       persona: persona ?? this.persona,
+      severeAlertsEnabled: severeAlertsEnabled ?? this.severeAlertsEnabled,
     );
   }
 }
@@ -66,12 +71,15 @@ class SettingsNotifier extends StateNotifier<SettingsState> {
         prefs.getBool(_onboardingCompletedKey) ?? false;
     final personaName = prefs.getString(_personaKey);
     final persona = Persona.values.where((p) => p.name == personaName).firstOrNull ?? Persona.heather;
+    final severeAlertsEnabled =
+        prefs.getBool(_severeAlertsEnabledKey) ?? true;
     state = SettingsState(
       explicitLanguage: explicit,
       notificationsEnabled: notificationsEnabled,
       notificationTime: TimeOfDay(hour: hour, minute: minute),
       onboardingCompleted: onboardingCompleted,
       persona: persona,
+      severeAlertsEnabled: severeAlertsEnabled,
     );
   }
 
@@ -107,6 +115,12 @@ class SettingsNotifier extends StateNotifier<SettingsState> {
     final prefs = await SharedPreferences.getInstance();
     await prefs.setString(_personaKey, persona.name);
     state = state.copyWith(persona: persona);
+  }
+
+  Future<void> setSevereAlertsEnabled(bool value) async {
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setBool(_severeAlertsEnabledKey, value);
+    state = state.copyWith(severeAlertsEnabled: value);
   }
 
   Future<void> completeOnboarding() async {

@@ -19,22 +19,24 @@ class LogoOverlay extends ConsumerWidget {
       child: IgnorePointer(
         child: Opacity(
           opacity: 0.2,
-          child: persona == Persona.luna
-              ? SvgPicture.asset(
-                  'assets/images/luna_logo.svg',
-                  height: screenHeight * 0.5,
-                )
-              : persona == Persona.jade
+          child: persona == Persona.jade
               ? SvgPicture.asset(
                   'assets/images/jade_logo.svg',
                   height: screenHeight * 0.5,
                 )
-              : persona == Persona.aurelia
-              ? SvgPicture.asset(
-                  'assets/images/aurelia_logo.svg',
-                  height: screenHeight * 0.5,
-                )
-              : SvgPicture.asset(
+              :
+                // TODO
+                // persona == Persona.luna
+                //     ? SvgPicture.asset(
+                //         'assets/images/luna_logo.svg',
+                //         height: screenHeight * 0.5,
+                //       )
+                //     : persona == Persona.aurelia
+                //     ? SvgPicture.asset(
+                //         'assets/images/aurelia_logo.svg',
+                //         height: screenHeight * 0.5,
+                //       ):
+                SvgPicture.asset(
                   'assets/images/heather_logo.svg',
                   height: screenHeight * 0.5,
                 ),

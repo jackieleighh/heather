@@ -16,10 +16,14 @@ class SettingsScreen extends ConsumerWidget {
     final savedLocations = ref.watch(savedLocationsProvider);
     final settings = ref.watch(settingsProvider);
 
+    final accentColor = settings.persona.heroColor;
+
     return Scaffold(
       backgroundColor: Colors.transparent,
-      body: Container(
-        color: AppColors.magenta,
+      body: AnimatedContainer(
+        duration: const Duration(milliseconds: 400),
+        curve: Curves.easeInOut,
+        color: accentColor,
         child: Stack(
           children: [
             SafeArea(
@@ -157,7 +161,7 @@ class SettingsScreen extends ConsumerWidget {
                                             style: GoogleFonts.poppins(
                                               fontSize: 12,
                                               color: AppColors.cream.withValues(
-                                                alpha: 0.6,
+                                                alpha: 0.8,
                                               ),
                                             ),
                                           )
@@ -166,7 +170,7 @@ class SettingsScreen extends ConsumerWidget {
                                       icon: Icon(
                                         Icons.delete_outline,
                                         color: AppColors.cream.withValues(
-                                          alpha: 0.6,
+                                          alpha: 0.8,
                                         ),
                                         size: 20,
                                       ),
@@ -249,6 +253,48 @@ class SettingsScreen extends ConsumerWidget {
                                   vertical: 4,
                                 ),
                                 title: Text(
+                                  'Severe weather alerts',
+                                  style: GoogleFonts.poppins(
+                                    fontSize: 15,
+                                    fontWeight: FontWeight.w500,
+                                    color: AppColors.cream,
+                                  ),
+                                ),
+                                subtitle: Text(
+                                  'Tornado warnings, severe thunderstorms, and other NWS alerts.',
+                                  style: GoogleFonts.poppins(
+                                    fontSize: 12,
+                                    color: AppColors.cream.withValues(
+                                      alpha: 0.8,
+                                    ),
+                                  ),
+                                ),
+                                value: settings.severeAlertsEnabled,
+                                activeTrackColor: AppColors.cream.withValues(
+                                  alpha: 0.3,
+                                ),
+                                activeThumbColor: AppColors.cream,
+                                inactiveTrackColor: AppColors.cream.withValues(
+                                  alpha: 0.1,
+                                ),
+                                inactiveThumbColor: AppColors.cream.withValues(
+                                  alpha: 0.4,
+                                ),
+                                trackOutlineColor: WidgetStatePropertyAll(
+                                  AppColors.cream.withValues(alpha: 0.1),
+                                ),
+                                onChanged: (value) {
+                                  ref
+                                      .read(settingsProvider.notifier)
+                                      .setSevereAlertsEnabled(value);
+                                },
+                              ),
+                              SwitchListTile(
+                                contentPadding: const EdgeInsets.symmetric(
+                                  horizontal: 16,
+                                  vertical: 4,
+                                ),
+                                title: Text(
                                   'Daily weather alert',
                                   style: GoogleFonts.poppins(
                                     fontSize: 15,
@@ -261,7 +307,7 @@ class SettingsScreen extends ConsumerWidget {
                                   style: GoogleFonts.poppins(
                                     fontSize: 12,
                                     color: AppColors.cream.withValues(
-                                      alpha: 0.6,
+                                      alpha: 0.8,
                                     ),
                                   ),
                                 ),
@@ -331,20 +377,19 @@ class SettingsScreen extends ConsumerWidget {
                                                   AppColors.darkMagenta,
                                               hourMinuteTextColor:
                                                   AppColors.cream,
-                                              hourMinuteColor: AppColors.magenta
+                                              hourMinuteColor: accentColor
                                                   .withValues(alpha: 0.3),
                                               dayPeriodTextColor:
                                                   AppColors.cream,
-                                              dayPeriodColor: AppColors.magenta
+                                              dayPeriodColor: accentColor
                                                   .withValues(alpha: 0.3),
-                                              dialHandColor: AppColors.magenta,
-                                              dialBackgroundColor: AppColors
-                                                  .magenta
+                                              dialHandColor: accentColor,
+                                              dialBackgroundColor: accentColor
                                                   .withValues(alpha: 0.15),
                                               dialTextColor: AppColors.cream,
                                               entryModeIconColor: AppColors
                                                   .cream
-                                                  .withValues(alpha: 0.6),
+                                                  .withValues(alpha: 0.8),
                                               helpTextStyle:
                                                   GoogleFonts.poppins(
                                                     fontSize: 14,
@@ -445,7 +490,7 @@ class _PersonaTile extends StatelessWidget {
     return GestureDetector(
       onTap: onTap,
       child: AnimatedContainer(
-        duration: const Duration(milliseconds: 200),
+        duration: const Duration(milliseconds: 300),
         padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
         decoration: BoxDecoration(
           color: selected
@@ -454,7 +499,7 @@ class _PersonaTile extends StatelessWidget {
           borderRadius: BorderRadius.circular(12),
           border: Border.all(
             color: selected
-                ? AppColors.cream.withValues(alpha: 0.6)
+                ? AppColors.cream.withValues(alpha: 0.8)
                 : Colors.transparent,
             width: 1.5,
           ),
@@ -498,7 +543,7 @@ class _PersonaTile extends StatelessWidget {
                     persona.introLine,
                     style: GoogleFonts.poppins(
                       fontSize: 12,
-                      color: AppColors.cream.withValues(alpha: 0.6),
+                      color: AppColors.cream.withValues(alpha: 0.8),
                     ),
                   ),
                 ],
@@ -544,7 +589,7 @@ class _ToneTile extends StatelessWidget {
           borderRadius: BorderRadius.circular(12),
           border: Border.all(
             color: selected
-                ? AppColors.cream.withValues(alpha: 0.6)
+                ? AppColors.cream.withValues(alpha: 0.8)
                 : Colors.transparent,
             width: 1.5,
           ),
@@ -567,7 +612,7 @@ class _ToneTile extends StatelessWidget {
                     subtitle,
                     style: GoogleFonts.poppins(
                       fontSize: 12,
-                      color: AppColors.cream.withValues(alpha: 0.6),
+                      color: AppColors.cream.withValues(alpha: 0.8),
                     ),
                   ),
                 ],

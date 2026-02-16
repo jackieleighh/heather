@@ -47,6 +47,7 @@ class ForecastResponseModel {
         weatherCode: hourly.weatherCode[i],
         condition: WeatherCodes.fromWmo(hourly.weatherCode[i]),
         windSpeed: hourly.windSpeed10m[i],
+        uvIndex: i < hourly.uvIndex.length ? hourly.uvIndex[i] : 0.0,
       );
       // All hours of today (midnight to midnight)
       if (!time.isBefore(todayStart) && time.isBefore(todayEnd)) {
@@ -154,6 +155,8 @@ class HourlyResponseModel {
   final List<int> weatherCode;
   @JsonKey(name: 'wind_speed_10m')
   final List<double> windSpeed10m;
+  @JsonKey(name: 'uv_index', defaultValue: [])
+  final List<double> uvIndex;
 
   const HourlyResponseModel({
     required this.time,
@@ -161,6 +164,7 @@ class HourlyResponseModel {
     required this.precipitationProbability,
     required this.weatherCode,
     required this.windSpeed10m,
+    required this.uvIndex,
   });
 
   factory HourlyResponseModel.fromJson(Map<String, dynamic> json) =>

@@ -4,10 +4,10 @@ class AppColors {
   AppColors._();
 
   // --- Hero colors (Luminous & Electric) ---
-  static const magenta = Color(0xFFE6007A);
+  static const magenta = Color(0xFFb50060);
   static const vibrantPurple = Color(0xFF8B5CF6);
   static const mustardYellow = Color(0xFFFFD700);
-  static const teal = Color(0xFF00CED1);
+  static const teal = Color(0xFF018f91);
   static const chartreuse = Color(0xFFA3E635);
   static const orange = Color(0xFFFF8C00);
   static const electricIndigo = Color(0xFF6366F1);

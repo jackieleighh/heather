@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "715010013692",
+    "project_id": "heather-with-the-weather",
+    "storage_bucket": "heather-with-the-weather.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:715010013692:android:5f1281b66db301c08f1a79",
+        "android_client_info": {
+          "package_name": "com.totms.heather"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyA1Uu13b9UoxrOVFpIByFuuU7u5jz0pHHE"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

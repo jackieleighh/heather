@@ -6,27 +6,19 @@ import '../../../../core/constants/persona.dart';
 import '../../../../core/network/api_client.dart';
 import '../../../../core/services/notification_service.dart';
 import '../../../../core/services/widget_service.dart';
-import '../../../../core/storage/secure_storage.dart';
 import '../../data/repositories/quip_repository_impl.dart';
 import '../../data/repositories/weather_repository_impl.dart';
 import '../../data/sources/location_source.dart';
-import '../../data/sources/quip_remote_source.dart';
 import '../../data/sources/weather_remote_source.dart';
 import '../../domain/entities/forecast.dart';
 import '../../domain/entities/location_info.dart';
-import '../../domain/entities/weather.dart';
-import 'location_provider.dart';
 import 'settings_provider.dart';
 
 part 'weather_provider.freezed.dart';
 
 // Dependencies
-final apiClientProvider = Provider<ApiClient>((ref) => ApiClient());
-
-final secureStorageProvider = Provider<SecureStorage>((ref) => SecureStorage());
-
 final weatherRepositoryProvider = Provider<WeatherRepositoryImpl>((ref) {
-  final apiClient = ref.watch(apiClientProvider);
+  final apiClient = ApiClient();
   return WeatherRepositoryImpl(
     remoteSource: WeatherRemoteSource(dio: apiClient.weatherClient),
     locationSource: LocationSource(),
@@ -34,12 +26,7 @@ final weatherRepositoryProvider = Provider<WeatherRepositoryImpl>((ref) {
 });
 
 final quipRepositoryProvider = Provider<QuipRepositoryImpl>((ref) {
-  final apiClient = ref.watch(apiClientProvider);
-  final secureStorage = ref.watch(secureStorageProvider);
-  return QuipRepositoryImpl(
-    remoteSource: QuipRemoteSource(apiClient: apiClient),
-    secureStorage: secureStorage,
-  );
+  return QuipRepositoryImpl();
 });
 
 // State
@@ -74,8 +61,6 @@ final weatherStateProvider =
         if (toneOrPersonaChanged) {
           notifier.updateExplicit(next.explicitLanguage);
           notifier.updatePersona(next.persona);
-          // Batch-refresh Gemini quips for all locations with new tone/persona
-          ref.read(batchQuipLoaderProvider).loadBatchQuips();
         }
         final notifChanged =
             previous?.notificationsEnabled != next.notificationsEnabled ||
@@ -125,7 +110,6 @@ class WeatherNotifier extends StateNotifier<WeatherState> {
   }
 
   void _swapLocalQuip() {
-    // Swap to a local quip immediately; batch loader will upgrade to Gemini
     final current = state;
     current.whenOrNull(
       loaded: (forecast, location, _) {
@@ -196,6 +180,7 @@ class WeatherNotifier extends StateNotifier<WeatherState> {
       location: current.location,
       quip: current.quip,
       persona: _persona,
+      explicit: _explicit,
     );
   }
 
@@ -207,7 +192,6 @@ class WeatherNotifier extends StateNotifier<WeatherState> {
         latitude: location.latitude,
         longitude: location.longitude,
       );
-      // Use instant local quip; batch loader will upgrade to Gemini
       final quip = quipRepo.getLocalQuip(
         weather: forecast.current,
         explicit: _explicit,
@@ -393,73 +377,6 @@ class LocationForecastNotifier extends StateNotifier<LocationForecastState> {
         state = LocationForecastState.error(e.toString());
       }
       return false;
-    }
-  }
-}
-
-// ── Batch quip loader ─────────────────────────────────────────────
-
-final batchQuipLoaderProvider = Provider<BatchQuipLoader>((ref) {
-  return BatchQuipLoader(ref);
-});
-
-class BatchQuipLoader {
-  final Ref _ref;
-
-  BatchQuipLoader(this._ref);
-
-  Future<void> loadBatchQuips() async {
-    final weatherState = _ref.read(weatherStateProvider);
-    final savedLocations = _ref.read(savedLocationsProvider);
-    final settings = _ref.read(settingsProvider);
-    final quipRepo = _ref.read(quipRepositoryProvider);
-
-    final locations = <({Weather weather, String cityName})>[];
-    String? gpsCityName;
-
-    weatherState.whenOrNull(
-      loaded: (forecast, location, _) {
-        gpsCityName = location.cityName;
-        locations.add((
-          weather: forecast.current.copyWith(isDay: forecast.isCurrentlyDay),
-          cityName: location.cityName,
-        ));
-      },
-    );
-
-    for (final loc in savedLocations) {
-      final params = (name: loc.name, lat: loc.latitude, lon: loc.longitude);
-      final locState = _ref.read(locationForecastProvider(params));
-      locState.whenOrNull(
-        loaded: (forecast, _) {
-          locations.add((
-            weather: forecast.current.copyWith(isDay: forecast.isCurrentlyDay),
-            cityName: loc.name,
-          ));
-        },
-      );
-    }
-
-    if (locations.isEmpty) return;
-
-    final quips = await quipRepo.getBatchQuips(
-      locations: locations,
-      explicit: settings.explicitLanguage,
-      persona: settings.persona,
-    );
-
-    // Distribute quips to each notifier
-    if (gpsCityName != null && quips.containsKey(gpsCityName)) {
-      _ref.read(weatherStateProvider.notifier).updateQuip(quips[gpsCityName]!);
-    }
-
-    for (final loc in savedLocations) {
-      if (quips.containsKey(loc.name)) {
-        final params = (name: loc.name, lat: loc.latitude, lon: loc.longitude);
-        _ref
-            .read(locationForecastProvider(params).notifier)
-            .updateQuip(quips[loc.name]!);
-      }
     }
   }
 }

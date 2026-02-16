@@ -113,8 +113,9 @@ class NotificationService {
     final titles = switch (persona) {
       Persona.heather => _heatherTitles,
       Persona.jade => _jadeTitles,
-      Persona.luna => _lunaTitles,
-      Persona.aurelia => _aureliaTitles,
+      // TODO
+      // Persona.luna => _lunaTitles,
+      // Persona.aurelia => _aureliaTitles,
     };
     return titles[_random.nextInt(titles.length)];
   }

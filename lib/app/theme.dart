@@ -6,13 +6,13 @@ import '../core/constants/app_colors.dart';
 class HeatherTheme {
   HeatherTheme._();
 
-  static ThemeData get light => ThemeData(
+  static ThemeData light({Color accentColor = const Color.fromARGB(255, 199, 14, 137)}) => ThemeData(
     useMaterial3: true,
     colorScheme: ColorScheme.fromSeed(
-      seedColor: AppColors.vibrantPurple,
+      seedColor: accentColor,
       brightness: Brightness.light,
-      primary: AppColors.vibrantPurple,
-      secondary: AppColors.magenta,
+      primary: accentColor,
+      secondary: accentColor,
       surface: AppColors.cream,
     ),
     textTheme: _textTheme,

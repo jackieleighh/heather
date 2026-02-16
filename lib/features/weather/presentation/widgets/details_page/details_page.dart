@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:google_fonts/google_fonts.dart';
 import './air_card.dart';
+import './conditions_card.dart';
 import './moon_card.dart';
 import './rain_card.dart';
 import './sun_card.dart';
@@ -31,13 +32,13 @@ class DetailsPage extends ConsumerWidget {
 
     return SafeArea(
       child: Padding(
-        padding: const EdgeInsets.fromLTRB(16, 0, 26, 12),
+        padding: const EdgeInsets.fromLTRB(16, 0, 26, 16),
         child: Column(
           children: [
             Padding(
               padding: const EdgeInsets.only(right: 44),
               child: SizedBox(
-                height: 62,
+                height: 48,
                 child: Align(
                   alignment: Alignment.centerRight,
                   child: Text(
@@ -51,32 +52,34 @@ class DetailsPage extends ConsumerWidget {
                 ),
               ),
             ),
-            const SizedBox(height: 8),
             Expanded(
               child: Padding(
-                padding: const EdgeInsets.only(bottom: 10),
-                child: SunCard(
-                  sunrise: today.sunrise,
-                  sunset: today.sunset,
-                  uvIndex: today.uvIndexMax,
-                ),
-              ),
-            ),
-            Expanded(
-              child: Padding(
-                padding: const EdgeInsets.only(bottom: 10),
-                child: TemperatureCard(
-                  temps: forecast.hourlyToday
-                      .map((h) => h.temperature)
+                padding: const EdgeInsets.only(bottom: 5),
+                child: AirCard(
+                  aqi: aqi.whenOrNull(data: (v) => v),
+                  isLoading: aqi.isLoading,
+                  windSpeed: forecast.current.windSpeed,
+                  hourlyWind: forecast.hourlyToday
+                      .map((h) => h.windSpeed)
                       .toList(),
-                  hours: forecast.hourlyToday.map((h) => h.time).toList(),
-                  now: now,
                 ),
               ),
             ),
             Expanded(
               child: Padding(
-                padding: const EdgeInsets.only(bottom: 10),
+                padding: const EdgeInsets.only(bottom: 5),
+                child: ConditionsCard(hourly: forecast.hourly),
+              ),
+            ),
+            Expanded(
+              child: Padding(
+                padding: const EdgeInsets.only(bottom: 5),
+                child: MoonCard(now: now),
+              ),
+            ),
+            Expanded(
+              child: Padding(
+                padding: const EdgeInsets.only(bottom: 5),
                 child: RainCard(
                   precipitationIn: today.precipitationSum / 25.4,
                   precipitationProbability: today.precipitationProbabilityMax,
@@ -90,21 +93,27 @@ class DetailsPage extends ConsumerWidget {
             ),
             Expanded(
               child: Padding(
-                padding: const EdgeInsets.only(bottom: 10),
-                child: AirCard(
-                  aqi: aqi.whenOrNull(data: (v) => v),
-                  isLoading: aqi.isLoading,
-                  windSpeed: forecast.current.windSpeed,
-                  hourlyWind: forecast.hourlyToday
-                      .map((h) => h.windSpeed)
-                      .toList(),
+                padding: const EdgeInsets.only(bottom: 5),
+                child: SunCard(
+                  sunrise: today.sunrise,
+                  sunset: today.sunset,
+                  uvIndex: today.uvIndexMax,
+                  hourlyUv: forecast.hourlyToday.map((h) => h.uvIndex).toList(),
+                  hours: forecast.hourlyToday.map((h) => h.time).toList(),
+                  now: now,
                 ),
               ),
             ),
             Expanded(
               child: Padding(
-                padding: const EdgeInsets.only(bottom: 10),
-                child: MoonCard(now: now),
+                padding: const EdgeInsets.only(bottom: 5),
+                child: TemperatureCard(
+                  temps: forecast.hourlyToday
+                      .map((h) => h.temperature)
+                      .toList(),
+                  hours: forecast.hourlyToday.map((h) => h.time).toList(),
+                  now: now,
+                ),
               ),
             ),
           ],

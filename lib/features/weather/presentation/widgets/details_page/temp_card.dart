@@ -114,9 +114,9 @@ class _TempLinePainter extends CustomPainter {
 
     // Y-axis temp labels (high, mid, low)
     final yLabelStyle = TextStyle(
-      color: AppColors.cream.withValues(alpha: 0.4),
-      fontSize: 9,
-      fontWeight: FontWeight.w500,
+      color: AppColors.cream.withValues(alpha: 0.7),
+      fontSize: 10,
+      fontWeight: FontWeight.w600,
     );
     final mid = (lo + hi) / 2;
     for (final temp in [hi, mid, lo]) {
@@ -128,28 +128,6 @@ class _TempLinePainter extends CustomPainter {
       tp.paint(canvas, Offset(0, y - tp.height / 2));
     }
 
-    // Filled area
-    final fillPath = Path()..moveTo(points.first.dx, size.height);
-    for (final p in points) {
-      fillPath.lineTo(p.dx, p.dy);
-    }
-    fillPath.lineTo(points.last.dx, size.height);
-    fillPath.close();
-
-    canvas.drawPath(
-      fillPath,
-      Paint()
-        ..shader = LinearGradient(
-          begin: Alignment.topCenter,
-          end: Alignment.bottomCenter,
-          colors: [
-            AppColors.cream.withValues(alpha: 0.2),
-            AppColors.cream.withValues(alpha: 0.0),
-          ],
-        ).createShader(Rect.fromLTWH(0, 0, size.width, size.height)),
-    );
-
-    // Curve
     final linePath = Path()..moveTo(points.first.dx, points.first.dy);
     for (var i = 1; i < points.length; i++) {
       final prev = points[i - 1];
@@ -157,6 +135,7 @@ class _TempLinePainter extends CustomPainter {
       final cpx = (prev.dx + curr.dx) / 2;
       linePath.cubicTo(cpx, prev.dy, cpx, curr.dy, curr.dx, curr.dy);
     }
+
     canvas.drawPath(
       linePath,
       Paint()
@@ -209,9 +188,9 @@ class _TempLinePainter extends CustomPainter {
 
     // Hour labels
     final labelStyle = TextStyle(
-      color: AppColors.cream.withValues(alpha: 0.75),
-      fontSize: 9,
-      fontWeight: FontWeight.w500,
+      color: AppColors.cream.withValues(alpha: 0.8),
+      fontSize: 10,
+      fontWeight: FontWeight.w600,
     );
     for (var i = 0; i < hours.length; i++) {
       if (i % 6 != 0 && i != hours.length - 1) continue;
