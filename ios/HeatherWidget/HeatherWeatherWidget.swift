@@ -92,7 +92,10 @@ struct HeatherWeatherProvider: TimelineProvider {
                 longitude: lon,
                 lastUpdated: ISO8601DateFormatter().string(from: Date()),
                 gradientColors: gradientColors,
-                hourly: hourlyEntries
+                hourly: hourlyEntries,
+                sunrise: response.daily.sunrise?.first,
+                sunset: response.daily.sunset?.first,
+                uvIndexMax: response.daily.uv_index_max?.first.map { Int($0.rounded()) }
             )
 
             WeatherData.save(fresh)

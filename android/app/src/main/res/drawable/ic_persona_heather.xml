@@ -1,0 +1,10 @@
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="100dp"
+    android:height="100dp"
+    android:viewportWidth="100"
+    android:viewportHeight="100">
+    <!-- Simplified heather flower/branch silhouette -->
+    <path
+        android:fillColor="#000000"
+        android:pathData="M50,95c0,0 -5,-20 -8,-35c-2,-10 -6,-15 -12,-22c-4,-5 -8,-10 -6,-16c2,-6 8,-8 14,-6c4,2 7,5 9,9c1,-8 2,-16 3,-22c1,-6 3,-10 3,-10s2,4 3,10c1,6 2,14 3,22c2,-4 5,-7 9,-9c6,-2 12,0 14,6c2,6 -2,11 -6,16c-6,7 -10,12 -12,22C60,75 50,95 50,95z" />
+</vector>

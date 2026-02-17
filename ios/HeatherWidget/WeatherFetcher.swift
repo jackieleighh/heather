@@ -18,6 +18,9 @@ struct OpenMeteoResponse: Codable {
     struct DailyWeather: Codable {
         let temperature_2m_max: [Double]
         let temperature_2m_min: [Double]
+        let sunrise: [String]?
+        let sunset: [String]?
+        let uv_index_max: [Double]?
     }
 
     struct HourlyWeather: Codable {
@@ -33,7 +36,7 @@ struct WeatherFetcher {
         let urlString = "https://api.open-meteo.com/v1/forecast"
             + "?latitude=\(latitude)&longitude=\(longitude)"
             + "&current=temperature_2m,relative_humidity_2m,apparent_temperature,is_day,weather_code,wind_speed_10m,uv_index"
-            + "&daily=temperature_2m_max,temperature_2m_min"
+            + "&daily=temperature_2m_max,temperature_2m_min,sunrise,sunset,uv_index_max"
             + "&hourly=temperature_2m,weather_code"
             + "&temperature_unit=fahrenheit&wind_speed_unit=mph&timezone=auto&forecast_days=1"
 

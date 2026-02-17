@@ -12,6 +12,7 @@ import '../constants/persona.dart';
 
 const _appGroupId = 'group.com.totms.heather';
 const _iOSWidgetName = 'HeatherWeatherWidget';
+const _androidWidgetName = 'HeatherWidgetReceiver';
 const _dataKey = 'widget_data';
 
 class WidgetService {
@@ -75,11 +76,17 @@ class WidgetService {
         'temperature': h.temperature.round(),
         'weatherCode': h.weatherCode,
       }).toList(),
+      'sunrise': today.sunrise.toIso8601String(),
+      'sunset': today.sunset.toIso8601String(),
+      'uvIndexMax': today.uvIndexMax.round(),
     });
 
     await HomeWidget.saveWidgetData<String>(_dataKey, payload);
     await _writeQuipMap(persona, explicit, isDay: isDay);
-    await HomeWidget.updateWidget(iOSName: _iOSWidgetName);
+    await HomeWidget.updateWidget(
+      iOSName: _iOSWidgetName,
+      androidName: _androidWidgetName,
+    );
   }
 
   static Future<void> _writeQuipMap(Persona persona, bool explicit, {required bool isDay}) async {

@@ -193,33 +193,38 @@ class _RadarPageState extends ConsumerState<RadarPage> {
                       )
                     : ClipRRect(
                         borderRadius: BorderRadius.circular(16),
-                        child: FlutterMap(
-                          options: MapOptions(
-                            initialCenter: LatLng(
-                              widget.latitude,
-                              widget.longitude,
+                        child: Opacity(
+                          opacity: 0.8,
+                          child: FlutterMap(
+                            options: MapOptions(
+                              initialCenter: LatLng(
+                                widget.latitude,
+                                widget.longitude,
+                              ),
+                              initialZoom: 7.0,
+                              interactionOptions: const InteractionOptions(
+                                flags:
+                                    InteractiveFlag.all &
+                                    ~InteractiveFlag.rotate,
+                              ),
                             ),
-                            initialZoom: 7.0,
-                            interactionOptions: const InteractionOptions(
-                              flags:
-                                  InteractiveFlag.all & ~InteractiveFlag.rotate,
-                            ),
+                            children: [
+                              TileLayer(
+                                urlTemplate:
+                                    'https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png',
+                                subdomains: const ['a', 'b', 'c', 'd'],
+                                retinaMode:
+                                    MediaQuery.of(context).devicePixelRatio >
+                                    1.0,
+                              ),
+                              TileLayer(
+                                urlTemplate:
+                                    'https://tile.openweathermap.org/map/wind_new/{z}/{x}/{y}.png?appid=$_owmApiKey',
+                                userAgentPackageName: 'com.heather.app',
+                              ),
+                              _locationMarker,
+                            ],
                           ),
-                          children: [
-                            TileLayer(
-                              urlTemplate:
-                                  'https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png',
-                              subdomains: const ['a', 'b', 'c', 'd'],
-                              retinaMode:
-                                  MediaQuery.of(context).devicePixelRatio > 1.0,
-                            ),
-                            TileLayer(
-                              urlTemplate:
-                                  'https://tile.openweathermap.org/map/wind_new/{z}/{x}/{y}.png?appid=$_owmApiKey',
-                              userAgentPackageName: 'com.heather.app',
-                            ),
-                            _locationMarker,
-                          ],
                         ),
                       ),
               ),
@@ -242,36 +247,41 @@ class _RadarPageState extends ConsumerState<RadarPage> {
                       )
                     : ClipRRect(
                         borderRadius: BorderRadius.circular(16),
-                        child: FlutterMap(
-                          options: MapOptions(
-                            initialCenter: LatLng(
-                              widget.latitude,
-                              widget.longitude,
-                            ),
-                            initialZoom: 7.0,
-                            interactionOptions: const InteractionOptions(
-                              flags:
-                                  InteractiveFlag.all & ~InteractiveFlag.rotate,
-                            ),
-                          ),
-                          children: [
-                            TileLayer(
-                              urlTemplate:
-                                  'https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png',
-                              subdomains: const ['a', 'b', 'c', 'd'],
-                              retinaMode:
-                                  MediaQuery.of(context).devicePixelRatio > 1.0,
-                            ),
-                            Opacity(
-                              opacity: 0.6,
-                              child: TileLayer(
-                                urlTemplate:
-                                    'https://tiles.aqicn.org/tiles/usepa-aqi/{z}/{x}/{y}.png?token=$_waqiToken',
-                                userAgentPackageName: 'com.heather.app',
+                        child: Opacity(
+                          opacity: 0.8,
+                          child: FlutterMap(
+                            options: MapOptions(
+                              initialCenter: LatLng(
+                                widget.latitude,
+                                widget.longitude,
+                              ),
+                              initialZoom: 7.0,
+                              interactionOptions: const InteractionOptions(
+                                flags:
+                                    InteractiveFlag.all &
+                                    ~InteractiveFlag.rotate,
                               ),
                             ),
-                            _locationMarker,
-                          ],
+                            children: [
+                              TileLayer(
+                                urlTemplate:
+                                    'https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png',
+                                subdomains: const ['a', 'b', 'c', 'd'],
+                                retinaMode:
+                                    MediaQuery.of(context).devicePixelRatio >
+                                    1.0,
+                              ),
+                              Opacity(
+                                opacity: 0.6,
+                                child: TileLayer(
+                                  urlTemplate:
+                                      'https://tiles.aqicn.org/tiles/usepa-aqi/{z}/{x}/{y}.png?token=$_waqiToken',
+                                  userAgentPackageName: 'com.heather.app',
+                                ),
+                              ),
+                              _locationMarker,
+                            ],
+                          ),
                         ),
                       ),
               ),
@@ -302,47 +312,50 @@ class _RadarPageState extends ConsumerState<RadarPage> {
                     _initializePlayback(manifest.frames.length);
                     final frame = manifest.frames[_currentFrameIndex];
                     final radarTileUrl =
-                        '${manifest.host}${frame.path}/256/{z}/{x}/{y}/6/0_0.png';
+                        '${manifest.host}${frame.path}/256/{z}/{x}/{y}/1/0_0.png';
 
                     return Stack(
                       children: [
                         ClipRRect(
                           borderRadius: BorderRadius.circular(16),
-                          child: FlutterMap(
-                            options: MapOptions(
-                              initialCenter: LatLng(
-                                widget.latitude,
-                                widget.longitude,
-                              ),
-                              initialZoom: 7.0,
-                              interactionOptions: const InteractionOptions(
-                                flags:
-                                    InteractiveFlag.all &
-                                    ~InteractiveFlag.rotate,
-                              ),
-                            ),
-                            children: [
-                              TileLayer(
-                                urlTemplate:
-                                    'https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png',
-                                subdomains: const ['a', 'b', 'c', 'd'],
-                                retinaMode:
-                                    MediaQuery.of(context).devicePixelRatio >
-                                    1.0,
-                              ),
-                              Opacity(
-                                opacity: 0.6,
-                                child: TileLayer(
-                                  key: ValueKey(frame.path),
-                                  urlTemplate: radarTileUrl,
-                                  tileProvider: CachedRadarTileProvider(
-                                    cache: _tileCache,
-                                    httpClient: _tileHttpClient,
-                                  ),
+                          child: Opacity(
+                            opacity: 0.8,
+                            child: FlutterMap(
+                              options: MapOptions(
+                                initialCenter: LatLng(
+                                  widget.latitude,
+                                  widget.longitude,
+                                ),
+                                initialZoom: 7.0,
+                                interactionOptions: const InteractionOptions(
+                                  flags:
+                                      InteractiveFlag.all &
+                                      ~InteractiveFlag.rotate,
                                 ),
                               ),
-                              _locationMarker,
-                            ],
+                              children: [
+                                TileLayer(
+                                  urlTemplate:
+                                      'https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png',
+                                  subdomains: const ['a', 'b', 'c', 'd'],
+                                  retinaMode:
+                                      MediaQuery.of(context).devicePixelRatio >
+                                      1.0,
+                                ),
+                                Opacity(
+                                  opacity: 0.6,
+                                  child: TileLayer(
+                                    key: ValueKey(frame.path),
+                                    urlTemplate: radarTileUrl,
+                                    tileProvider: CachedRadarTileProvider(
+                                      cache: _tileCache,
+                                      httpClient: _tileHttpClient,
+                                    ),
+                                  ),
+                                ),
+                                _locationMarker,
+                              ],
+                            ),
                           ),
                         ),
                         Positioned(
@@ -429,8 +442,9 @@ class _ControlBar extends StatelessWidget {
               builder: (context, constraints) {
                 const trackPadding = 14.0;
                 final trackWidth = constraints.maxWidth - trackPadding * 2;
-                final nowFraction =
-                    frameCount > 1 ? nowIndex / (frameCount - 1) : 0.5;
+                final nowFraction = frameCount > 1
+                    ? nowIndex / (frameCount - 1)
+                    : 0.5;
                 final nowX = trackPadding + nowFraction * trackWidth;
 
                 return Stack(
@@ -454,7 +468,7 @@ class _ControlBar extends StatelessWidget {
                         value: currentIndex.toDouble(),
                         min: 0,
                         max: (frameCount - 1).toDouble(),
-                        divisions: frameCount - 1,
+                        divisions: frameCount > 1 ? frameCount - 1 : null,
                         onChanged: onSliderChanged,
                       ),
                     ),
@@ -508,9 +522,7 @@ class _MapCard extends StatelessWidget {
       decoration: BoxDecoration(
         color: AppColors.cream.withValues(alpha: 0.06),
         borderRadius: BorderRadius.circular(20),
-        border: Border.all(
-          color: AppColors.cream.withValues(alpha: 0.08),
-        ),
+        border: Border.all(color: AppColors.cream.withValues(alpha: 0.08)),
       ),
       child: Stack(
         children: [
@@ -544,7 +556,7 @@ class _MapCard extends StatelessWidget {
             child: Container(
               padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
               decoration: BoxDecoration(
-                color: AppColors.midnightPurple.withValues(alpha: 0.5),
+                color: AppColors.midnightPurple.withValues(alpha: 0.4),
                 borderRadius: BorderRadius.circular(8),
               ),
               child: Text(
@@ -588,9 +600,7 @@ class _EdgeFadePainter extends CustomPainter {
           begin: Alignment.bottomCenter,
           end: Alignment.topCenter,
           colors: [edgeColor, clear],
-        ).createShader(
-          Rect.fromLTWH(0, size.height - fade, size.width, fade),
-        ),
+        ).createShader(Rect.fromLTWH(0, size.height - fade, size.width, fade)),
     );
     // Left
     canvas.drawRect(
@@ -610,9 +620,7 @@ class _EdgeFadePainter extends CustomPainter {
           begin: Alignment.centerRight,
           end: Alignment.centerLeft,
           colors: [edgeColor, clear],
-        ).createShader(
-          Rect.fromLTWH(size.width - fade, 0, fade, size.height),
-        ),
+        ).createShader(Rect.fromLTWH(size.width - fade, 0, fade, size.height)),
     );
   }
 

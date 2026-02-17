@@ -39,29 +39,63 @@ struct LargeWidgetView: View {
                         .fontWeight(.semibold)
                         .lineLimit(1)
 
-                    // Temperature row with icon
-                    HStack(alignment: .center) {
-                        HStack(alignment: .firstTextBaseline, spacing: 6) {
-                            Text("\(data.temperature)°")
-                                .font(.system(size: 52, weight: .semibold, design: .rounded))
-                                .minimumScaleFactor(0.7)
+                    // Temperature row with icon + sun/moon stacked on right
+                    HStack(alignment: .top) {
+                        VStack(alignment: .leading, spacing: 0) {
+                            HStack(alignment: .firstTextBaseline, spacing: 6) {
+                                Text("\(data.temperature)°")
+                                    .font(.system(size: 52, weight: .semibold, design: .rounded))
+                                    .minimumScaleFactor(0.7)
 
-                            VStack(alignment: .leading, spacing: 2) {
-                                Text("H:\(data.high)° L:\(data.low)°")
+                                Text("\(data.high)°/\(data.low)°")
                                     .font(.caption)
                                     .fontWeight(.medium)
                                     .opacity(0.9)
-                                Text(data.description.capitalized)
-                                    .font(.caption2)
-                                    .opacity(0.7)
                             }
+
+                            Text("Feels like \(data.feelsLike)°")
+                                .font(.caption2)
+                                .opacity(0.7)
+                                .padding(.leading, 2)
+
+                            Text(data.description.capitalized)
+                                .font(.caption2)
+                                .opacity(0.7)
+                                .padding(.leading, 2)
                         }
                         Spacer()
-                        WidgetConditionIcon(
-                            conditionName: data.conditionName,
-                            isDay: data.isDay,
-                            size: 48
-                        )
+                        // Condition icon + sunrise/sunset + UV/moon stacked
+                        VStack(alignment: .trailing, spacing: 4) {
+                            WidgetConditionIcon(
+                                conditionName: data.conditionName,
+                                isDay: data.isDay,
+                                size: 48
+                            )
+                            if data.isDay {
+                                if let sunsetLabel = data.sunsetLabel {
+                                    DetailLabel(
+                                        icon: "sunset.fill",
+                                        value: sunsetLabel
+                                    )
+                                }
+                                DetailLabel(
+                                    icon: "sun.max.fill",
+                                    value: "UV \(data.uvIndexMax ?? data.uvIndex)"
+                                )
+                            } else {
+                                if let sunriseLabel = data.sunriseLabel {
+                                    DetailLabel(
+                                        icon: "sunrise.fill",
+                                        value: sunriseLabel
+                                    )
+                                }
+                                let phase = getMoonPhase()
+                                DetailLabel(
+                                    icon: phase.sfSymbol,
+                                    value: "\(moonIllumination())%"
+                                )
+                            }
+                        }
                     }
 
                     Spacer()
@@ -88,7 +122,7 @@ struct LargeWidgetView: View {
                     }
 
                     Spacer()
-                    
+
                     // Quip
                     Text(data.quip)
                         .font(.callout)
@@ -96,20 +130,8 @@ struct LargeWidgetView: View {
                         .lineLimit(3)
                         .opacity(0.95)
                         .padding(.top, 8)
-                    
-                    Spacer()
 
-                    // Detail row
-                    HStack(spacing: 12) {
-                        DetailPill(label: "Feels", value: "\(data.feelsLike)°")
-                        DetailPill(label: "Humidity", value: "\(data.humidity)%")
-                        DetailPill(label: "Wind", value: "\(data.windSpeed) mph")
-                        if data.isDay {
-                            DetailPill(label: "UV", value: "\(data.uvIndex)")
-                        } else {
-                            DetailPill(label: "Moon", value: "\(moonIllumination())%")
-                        }
-                    }
+                    Spacer()
                 }
                 .foregroundStyle(.white)
             }
@@ -124,22 +146,18 @@ struct LargeWidgetView: View {
     }
 }
 
-private struct DetailPill: View {
-    let label: String
+private struct DetailLabel: View {
+    let icon: String
     let value: String
 
     var body: some View {
-        VStack(spacing: 2) {
-            Text(label)
+        HStack(spacing: 4) {
+            Image(systemName: icon)
                 .font(.system(size: 10))
                 .opacity(0.7)
             Text(value)
-                .font(.caption)
-                .fontWeight(.semibold)
+                .font(.system(size: 11, weight: .semibold))
+                .opacity(0.8)
         }
-        .padding(.horizontal, 10)
-        .padding(.vertical, 6)
-        .background(.white.opacity(0.15))
-        .clipShape(RoundedRectangle(cornerRadius: 8))
     }
 }

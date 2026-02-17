@@ -24,7 +24,8 @@ class WeatherScreen extends ConsumerStatefulWidget {
   ConsumerState<WeatherScreen> createState() => _WeatherScreenState();
 }
 
-class _WeatherScreenState extends ConsumerState<WeatherScreen> {
+class _WeatherScreenState extends ConsumerState<WeatherScreen>
+    with WidgetsBindingObserver {
   late PageController _horizontalController;
   final _verticalPagerKey = GlobalKey<VerticalForecastPagerState>();
   StreamSubscription<void>? _widgetTapSub;
@@ -36,14 +37,12 @@ class _WeatherScreenState extends ConsumerState<WeatherScreen> {
   @override
   void initState() {
     super.initState();
+    WidgetsBinding.instance.addObserver(this);
     _horizontalController = PageController(initialPage: 0);
     _horizontalController.addListener(_onHorizontalPageChanged);
     _widgetTapSub = WidgetService.widgetTapped.stream.listen((_) {
       if (!mounted) return;
-      if (_horizontalController.hasClients) {
-        _horizontalController.jumpToPage(0);
-      }
-      _verticalPagerKey.currentState?.jumpToFirst();
+      _resetToFirstAndRefresh();
     });
     Future.delayed(const Duration(seconds: 3), () {
       if (mounted) setState(() => _minTimeElapsed = true);
@@ -52,10 +51,26 @@ class _WeatherScreenState extends ConsumerState<WeatherScreen> {
 
   @override
   void dispose() {
+    WidgetsBinding.instance.removeObserver(this);
     _widgetTapSub?.cancel();
     _horizontalController.removeListener(_onHorizontalPageChanged);
     _horizontalController.dispose();
     super.dispose();
+  }
+
+  @override
+  void didChangeAppLifecycleState(AppLifecycleState state) {
+    if (state == AppLifecycleState.resumed) {
+      _resetToFirstAndRefresh();
+    }
+  }
+
+  void _resetToFirstAndRefresh() {
+    if (_horizontalController.hasClients) {
+      _horizontalController.jumpToPage(0);
+    }
+    _verticalPagerKey.currentState?.jumpToFirst();
+    _refreshAll();
   }
 
   void _onHorizontalPageChanged() {

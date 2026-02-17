@@ -1,0 +1,15 @@
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="100dp"
+    android:height="100dp"
+    android:viewportWidth="100"
+    android:viewportHeight="100">
+    <!-- Simplified aurora/sun burst silhouette -->
+    <path
+        android:fillColor="#000000"
+        android:pathData="M50,20a30,30 0,1 0,0 60a30,30 0,1 0,0 -60zM50,30a20,20 0,1 1,0 40a20,20 0,1 1,0 -40z" />
+    <path
+        android:fillColor="#000000"
+        android:pathData="M50,5v10M50,85v10M5,50h10M85,50h10M18,18l7,7M75,75l7,7M18,82l7,-7M75,25l7,-7"
+        android:strokeWidth="4"
+        android:strokeColor="#000000" />
+</vector>

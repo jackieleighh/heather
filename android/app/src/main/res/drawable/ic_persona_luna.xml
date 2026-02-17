@@ -1,0 +1,13 @@
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="100dp"
+    android:height="100dp"
+    android:viewportWidth="100"
+    android:viewportHeight="100">
+    <!-- Simplified crescent moon with stars silhouette -->
+    <path
+        android:fillColor="#000000"
+        android:pathData="M70,15c-20,0 -38,15 -38,35s18,35 38,35c-5,3 -12,5 -18,5c-22,0 -40,-18 -40,-40S30,10 52,10C58,10 65,12 70,15z" />
+    <path
+        android:fillColor="#000000"
+        android:pathData="M72,25l2,-5l2,5l5,2l-5,2l-2,5l-2,-5l-5,-2zM82,42l1.5,-3.5l1.5,3.5l3.5,1.5l-3.5,1.5l-1.5,3.5l-1.5,-3.5l-3.5,-1.5z" />
+</vector>

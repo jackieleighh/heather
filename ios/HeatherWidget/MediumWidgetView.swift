@@ -33,7 +33,7 @@ struct MediumWidgetView: View {
                     .offset(x:20,y:16)
 
                 VStack(alignment: .leading, spacing: 0) {
-                    // Top: city + temp, icon top-right
+                    // Top: city + temp on left, icon + sun/moon on right
                     HStack(alignment: .top) {
                         VStack(alignment: .leading, spacing: 0) {
                             Text(data.cityName)
@@ -46,17 +46,50 @@ struct MediumWidgetView: View {
                                     .font(.system(size: 36, weight: .semibold, design: .rounded))
                                     .minimumScaleFactor(0.7)
 
-                                Text("H:\(data.high)° L:\(data.low)°")
+                                Text("\(data.high)°/\(data.low)°")
                                     .font(.caption2)
+                                    .fontWeight(.medium)
                                     .opacity(0.8)
                             }
+
+                            Text("Feels like \(data.feelsLike)°")
+                                .font(.system(size: 9))
+                                .opacity(0.7)
+                                .padding(.leading, 2)
                         }
                         Spacer()
-                        WidgetConditionIcon(
-                            conditionName: data.conditionName,
-                            isDay: data.isDay,
-                            size: 32
-                        )
+                        // Condition icon + sunrise/sunset + UV/moon stacked
+                        VStack(alignment: .trailing, spacing: 3) {
+                            WidgetConditionIcon(
+                                conditionName: data.conditionName,
+                                isDay: data.isDay,
+                                size: 32
+                            )
+                            if data.isDay {
+                                if let sunsetLabel = data.sunsetLabel {
+                                    MediumDetailLabel(
+                                        icon: "sunset.fill",
+                                        value: sunsetLabel
+                                    )
+                                }
+                                MediumDetailLabel(
+                                    icon: "sun.max.fill",
+                                    value: "UV \(data.uvIndexMax ?? data.uvIndex)"
+                                )
+                            } else {
+                                if let sunriseLabel = data.sunriseLabel {
+                                    MediumDetailLabel(
+                                        icon: "sunrise.fill",
+                                        value: sunriseLabel
+                                    )
+                                }
+                                let phase = getMoonPhase()
+                                MediumDetailLabel(
+                                    icon: phase.sfSymbol,
+                                    value: "\(moonIllumination())%"
+                                )
+                            }
+                        }
                     }
 
                     Spacer()
@@ -68,19 +101,27 @@ struct MediumWidgetView: View {
                         .lineLimit(2)
                         .opacity(0.9)
                         .fixedSize(horizontal: false, vertical: true)
-                        .padding(.bottom, 8)
-                    
+
                     Spacer()
 
-                    // Bottom: conditions row
-                    HStack(spacing: 0) {
-                        MediumDetailPill(label: "Feels", value: "\(data.feelsLike)°")
-                        MediumDetailPill(label: "Humidity", value: "\(data.humidity)%")
-                        MediumDetailPill(label: "Wind", value: "\(data.windSpeed) mph")
-                        if data.isDay {
-                            MediumDetailPill(label: "UV", value: "\(data.uvIndex)")
-                        } else {
-                            MediumDetailPill(label: "Moon", value: "\(moonIllumination())%")
+                    // Bottom: condensed hourly forecast
+                    if let hours = data.hourly, !hours.isEmpty {
+                        HStack(spacing: 0) {
+                            ForEach(Array(hours.prefix(8).enumerated()), id: \.offset) { _, entry in
+                                VStack(spacing: 1) {
+                                    Text(entry.hourLabel)
+                                        .font(.system(size: 8))
+                                        .opacity(0.7)
+                                    WidgetConditionIcon(
+                                        conditionName: entry.conditionName,
+                                        isDay: data.isDay,
+                                        size: 12
+                                    ).frame(height: 14)
+                                    Text("\(entry.temperature)°")
+                                        .font(.system(size: 9, weight: .semibold))
+                                }
+                                .frame(maxWidth: .infinity)
+                            }
                         }
                     }
                 }
@@ -97,18 +138,18 @@ struct MediumWidgetView: View {
     }
 }
 
-private struct MediumDetailPill: View {
-    let label: String
+private struct MediumDetailLabel: View {
+    let icon: String
     let value: String
 
     var body: some View {
-        VStack(spacing: 1) {
-            Text(label)
-                .font(.system(size: 9))
+        HStack(spacing: 3) {
+            Image(systemName: icon)
+                .font(.system(size: 8))
                 .opacity(0.7)
             Text(value)
-                .font(.system(size: 11, weight: .semibold))
+                .font(.system(size: 9, weight: .semibold))
+                .opacity(0.8)
         }
-        .frame(maxWidth: .infinity)
     }
 }

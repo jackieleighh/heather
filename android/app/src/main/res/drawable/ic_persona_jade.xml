@@ -1,0 +1,10 @@
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="100dp"
+    android:height="100dp"
+    android:viewportWidth="100"
+    android:viewportHeight="100">
+    <!-- Simplified jade stone/leaf silhouette -->
+    <path
+        android:fillColor="#000000"
+        android:pathData="M50,5C30,5 15,20 10,40c-5,20 5,35 20,45c10,7 20,10 20,10s10,-3 20,-10c15,-10 25,-25 20,-45C85,20 70,5 50,5zM50,15c15,0 27,12 30,28c3,16 -3,28 -15,35c-5,3 -10,5 -15,7c-5,-2 -10,-4 -15,-7c-12,-7 -18,-19 -15,-35C23,27 35,15 50,15z" />
+</vector>
