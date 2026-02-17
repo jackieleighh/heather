@@ -28,6 +28,7 @@ struct LargeWidgetView: View {
                     .resizable()
                     .scaledToFit()
                     .frame(width: 160, height: 160)
+                    .foregroundColor(.black)
                     .opacity(0.2)
                     .offset(x:20,y:16)
 
@@ -106,8 +107,7 @@ struct LargeWidgetView: View {
                         if data.isDay {
                             DetailPill(label: "UV", value: "\(data.uvIndex)")
                         } else {
-                            let phase = getMoonPhase()
-                            DetailPill(label: "Moon", value: phase.rawValue)
+                            DetailPill(label: "Moon", value: "\(moonIllumination())%")
                         }
                     }
                 }

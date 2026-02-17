@@ -28,12 +28,18 @@ class VerticalForecastPager extends StatefulWidget {
   });
 
   @override
-  State<VerticalForecastPager> createState() => _VerticalForecastPagerState();
+  State<VerticalForecastPager> createState() => VerticalForecastPagerState();
 }
 
-class _VerticalForecastPagerState extends State<VerticalForecastPager> {
+class VerticalForecastPagerState extends State<VerticalForecastPager> {
   final _pageController = PageController();
   int _currentPage = 0;
+
+  void jumpToFirst() {
+    if (_pageController.hasClients) {
+      _pageController.jumpToPage(0);
+    }
+  }
 
   @override
   void dispose() {

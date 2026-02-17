@@ -28,6 +28,7 @@ struct MediumWidgetView: View {
                     .resizable()
                     .scaledToFit()
                     .frame(width: 100, height: 100)
+                    .foregroundColor(.black)
                     .opacity(0.2)
                     .offset(x:20,y:16)
 
@@ -79,8 +80,7 @@ struct MediumWidgetView: View {
                         if data.isDay {
                             MediumDetailPill(label: "UV", value: "\(data.uvIndex)")
                         } else {
-                            let phase = getMoonPhase()
-                            MediumDetailPill(label: "Moon", value: phase.rawValue)
+                            MediumDetailPill(label: "Moon", value: "\(moonIllumination())%")
                         }
                     }
                 }

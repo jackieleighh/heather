@@ -45,7 +45,7 @@ class SunCard extends StatelessWidget {
               const SizedBox(width: 8),
               Text(
                 'Sun',
-                style: theme.textTheme.bodyLarge?.copyWith(
+                style: theme.textTheme.bodySmall?.copyWith(
                   fontWeight: FontWeight.w600,
                 ),
               ),
@@ -138,11 +138,7 @@ class _UvLinePainter extends CustomPainter {
   final List<DateTime> hours;
   final DateTime? now;
 
-  _UvLinePainter({
-    required this.uvValues,
-    required this.hours,
-    this.now,
-  });
+  _UvLinePainter({required this.uvValues, required this.hours, this.now});
 
   @override
   void paint(Canvas canvas, Size size) {

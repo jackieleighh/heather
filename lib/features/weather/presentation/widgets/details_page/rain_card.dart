@@ -47,13 +47,9 @@ class RainCard extends StatelessWidget {
               SizedBox(width: compact ? 5 : 8),
               Text(
                 'Rain',
-                style: compact
-                    ? theme.textTheme.bodySmall?.copyWith(
-                        fontWeight: FontWeight.w600,
-                      )
-                    : theme.textTheme.bodyLarge?.copyWith(
-                        fontWeight: FontWeight.w600,
-                      ),
+                style: theme.textTheme.bodySmall?.copyWith(
+                  fontWeight: FontWeight.w600,
+                ),
               ),
               const Spacer(),
               Text(
@@ -75,7 +71,7 @@ class RainCard extends StatelessWidget {
               ),
             ],
           ),
-          SizedBox(height: compact ? 2 : 4),
+          SizedBox(height: compact ? 2 : 6),
           Expanded(
             child: CustomPaint(
               size: Size.infinite,
@@ -97,11 +93,7 @@ class _PrecipBarPainter extends CustomPainter {
   final List<DateTime> hours;
   final DateTime? now;
 
-  _PrecipBarPainter({
-    required this.precipProb,
-    required this.hours,
-    this.now,
-  });
+  _PrecipBarPainter({required this.precipProb, required this.hours, this.now});
 
   @override
   void paint(Canvas canvas, Size size) {
@@ -161,8 +153,10 @@ class _PrecipBarPainter extends CustomPainter {
             .inMilliseconds
             .toDouble();
         if (totalMs > 0) {
-          final nowMs =
-              nowTime.difference(hours.first).inMilliseconds.toDouble();
+          final nowMs = nowTime
+              .difference(hours.first)
+              .inMilliseconds
+              .toDouble();
           final nowX = padLeft + graphW * (nowMs / totalMs);
           canvas.drawLine(
             Offset(nowX, 0),

@@ -67,13 +67,9 @@ class _ConditionsCardState extends State<ConditionsCard> {
               SizedBox(width: widget.compact ? 5 : 8),
               Text(
                 'Conditions',
-                style: widget.compact
-                    ? theme.textTheme.bodySmall?.copyWith(
-                        fontWeight: FontWeight.w600,
-                      )
-                    : theme.textTheme.bodyLarge?.copyWith(
-                        fontWeight: FontWeight.w600,
-                      ),
+                style: theme.textTheme.bodySmall?.copyWith(
+                  fontWeight: FontWeight.w600,
+                ),
               ),
             ],
           ),
@@ -114,19 +110,21 @@ class _ConditionsCardState extends State<ConditionsCard> {
                           '${h.temperature.round()}°',
                           style: theme.textTheme.bodyMedium?.copyWith(
                             fontWeight: FontWeight.w700,
-                            fontSize: 11,
+                            fontSize: widget.compact ? 11 : 12,
                           ),
                         ),
+                        const SizedBox(height: 2),
                         Icon(
                           conditionIcon(h.weatherCode),
                           color: AppColors.cream,
-                          size: 18,
+                          size: widget.compact ? 18 : 20,
                         ),
+                        const SizedBox(height: 2),
                         Text(
                           hourLabel,
                           style: theme.textTheme.bodySmall?.copyWith(
                             color: AppColors.cream.withValues(alpha: 0.8),
-                            fontSize: 9,
+                            fontSize: widget.compact ? 9 : 10,
                           ),
                         ),
                       ],

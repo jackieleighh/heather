@@ -36,7 +36,7 @@ class MoonCard extends StatelessWidget {
       backgroundIcon: moonPhaseIcon(now),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
-        mainAxisAlignment: MainAxisAlignment.center,
+        mainAxisAlignment: MainAxisAlignment.start,
         children: [
           Row(
             children: [
@@ -48,7 +48,7 @@ class MoonCard extends StatelessWidget {
               const SizedBox(width: 8),
               Text(
                 'Moon',
-                style: theme.textTheme.bodyLarge?.copyWith(
+                style: theme.textTheme.bodySmall?.copyWith(
                   fontWeight: FontWeight.w600,
                 ),
               ),
@@ -77,36 +77,36 @@ class MoonCard extends StatelessWidget {
             ],
           ),
           const SizedBox(height: 2),
-          Row(
-            children: [
-              Icon(
-                firstIcon,
-                size: 13,
-                color: AppColors.cream.withValues(alpha: 0.7),
-              ),
-              const SizedBox(width: 4),
-              Text(
-                _relativeLabel(firstLabel, first, now, dateFmt),
-                style: theme.textTheme.bodyMedium?.copyWith(
-                  fontWeight: FontWeight.w800,
-                  fontSize: 14,
+          Expanded(
+            child: Row(
+              children: [
+                Icon(
+                  firstIcon,
+                  size: 13,
+                  color: AppColors.cream.withValues(alpha: 0.7),
                 ),
-              ),
-              const SizedBox(width: 12),
-              Icon(
-                secondIcon,
-                size: 13,
-                color: AppColors.cream.withValues(alpha: 0.7),
-              ),
-              const SizedBox(width: 4),
-              Text(
-                _relativeLabel(secondLabel, second, now, dateFmt),
-                style: theme.textTheme.bodyMedium?.copyWith(
-                  fontWeight: FontWeight.w800,
-                  fontSize: 14,
+                const SizedBox(width: 4),
+                Text(
+                  _relativeLabel(firstLabel, first, now, dateFmt),
+                  style: theme.textTheme.bodyMedium?.copyWith(
+                    fontWeight: FontWeight.w800,
+                  ),
                 ),
-              ),
-            ],
+                const SizedBox(width: 12),
+                Icon(
+                  secondIcon,
+                  size: 13,
+                  color: AppColors.cream.withValues(alpha: 0.7),
+                ),
+                const SizedBox(width: 4),
+                Text(
+                  _relativeLabel(secondLabel, second, now, dateFmt),
+                  style: theme.textTheme.bodyMedium?.copyWith(
+                    fontWeight: FontWeight.w800,
+                  ),
+                ),
+              ],
+            ),
           ),
         ],
       ),

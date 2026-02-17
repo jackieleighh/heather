@@ -28,6 +28,7 @@ class DetailsPage extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final today = forecast.daily.first;
     final now = forecast.locationNow;
+    final next24 = forecast.hourly.take(24).toList();
     final aqi = ref.watch(airQualityProvider((lat: latitude, lon: longitude)));
 
     return SafeArea(
@@ -38,11 +39,11 @@ class DetailsPage extends ConsumerWidget {
             Padding(
               padding: const EdgeInsets.only(right: 44),
               child: SizedBox(
-                height: 48,
+                height: 62,
                 child: Align(
                   alignment: Alignment.centerRight,
                   child: Text(
-                    'Today',
+                    '24 hours',
                     style: GoogleFonts.quicksand(
                       fontSize: 22,
                       fontWeight: FontWeight.w700,
@@ -62,10 +63,8 @@ class DetailsPage extends ConsumerWidget {
               child: Padding(
                 padding: const EdgeInsets.only(bottom: 5),
                 child: TemperatureCard(
-                  temps: forecast.hourlyToday
-                      .map((h) => h.temperature)
-                      .toList(),
-                  hours: forecast.hourlyToday.map((h) => h.time).toList(),
+                  temps: next24.map((h) => h.temperature).toList(),
+                  hours: next24.map((h) => h.time).toList(),
                   now: now,
                 ),
               ),
@@ -75,11 +74,13 @@ class DetailsPage extends ConsumerWidget {
                 padding: const EdgeInsets.only(bottom: 5),
                 child: RainCard(
                   precipitationIn: today.precipitationSum / 25.4,
-                  precipitationProbability: today.precipitationProbabilityMax,
-                  hourlyPrecipProb: forecast.hourlyToday
+                  precipitationProbability: next24
+                      .map((h) => h.precipitationProbability)
+                      .reduce((a, b) => a > b ? a : b),
+                  hourlyPrecipProb: next24
                       .map((h) => h.precipitationProbability)
                       .toList(),
-                  hours: forecast.hourlyToday.map((h) => h.time).toList(),
+                  hours: next24.map((h) => h.time).toList(),
                   now: now,
                 ),
               ),
@@ -103,9 +104,9 @@ class DetailsPage extends ConsumerWidget {
                 child: SunCard(
                   sunrise: today.sunrise,
                   sunset: today.sunset,
-                  uvIndex: today.uvIndexMax,
-                  hourlyUv: forecast.hourlyToday.map((h) => h.uvIndex).toList(),
-                  hours: forecast.hourlyToday.map((h) => h.time).toList(),
+                  uvIndex: forecast.current.uvIndex,
+                  hourlyUv: next24.map((h) => h.uvIndex).toList(),
+                  hours: next24.map((h) => h.time).toList(),
                   now: now,
                 ),
               ),

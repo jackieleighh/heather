@@ -28,6 +28,7 @@ struct SmallWidgetView: View {
                     .resizable()
                     .scaledToFit()
                     .frame(width: 100, height: 100)
+                    .foregroundColor(.black)
                     .opacity(0.2)
                     .offset(x:20,y:16)
 

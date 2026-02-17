@@ -120,10 +120,10 @@ class _AlertDetailCard extends StatelessWidget {
     return Container(
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
-        color: alert.severity.color.withValues(alpha: 0.1),
+        color: alert.severity.color.withValues(alpha: 0.2),
         borderRadius: BorderRadius.circular(16),
         border: Border.all(
-          color: alert.severity.color.withValues(alpha: 0.25),
+          color: alert.severity.color.withValues(alpha: 0.3),
           width: 1,
         ),
       ),
@@ -136,7 +136,7 @@ class _AlertDetailCard extends StatelessWidget {
               Container(
                 padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
                 decoration: BoxDecoration(
-                  color: alert.severity.color.withValues(alpha: 0.25),
+                  color: alert.severity.color.withValues(alpha: 0.3),
                   borderRadius: BorderRadius.circular(8),
                 ),
                 child: Row(

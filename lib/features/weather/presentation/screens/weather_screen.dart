@@ -26,6 +26,7 @@ class WeatherScreen extends ConsumerStatefulWidget {
 
 class _WeatherScreenState extends ConsumerState<WeatherScreen> {
   late PageController _horizontalController;
+  final _verticalPagerKey = GlobalKey<VerticalForecastPagerState>();
   StreamSubscription<void>? _widgetTapSub;
   bool _minTimeElapsed = false;
   bool _splashRemoved = false;
@@ -40,8 +41,9 @@ class _WeatherScreenState extends ConsumerState<WeatherScreen> {
     _widgetTapSub = WidgetService.widgetTapped.stream.listen((_) {
       if (!mounted) return;
       if (_horizontalController.hasClients) {
-        _horizontalController.jumpTo(0);
+        _horizontalController.jumpToPage(0);
       }
+      _verticalPagerKey.currentState?.jumpToFirst();
     });
     Future.delayed(const Duration(seconds: 3), () {
       if (mounted) setState(() => _minTimeElapsed = true);
@@ -164,6 +166,7 @@ class _WeatherScreenState extends ConsumerState<WeatherScreen> {
 
         final pages = <Widget>[
           VerticalForecastPager(
+            key: _verticalPagerKey,
             forecast: forecast,
             cityName: location.cityName,
             quip: quip,

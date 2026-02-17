@@ -44,13 +44,9 @@ class TemperatureCard extends StatelessWidget {
               SizedBox(width: compact ? 5 : 8),
               Text(
                 'Temp',
-                style: compact
-                    ? theme.textTheme.bodySmall?.copyWith(
-                        fontWeight: FontWeight.w600,
-                      )
-                    : theme.textTheme.bodyLarge?.copyWith(
-                        fontWeight: FontWeight.w600,
-                      ),
+                style: theme.textTheme.bodySmall?.copyWith(
+                  fontWeight: FontWeight.w600,
+                ),
               ),
               const Spacer(),
               Text(
@@ -71,7 +67,7 @@ class TemperatureCard extends StatelessWidget {
               ),
             ],
           ),
-          SizedBox(height: compact ? 2 : 4),
+          SizedBox(height: compact ? 2 : 6),
           Expanded(
             child: CustomPaint(
               size: Size.infinite,
@@ -89,11 +85,7 @@ class _TempLinePainter extends CustomPainter {
   final List<DateTime> hours;
   final DateTime? now;
 
-  _TempLinePainter({
-    required this.temps,
-    required this.hours,
-    this.now,
-  });
+  _TempLinePainter({required this.temps, required this.hours, this.now});
 
   @override
   void paint(Canvas canvas, Size size) {

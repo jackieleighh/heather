@@ -43,7 +43,7 @@ class AirCard extends StatelessWidget {
               const SizedBox(width: 8),
               Text(
                 'Air',
-                style: theme.textTheme.bodyLarge?.copyWith(
+                style: theme.textTheme.bodySmall?.copyWith(
                   fontWeight: FontWeight.w600,
                 ),
               ),
@@ -73,55 +73,62 @@ class AirCard extends StatelessWidget {
               ),
             ],
           ),
-          Row(
-            children: [
-              const Spacer(),
-              if (isLoading)
-                Text(
-                  '...',
-                  style: theme.textTheme.bodyLarge?.copyWith(
-                    fontWeight: FontWeight.w800,
-                    fontSize: 20,
-                  ),
-                )
-              else if (aqi != null)
+          Expanded(
+            child: Column(
+              mainAxisAlignment: MainAxisAlignment.center,
+              crossAxisAlignment: CrossAxisAlignment.center,
+              children: [
                 Row(
-                  mainAxisSize: MainAxisSize.min,
                   children: [
-                    Text(
-                      aqi.toString(),
-                      style: theme.textTheme.bodyLarge?.copyWith(
-                        fontWeight: FontWeight.w800,
-                        fontSize: 20,
+                    const Spacer(),
+                    if (isLoading)
+                      Text(
+                        '...',
+                        style: theme.textTheme.bodyLarge?.copyWith(
+                          fontWeight: FontWeight.w800,
+                          fontSize: 20,
+                        ),
+                      )
+                    else if (aqi != null)
+                      Row(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          Text(
+                            aqi.toString(),
+                            style: theme.textTheme.bodyLarge?.copyWith(
+                              fontWeight: FontWeight.w800,
+                              fontSize: 20,
+                            ),
+                          ),
+                          const SizedBox(width: 6),
+                          Text(
+                            _aqiLabel(aqi!),
+                            style: GoogleFonts.poppins(
+                              fontSize: 13,
+                              fontWeight: FontWeight.w600,
+                              color: AppColors.cream.withValues(alpha: 0.6),
+                            ),
+                          ),
+                        ],
+                      )
+                    else
+                      Text(
+                        '--',
+                        style: theme.textTheme.bodyLarge?.copyWith(
+                          fontWeight: FontWeight.w800,
+                          fontSize: 20,
+                        ),
                       ),
-                    ),
-                    const SizedBox(width: 6),
-                    Text(
-                      _aqiLabel(aqi!),
-                      style: GoogleFonts.poppins(
-                        fontSize: 13,
-                        fontWeight: FontWeight.w600,
-                        color: AppColors.cream.withValues(alpha: 0.6),
-                      ),
-                    ),
                   ],
-                )
-              else
-                Text(
-                  '--',
-                  style: theme.textTheme.bodyLarge?.copyWith(
-                    fontWeight: FontWeight.w800,
-                    fontSize: 20,
+                ),
+                SizedBox(
+                  height: 16,
+                  child: CustomPaint(
+                    size: Size.infinite,
+                    painter: _AqiScalePainter(aqi: aqi),
                   ),
                 ),
-            ],
-          ),
-          const SizedBox(height: 8),
-          SizedBox(
-            height: 16,
-            child: CustomPaint(
-              size: Size.infinite,
-              painter: _AqiScalePainter(aqi: aqi),
+              ],
             ),
           ),
         ],
