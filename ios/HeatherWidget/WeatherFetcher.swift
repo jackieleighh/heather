@@ -38,7 +38,7 @@ struct WeatherFetcher {
             + "&current=temperature_2m,relative_humidity_2m,apparent_temperature,is_day,weather_code,wind_speed_10m,uv_index"
             + "&daily=temperature_2m_max,temperature_2m_min,sunrise,sunset,uv_index_max"
             + "&hourly=temperature_2m,weather_code"
-            + "&temperature_unit=fahrenheit&wind_speed_unit=mph&timezone=auto&forecast_days=1"
+            + "&temperature_unit=fahrenheit&wind_speed_unit=mph&timezone=auto&forecast_days=2"
 
         guard let url = URL(string: urlString) else { return nil }
 

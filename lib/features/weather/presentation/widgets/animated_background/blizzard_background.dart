@@ -71,14 +71,14 @@ class _BlizzardPainter extends CustomPainter {
   @override
   void paint(Canvas canvas, Size size) {
     if (flakes.isEmpty) {
-      for (var i = 0; i < 220; i++) {
+      for (var i = 0; i < 350; i++) {
         flakes.add(
           Particle(
             x: random.nextDouble() * size.width,
             y: random.nextDouble() * size.height,
-            speed: 2.0 + random.nextDouble() * 5.0,
-            size: 2.0 + random.nextDouble() * 6.0,
-            opacity: 0.1 + random.nextDouble() * 0.3,
+            speed: 1.5 + random.nextDouble() * 4.0,
+            size: 1.5 + random.nextDouble() * 3.5,
+            opacity: 0.15 + random.nextDouble() * 0.45,
             wobble: random.nextDouble() * 2 * pi,
           ),
         );
@@ -89,8 +89,10 @@ class _BlizzardPainter extends CustomPainter {
 
     for (final flake in flakes) {
       flake.y += flake.speed;
-      // Strong wind push
-      flake.x += sin(time * 2.0 + flake.wobble) * 2.5 + 1.5;
+      // Chaotic wind: layered sine waves at different frequencies per flake
+      flake.x += sin(time * 1.8 + flake.wobble) * 2.5
+          + sin(time * 3.7 + flake.wobble * 2.3) * 1.2
+          + 1.0;
 
       if (flake.y > size.height + 10) {
         flake.y = -10;
@@ -106,8 +108,8 @@ class _BlizzardPainter extends CustomPainter {
     // Whiteout haze
     final hazePaint = Paint()
       ..style = PaintingStyle.fill
-      ..color = Colors.white.withValues(alpha: 0.03 + sin(time * 0.4) * 0.015)
-      ..maskFilter = const MaskFilter.blur(BlurStyle.normal, 80);
+      ..color = Colors.white.withValues(alpha: 0.06 + sin(time * 0.5) * 0.03)
+      ..maskFilter = const MaskFilter.blur(BlurStyle.normal, 100);
 
     canvas.drawRect(Rect.fromLTWH(0, 0, size.width, size.height), hazePaint);
   }

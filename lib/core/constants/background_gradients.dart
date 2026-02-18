@@ -54,28 +54,28 @@ class BackgroundGradients {
 
   static const _sunny = {
     TemperatureTier.singleDigits: [
-      AppColors.palePurple,
+      AppColors.skyPeriwinkle,
       AppColors.frostLavender,
-      AppColors.icyBlue,
+      AppColors.royalBlue,
     ],
     TemperatureTier.freezing: [
-      AppColors.palePurple,
-      AppColors.mutedTeal,
+      AppColors.skyPeriwinkle,
+      AppColors.lavenderBlue,
       AppColors.icyBlue,
     ],
     TemperatureTier.jacketWeather: [
-      AppColors.mutedTeal,
+      AppColors.warmSkyBlue,
       AppColors.icyBlue,
       AppColors.teal,
     ],
     TemperatureTier.flannelWeather: [
-      AppColors.icyBlue,
-      AppColors.chartreuse,
-      AppColors.goldenYellow,
+      AppColors.warmSkyBlue,
+      AppColors.sunnyGreen,
+      AppColors.goldenAmber,
     ],
     TemperatureTier.shortsWeather: [
-      AppColors.chartreuse,
-      AppColors.goldenYellow,
+      AppColors.sunnyGreen,
+      AppColors.goldenAmber,
       AppColors.orange,
     ],
     TemperatureTier.scorcher: [
@@ -87,68 +87,37 @@ class BackgroundGradients {
 
   static const _mostlySunny = _sunny;
 
-  static const _partlyCloudy = {
-    TemperatureTier.singleDigits: [
-      AppColors.fogSilver,
-      AppColors.steelGrey,
-      AppColors.icyBlue,
-    ],
-    TemperatureTier.freezing: [
-      AppColors.steelGrey,
-      AppColors.slateBlue,
-      AppColors.mutedTeal,
-    ],
-    TemperatureTier.jacketWeather: [
-      AppColors.slateBlue,
-      AppColors.mutedTeal,
-      AppColors.royalBlue,
-    ],
-    TemperatureTier.flannelWeather: [
-      AppColors.steelGrey,
-      AppColors.icyBlue,
-      AppColors.chartreuse,
-    ],
-    TemperatureTier.shortsWeather: [
-      AppColors.steelGrey,
-      AppColors.chartreuse,
-      AppColors.mustardYellow,
-    ],
-    TemperatureTier.scorcher: [
-      AppColors.slateBlue,
-      AppColors.burntOrange,
-      AppColors.hotAmber,
-    ],
-  };
+  static const _partlyCloudy = _sunny;
 
   static const _overcast = {
     TemperatureTier.singleDigits: [
       AppColors.steelGrey,
-      AppColors.slateBlue,
+      AppColors.skyPeriwinkle,
       AppColors.coldIndigo,
     ],
     TemperatureTier.freezing: [
-      AppColors.fogSilver,
       AppColors.steelGrey,
+      AppColors.lavenderBlue,
       AppColors.slateBlue,
     ],
     TemperatureTier.jacketWeather: [
-      AppColors.steelGrey,
       AppColors.slateBlue,
-      AppColors.mutedTeal,
+      AppColors.steelGrey,
+      AppColors.darkTeal,
     ],
     TemperatureTier.flannelWeather: [
       AppColors.slateBlue,
-      AppColors.mutedTeal,
-      AppColors.deepPurple,
+      AppColors.cloudySage,
+      AppColors.cloudyAmber,
     ],
     TemperatureTier.shortsWeather: [
-      AppColors.steelGrey,
-      AppColors.deepPurple,
-      AppColors.darkTeal,
+      AppColors.cloudySage,
+      AppColors.cloudyAmber,
+      AppColors.dullOrange,
     ],
     TemperatureTier.scorcher: [
-      AppColors.slateBlue,
-      AppColors.burntOrange,
+      AppColors.cloudyAmber,
+      AppColors.dullOrange,
       AppColors.darkMagenta,
     ],
   };
@@ -157,267 +126,143 @@ class BackgroundGradients {
 
   static const _drizzle = {
     TemperatureTier.singleDigits: [
-      AppColors.fogSilver,
-      AppColors.steelGrey,
-      AppColors.slateBlue,
-    ],
-    TemperatureTier.freezing: [
-      AppColors.fogSilver,
-      AppColors.steelGrey,
-      AppColors.icyBlue,
-    ],
-    TemperatureTier.jacketWeather: [
-      AppColors.steelGrey,
-      AppColors.mutedTeal,
-      AppColors.slateBlue,
-    ],
-    TemperatureTier.flannelWeather: [
-      AppColors.steelGrey,
-      AppColors.slateBlue,
-      AppColors.vibrantPurple,
-    ],
-    TemperatureTier.shortsWeather: [
-      AppColors.steelGrey,
-      AppColors.slateBlue,
-      AppColors.magenta,
-    ],
-    TemperatureTier.scorcher: [
-      AppColors.slateBlue,
-      AppColors.darkMagenta,
-      AppColors.warmCoral,
-    ],
-  };
-
-  static const _rain = {
-    TemperatureTier.singleDigits: [
-      AppColors.steelGrey,
-      AppColors.slateBlue,
+      AppColors.lavenderBlue,
+      AppColors.skyPeriwinkle,
       AppColors.coldIndigo,
     ],
     TemperatureTier.freezing: [
+      AppColors.lavenderBlue,
+      AppColors.steelGrey,
       AppColors.slateBlue,
-      AppColors.coldIndigo,
-      AppColors.royalBlue,
     ],
     TemperatureTier.jacketWeather: [
+      AppColors.warmSkyBlue,
       AppColors.slateBlue,
-      AppColors.royalBlue,
       AppColors.darkTeal,
     ],
     TemperatureTier.flannelWeather: [
-      AppColors.slateBlue,
-      AppColors.electricIndigo,
-      AppColors.deepPurple,
+      AppColors.warmSkyBlue,
+      AppColors.cloudySage,
+      AppColors.cloudyAmber,
     ],
     TemperatureTier.shortsWeather: [
-      AppColors.darkIndigo,
-      AppColors.deepPurple,
-      AppColors.magenta,
+      AppColors.warmSkyBlue,
+      AppColors.cloudyAmber,
+      AppColors.dullOrange,
     ],
     TemperatureTier.scorcher: [
-      AppColors.darkIndigo,
+      AppColors.warmSkyBlue,
+      AppColors.dullOrange,
       AppColors.darkMagenta,
-      AppColors.orangeRed,
     ],
   };
+
+  static const _rain = _drizzle;
 
   static const _heavyRain = {
     TemperatureTier.singleDigits: [
-      AppColors.darkIndigo,
       AppColors.coldIndigo,
       AppColors.royalBlue,
+      AppColors.slateBlue,
     ],
     TemperatureTier.freezing: [
-      AppColors.darkIndigo,
-      AppColors.royalBlue,
-      AppColors.electricIndigo,
+      AppColors.coldIndigo,
+      AppColors.slateBlue,
+      AppColors.lavenderBlue,
     ],
     TemperatureTier.jacketWeather: [
-      AppColors.midnightPurple,
-      AppColors.deepPurple,
-      AppColors.royalBlue,
+      AppColors.coldIndigo,
+      AppColors.slateBlue,
+      AppColors.darkTeal,
     ],
     TemperatureTier.flannelWeather: [
-      AppColors.midnightPurple,
-      AppColors.darkTeal,
-      AppColors.chartreuse,
+      AppColors.coldIndigo,
+      AppColors.cloudySage,
+      AppColors.cloudyAmber,
     ],
     TemperatureTier.shortsWeather: [
-      AppColors.pitchBlack,
-      AppColors.darkMagenta,
-      AppColors.vibrantPurple,
+      AppColors.coldIndigo,
+      AppColors.cloudyAmber,
+      AppColors.dullOrange,
     ],
     TemperatureTier.scorcher: [
-      AppColors.pitchBlack,
+      AppColors.coldIndigo,
+      AppColors.dullOrange,
       AppColors.darkMagenta,
-      AppColors.magenta,
     ],
   };
 
-  static const _freezingRain = {
-    TemperatureTier.singleDigits: [
-      AppColors.steelGrey,
-      AppColors.slateBlue,
-      AppColors.darkTeal,
-    ],
-    TemperatureTier.freezing: [
-      AppColors.fogSilver,
-      AppColors.icyBlue,
-      AppColors.darkTeal,
-    ],
-    TemperatureTier.jacketWeather: [
-      AppColors.slateBlue,
-      AppColors.royalBlue,
-      AppColors.teal,
-    ],
-    TemperatureTier.flannelWeather: [
-      AppColors.slateBlue,
-      AppColors.electricIndigo,
-      AppColors.darkTeal,
-    ],
-    TemperatureTier.shortsWeather: [
-      AppColors.darkIndigo,
-      AppColors.darkTeal,
-      AppColors.magenta,
-    ],
-    TemperatureTier.scorcher: [
-      AppColors.pitchBlack,
-      AppColors.darkTeal,
-      AppColors.orangeRed,
-    ],
-  };
+  static const _freezingRain = _heavyRain;
 
   static const _snow = {
     TemperatureTier.singleDigits: [
-      AppColors.palePurple,
+      AppColors.cream,
       AppColors.frostLavender,
-      AppColors.steelGrey,
+      AppColors.lavenderBlue,
     ],
     TemperatureTier.freezing: [
       AppColors.cream,
-      AppColors.palePurple,
-      AppColors.icyBlue,
+      AppColors.steelGrey,
+      AppColors.lavenderBlue,
     ],
     TemperatureTier.jacketWeather: [
       AppColors.cream,
       AppColors.fogSilver,
-      AppColors.mutedTeal,
+      AppColors.lavenderBlue,
     ],
     TemperatureTier.flannelWeather: [
-      AppColors.fogSilver,
-      AppColors.slateBlue,
-      AppColors.vibrantPurple,
+      AppColors.cream,
+      AppColors.skyPeriwinkle,
+      AppColors.lavenderBlue,
     ],
     TemperatureTier.shortsWeather: [
-      AppColors.fogSilver,
-      AppColors.vibrantPurple,
-      AppColors.magenta,
+      AppColors.cream,
+      AppColors.steelGrey,
+      AppColors.lavenderBlue,
     ],
     TemperatureTier.scorcher: [
-      AppColors.fogSilver,
-      AppColors.magenta,
-      AppColors.orangeRed,
+      AppColors.cream,
+      AppColors.lavenderBlue,
+      AppColors.slateBlue,
     ],
   };
 
   static const _blizzard = {
     TemperatureTier.singleDigits: [
-      AppColors.cream,
       AppColors.fogSilver,
-      AppColors.steelGrey,
+      AppColors.frostLavender,
+      AppColors.lavenderBlue,
     ],
     TemperatureTier.freezing: [
-      AppColors.cream,
       AppColors.fogSilver,
-      AppColors.slateBlue,
+      AppColors.steelGrey,
+      AppColors.lavenderBlue,
     ],
     TemperatureTier.jacketWeather: [
-      AppColors.cream,
-      AppColors.slateBlue,
-      AppColors.royalBlue,
+      AppColors.fogSilver,
+      AppColors.steelGrey,
+      AppColors.lavenderBlue,
     ],
     TemperatureTier.flannelWeather: [
-      AppColors.cream,
-      AppColors.vibrantPurple,
-      AppColors.deepPurple,
+      AppColors.fogSilver,
+      AppColors.skyPeriwinkle,
+      AppColors.lavenderBlue,
     ],
     TemperatureTier.shortsWeather: [
-      AppColors.cream,
-      AppColors.magenta,
-      AppColors.pitchBlack,
+      AppColors.fogSilver,
+      AppColors.lavenderBlue,
+      AppColors.slateBlue,
     ],
     TemperatureTier.scorcher: [
-      AppColors.cream,
-      AppColors.orangeRed,
-      AppColors.pitchBlack,
+      AppColors.fogSilver,
+      AppColors.skyPeriwinkle,
+      AppColors.slateBlue,
     ],
   };
 
-  static const _thunderstorm = {
-    TemperatureTier.singleDigits: [
-      AppColors.darkIndigo,
-      AppColors.electricIndigo,
-      AppColors.vibrantPurple,
-    ],
-    TemperatureTier.freezing: [
-      AppColors.midnightPurple,
-      AppColors.royalBlue,
-      AppColors.chartreuse,
-    ],
-    TemperatureTier.jacketWeather: [
-      AppColors.pitchBlack,
-      AppColors.deepPurple,
-      AppColors.electricIndigo,
-    ],
-    TemperatureTier.flannelWeather: [
-      AppColors.pitchBlack,
-      AppColors.darkIndigo,
-      AppColors.vibrantPurple,
-    ],
-    TemperatureTier.shortsWeather: [
-      AppColors.pitchBlack,
-      AppColors.deepPurple,
-      AppColors.royalBlue,
-    ],
-    TemperatureTier.scorcher: [
-      AppColors.pitchBlack,
-      AppColors.darkMagenta,
-      AppColors.vibrantPurple,
-    ],
-  };
+  static const _thunderstorm = _heavyRain;
 
-  static const _hail = {
-    TemperatureTier.singleDigits: [
-      AppColors.steelGrey,
-      AppColors.slateBlue,
-      AppColors.darkTeal,
-    ],
-    TemperatureTier.freezing: [
-      AppColors.slateBlue,
-      AppColors.darkTeal,
-      AppColors.fogSilver,
-    ],
-    TemperatureTier.jacketWeather: [
-      AppColors.midnightPurple,
-      AppColors.darkTeal,
-      AppColors.steelGrey,
-    ],
-    TemperatureTier.flannelWeather: [
-      AppColors.darkIndigo,
-      AppColors.deepPurple,
-      AppColors.darkTeal,
-    ],
-    TemperatureTier.shortsWeather: [
-      AppColors.pitchBlack,
-      AppColors.darkTeal,
-      AppColors.chartreuse,
-    ],
-    TemperatureTier.scorcher: [
-      AppColors.pitchBlack,
-      AppColors.darkMagenta,
-      AppColors.darkTeal,
-    ],
-  };
+  static const _hail = _heavyRain;
 
   // ---------------------------------------------------------------------------
   // NIGHT GRADIENTS
@@ -425,77 +270,46 @@ class BackgroundGradients {
 
   static const _sunnyNight = {
     TemperatureTier.singleDigits: [
-      AppColors.pitchBlack,
       AppColors.darkIndigo,
-      AppColors.darkTeal,
+      AppColors.deepPurple,
+      AppColors.royalBlue,
     ],
     TemperatureTier.freezing: [
-      AppColors.pitchBlack,
       AppColors.darkIndigo,
-      AppColors.coldIndigo,
+      AppColors.deepPurple,
+      AppColors.midnightNavy,
     ],
     TemperatureTier.jacketWeather: [
-      AppColors.midnightPurple,
+      AppColors.darkIndigo,
       AppColors.deepPurple,
       AppColors.coldIndigo,
     ],
     TemperatureTier.flannelWeather: [
-      AppColors.midnightPurple,
+      AppColors.darkIndigo,
       AppColors.deepPurple,
       AppColors.darkTeal,
     ],
     TemperatureTier.shortsWeather: [
-      AppColors.pitchBlack,
-      AppColors.midnightPurple,
-      AppColors.burntOrange,
+      AppColors.darkIndigo,
+      AppColors.deepPurple,
+      AppColors.darkMagenta,
     ],
     TemperatureTier.scorcher: [
-      AppColors.pitchBlack,
-      AppColors.midnightPurple,
+      AppColors.darkIndigo,
+      AppColors.deepPurple,
       AppColors.orangeRed,
     ],
   };
 
   static const _mostlySunnyNight = _sunnyNight;
 
-  static const _partlyCloudyNight = {
-    TemperatureTier.singleDigits: [
-      AppColors.pitchBlack,
-      AppColors.darkIndigo,
-      AppColors.slateBlue,
-    ],
-    TemperatureTier.freezing: [
-      AppColors.midnightPurple,
-      AppColors.darkIndigo,
-      AppColors.steelGrey,
-    ],
-    TemperatureTier.jacketWeather: [
-      AppColors.midnightPurple,
-      AppColors.darkTeal,
-      AppColors.deepPurple,
-    ],
-    TemperatureTier.flannelWeather: [
-      AppColors.darkIndigo,
-      AppColors.deepPurple,
-      AppColors.darkMagenta,
-    ],
-    TemperatureTier.shortsWeather: [
-      AppColors.midnightPurple,
-      AppColors.darkMagenta,
-      AppColors.dullOrange,
-    ],
-    TemperatureTier.scorcher: [
-      AppColors.pitchBlack,
-      AppColors.darkMagenta,
-      AppColors.orangeRed,
-    ],
-  };
+  static const _partlyCloudyNight = _sunnyNight;
 
   static const _overcastNight = {
     TemperatureTier.singleDigits: [
-      AppColors.pitchBlack,
+      AppColors.midnightPurple,
       AppColors.darkIndigo,
-      AppColors.steelGrey,
+      AppColors.midnightNavy,
     ],
     TemperatureTier.freezing: [
       AppColors.midnightPurple,
@@ -505,12 +319,12 @@ class BackgroundGradients {
     TemperatureTier.jacketWeather: [
       AppColors.midnightPurple,
       AppColors.darkIndigo,
-      AppColors.darkTeal,
+      AppColors.coldIndigo,
     ],
     TemperatureTier.flannelWeather: [
       AppColors.midnightPurple,
-      AppColors.deepPurple,
       AppColors.darkIndigo,
+      AppColors.darkTeal,
     ],
     TemperatureTier.shortsWeather: [
       AppColors.midnightPurple,
@@ -530,27 +344,27 @@ class BackgroundGradients {
     TemperatureTier.singleDigits: [
       AppColors.pitchBlack,
       AppColors.darkIndigo,
-      AppColors.steelGrey,
+      AppColors.midnightNavy,
     ],
     TemperatureTier.freezing: [
-      AppColors.midnightPurple,
+      AppColors.pitchBlack,
       AppColors.darkIndigo,
       AppColors.slateBlue,
     ],
     TemperatureTier.jacketWeather: [
-      AppColors.midnightPurple,
+      AppColors.pitchBlack,
+      AppColors.darkIndigo,
+      AppColors.coldIndigo,
+    ],
+    TemperatureTier.flannelWeather: [
+      AppColors.pitchBlack,
       AppColors.darkIndigo,
       AppColors.darkTeal,
     ],
-    TemperatureTier.flannelWeather: [
-      AppColors.midnightPurple,
-      AppColors.deepPurple,
-      AppColors.darkIndigo,
-    ],
     TemperatureTier.shortsWeather: [
-      AppColors.midnightPurple,
+      AppColors.pitchBlack,
+      AppColors.deepPurple,
       AppColors.darkMagenta,
-      AppColors.burntOrange,
     ],
     TemperatureTier.scorcher: [
       AppColors.pitchBlack,
@@ -559,234 +373,110 @@ class BackgroundGradients {
     ],
   };
 
-  static const _rainNight = {
-    TemperatureTier.singleDigits: [
-      AppColors.pitchBlack,
-      AppColors.midnightBlue,
-      AppColors.coldIndigo,
-    ],
-    TemperatureTier.freezing: [
-      AppColors.pitchBlack,
-      AppColors.darkIndigo,
-      AppColors.royalBlue,
-    ],
-    TemperatureTier.jacketWeather: [
-      AppColors.pitchBlack,
-      AppColors.darkIndigo,
-      AppColors.darkTeal,
-    ],
-    TemperatureTier.flannelWeather: [
-      AppColors.pitchBlack,
-      AppColors.midnightPurple,
-      AppColors.deepPurple,
-    ],
-    TemperatureTier.shortsWeather: [
-      AppColors.pitchBlack,
-      AppColors.midnightPurple,
-      AppColors.darkMagenta,
-    ],
-    TemperatureTier.scorcher: [
-      AppColors.pitchBlack,
-      AppColors.darkIndigo,
-      AppColors.orangeRed,
-    ],
-  };
+  static const _rainNight = _drizzleNight;
 
   static const _heavyRainNight = {
     TemperatureTier.singleDigits: [
       AppColors.pitchBlack,
       AppColors.midnightBlue,
-      AppColors.royalBlue,
+      AppColors.slateBlue,
     ],
     TemperatureTier.freezing: [
       AppColors.pitchBlack,
-      AppColors.darkIndigo,
-      AppColors.electricIndigo,
+      AppColors.midnightBlue,
+      AppColors.coldIndigo,
     ],
     TemperatureTier.jacketWeather: [
       AppColors.pitchBlack,
-      AppColors.midnightPurple,
-      AppColors.darkTeal,
+      AppColors.midnightBlue,
+      AppColors.electricIndigo,
     ],
     TemperatureTier.flannelWeather: [
       AppColors.pitchBlack,
-      AppColors.midnightPurple,
-      AppColors.deepPurple,
+      AppColors.midnightBlue,
+      AppColors.teal,
     ],
     TemperatureTier.shortsWeather: [
       AppColors.pitchBlack,
-      AppColors.darkMagenta,
+      AppColors.midnightPurple,
       AppColors.magenta,
     ],
     TemperatureTier.scorcher: [
       AppColors.pitchBlack,
       AppColors.darkMagenta,
-      AppColors.orangeRed,
+      AppColors.burntOrange,
     ],
   };
 
-  static const _freezingRainNight = {
-    TemperatureTier.singleDigits: [
-      AppColors.pitchBlack,
-      AppColors.darkIndigo,
-      AppColors.darkTeal,
-    ],
-    TemperatureTier.freezing: [
-      AppColors.pitchBlack,
-      AppColors.midnightBlue,
-      AppColors.teal,
-    ],
-    TemperatureTier.jacketWeather: [
-      AppColors.pitchBlack,
-      AppColors.deepPurple,
-      AppColors.darkTeal,
-    ],
-    TemperatureTier.flannelWeather: [
-      AppColors.pitchBlack,
-      AppColors.midnightPurple,
-      AppColors.darkTeal,
-    ],
-    TemperatureTier.shortsWeather: [
-      AppColors.pitchBlack,
-      AppColors.darkMagenta,
-      AppColors.burntOrange,
-    ],
-    TemperatureTier.scorcher: [
-      AppColors.pitchBlack,
-      AppColors.darkTeal,
-      AppColors.orangeRed,
-    ],
-  };
+  static const _freezingRainNight = _heavyRainNight;
 
   static const _snowNight = {
     TemperatureTier.singleDigits: [
-      AppColors.voidPurple,
-      AppColors.coldIndigo,
-      AppColors.frostLavender,
-    ],
-    TemperatureTier.freezing: [
-      AppColors.pitchBlack,
+      AppColors.midnightPurple,
       AppColors.darkIndigo,
       AppColors.palePurple,
     ],
+    TemperatureTier.freezing: [
+      AppColors.midnightPurple,
+      AppColors.darkIndigo,
+      AppColors.frostLavender,
+    ],
     TemperatureTier.jacketWeather: [
       AppColors.midnightPurple,
-      AppColors.deepPurple,
-      AppColors.palePurple,
+      AppColors.darkIndigo,
+      AppColors.fogSilver,
     ],
     TemperatureTier.flannelWeather: [
       AppColors.midnightPurple,
-      AppColors.darkMagenta,
-      AppColors.palePurple,
+      AppColors.darkIndigo,
+      AppColors.steelGrey,
     ],
     TemperatureTier.shortsWeather: [
-      AppColors.pitchBlack,
+      AppColors.midnightPurple,
+      AppColors.deepPurple,
       AppColors.darkMagenta,
-      AppColors.burntOrange,
     ],
     TemperatureTier.scorcher: [
-      AppColors.pitchBlack,
+      AppColors.midnightPurple,
+      AppColors.darkMagenta,
       AppColors.orangeRed,
-      AppColors.cream,
     ],
   };
 
   static const _blizzardNight = {
     TemperatureTier.singleDigits: [
       AppColors.pitchBlack,
-      AppColors.steelGrey,
-      AppColors.cream,
+      AppColors.slateBlue,
+      AppColors.palePurple,
     ],
     TemperatureTier.freezing: [
       AppColors.pitchBlack,
       AppColors.slateBlue,
-      AppColors.cream,
+      AppColors.frostLavender,
     ],
     TemperatureTier.jacketWeather: [
       AppColors.pitchBlack,
-      AppColors.darkIndigo,
+      AppColors.slateBlue,
       AppColors.fogSilver,
     ],
     TemperatureTier.flannelWeather: [
       AppColors.pitchBlack,
-      AppColors.deepPurple,
-      AppColors.fogSilver,
+      AppColors.slateBlue,
+      AppColors.cream,
     ],
     TemperatureTier.shortsWeather: [
       AppColors.pitchBlack,
+      AppColors.deepPurple,
       AppColors.darkMagenta,
-      AppColors.cream,
     ],
     TemperatureTier.scorcher: [
       AppColors.pitchBlack,
+      AppColors.darkMagenta,
       AppColors.orangeRed,
-      AppColors.cream,
     ],
   };
 
-  static const _thunderstormNight = {
-    TemperatureTier.singleDigits: [
-      AppColors.pitchBlack,
-      AppColors.darkIndigo,
-      AppColors.royalBlue,
-    ],
-    TemperatureTier.freezing: [
-      AppColors.pitchBlack,
-      AppColors.midnightPurple,
-      AppColors.electricIndigo,
-    ],
-    TemperatureTier.jacketWeather: [
-      AppColors.pitchBlack,
-      AppColors.deepPurple,
-      AppColors.vibrantPurple,
-    ],
-    TemperatureTier.flannelWeather: [
-      AppColors.pitchBlack,
-      AppColors.darkIndigo,
-      AppColors.magenta,
-    ],
-    TemperatureTier.shortsWeather: [
-      AppColors.pitchBlack,
-      AppColors.midnightPurple,
-      AppColors.chartreuse,
-    ],
-    TemperatureTier.scorcher: [
-      AppColors.pitchBlack,
-      AppColors.darkMagenta,
-      AppColors.magenta,
-    ],
-  };
+  static const _thunderstormNight = _heavyRainNight;
 
-  static const _hailNight = {
-    TemperatureTier.singleDigits: [
-      AppColors.pitchBlack,
-      AppColors.darkIndigo,
-      AppColors.steelGrey,
-    ],
-    TemperatureTier.freezing: [
-      AppColors.pitchBlack,
-      AppColors.midnightBlue,
-      AppColors.fogSilver,
-    ],
-    TemperatureTier.jacketWeather: [
-      AppColors.pitchBlack,
-      AppColors.darkTeal,
-      AppColors.midnightPurple,
-    ],
-    TemperatureTier.flannelWeather: [
-      AppColors.pitchBlack,
-      AppColors.deepPurple,
-      AppColors.darkTeal,
-    ],
-    TemperatureTier.shortsWeather: [
-      AppColors.pitchBlack,
-      AppColors.darkMagenta,
-      AppColors.darkTeal,
-    ],
-    TemperatureTier.scorcher: [
-      AppColors.pitchBlack,
-      AppColors.orangeRed,
-      AppColors.darkTeal,
-    ],
-  };
+  static const _hailNight = _heavyRainNight;
 }

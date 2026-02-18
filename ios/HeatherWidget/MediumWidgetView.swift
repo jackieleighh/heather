@@ -107,7 +107,7 @@ struct MediumWidgetView: View {
                     // Bottom: condensed hourly forecast
                     if let hours = data.hourly, !hours.isEmpty {
                         HStack(spacing: 0) {
-                            ForEach(Array(hours.prefix(8).enumerated()), id: \.offset) { _, entry in
+                            ForEach(Array(hours.prefix(6).enumerated()), id: \.offset) { _, entry in
                                 VStack(spacing: 1) {
                                     Text(entry.hourLabel)
                                         .font(.system(size: 8))

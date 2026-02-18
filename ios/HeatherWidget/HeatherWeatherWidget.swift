@@ -45,7 +45,7 @@ struct HeatherWeatherProvider: TimelineProvider {
 
             let freshQuip = WidgetQuips.pickQuip(condition: condition, tempF: temp) ?? cached.quip
 
-            // Build next-8-hours hourly entries
+            // Build next-6-hours hourly entries
             var hourlyEntries: [HourlyEntry]? = nil
             if let hourly = response.hourly {
                 let now = Date()
@@ -54,7 +54,7 @@ struct HeatherWeatherProvider: TimelineProvider {
                 let fallbackFmt = DateFormatter()
                 fallbackFmt.dateFormat = "yyyy-MM-dd'T'HH:mm"
 
-                // Find the first hour >= now, then take 8
+                // Find the first hour >= now, then take 6
                 var startIdx = 0
                 for (i, timeStr) in hourly.time.enumerated() {
                     if let d = isoFmt.date(from: timeStr) ?? fallbackFmt.date(from: timeStr), d >= now {
@@ -62,7 +62,7 @@ struct HeatherWeatherProvider: TimelineProvider {
                         break
                     }
                 }
-                let endIdx = min(startIdx + 8, hourly.time.count)
+                let endIdx = min(startIdx + 6, hourly.time.count)
                 if startIdx < endIdx {
                     hourlyEntries = (startIdx..<endIdx).map { i in
                         HourlyEntry(

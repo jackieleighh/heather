@@ -39,11 +39,11 @@ struct WidgetGradients {
 
     private static let dayGradients: [String: [[String]]] = [
         "sunny": [
-            ["#FFEDE9FE", "#FFC4B5FD", "#FF38BDF8"],
-            ["#FFEDE9FE", "#FF96D9DB", "#FF38BDF8"],
-            ["#FF96D9DB", "#FF38BDF8", "#FF00CED1"],
-            ["#FF38BDF8", "#FFA3E635", "#FFFDE047"],
-            ["#FFA3E635", "#FFFDE047", "#FFFF8C00"],
+            ["#FF8B9DD4", "#FFC4B5FD", "#FF2563EB"],
+            ["#FF8B9DD4", "#FF7C8FCC", "#FF38BDF8"],
+            ["#FF4A9BD9", "#FF38BDF8", "#FF018F91"],
+            ["#FF4A9BD9", "#FF5BA847", "#FFD4960A"],
+            ["#FF5BA847", "#FFD4960A", "#FFFF8C00"],
             ["#FFFBBF24", "#FFFF8C00", "#FFF472B6"],
         ],
         "partlyCloudy": [
@@ -55,60 +55,60 @@ struct WidgetGradients {
             ["#FF475569", "#FFF97316", "#FFFBBF24"],
         ],
         "overcast": [
-            ["#FF94A3B8", "#FF475569", "#FF312E81"],
-            ["#FFE2E8F0", "#FF94A3B8", "#FF475569"],
-            ["#FF94A3B8", "#FF475569", "#FF96D9DB"],
-            ["#FF475569", "#FF96D9DB", "#FF2E1065"],
-            ["#FF94A3B8", "#FF2E1065", "#FF0C4A5E"],
-            ["#FF475569", "#FFF97316", "#FF831843"],
+            ["#FF94A3B8", "#FF8B9DD4", "#FF312E81"],
+            ["#FF94A3B8", "#FF7C8FCC", "#FF475569"],
+            ["#FF475569", "#FF94A3B8", "#FF0C4A5E"],
+            ["#FF475569", "#FF6E8A5E", "#FF9C8535"],
+            ["#FF6E8A5E", "#FF9C8535", "#FFC2410C"],
+            ["#FF9C8535", "#FFC2410C", "#FF831843"],
         ],
         "drizzle": [
-            ["#FFE2E8F0", "#FF94A3B8", "#FF475569"],
-            ["#FFE2E8F0", "#FF94A3B8", "#FF38BDF8"],
-            ["#FF94A3B8", "#FF96D9DB", "#FF475569"],
-            ["#FF94A3B8", "#FF475569", "#FF8B5CF6"],
-            ["#FF94A3B8", "#FF475569", "#FFE6007A"],
-            ["#FF475569", "#FF831843", "#FFEF4444"],
+            ["#FF7C8FCC", "#FF8B9DD4", "#FF312E81"],
+            ["#FF7C8FCC", "#FF94A3B8", "#FF475569"],
+            ["#FF4A9BD9", "#FF475569", "#FF0C4A5E"],
+            ["#FF4A9BD9", "#FF6E8A5E", "#FF9C8535"],
+            ["#FF4A9BD9", "#FF9C8535", "#FFC2410C"],
+            ["#FF4A9BD9", "#FFC2410C", "#FF831843"],
         ],
         "rain": [
-            ["#FF94A3B8", "#FF475569", "#FF312E81"],
-            ["#FF475569", "#FF312E81", "#FF2563EB"],
-            ["#FF475569", "#FF2563EB", "#FF0C4A5E"],
-            ["#FF475569", "#FF6366F1", "#FF2E1065"],
-            ["#FF1E1B4B", "#FF2E1065", "#FFE6007A"],
-            ["#FF1E1B4B", "#FF831843", "#FFB91C1C"],
+            ["#FF7C8FCC", "#FF8B9DD4", "#FF312E81"],
+            ["#FF7C8FCC", "#FF94A3B8", "#FF475569"],
+            ["#FF4A9BD9", "#FF475569", "#FF0C4A5E"],
+            ["#FF4A9BD9", "#FF6E8A5E", "#FF9C8535"],
+            ["#FF4A9BD9", "#FF9C8535", "#FFC2410C"],
+            ["#FF4A9BD9", "#FFC2410C", "#FF831843"],
         ],
         "heavyRain": [
-            ["#FF1E1B4B", "#FF312E81", "#FF2563EB"],
-            ["#FF1E1B4B", "#FF2563EB", "#FF6366F1"],
-            ["#FF0F0716", "#FF2E1065", "#FF2563EB"],
-            ["#FF0F0716", "#FF0C4A5E", "#FFA3E635"],
-            ["#FF050308", "#FF831843", "#FF8B5CF6"],
-            ["#FF050308", "#FF831843", "#FFE6007A"],
+            ["#FF312E81", "#FF2563EB", "#FF475569"],
+            ["#FF312E81", "#FF475569", "#FF7C8FCC"],
+            ["#FF312E81", "#FF475569", "#FF0C4A5E"],
+            ["#FF312E81", "#FF6E8A5E", "#FF9C8535"],
+            ["#FF312E81", "#FF9C8535", "#FFC2410C"],
+            ["#FF312E81", "#FFC2410C", "#FF831843"],
         ],
         "freezingRain": [
-            ["#FF94A3B8", "#FF475569", "#FF0C4A5E"],
-            ["#FFE2E8F0", "#FF38BDF8", "#FF0C4A5E"],
-            ["#FF475569", "#FF2563EB", "#FF00CED1"],
-            ["#FF475569", "#FF6366F1", "#FF0C4A5E"],
-            ["#FF1E1B4B", "#FF0C4A5E", "#FFE6007A"],
-            ["#FF050308", "#FF0C4A5E", "#FFB91C1C"],
+            ["#FF312E81", "#FF2563EB", "#FF475569"],
+            ["#FF312E81", "#FF475569", "#FF7C8FCC"],
+            ["#FF312E81", "#FF475569", "#FF0C4A5E"],
+            ["#FF312E81", "#FF6E8A5E", "#FF9C8535"],
+            ["#FF312E81", "#FF9C8535", "#FFC2410C"],
+            ["#FF312E81", "#FFC2410C", "#FF831843"],
         ],
         "snow": [
-            ["#FFEDE9FE", "#FFC4B5FD", "#FF94A3B8"],
-            ["#FFFAFAFA", "#FFEDE9FE", "#FF38BDF8"],
-            ["#FFFAFAFA", "#FFE2E8F0", "#FF96D9DB"],
-            ["#FFE2E8F0", "#FF475569", "#FF8B5CF6"],
-            ["#FFE2E8F0", "#FF8B5CF6", "#FFE6007A"],
-            ["#FFE2E8F0", "#FFE6007A", "#FFB91C1C"],
+            ["#FFFAFAFA", "#FFC4B5FD", "#FF7C8FCC"],
+            ["#FFFAFAFA", "#FF94A3B8", "#FF7C8FCC"],
+            ["#FFFAFAFA", "#FFE2E8F0", "#FF7C8FCC"],
+            ["#FFFAFAFA", "#FF8B9DD4", "#FF7C8FCC"],
+            ["#FFFAFAFA", "#FF94A3B8", "#FF7C8FCC"],
+            ["#FFFAFAFA", "#FF7C8FCC", "#FF475569"],
         ],
         "blizzard": [
-            ["#FFFAFAFA", "#FFE2E8F0", "#FF94A3B8"],
-            ["#FFFAFAFA", "#FFE2E8F0", "#FF475569"],
-            ["#FFFAFAFA", "#FF475569", "#FF2563EB"],
-            ["#FFFAFAFA", "#FF8B5CF6", "#FF2E1065"],
-            ["#FFFAFAFA", "#FFE6007A", "#FF050308"],
-            ["#FFFAFAFA", "#FFB91C1C", "#FF050308"],
+            ["#FFE2E8F0", "#FFC4B5FD", "#FF7C8FCC"],
+            ["#FFE2E8F0", "#FF94A3B8", "#FF7C8FCC"],
+            ["#FFE2E8F0", "#FF94A3B8", "#FF7C8FCC"],
+            ["#FFE2E8F0", "#FF8B9DD4", "#FF7C8FCC"],
+            ["#FFE2E8F0", "#FF7C8FCC", "#FF475569"],
+            ["#FFE2E8F0", "#FF8B9DD4", "#FF475569"],
         ],
         "thunderstorm": [
             ["#FF1E1B4B", "#FF6366F1", "#FF8B5CF6"],
@@ -132,12 +132,12 @@ struct WidgetGradients {
 
     private static let nightGradients: [String: [[String]]] = [
         "sunny": [
-            ["#FF050308", "#FF1E1B4B", "#FF0C4A5E"],
-            ["#FF050308", "#FF1E1B4B", "#FF312E81"],
-            ["#FF0F0716", "#FF2E1065", "#FF312E81"],
-            ["#FF0F0716", "#FF2E1065", "#FF0C4A5E"],
-            ["#FF050308", "#FF0F0716", "#FFF97316"],
-            ["#FF050308", "#FF0F0716", "#FFB91C1C"],
+            ["#FF1E1B4B", "#FF2E1065", "#FF2563EB"],
+            ["#FF1E1B4B", "#FF2E1065", "#FF1A2744"],
+            ["#FF1E1B4B", "#FF2E1065", "#FF312E81"],
+            ["#FF1E1B4B", "#FF2E1065", "#FF0C4A5E"],
+            ["#FF1E1B4B", "#FF2E1065", "#FF831843"],
+            ["#FF1E1B4B", "#FF831843", "#FFB91C1C"],
         ],
         "partlyCloudy": [
             ["#FF050308", "#FF1E1B4B", "#FF475569"],
@@ -148,60 +148,60 @@ struct WidgetGradients {
             ["#FF050308", "#FF831843", "#FFB91C1C"],
         ],
         "overcast": [
-            ["#FF050308", "#FF1E1B4B", "#FF94A3B8"],
+            ["#FF0F0716", "#FF1E1B4B", "#FF1A2744"],
             ["#FF0F0716", "#FF1E1B4B", "#FF475569"],
+            ["#FF0F0716", "#FF1E1B4B", "#FF312E81"],
             ["#FF0F0716", "#FF1E1B4B", "#FF0C4A5E"],
-            ["#FF0F0716", "#FF2E1065", "#FF1E1B4B"],
             ["#FF0F0716", "#FF2E1065", "#FF831843"],
             ["#FF0F0716", "#FF831843", "#FFB91C1C"],
         ],
         "drizzle": [
-            ["#FF050308", "#FF1E1B4B", "#FF94A3B8"],
-            ["#FF0F0716", "#FF1E1B4B", "#FF475569"],
-            ["#FF0F0716", "#FF1E1B4B", "#FF0C4A5E"],
-            ["#FF0F0716", "#FF2E1065", "#FF1E1B4B"],
-            ["#FF0F0716", "#FF831843", "#FFF97316"],
-            ["#FF050308", "#FF831843", "#FFB91C1C"],
+            ["#FF050308", "#FF1E1B4B", "#FF1A2744"],  // singleDigits
+            ["#FF050308", "#FF1E1B4B", "#FF475569"],  // freezing
+            ["#FF050308", "#FF1E1B4B", "#FF312E81"],  // jacketWeather
+            ["#FF050308", "#FF1E1B4B", "#FF0C4A5E"],  // flannelWeather
+            ["#FF050308", "#FF2E1065", "#FF831843"],  // shortsWeather
+            ["#FF050308", "#FF831843", "#FFB91C1C"],  // scorcher
         ],
         "rain": [
-            ["#FF050308", "#FF0A0F1E", "#FF312E81"],
-            ["#FF050308", "#FF1E1B4B", "#FF2563EB"],
-            ["#FF050308", "#FF1E1B4B", "#FF0C4A5E"],
-            ["#FF050308", "#FF0F0716", "#FF2E1065"],
-            ["#FF050308", "#FF0F0716", "#FF831843"],
-            ["#FF050308", "#FF1E1B4B", "#FFB91C1C"],
+            ["#FF050308", "#FF1E1B4B", "#FF1A2744"],  // singleDigits
+            ["#FF050308", "#FF1E1B4B", "#FF475569"],  // freezing
+            ["#FF050308", "#FF1E1B4B", "#FF312E81"],  // jacketWeather
+            ["#FF050308", "#FF1E1B4B", "#FF0C4A5E"],  // flannelWeather
+            ["#FF050308", "#FF2E1065", "#FF831843"],  // shortsWeather
+            ["#FF050308", "#FF831843", "#FFB91C1C"],  // scorcher
         ],
         "heavyRain": [
-            ["#FF050308", "#FF0A0F1E", "#FF2563EB"],
-            ["#FF050308", "#FF1E1B4B", "#FF6366F1"],
-            ["#FF050308", "#FF0F0716", "#FF0C4A5E"],
-            ["#FF050308", "#FF0F0716", "#FF2E1065"],
-            ["#FF050308", "#FF831843", "#FFE6007A"],
-            ["#FF050308", "#FF831843", "#FFB91C1C"],
+            ["#FF050308", "#FF0A0F1E", "#FF475569"],  // singleDigits
+            ["#FF050308", "#FF0A0F1E", "#FF312E81"],  // freezing
+            ["#FF050308", "#FF0A0F1E", "#FF6366F1"],  // jacketWeather
+            ["#FF050308", "#FF0A0F1E", "#FF018F91"],  // flannelWeather
+            ["#FF050308", "#FF0F0716", "#FFB50060"],  // shortsWeather
+            ["#FF050308", "#FF831843", "#FFF97316"],  // scorcher
         ],
         "freezingRain": [
-            ["#FF050308", "#FF1E1B4B", "#FF0C4A5E"],
-            ["#FF050308", "#FF0A0F1E", "#FF00CED1"],
-            ["#FF050308", "#FF2E1065", "#FF0C4A5E"],
-            ["#FF050308", "#FF0F0716", "#FF0C4A5E"],
-            ["#FF050308", "#FF831843", "#FFF97316"],
-            ["#FF050308", "#FF0C4A5E", "#FFB91C1C"],
+            ["#FF050308", "#FF0A0F1E", "#FF475569"],  // singleDigits
+            ["#FF050308", "#FF0A0F1E", "#FF312E81"],  // freezing
+            ["#FF050308", "#FF0A0F1E", "#FF6366F1"],  // jacketWeather
+            ["#FF050308", "#FF0A0F1E", "#FF018F91"],  // flannelWeather
+            ["#FF050308", "#FF0F0716", "#FFB50060"],  // shortsWeather
+            ["#FF050308", "#FF831843", "#FFF97316"],  // scorcher
         ],
         "snow": [
-            ["#FF10071F", "#FF312E81", "#FFC4B5FD"],
-            ["#FF050308", "#FF1E1B4B", "#FFEDE9FE"],
-            ["#FF0F0716", "#FF2E1065", "#FFEDE9FE"],
-            ["#FF0F0716", "#FF831843", "#FFEDE9FE"],
-            ["#FF050308", "#FF831843", "#FFF97316"],
-            ["#FF050308", "#FFB91C1C", "#FFFAFAFA"],
+            ["#FF0F0716", "#FF1E1B4B", "#FFEDE9FE"],  // singleDigits
+            ["#FF0F0716", "#FF1E1B4B", "#FFC4B5FD"],  // freezing
+            ["#FF0F0716", "#FF1E1B4B", "#FFE2E8F0"],  // jacketWeather
+            ["#FF0F0716", "#FF1E1B4B", "#FF94A3B8"],  // flannelWeather
+            ["#FF0F0716", "#FF2E1065", "#FF831843"],  // shortsWeather
+            ["#FF0F0716", "#FF831843", "#FFB91C1C"],  // scorcher
         ],
         "blizzard": [
-            ["#FF050308", "#FF94A3B8", "#FFFAFAFA"],
-            ["#FF050308", "#FF475569", "#FFFAFAFA"],
-            ["#FF050308", "#FF1E1B4B", "#FFE2E8F0"],
-            ["#FF050308", "#FF2E1065", "#FFE2E8F0"],
-            ["#FF050308", "#FF831843", "#FFFAFAFA"],
-            ["#FF050308", "#FFB91C1C", "#FFFAFAFA"],
+            ["#FF050308", "#FF475569", "#FFEDE9FE"],  // singleDigits
+            ["#FF050308", "#FF475569", "#FFC4B5FD"],  // freezing
+            ["#FF050308", "#FF475569", "#FFE2E8F0"],  // jacketWeather
+            ["#FF050308", "#FF475569", "#FFFAFAFA"],  // flannelWeather
+            ["#FF050308", "#FF2E1065", "#FF831843"],  // shortsWeather
+            ["#FF050308", "#FF831843", "#FFB91C1C"],  // scorcher
         ],
         "thunderstorm": [
             ["#FF050308", "#FF1E1B4B", "#FF2563EB"],

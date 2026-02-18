@@ -71,7 +71,7 @@ class WidgetService {
       'longitude': location.longitude,
       'lastUpdated': DateTime.now().toIso8601String(),
       'gradientColors': gradientColors.map(_colorToHex).toList(),
-      'hourly': forecast.hourly.take(8).map((h) => {
+      'hourly': forecast.hourly.take(6).map((h) => {
         'time': h.time.toIso8601String(),
         'temperature': h.temperature.round(),
         'weatherCode': h.weatherCode,
