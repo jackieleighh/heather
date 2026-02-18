@@ -1,39 +1,30 @@
 {
   "fill" : {
-    "automatic-gradient" : "srgb:0.67843,0.00000,0.38431,1.00000",
-    "orientation" : {
-      "start" : {
-        "x" : 0.5,
-        "y" : 0
-      },
-      "stop" : {
-        "x" : 0.5,
-        "y" : 0.7
-      }
-    }
+    "solid" : "srgb:0.70980,0.00000,0.37647,1.00000"
   },
   "groups" : [
     {
       "layers" : [
         {
+          "image-name" : "heather_logo.svg",
+          "name" : "heather_logo",
+          "position" : {
+            "scale" : 0.8,
+            "translation-in-points" : [
+              -2.592071171387829,
+              176.87589344967284
+            ]
+          }
+        },
+        {
+          "glass" : false,
           "image-name" : "text (1).svg",
           "name" : "text (1)",
           "position" : {
             "scale" : 3.5,
             "translation-in-points" : [
               -1.0681152389224735e-05,
-              -261.03766079718616
-            ]
-          }
-        },
-        {
-          "image-name" : "heather_logo 2.svg",
-          "name" : "heather_logo 2",
-          "position" : {
-            "scale" : 0.3,
-            "translation-in-points" : [
-              3.1499999999998636,
-              145.18718060432104
+              -302.7573044631422
             ]
           }
         }

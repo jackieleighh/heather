@@ -1,6 +1,6 @@
 package com.totms.heather.widget
 
-import es.antonborri.home_widget.HomeWidgetGlanceWidgetReceiver
+import HomeWidgetGlanceWidgetReceiver
 
 class HeatherWidgetReceiver : HomeWidgetGlanceWidgetReceiver<HeatherGlanceWidget>() {
     override val glanceAppWidget = HeatherGlanceWidget()

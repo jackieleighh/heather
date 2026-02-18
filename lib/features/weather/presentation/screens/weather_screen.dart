@@ -5,6 +5,7 @@ import 'package:flutter_native_splash/flutter_native_splash.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:heather/features/weather/presentation/screens/error_screen.dart';
+import 'package:heather/features/weather/domain/entities/saved_location.dart';
 import 'package:heather/features/weather/presentation/screens/saved_locations_page.dart';
 import 'package:heather/features/weather/presentation/widgets/logo_overlay.dart';
 import '../../../../core/constants/app_colors.dart';
@@ -31,7 +32,7 @@ class _WeatherScreenState extends ConsumerState<WeatherScreen>
   StreamSubscription<void>? _widgetTapSub;
   bool _minTimeElapsed = false;
   bool _splashRemoved = false;
-  bool _deviceRegistered = false;
+  bool _initialRegistrationDone = false;
   int _currentHorizontalPage = 0;
 
   @override
@@ -119,6 +120,24 @@ class _WeatherScreenState extends ConsumerState<WeatherScreen>
     context.push('/settings');
   }
 
+  void _registerAllLocations({
+    required double gpsLatitude,
+    required double gpsLongitude,
+  }) {
+    final savedLocations = ref.read(savedLocationsProvider);
+    final locations = <Map<String, dynamic>>[
+      {'latitude': gpsLatitude, 'longitude': gpsLongitude, 'name': 'GPS'},
+      ...savedLocations.map(
+        (loc) => {
+          'latitude': loc.latitude,
+          'longitude': loc.longitude,
+          'name': loc.name,
+        },
+      ),
+    ];
+    FcmService().registerDevice(locations: locations);
+  }
+
   Future<bool> _refreshAll() async {
     ref.invalidate(alertsProvider);
     final savedLocations = ref.read(savedLocationsProvider);
@@ -170,13 +189,20 @@ class _WeatherScreenState extends ConsumerState<WeatherScreen>
         onRetry: () => ref.read(weatherStateProvider.notifier).loadWeather(),
       ),
       loaded: (forecast, location, quip) {
-        // Register device with cloud function for push alerts (once per session)
-        if (!_deviceRegistered) {
-          _deviceRegistered = true;
-          FcmService().registerDevice(
-            latitude: location.latitude,
-            longitude: location.longitude,
+        // Register device with cloud function for push alerts (GPS + saved)
+        if (!_initialRegistrationDone) {
+          _initialRegistrationDone = true;
+          _registerAllLocations(
+            gpsLatitude: location.latitude,
+            gpsLongitude: location.longitude,
           );
+          // Re-register whenever saved locations change (add/remove)
+          ref.listen<List<SavedLocation>>(savedLocationsProvider, (prev, next) {
+            _registerAllLocations(
+              gpsLatitude: location.latitude,
+              gpsLongitude: location.longitude,
+            );
+          });
         }
 
         final pages = <Widget>[

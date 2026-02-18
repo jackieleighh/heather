@@ -81,23 +81,20 @@ class HeatherGlanceWidget : GlanceAppWidget() {
                 .cornerRadius(16.dp)
                 .padding(12.dp),
         ) {
-            // Persona logo overlay (bottom-right)
+            // Persona logo overlay (bottom-right, matching iOS style)
             Box(
                 modifier = GlanceModifier.fillMaxSize(),
                 contentAlignment = Alignment.BottomEnd,
             ) {
                 val logoSize = when {
-                    size.width >= 250.dp && size.height >= 250.dp -> 120.dp
-                    size.width >= 250.dp -> 80.dp
-                    else -> 70.dp
+                    size.width >= 250.dp && size.height >= 250.dp -> 160.dp
+                    size.width >= 250.dp -> 100.dp
+                    else -> 100.dp
                 }
                 Image(
                     provider = ImageProvider(ConditionIcons.personaLogoRes(data.persona)),
                     contentDescription = null,
                     modifier = GlanceModifier.size(logoSize),
-                    colorFilter = ColorFilter.tint(
-                        ColorProvider(android.graphics.Color.argb(50, 0, 0, 0))
-                    ),
                 )
             }
 
@@ -123,7 +120,7 @@ class HeatherGlanceWidget : GlanceAppWidget() {
                     text = data.cityName,
                     style = TextStyle(
                         color = ColorProvider(white),
-                        fontSize = 12.sp,
+                        fontSize = 13.sp,
                         fontWeight = FontWeight.Medium,
                     ),
                     maxLines = 1,
@@ -132,8 +129,8 @@ class HeatherGlanceWidget : GlanceAppWidget() {
                 Image(
                     provider = ImageProvider(ConditionIcons.iconRes(data.conditionName, data.isDay)),
                     contentDescription = data.conditionName,
-                    modifier = GlanceModifier.size(28.dp),
-                    colorFilter = ColorFilter.tint(ColorProvider(white70)),
+                    modifier = GlanceModifier.size(30.dp),
+                    colorFilter = ColorFilter.tint(ColorProvider(white80)),
                 )
             }
 
@@ -176,7 +173,7 @@ class HeatherGlanceWidget : GlanceAppWidget() {
                         text = data.cityName,
                         style = TextStyle(
                             color = ColorProvider(white),
-                            fontSize = 12.sp,
+                            fontSize = 13.sp,
                             fontWeight = FontWeight.Medium,
                         ),
                         maxLines = 1,
@@ -187,7 +184,7 @@ class HeatherGlanceWidget : GlanceAppWidget() {
                             text = "${data.temperature}°",
                             style = TextStyle(
                                 color = ColorProvider(white),
-                                fontSize = 34.sp,
+                                fontSize = 36.sp,
                                 fontWeight = FontWeight.Bold,
                             ),
                         )
@@ -196,7 +193,7 @@ class HeatherGlanceWidget : GlanceAppWidget() {
                             text = "${data.high}°/${data.low}°",
                             style = TextStyle(
                                 color = ColorProvider(white80),
-                                fontSize = 10.sp,
+                                fontSize = 11.sp,
                                 fontWeight = FontWeight.Medium,
                             ),
                             modifier = GlanceModifier.padding(bottom = 6.dp),
@@ -207,7 +204,7 @@ class HeatherGlanceWidget : GlanceAppWidget() {
                         text = "Feels like ${data.feelsLike}°",
                         style = TextStyle(
                             color = ColorProvider(white70),
-                            fontSize = 9.sp,
+                            fontSize = 10.sp,
                         ),
                     )
                 }
@@ -217,8 +214,8 @@ class HeatherGlanceWidget : GlanceAppWidget() {
                     Image(
                         provider = ImageProvider(ConditionIcons.iconRes(data.conditionName, data.isDay)),
                         contentDescription = data.conditionName,
-                        modifier = GlanceModifier.size(30.dp),
-                        colorFilter = ColorFilter.tint(ColorProvider(white70)),
+                        modifier = GlanceModifier.size(32.dp),
+                        colorFilter = ColorFilter.tint(ColorProvider(white80)),
                     )
                     Spacer(modifier = GlanceModifier.height(2.dp))
                     if (data.isDay) {
@@ -246,7 +243,7 @@ class HeatherGlanceWidget : GlanceAppWidget() {
                 text = data.quip,
                 style = TextStyle(
                     color = ColorProvider(white90),
-                    fontSize = 12.sp,
+                    fontSize = 13.sp,
                     fontWeight = FontWeight.Medium,
                 ),
                 maxLines = 2,
@@ -271,8 +268,8 @@ class HeatherGlanceWidget : GlanceAppWidget() {
                 text = data.cityName,
                 style = TextStyle(
                     color = ColorProvider(white),
-                    fontSize = 14.sp,
-                    fontWeight = FontWeight.Bold,
+                    fontSize = 15.sp,
+                    fontWeight = FontWeight.Medium,
                 ),
                 maxLines = 1,
             )
@@ -291,7 +288,7 @@ class HeatherGlanceWidget : GlanceAppWidget() {
                             text = "${data.temperature}°",
                             style = TextStyle(
                                 color = ColorProvider(white),
-                                fontSize = 50.sp,
+                                fontSize = 52.sp,
                                 fontWeight = FontWeight.Bold,
                             ),
                         )
@@ -300,7 +297,7 @@ class HeatherGlanceWidget : GlanceAppWidget() {
                             text = "${data.high}°/${data.low}°",
                             style = TextStyle(
                                 color = ColorProvider(white90),
-                                fontSize = 12.sp,
+                                fontSize = 13.sp,
                                 fontWeight = FontWeight.Medium,
                             ),
                             modifier = GlanceModifier.padding(bottom = 10.dp),
@@ -311,7 +308,7 @@ class HeatherGlanceWidget : GlanceAppWidget() {
                         text = "Feels like ${data.feelsLike}°",
                         style = TextStyle(
                             color = ColorProvider(white70),
-                            fontSize = 11.sp,
+                            fontSize = 12.sp,
                         ),
                     )
 
@@ -319,7 +316,7 @@ class HeatherGlanceWidget : GlanceAppWidget() {
                         text = data.description.replaceFirstChar { it.uppercase() },
                         style = TextStyle(
                             color = ColorProvider(white70),
-                            fontSize = 11.sp,
+                            fontSize = 12.sp,
                         ),
                     )
                 }
@@ -329,8 +326,8 @@ class HeatherGlanceWidget : GlanceAppWidget() {
                     Image(
                         provider = ImageProvider(ConditionIcons.iconRes(data.conditionName, data.isDay)),
                         contentDescription = data.conditionName,
-                        modifier = GlanceModifier.size(44.dp),
-                        colorFilter = ColorFilter.tint(ColorProvider(white70)),
+                        modifier = GlanceModifier.size(48.dp),
+                        colorFilter = ColorFilter.tint(ColorProvider(white80)),
                     )
                     Spacer(modifier = GlanceModifier.height(4.dp))
                     if (data.isDay) {
@@ -365,7 +362,7 @@ class HeatherGlanceWidget : GlanceAppWidget() {
                 text = data.quip,
                 style = TextStyle(
                     color = ColorProvider(white95),
-                    fontSize = 14.sp,
+                    fontSize = 15.sp,
                     fontWeight = FontWeight.Medium,
                 ),
                 maxLines = 3,
@@ -381,16 +378,16 @@ class HeatherGlanceWidget : GlanceAppWidget() {
             Image(
                 provider = ImageProvider(iconRes),
                 contentDescription = null,
-                modifier = GlanceModifier.size(10.dp),
-                colorFilter = ColorFilter.tint(ColorProvider(white70)),
+                modifier = GlanceModifier.size(11.dp),
+                colorFilter = ColorFilter.tint(ColorProvider(white80)),
             )
             Spacer(modifier = GlanceModifier.width(3.dp))
             Text(
                 text = value,
                 style = TextStyle(
                     color = ColorProvider(white80),
-                    fontSize = 10.sp,
-                    fontWeight = FontWeight.Bold,
+                    fontSize = 11.sp,
+                    fontWeight = FontWeight.Medium,
                 ),
             )
         }
@@ -468,8 +465,8 @@ class HeatherGlanceWidget : GlanceAppWidget() {
     }
 }
 
-private val white = android.graphics.Color.WHITE
-private val white95 = android.graphics.Color.argb(242, 255, 255, 255)
-private val white90 = android.graphics.Color.argb(230, 255, 255, 255)
-private val white80 = android.graphics.Color.argb(204, 255, 255, 255)
-private val white70 = android.graphics.Color.argb(179, 255, 255, 255)
+private val white = androidx.compose.ui.graphics.Color.White
+private val white95 = androidx.compose.ui.graphics.Color(0xF2FFFFFF)
+private val white90 = androidx.compose.ui.graphics.Color(0xE6FFFFFF)
+private val white80 = androidx.compose.ui.graphics.Color(0xCCFFFFFF)
+private val white70 = androidx.compose.ui.graphics.Color(0xB3FFFFFF)

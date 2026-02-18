@@ -31,25 +31,13 @@ class FcmService {
   final _localNotifications = FlutterLocalNotificationsPlugin();
   final _functions = FirebaseFunctions.instance;
   bool _initialized = false;
+  List<Map<String, dynamic>>? _lastLocations;
 
   Future<void> init() async {
     if (_initialized) return;
 
     // Register background handler
     FirebaseMessaging.onBackgroundMessage(_firebaseMessagingBackgroundHandler);
-
-    // Request notification permissions
-    final settings = await _messaging.requestPermission(
-      alert: true,
-      badge: true,
-      sound: true,
-      criticalAlert: true,
-      provisional: false,
-    );
-
-    if (kDebugMode) {
-      print('FCM permission status: ${settings.authorizationStatus}');
-    }
 
     // Create Android notification channel for alerts
     if (Platform.isAndroid) {
@@ -62,13 +50,14 @@ class FcmService {
       print('FCM token: $token');
     }
 
-    // Listen for token refreshes
+    // Listen for token refreshes – re-register with cached locations
     _messaging.onTokenRefresh.listen((newToken) {
       if (kDebugMode) {
         print('FCM token refreshed: $newToken');
       }
-      // Re-register with updated token (lat/lon will be sent on next
-      // registerDevice call from the app when location is available)
+      if (_lastLocations != null) {
+        registerDevice(locations: _lastLocations!);
+      }
     });
 
     // Handle foreground messages
@@ -137,20 +126,39 @@ class FcmService {
     }
   }
 
-  /// Registers the device's FCM token + location with the cloud function
+  /// Requests notification permission from the OS. Call this from the
+  /// onboarding notifications step rather than at app launch.
+  Future<bool> requestPermission() async {
+    final settings = await _messaging.requestPermission(
+      alert: true,
+      badge: true,
+      sound: true,
+      criticalAlert: true,
+      provisional: false,
+    );
+
+    if (kDebugMode) {
+      print('FCM permission status: ${settings.authorizationStatus}');
+    }
+
+    return settings.authorizationStatus == AuthorizationStatus.authorized ||
+        settings.authorizationStatus == AuthorizationStatus.provisional;
+  }
+
+  /// Registers the device's FCM token + all locations with the cloud function
   /// so the backend can send location-targeted severe weather push alerts.
   Future<void> registerDevice({
-    required double latitude,
-    required double longitude,
+    required List<Map<String, dynamic>> locations,
   }) async {
     final token = await _messaging.getToken();
     if (token == null) return;
 
+    _lastLocations = locations;
+
     try {
       await _functions.httpsCallable('registerDevice').call({
         'fcmToken': token,
-        'latitude': latitude,
-        'longitude': longitude,
+        'locations': locations,
       });
     } catch (e) {
       if (kDebugMode) {

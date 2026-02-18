@@ -17,10 +17,12 @@ class LocationSource {
     }
 
     try {
-      final position = await Geolocator.getCurrentPosition(
+      // Try last known position first (instant, works well on emulators)
+      var position = await Geolocator.getLastKnownPosition();
+      position ??= await Geolocator.getCurrentPosition(
         locationSettings: const LocationSettings(
           accuracy: LocationAccuracy.low,
-          timeLimit: Duration(seconds: 10),
+          timeLimit: Duration(seconds: 15),
         ),
       );
 

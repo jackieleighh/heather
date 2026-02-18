@@ -11,28 +11,44 @@ const db = admin.firestore();
 const messaging = admin.messaging();
 
 // ─── registerDevice ──────────────────────────────────────────────────────────
-// Callable function: stores { fcmToken, lat, lon, updatedAt } in Firestore.
-// Called from the Flutter app on FCM token refresh.
+// Callable function: stores { fcmToken, locations, updatedAt } in Firestore.
+// Called from the Flutter app on FCM token refresh or saved-locations change.
+// Accepts either a `locations` array or legacy single `latitude`/`longitude`.
 
 export const registerDevice = onCall({invoker: "public"}, async (request) => {
-  const {fcmToken, latitude, longitude} = request.data as {
+  const {fcmToken, locations, latitude, longitude} = request.data as {
     fcmToken?: string;
+    locations?: Array<{latitude: number; longitude: number; name?: string}>;
     latitude?: number;
     longitude?: number;
   };
 
-  if (!fcmToken || latitude == null || longitude == null) {
+  if (!fcmToken) {
+    throw new HttpsError("invalid-argument", "fcmToken is required.");
+  }
+
+  // Support new `locations` array or fall back to legacy single lat/lon
+  let resolvedLocations: Array<{
+    latitude: number;
+    longitude: number;
+    name?: string;
+  }>;
+
+  if (Array.isArray(locations) && locations.length > 0) {
+    resolvedLocations = locations;
+  } else if (latitude != null && longitude != null) {
+    resolvedLocations = [{latitude, longitude}];
+  } else {
     throw new HttpsError(
       "invalid-argument",
-      "fcmToken, latitude, and longitude are required."
+      "Either locations array or latitude/longitude are required."
     );
   }
 
   await db.collection("devices").doc(fcmToken).set(
     {
       fcmToken,
-      latitude,
-      longitude,
+      locations: resolvedLocations,
       updatedAt: admin.firestore.FieldValue.serverTimestamp(),
     },
     {merge: true}
@@ -44,14 +60,34 @@ export const registerDevice = onCall({invoker: "public"}, async (request) => {
 // ─── checkAlerts ─────────────────────────────────────────────────────────────
 // Scheduled every 5 minutes. For each unique location registered, queries the
 // NWS API and sends FCM pushes for any alerts not already sent.
+// Deduplicates alerts per-token across all of a device's locations.
+
+/**
+ * Rank severity for sorting (lower = more severe).
+ */
+function severityRank(severity: string): number {
+  switch (severity.toLowerCase()) {
+    case "extreme":
+      return 0;
+    case "severe":
+      return 1;
+    case "moderate":
+      return 2;
+    case "minor":
+      return 3;
+    default:
+      return 4;
+  }
+}
 
 export const checkAlerts = onSchedule("every 5 minutes", async () => {
   const devicesSnapshot = await db.collection("devices").get();
 
   if (devicesSnapshot.empty) return;
 
-  // Group devices by approximate location (rounded to 2 decimal places ~1km)
+  // Group tokens by approximate location (rounded to 2 decimal places ~1km)
   // to avoid duplicate NWS API calls for nearby devices.
+  // Each device may have multiple locations now.
   const locationMap = new Map<
     string,
     {lat: number; lon: number; tokens: string[]}
@@ -59,43 +95,82 @@ export const checkAlerts = onSchedule("every 5 minutes", async () => {
 
   for (const doc of devicesSnapshot.docs) {
     const data = doc.data();
-    const lat = Math.round(data.latitude * 100) / 100;
-    const lon = Math.round(data.longitude * 100) / 100;
-    const key = `${lat},${lon}`;
+    const token = data.fcmToken as string;
 
-    const entry = locationMap.get(key);
-    if (entry) {
-      entry.tokens.push(data.fcmToken);
-    } else {
-      locationMap.set(key, {
-        lat,
-        lon,
-        tokens: [data.fcmToken],
-      });
+    // Support new `locations` array or fall back to legacy single lat/lon
+    const deviceLocations: Array<{latitude: number; longitude: number}> =
+      Array.isArray(data.locations) && data.locations.length > 0
+        ? data.locations
+        : data.latitude != null && data.longitude != null
+          ? [{latitude: data.latitude, longitude: data.longitude}]
+          : [];
+
+    for (const loc of deviceLocations) {
+      const lat = Math.round(loc.latitude * 100) / 100;
+      const lon = Math.round(loc.longitude * 100) / 100;
+      const key = `${lat},${lon}`;
+
+      const entry = locationMap.get(key);
+      if (entry) {
+        if (!entry.tokens.includes(token)) {
+          entry.tokens.push(token);
+        }
+      } else {
+        locationMap.set(key, {lat, lon, tokens: [token]});
+      }
     }
   }
+
+  // Accumulate the most severe new alert per token (dedup by alert ID)
+  const tokenAlerts = new Map<string, NwsAlert>();
+  const tokenSentAlertIds = new Map<string, Set<string>>();
+  const staleTokens = new Set<string>();
 
   // Process each unique location
   for (const [locationKey, {lat, lon, tokens}] of locationMap) {
     const alerts = await fetchAlerts(lat, lon);
     if (alerts.length === 0) continue;
 
-    // Filter out alerts already sent for this location
     const newAlerts = await filterNewAlerts(locationKey, alerts);
     if (newAlerts.length === 0) continue;
 
-    // Send push notification for the most severe alert
-    const primary = newAlerts[0];
-    const message: admin.messaging.MulticastMessage = {
-      tokens,
+    // Mark alerts as sent for this location
+    await markAlertsSent(locationKey, newAlerts);
+
+    // Assign the most severe unseen alert to each token
+    for (const token of tokens) {
+      if (!tokenSentAlertIds.has(token)) {
+        tokenSentAlertIds.set(token, new Set());
+      }
+      const seenIds = tokenSentAlertIds.get(token)!;
+
+      for (const alert of newAlerts) {
+        if (seenIds.has(alert.id)) continue;
+        seenIds.add(alert.id);
+
+        const existing = tokenAlerts.get(token);
+        if (
+          !existing ||
+          severityRank(alert.severity) < severityRank(existing.severity)
+        ) {
+          tokenAlerts.set(token, alert);
+        }
+      }
+    }
+  }
+
+  // Send one notification per token with the most severe alert
+  for (const [token, alert] of tokenAlerts) {
+    const message: admin.messaging.Message = {
+      token,
       notification: {
-        title: primary.event,
-        body: primary.headline || `${primary.event} for ${primary.areaDesc}`,
+        title: alert.event,
+        body: alert.headline || `${alert.event} for ${alert.areaDesc}`,
       },
       data: {
-        alertId: primary.id,
-        severity: primary.severity,
-        event: primary.event,
+        alertId: alert.id,
+        severity: alert.severity,
+        event: alert.event,
       },
       android: {
         priority: "high",
@@ -115,34 +190,27 @@ export const checkAlerts = onSchedule("every 5 minutes", async () => {
     };
 
     try {
-      const response = await messaging.sendEachForMulticast(message);
-
-      // Remove tokens that are no longer valid
-      const failedTokens: string[] = [];
-      response.responses.forEach((resp, idx) => {
-        if (
-          resp.error &&
-          (resp.error.code === "messaging/invalid-registration-token" ||
-            resp.error.code ===
-              "messaging/registration-token-not-registered")
-        ) {
-          failedTokens.push(tokens[idx]);
-        }
-      });
-
-      if (failedTokens.length > 0) {
-        const batch = db.batch();
-        for (const token of failedTokens) {
-          batch.delete(db.collection("devices").doc(token));
-        }
-        await batch.commit();
+      await messaging.send(message);
+    } catch (error: unknown) {
+      const fcmError = error as {code?: string};
+      if (
+        fcmError.code === "messaging/invalid-registration-token" ||
+        fcmError.code === "messaging/registration-token-not-registered"
+      ) {
+        staleTokens.add(token);
+      } else {
+        console.error(`Failed to send alert to ${token}:`, error);
       }
-    } catch (error) {
-      console.error(`Failed to send alerts for ${locationKey}:`, error);
     }
+  }
 
-    // Mark alerts as sent
-    await markAlertsSent(locationKey, newAlerts);
+  // Remove stale tokens
+  if (staleTokens.size > 0) {
+    const batch = db.batch();
+    for (const token of staleTokens) {
+      batch.delete(db.collection("devices").doc(token));
+    }
+    await batch.commit();
   }
 });
 

@@ -21,9 +21,9 @@ object ConditionIcons {
     }
 
     fun personaLogoRes(persona: String): Int = when (persona) {
-        "jade" -> R.drawable.ic_persona_jade
-        "luna" -> R.drawable.ic_persona_luna
-        "aurelia" -> R.drawable.ic_persona_aurelia
-        else -> R.drawable.ic_persona_heather
+        "jade" -> R.drawable.persona_jade
+        "luna" -> R.drawable.persona_luna
+        "aurelia" -> R.drawable.persona_aurelia
+        else -> R.drawable.persona_heather
     }
 }

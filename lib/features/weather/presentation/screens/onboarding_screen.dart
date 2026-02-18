@@ -6,6 +6,7 @@ import 'package:google_fonts/google_fonts.dart';
 
 import '../../../../core/constants/app_colors.dart';
 import '../../../../core/constants/persona.dart';
+import '../../../../core/services/fcm_service.dart';
 import '../providers/settings_provider.dart';
 import '../widgets/logo_overlay.dart';
 
@@ -39,6 +40,7 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
     }
 
     if (_notificationsEnabled) {
+      await FcmService().requestPermission();
       final granted = await notifier.setNotificationsEnabled(true);
       if (granted) {
         await notifier.setNotificationTime(_notificationTime);
@@ -77,7 +79,7 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
                 ),
               ),
             ),
-            const LogoOverlay(),
+            LogoOverlay(personaOverride: _persona),
           ],
         ),
       ),

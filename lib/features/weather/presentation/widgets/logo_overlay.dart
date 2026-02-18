@@ -6,11 +6,14 @@ import '../../../../core/constants/persona.dart';
 import '../providers/settings_provider.dart';
 
 class LogoOverlay extends ConsumerWidget {
-  const LogoOverlay({super.key});
+  final Persona? personaOverride;
+
+  const LogoOverlay({super.key, this.personaOverride});
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final persona = ref.watch(settingsProvider.select((s) => s.persona));
+    final persona =
+        personaOverride ?? ref.watch(settingsProvider.select((s) => s.persona));
     final screenHeight = MediaQuery.sizeOf(context).height;
 
     return Positioned(
