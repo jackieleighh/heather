@@ -77,7 +77,7 @@ class SettingsScreen extends ConsumerWidget {
                               'Um... No saved locations yet.  This is awkward.',
                               style: GoogleFonts.poppins(
                                 fontSize: 13,
-                                color: AppColors.cream.withValues(alpha: 0.7),
+                                color: AppColors.cream,
                               ),
                             ),
                           )
@@ -134,11 +134,9 @@ class SettingsScreen extends ConsumerWidget {
                                     ),
                                     leading: ReorderableDragStartListener(
                                       index: index,
-                                      child: Icon(
+                                      child: const Icon(
                                         Icons.drag_handle,
-                                        color: AppColors.cream.withValues(
-                                          alpha: 0.5,
-                                        ),
+                                        color: AppColors.cream,
                                         size: 20,
                                       ),
                                     ),
@@ -160,18 +158,14 @@ class SettingsScreen extends ConsumerWidget {
                                             ].join(', '),
                                             style: GoogleFonts.poppins(
                                               fontSize: 12,
-                                              color: AppColors.cream.withValues(
-                                                alpha: 0.8,
-                                              ),
+                                              color: AppColors.cream,
                                             ),
                                           )
                                         : null,
                                     trailing: IconButton(
-                                      icon: Icon(
+                                      icon: const Icon(
                                         Icons.delete_outline,
-                                        color: AppColors.cream.withValues(
-                                          alpha: 0.8,
-                                        ),
+                                        color: AppColors.cream,
                                         size: 20,
                                       ),
                                       onPressed: () {
@@ -215,7 +209,6 @@ class SettingsScreen extends ConsumerWidget {
                         const SizedBox(height: 4),
                         _ToneTile(
                           label: settings.persona.toneLabel,
-                          subtitle: settings.persona.toneSubtitle,
                           selected: !settings.explicitLanguage,
                           onTap: () {
                             ref
@@ -226,7 +219,6 @@ class SettingsScreen extends ConsumerWidget {
                         const SizedBox(height: 8),
                         _ToneTile(
                           label: settings.persona.altToneLabel,
-                          subtitle: settings.persona.altToneSubtitle,
                           selected: settings.explicitLanguage,
                           onTap: () {
                             ref
@@ -264,9 +256,7 @@ class SettingsScreen extends ConsumerWidget {
                                   'Tornado warnings, severe thunderstorms, and other NWS alerts.',
                                   style: GoogleFonts.poppins(
                                     fontSize: 12,
-                                    color: AppColors.cream.withValues(
-                                      alpha: 0.8,
-                                    ),
+                                    color: AppColors.cream,
                                   ),
                                 ),
                                 value: settings.severeAlertsEnabled,
@@ -289,172 +279,6 @@ class SettingsScreen extends ConsumerWidget {
                                       .setSevereAlertsEnabled(value);
                                 },
                               ),
-                              SwitchListTile(
-                                contentPadding: const EdgeInsets.symmetric(
-                                  horizontal: 16,
-                                  vertical: 4,
-                                ),
-                                title: Text(
-                                  'Daily weather alert',
-                                  style: GoogleFonts.poppins(
-                                    fontSize: 15,
-                                    fontWeight: FontWeight.w500,
-                                    color: AppColors.cream,
-                                  ),
-                                ),
-                                subtitle: Text(
-                                  'Get a daily weather update from ${settings.persona.displayName}.',
-                                  style: GoogleFonts.poppins(
-                                    fontSize: 12,
-                                    color: AppColors.cream.withValues(
-                                      alpha: 0.8,
-                                    ),
-                                  ),
-                                ),
-                                value: settings.notificationsEnabled,
-                                activeTrackColor: AppColors.cream.withValues(
-                                  alpha: 0.3,
-                                ),
-                                activeThumbColor: AppColors.cream,
-                                inactiveTrackColor: AppColors.cream.withValues(
-                                  alpha: 0.1,
-                                ),
-                                inactiveThumbColor: AppColors.cream.withValues(
-                                  alpha: 0.4,
-                                ),
-                                trackOutlineColor: WidgetStatePropertyAll(
-                                  AppColors.cream.withValues(alpha: 0.1),
-                                ),
-                                onChanged: (value) async {
-                                  final granted = await ref
-                                      .read(settingsProvider.notifier)
-                                      .setNotificationsEnabled(value);
-                                  if (!granted && context.mounted) {
-                                    ScaffoldMessenger.of(context).showSnackBar(
-                                      SnackBar(
-                                        content: Text(
-                                          'Notification permission denied. Enable it in system settings.',
-                                          style: GoogleFonts.poppins(
-                                            fontSize: 13,
-                                          ),
-                                        ),
-                                      ),
-                                    );
-                                  }
-                                },
-                              ),
-                              if (settings.notificationsEnabled)
-                                ListTile(
-                                  contentPadding: const EdgeInsets.symmetric(
-                                    horizontal: 16,
-                                  ),
-                                  title: Text(
-                                    'Notification time',
-                                    style: GoogleFonts.poppins(
-                                      fontSize: 15,
-                                      fontWeight: FontWeight.w500,
-                                      color: AppColors.cream,
-                                    ),
-                                  ),
-                                  trailing: Text(
-                                    settings.notificationTime.format(context),
-                                    style: GoogleFonts.poppins(
-                                      fontSize: 15,
-                                      color: AppColors.cream.withValues(
-                                        alpha: 0.8,
-                                      ),
-                                    ),
-                                  ),
-                                  onTap: () async {
-                                    final picked = await showTimePicker(
-                                      context: context,
-                                      initialTime: settings.notificationTime,
-                                      builder: (context, child) {
-                                        return Theme(
-                                          data: Theme.of(context).copyWith(
-                                            timePickerTheme: TimePickerThemeData(
-                                              backgroundColor:
-                                                  AppColors.darkMagenta,
-                                              hourMinuteTextColor:
-                                                  AppColors.cream,
-                                              hourMinuteColor: accentColor
-                                                  .withValues(alpha: 0.3),
-                                              dayPeriodTextColor:
-                                                  AppColors.cream,
-                                              dayPeriodColor: accentColor
-                                                  .withValues(alpha: 0.3),
-                                              dialHandColor: accentColor,
-                                              dialBackgroundColor: accentColor
-                                                  .withValues(alpha: 0.15),
-                                              dialTextColor: AppColors.cream,
-                                              entryModeIconColor: AppColors
-                                                  .cream
-                                                  .withValues(alpha: 0.8),
-                                              helpTextStyle:
-                                                  GoogleFonts.poppins(
-                                                    fontSize: 14,
-                                                    color: AppColors.cream,
-                                                  ),
-                                              hourMinuteTextStyle:
-                                                  GoogleFonts.poppins(
-                                                    fontSize: 32,
-                                                    fontWeight: FontWeight.w500,
-                                                  ),
-                                              dayPeriodTextStyle:
-                                                  GoogleFonts.poppins(
-                                                    fontSize: 14,
-                                                    fontWeight: FontWeight.w500,
-                                                  ),
-                                              shape: RoundedRectangleBorder(
-                                                borderRadius:
-                                                    BorderRadius.circular(16),
-                                              ),
-                                              dayPeriodShape:
-                                                  RoundedRectangleBorder(
-                                                    borderRadius:
-                                                        BorderRadius.circular(
-                                                          8,
-                                                        ),
-                                                  ),
-                                              dayPeriodBorderSide: BorderSide(
-                                                color: AppColors.cream
-                                                    .withValues(alpha: 0.2),
-                                              ),
-                                            ),
-                                            textButtonTheme:
-                                                TextButtonThemeData(
-                                                  style: TextButton.styleFrom(
-                                                    foregroundColor:
-                                                        AppColors.cream,
-                                                    textStyle:
-                                                        GoogleFonts.poppins(
-                                                          fontSize: 16,
-                                                          fontWeight:
-                                                              FontWeight.w500,
-                                                        ),
-                                                  ),
-                                                ),
-                                          ),
-                                          child: MediaQuery(
-                                            data: MediaQuery.of(context)
-                                                .copyWith(
-                                                  textScaler:
-                                                      const TextScaler.linear(
-                                                        0.9,
-                                                      ),
-                                                ),
-                                            child: child!,
-                                          ),
-                                        );
-                                      },
-                                    );
-                                    if (picked != null) {
-                                      ref
-                                          .read(settingsProvider.notifier)
-                                          .setNotificationTime(picked);
-                                    }
-                                  },
-                                ),
                             ],
                           ),
                         ),
@@ -493,13 +317,11 @@ class _PersonaTile extends StatelessWidget {
         duration: const Duration(milliseconds: 300),
         padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
         decoration: BoxDecoration(
-          color: selected
-              ? AppColors.cream.withValues(alpha: 0.25)
-              : AppColors.cream.withValues(alpha: 0.1),
+          color: AppColors.cream.withValues(alpha: 0.15),
           borderRadius: BorderRadius.circular(12),
           border: Border.all(
             color: selected
-                ? AppColors.cream.withValues(alpha: 0.8)
+                ? AppColors.cream.withValues(alpha: 0.5)
                 : Colors.transparent,
             width: 1.5,
           ),
@@ -510,9 +332,7 @@ class _PersonaTile extends StatelessWidget {
               width: 36,
               height: 36,
               decoration: BoxDecoration(
-                color: selected
-                    ? AppColors.cream.withValues(alpha: 0.3)
-                    : AppColors.cream.withValues(alpha: 0.15),
+                color: AppColors.cream.withValues(alpha: 0.15),
                 shape: BoxShape.circle,
               ),
               child: Center(
@@ -528,31 +348,19 @@ class _PersonaTile extends StatelessWidget {
             ),
             const SizedBox(width: 12),
             Expanded(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
-                    persona.displayName,
-                    style: GoogleFonts.poppins(
-                      fontSize: 15,
-                      fontWeight: FontWeight.w500,
-                      color: AppColors.cream,
-                    ),
-                  ),
-                  Text(
-                    persona.introLine,
-                    style: GoogleFonts.poppins(
-                      fontSize: 12,
-                      color: AppColors.cream.withValues(alpha: 0.8),
-                    ),
-                  ),
-                ],
+              child: Text(
+                persona.displayName,
+                style: GoogleFonts.poppins(
+                  fontSize: 15,
+                  fontWeight: FontWeight.w500,
+                  color: AppColors.cream,
+                ),
               ),
             ),
             if (selected)
-              Icon(
+              const Icon(
                 Icons.check_circle,
-                color: AppColors.cream.withValues(alpha: 0.8),
+                color: AppColors.cream,
                 size: 22,
               ),
           ],
@@ -564,13 +372,11 @@ class _PersonaTile extends StatelessWidget {
 
 class _ToneTile extends StatelessWidget {
   final String label;
-  final String subtitle;
   final bool selected;
   final VoidCallback onTap;
 
   const _ToneTile({
     required this.label,
-    required this.subtitle,
     required this.selected,
     required this.onTap,
   });
@@ -581,15 +387,13 @@ class _ToneTile extends StatelessWidget {
       onTap: onTap,
       child: AnimatedContainer(
         duration: const Duration(milliseconds: 200),
-        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
         decoration: BoxDecoration(
-          color: selected
-              ? AppColors.cream.withValues(alpha: 0.25)
-              : AppColors.cream.withValues(alpha: 0.1),
+          color: AppColors.cream.withValues(alpha: 0.15),
           borderRadius: BorderRadius.circular(12),
           border: Border.all(
             color: selected
-                ? AppColors.cream.withValues(alpha: 0.8)
+                ? AppColors.cream.withValues(alpha: 0.5)
                 : Colors.transparent,
             width: 1.5,
           ),
@@ -597,31 +401,19 @@ class _ToneTile extends StatelessWidget {
         child: Row(
           children: [
             Expanded(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
-                    label,
-                    style: GoogleFonts.poppins(
-                      fontSize: 15,
-                      fontWeight: FontWeight.w500,
-                      color: AppColors.cream,
-                    ),
-                  ),
-                  Text(
-                    subtitle,
-                    style: GoogleFonts.poppins(
-                      fontSize: 12,
-                      color: AppColors.cream.withValues(alpha: 0.8),
-                    ),
-                  ),
-                ],
+              child: Text(
+                label,
+                style: GoogleFonts.poppins(
+                  fontSize: 15,
+                  fontWeight: FontWeight.w500,
+                  color: AppColors.cream,
+                ),
               ),
             ),
             if (selected)
-              Icon(
+              const Icon(
                 Icons.check_circle,
-                color: AppColors.cream.withValues(alpha: 0.8),
+                color: AppColors.cream,
                 size: 22,
               ),
           ],
@@ -646,7 +438,7 @@ class _SectionHeader extends StatelessWidget {
           fontSize: 13,
           fontWeight: FontWeight.w600,
           letterSpacing: 0.5,
-          color: AppColors.cream.withValues(alpha: 0.7),
+          color: AppColors.cream,
         ),
       ),
     );

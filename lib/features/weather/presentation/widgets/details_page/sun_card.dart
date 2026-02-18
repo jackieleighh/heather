@@ -40,7 +40,7 @@ class SunCard extends StatelessWidget {
               Icon(
                 WeatherIcons.day_sunny,
                 size: 18,
-                color: AppColors.cream.withValues(alpha: 0.8),
+                color: AppColors.cream.withValues(alpha: 0.9),
               ),
               const SizedBox(width: 8),
               Text(
@@ -55,7 +55,7 @@ class SunCard extends StatelessWidget {
                   Icon(
                     WeatherIcons.sunrise,
                     size: 13,
-                    color: AppColors.cream.withValues(alpha: 0.7),
+                    color: AppColors.cream.withValues(alpha: 0.95),
                   ),
                   const SizedBox(width: 4),
                   Text(
@@ -69,7 +69,7 @@ class SunCard extends StatelessWidget {
                   Icon(
                     WeatherIcons.sunset,
                     size: 13,
-                    color: AppColors.cream.withValues(alpha: 0.7),
+                    color: AppColors.cream.withValues(alpha: 0.95),
                   ),
                   const SizedBox(width: 4),
                   Text(
@@ -101,7 +101,7 @@ class SunCard extends StatelessWidget {
                 style: GoogleFonts.poppins(
                   fontSize: 12,
                   fontWeight: FontWeight.w600,
-                  color: AppColors.cream.withValues(alpha: 0.6),
+                  color: AppColors.cream.withValues(alpha: 0.9),
                 ),
               ),
             ],
@@ -167,7 +167,7 @@ class _UvLinePainter extends CustomPainter {
 
     // Y-axis labels
     final yLabelStyle = TextStyle(
-      color: AppColors.cream.withValues(alpha: 0.7),
+      color: AppColors.cream.withValues(alpha: 0.95),
       fontSize: 10,
       fontWeight: FontWeight.w600,
     );
@@ -238,7 +238,7 @@ class _UvLinePainter extends CustomPainter {
 
     // Hour labels
     final labelStyle = TextStyle(
-      color: AppColors.cream.withValues(alpha: 0.8),
+      color: AppColors.cream.withValues(alpha: 0.9),
       fontSize: 10,
       fontWeight: FontWeight.w600,
     );

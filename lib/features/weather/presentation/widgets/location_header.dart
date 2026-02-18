@@ -27,7 +27,7 @@ class LocationHeader extends StatelessWidget {
           style: GoogleFonts.quicksand(
             fontSize: 15,
             fontWeight: FontWeight.w500,
-            color: AppColors.cream.withValues(alpha: 0.6),
+            color: AppColors.cream.withValues(alpha: 0.9),
           ),
         ),
         const SizedBox(height: 2),

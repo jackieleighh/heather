@@ -51,6 +51,7 @@ class _LocationSearchScreenState extends ConsumerState<LocationSearchScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: Colors.transparent,
+      resizeToAvoidBottomInset: false,
       body: Container(
         color: Theme.of(context).colorScheme.secondary,
         child: Stack(

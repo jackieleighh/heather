@@ -15,20 +15,14 @@ enum Persona {
   heather(
     displayName: 'Heather',
     initial: 'H',
-    toneLabel: 'Clean sarcasm',
+    toneLabel: 'Clean sass',
     altToneLabel: 'Explicit & unhinged',
-    toneSubtitle: 'Same sass, no swearing.',
-    altToneSubtitle: "I won't hold back.",
-    introLine: "I'm Heather. With the weather, I guess.",
   ),
   jade(
     displayName: 'Jade',
     initial: 'J',
     toneLabel: 'Chill af',
     altToneLabel: 'Cynical & explicit',
-    toneSubtitle: 'Laid back, good energy.',
-    altToneSubtitle: 'Over it, needs a joint.',
-    introLine: "I'm Jade. Here with the vibes.",
   );
   // TODO - add back
   // luna(
@@ -55,18 +49,12 @@ enum Persona {
     required this.initial,
     required this.toneLabel,
     required this.altToneLabel,
-    required this.toneSubtitle,
-    required this.altToneSubtitle,
-    required this.introLine,
   });
 
   final String displayName;
   final String initial;
   final String toneLabel;
   final String altToneLabel;
-  final String toneSubtitle;
-  final String altToneSubtitle;
-  final String introLine;
 
   Color get heroColor => switch (this) {
     Persona.heather => AppColors.magenta,
@@ -88,9 +76,10 @@ enum Persona {
             : (altTone
                   ? HeatherNightQuips.explicitQuips
                   : HeatherNightQuips.quips),
-      Persona.jade => isDay
-          ? (altTone ? JadeQuips.cynicalQuips : JadeQuips.quips)
-          : (altTone ? JadeNightQuips.cynicalQuips : JadeNightQuips.quips),
+      Persona.jade =>
+        isDay
+            ? (altTone ? JadeQuips.cynicalQuips : JadeQuips.quips)
+            : (altTone ? JadeNightQuips.cynicalQuips : JadeNightQuips.quips),
       // TODO
       // Persona.luna => altTone ? LunaQuips.sadQuips : LunaQuips.quips,
       // Persona.aurelia => altTone ? AureliaQuips.edgyQuips : AureliaQuips.quips,

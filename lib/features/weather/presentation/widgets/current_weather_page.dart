@@ -89,7 +89,7 @@ class _CurrentWeatherPageState extends ConsumerState<CurrentWeatherPage> {
   Widget build(BuildContext context) {
     final weather = widget.forecast.current;
     final textStyle = Theme.of(context).textTheme.bodySmall?.copyWith(
-      color: AppColors.cream.withValues(alpha: 0.7),
+      color: AppColors.cream.withValues(alpha: 0.85),
     );
 
     final alertsAsync = ref.watch(

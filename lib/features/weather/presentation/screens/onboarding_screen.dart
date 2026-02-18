@@ -21,8 +21,7 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
   int _step = 0; // 0 = persona, 1 = tone, 2 = notifications
   Persona _persona = Persona.heather;
   bool? _explicitLanguage;
-  bool _notificationsEnabled = false;
-  TimeOfDay _notificationTime = const TimeOfDay(hour: 7, minute: 0);
+  bool _severeAlertsEnabled = false;
 
   @override
   void initState() {
@@ -39,13 +38,7 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
       await notifier.setExplicitLanguage(_explicitLanguage!);
     }
 
-    if (_notificationsEnabled) {
-      await FcmService().requestPermission();
-      final granted = await notifier.setNotificationsEnabled(true);
-      if (granted) {
-        await notifier.setNotificationTime(_notificationTime);
-      }
-    }
+    await notifier.setSevereAlertsEnabled(_severeAlertsEnabled);
 
     await notifier.completeOnboarding();
 
@@ -139,14 +132,12 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
         const SizedBox(height: 32),
         _ToneOption(
           label: _persona.toneLabel,
-          subtitle: _persona.toneSubtitle,
           selected: _explicitLanguage == false,
           onTap: () => setState(() => _explicitLanguage = false),
         ),
         const SizedBox(height: 12),
         _ToneOption(
           label: _persona.altToneLabel,
-          subtitle: _persona.altToneSubtitle,
           selected: _explicitLanguage == true,
           onTap: () => setState(() => _explicitLanguage = true),
         ),
@@ -169,9 +160,9 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
       children: [
         const Spacer(flex: 2),
         Text(
-          'Want me to wake\nyou up with\nthe weather?',
+          'Want severe\nweather alerts?',
           style: GoogleFonts.quicksand(
-            fontSize: 28,
+            fontSize: 32,
             fontWeight: FontWeight.w700,
             color: AppColors.cream,
           ),
@@ -182,129 +173,41 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
             color: AppColors.cream.withValues(alpha: 0.15),
             borderRadius: BorderRadius.circular(12),
           ),
-          child: Column(
-            children: [
-              SwitchListTile(
-                contentPadding: const EdgeInsets.symmetric(
-                  horizontal: 16,
-                  vertical: 4,
-                ),
-                title: Text(
-                  'Daily weather alert',
-                  style: GoogleFonts.poppins(
-                    fontSize: 15,
-                    fontWeight: FontWeight.w500,
-                    color: AppColors.cream,
-                  ),
-                ),
-                subtitle: Text(
-                  'A daily nudge from ${_persona.displayName}.',
-                  style: GoogleFonts.poppins(
-                    fontSize: 12,
-                    color: AppColors.cream.withValues(alpha: 0.6),
-                  ),
-                ),
-                value: _notificationsEnabled,
-                activeTrackColor: AppColors.cream.withValues(alpha: 0.3),
-                activeThumbColor: AppColors.cream,
-                inactiveTrackColor: AppColors.cream.withValues(alpha: 0.1),
-                inactiveThumbColor: AppColors.cream.withValues(alpha: 0.4),
-                trackOutlineColor: WidgetStatePropertyAll(
-                  AppColors.cream.withValues(alpha: 0.1),
-                ),
-                onChanged: (value) =>
-                    setState(() => _notificationsEnabled = value),
+          child: SwitchListTile(
+            contentPadding: const EdgeInsets.symmetric(
+              horizontal: 16,
+              vertical: 4,
+            ),
+            title: Text(
+              'Severe weather alerts',
+              style: GoogleFonts.poppins(
+                fontSize: 15,
+                fontWeight: FontWeight.w500,
+                color: AppColors.cream,
               ),
-              if (_notificationsEnabled)
-                ListTile(
-                  contentPadding: const EdgeInsets.symmetric(horizontal: 16),
-                  title: Text(
-                    'Notification time',
-                    style: GoogleFonts.poppins(
-                      fontSize: 15,
-                      fontWeight: FontWeight.w500,
-                      color: AppColors.cream,
-                    ),
-                  ),
-                  trailing: Text(
-                    _notificationTime.format(context),
-                    style: GoogleFonts.poppins(
-                      fontSize: 15,
-                      color: AppColors.cream.withValues(alpha: 0.8),
-                    ),
-                  ),
-                  onTap: () async {
-                    final picked = await showTimePicker(
-                      context: context,
-                      initialTime: _notificationTime,
-                      builder: (context, child) {
-                        return Theme(
-                          data: Theme.of(context).copyWith(
-                            timePickerTheme: TimePickerThemeData(
-                              backgroundColor: AppColors.darkMagenta,
-                              hourMinuteTextColor: AppColors.cream,
-                              hourMinuteColor: _accentColor.withValues(
-                                alpha: 0.3,
-                              ),
-                              dayPeriodTextColor: AppColors.cream,
-                              dayPeriodColor: _accentColor.withValues(
-                                alpha: 0.3,
-                              ),
-                              dialHandColor: _accentColor,
-                              dialBackgroundColor: _accentColor.withValues(
-                                alpha: 0.15,
-                              ),
-                              dialTextColor: AppColors.cream,
-                              entryModeIconColor: AppColors.cream.withValues(
-                                alpha: 0.6,
-                              ),
-                              helpTextStyle: GoogleFonts.poppins(
-                                fontSize: 14,
-                                color: AppColors.cream,
-                              ),
-                              hourMinuteTextStyle: GoogleFonts.poppins(
-                                fontSize: 32,
-                                fontWeight: FontWeight.w500,
-                              ),
-                              dayPeriodTextStyle: GoogleFonts.poppins(
-                                fontSize: 14,
-                                fontWeight: FontWeight.w500,
-                              ),
-                              shape: RoundedRectangleBorder(
-                                borderRadius: BorderRadius.circular(16),
-                              ),
-                              dayPeriodShape: RoundedRectangleBorder(
-                                borderRadius: BorderRadius.circular(8),
-                              ),
-                              dayPeriodBorderSide: BorderSide(
-                                color: AppColors.cream.withValues(alpha: 0.2),
-                              ),
-                            ),
-                            textButtonTheme: TextButtonThemeData(
-                              style: TextButton.styleFrom(
-                                foregroundColor: AppColors.cream,
-                                textStyle: GoogleFonts.poppins(
-                                  fontSize: 16,
-                                  fontWeight: FontWeight.w500,
-                                ),
-                              ),
-                            ),
-                          ),
-                          child: MediaQuery(
-                            data: MediaQuery.of(context).copyWith(
-                              textScaler: const TextScaler.linear(0.9),
-                            ),
-                            child: child!,
-                          ),
-                        );
-                      },
-                    );
-                    if (picked != null) {
-                      setState(() => _notificationTime = picked);
-                    }
-                  },
-                ),
-            ],
+            ),
+            subtitle: Text(
+              'Tornado warnings, severe thunderstorms, and other NWS alerts.',
+              style: GoogleFonts.poppins(
+                fontSize: 12,
+                color: AppColors.cream,
+              ),
+            ),
+            value: _severeAlertsEnabled,
+            activeTrackColor: AppColors.cream.withValues(alpha: 0.3),
+            activeThumbColor: AppColors.cream,
+            inactiveTrackColor: AppColors.cream.withValues(alpha: 0.1),
+            inactiveThumbColor: AppColors.cream.withValues(alpha: 0.4),
+            trackOutlineColor: WidgetStatePropertyAll(
+              AppColors.cream.withValues(alpha: 0.1),
+            ),
+            onChanged: (value) async {
+              if (value) {
+                final granted = await FcmService().requestPermission();
+                if (!granted) return;
+              }
+              setState(() => _severeAlertsEnabled = value);
+            },
           ),
         ),
         const Spacer(flex: 3),
@@ -338,13 +241,11 @@ class _PersonaCard extends StatelessWidget {
         duration: const Duration(milliseconds: 300),
         padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
         decoration: BoxDecoration(
-          color: selected
-              ? AppColors.cream.withValues(alpha: 0.25)
-              : AppColors.cream.withValues(alpha: 0.1),
+          color: AppColors.cream.withValues(alpha: 0.15),
           borderRadius: BorderRadius.circular(12),
           border: Border.all(
             color: selected
-                ? AppColors.cream.withValues(alpha: 0.6)
+                ? AppColors.cream.withValues(alpha: 0.5)
                 : Colors.transparent,
             width: 1.5,
           ),
@@ -355,9 +256,7 @@ class _PersonaCard extends StatelessWidget {
               width: 40,
               height: 40,
               decoration: BoxDecoration(
-                color: selected
-                    ? AppColors.cream.withValues(alpha: 0.3)
-                    : AppColors.cream.withValues(alpha: 0.15),
+                color: AppColors.cream.withValues(alpha: 0.15),
                 shape: BoxShape.circle,
               ),
               child: Center(
@@ -384,21 +283,13 @@ class _PersonaCard extends StatelessWidget {
                       color: AppColors.cream,
                     ),
                   ),
-                  const SizedBox(height: 2),
-                  Text(
-                    persona.introLine,
-                    style: GoogleFonts.poppins(
-                      fontSize: 13,
-                      color: AppColors.cream.withValues(alpha: 0.6),
-                    ),
-                  ),
                 ],
               ),
             ),
             if (selected)
-              Icon(
+              const Icon(
                 Icons.check_circle,
-                color: AppColors.cream.withValues(alpha: 0.8),
+                color: AppColors.cream,
                 size: 24,
               ),
           ],
@@ -410,13 +301,11 @@ class _PersonaCard extends StatelessWidget {
 
 class _ToneOption extends StatelessWidget {
   final String label;
-  final String subtitle;
   final bool selected;
   final VoidCallback onTap;
 
   const _ToneOption({
     required this.label,
-    required this.subtitle,
     required this.selected,
     required this.onTap,
   });
@@ -429,13 +318,11 @@ class _ToneOption extends StatelessWidget {
         duration: const Duration(milliseconds: 200),
         padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
         decoration: BoxDecoration(
-          color: selected
-              ? AppColors.cream.withValues(alpha: 0.25)
-              : AppColors.cream.withValues(alpha: 0.1),
+          color: AppColors.cream.withValues(alpha: 0.15),
           borderRadius: BorderRadius.circular(12),
           border: Border.all(
             color: selected
-                ? AppColors.cream.withValues(alpha: 0.6)
+                ? AppColors.cream.withValues(alpha: 0.5)
                 : Colors.transparent,
             width: 1.5,
           ),
@@ -454,21 +341,13 @@ class _ToneOption extends StatelessWidget {
                       color: AppColors.cream,
                     ),
                   ),
-                  const SizedBox(height: 2),
-                  Text(
-                    subtitle,
-                    style: GoogleFonts.poppins(
-                      fontSize: 13,
-                      color: AppColors.cream.withValues(alpha: 0.6),
-                    ),
-                  ),
                 ],
               ),
             ),
             if (selected)
-              Icon(
+              const Icon(
                 Icons.check_circle,
-                color: AppColors.cream.withValues(alpha: 0.8),
+                color: AppColors.cream,
                 size: 24,
               ),
           ],

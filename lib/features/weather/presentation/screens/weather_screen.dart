@@ -30,6 +30,7 @@ class _WeatherScreenState extends ConsumerState<WeatherScreen>
   late PageController _horizontalController;
   final _verticalPagerKey = GlobalKey<VerticalForecastPagerState>();
   StreamSubscription<void>? _widgetTapSub;
+  Timer? _pollTimer;
   bool _minTimeElapsed = false;
   bool _splashRemoved = false;
   bool _initialRegistrationDone = false;
@@ -45,6 +46,9 @@ class _WeatherScreenState extends ConsumerState<WeatherScreen>
       if (!mounted) return;
       _resetToFirstAndRefresh();
     });
+    _pollTimer = Timer.periodic(const Duration(minutes: 15), (_) {
+      if (mounted) _refreshAll();
+    });
     Future.delayed(const Duration(seconds: 3), () {
       if (mounted) setState(() => _minTimeElapsed = true);
     });
@@ -52,6 +56,7 @@ class _WeatherScreenState extends ConsumerState<WeatherScreen>
 
   @override
   void dispose() {
+    _pollTimer?.cancel();
     WidgetsBinding.instance.removeObserver(this);
     _widgetTapSub?.cancel();
     _horizontalController.removeListener(_onHorizontalPageChanged);
@@ -62,7 +67,7 @@ class _WeatherScreenState extends ConsumerState<WeatherScreen>
   @override
   void didChangeAppLifecycleState(AppLifecycleState state) {
     if (state == AppLifecycleState.resumed) {
-      _resetToFirstAndRefresh();
+      _refreshAll();
     }
   }
 
@@ -248,7 +253,7 @@ class _WeatherScreenState extends ConsumerState<WeatherScreen>
               isDay: bgIsDay,
               temperature: bgTemperature,
             ),
-            // Gradient scrim for text readability (lighter at night)
+            // Dark gradient scrim for text readability against light sky
             Positioned.fill(
               child: DecoratedBox(
                 decoration: BoxDecoration(
@@ -257,14 +262,14 @@ class _WeatherScreenState extends ConsumerState<WeatherScreen>
                     end: Alignment.bottomCenter,
                     colors: bgIsDay
                         ? [
-                            AppColors.cream.withValues(alpha: 0.08),
-                            AppColors.cream.withValues(alpha: 0.02),
-                            AppColors.cream.withValues(alpha: 0.12),
+                            Colors.black.withValues(alpha: 0.15),
+                            Colors.black.withValues(alpha: 0.08),
+                            Colors.black.withValues(alpha: 0.2),
                           ]
                         : [
-                            AppColors.cream.withValues(alpha: 0.05),
-                            AppColors.cream.withValues(alpha: 0.01),
-                            AppColors.cream.withValues(alpha: 0.08),
+                            Colors.black.withValues(alpha: 0.05),
+                            Colors.black.withValues(alpha: 0.01),
+                            Colors.black.withValues(alpha: 0.08),
                           ],
                   ),
                 ),

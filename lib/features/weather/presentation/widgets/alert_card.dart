@@ -24,10 +24,10 @@ class AlertCard extends StatelessWidget {
         width: double.infinity,
         padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
         decoration: BoxDecoration(
-          color: heroColor.withValues(alpha: 0.2),
+          color: primary.severity.color.withValues(alpha: 0.2),
           borderRadius: BorderRadius.circular(16),
           border: Border.all(
-            color: heroColor.withValues(alpha: 0.4),
+            color: primary.severity.color.withValues(alpha: 0.4),
             width: 1,
           ),
         ),

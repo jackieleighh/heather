@@ -19,7 +19,7 @@ class WeatherDetails extends StatelessWidget {
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
       decoration: BoxDecoration(
-        color: AppColors.cream.withValues(alpha: 0.1),
+        color: AppColors.cream.withValues(alpha: 0.22),
         borderRadius: BorderRadius.circular(16),
       ),
       child: Column(
@@ -87,7 +87,7 @@ class _DetailChip extends StatelessWidget {
     return Row(
       mainAxisSize: MainAxisSize.min,
       children: [
-        Icon(icon, size: 14, color: AppColors.cream.withValues(alpha: 0.6)),
+        Icon(icon, size: 14, color: AppColors.cream.withValues(alpha: 0.95)),
         const SizedBox(width: 6),
         Text(label, style: style),
       ],

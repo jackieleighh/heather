@@ -8,7 +8,6 @@ import 'package:shared_preferences/shared_preferences.dart';
 import 'app/app.dart';
 import 'app/router.dart';
 import 'core/services/fcm_service.dart';
-import 'core/services/notification_service.dart';
 import 'core/services/widget_service.dart';
 
 Future<void> main() async {
@@ -16,7 +15,6 @@ Future<void> main() async {
   FlutterNativeSplash.preserve(widgetsBinding: binding);
   await dotenv.load(fileName: '.env');
   await Firebase.initializeApp();
-  await NotificationService().init();
   await FcmService().init();
   await WidgetService.init();
 

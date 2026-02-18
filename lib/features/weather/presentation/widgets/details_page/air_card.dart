@@ -38,7 +38,7 @@ class AirCard extends StatelessWidget {
               Icon(
                 WeatherIcons.smoke,
                 size: 18,
-                color: AppColors.cream.withValues(alpha: 0.8),
+                color: AppColors.cream.withValues(alpha: 0.9),
               ),
               const SizedBox(width: 8),
               Text(
@@ -51,7 +51,7 @@ class AirCard extends StatelessWidget {
               Icon(
                 WeatherIcons.windy,
                 size: 14,
-                color: AppColors.cream.withValues(alpha: 0.85),
+                color: AppColors.cream.withValues(alpha: 0.95),
               ),
               const SizedBox(width: 6),
               Text(
@@ -59,7 +59,7 @@ class AirCard extends StatelessWidget {
                 style: GoogleFonts.poppins(
                   fontSize: 12,
                   fontWeight: FontWeight.w700,
-                  color: AppColors.cream.withValues(alpha: 0.85),
+                  color: AppColors.cream.withValues(alpha: 0.95),
                 ),
               ),
               const SizedBox(width: 8),
@@ -68,7 +68,7 @@ class AirCard extends StatelessWidget {
                 style: GoogleFonts.poppins(
                   fontSize: 12,
                   fontWeight: FontWeight.w500,
-                  color: AppColors.cream.withValues(alpha: 0.65),
+                  color: AppColors.cream.withValues(alpha: 0.95),
                 ),
               ),
             ],
@@ -106,7 +106,7 @@ class AirCard extends StatelessWidget {
                             style: GoogleFonts.poppins(
                               fontSize: 13,
                               fontWeight: FontWeight.w600,
-                              color: AppColors.cream.withValues(alpha: 0.6),
+                              color: AppColors.cream.withValues(alpha: 0.9),
                             ),
                           ),
                         ],

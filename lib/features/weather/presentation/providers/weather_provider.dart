@@ -1,10 +1,8 @@
-import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:freezed_annotation/freezed_annotation.dart';
 
 import '../../../../core/constants/persona.dart';
 import '../../../../core/network/api_client.dart';
-import '../../../../core/services/notification_service.dart';
 import '../../../../core/services/widget_service.dart';
 import '../../data/repositories/quip_repository_impl.dart';
 import '../../data/repositories/weather_repository_impl.dart';
@@ -12,9 +10,19 @@ import '../../data/sources/location_source.dart';
 import '../../data/sources/weather_remote_source.dart';
 import '../../domain/entities/forecast.dart';
 import '../../domain/entities/location_info.dart';
+import '../../domain/entities/temperature_tier.dart';
+import '../../domain/entities/weather_condition.dart';
 import 'settings_provider.dart';
 
 part 'weather_provider.freezed.dart';
+
+typedef _QuipKey = ({WeatherCondition condition, TemperatureTier tier, bool isDay});
+
+_QuipKey _quipKeyFor(Forecast forecast) => (
+  condition: forecast.current.condition,
+  tier: TemperatureTier.fromTemperature(forecast.current.temperature),
+  isDay: forecast.isCurrentlyDay,
+);
 
 // Dependencies
 final weatherRepositoryProvider = Provider<WeatherRepositoryImpl>((ref) {
@@ -50,8 +58,6 @@ final weatherStateProvider =
         quipRepo: ref.watch(quipRepositoryProvider),
         explicit: settings.explicitLanguage,
         persona: settings.persona,
-        notificationsEnabled: settings.notificationsEnabled,
-        notificationTime: settings.notificationTime,
       );
 
       ref.listen<SettingsState>(settingsProvider, (previous, next) {
@@ -61,15 +67,6 @@ final weatherStateProvider =
         if (toneOrPersonaChanged) {
           notifier.updateExplicit(next.explicitLanguage);
           notifier.updatePersona(next.persona);
-        }
-        final notifChanged =
-            previous?.notificationsEnabled != next.notificationsEnabled ||
-            previous?.notificationTime != next.notificationTime;
-        if (notifChanged) {
-          notifier.updateNotificationSettings(
-            enabled: next.notificationsEnabled,
-            time: next.notificationTime,
-          );
         }
       });
 
@@ -81,20 +78,15 @@ class WeatherNotifier extends StateNotifier<WeatherState> {
   final QuipRepositoryImpl quipRepo;
   bool _explicit;
   Persona _persona;
-  bool _notificationsEnabled;
-  TimeOfDay _notificationTime;
+  _QuipKey? _lastQuipKey;
 
   WeatherNotifier({
     required this.weatherRepo,
     required this.quipRepo,
     required bool explicit,
     required Persona persona,
-    required bool notificationsEnabled,
-    required TimeOfDay notificationTime,
   }) : _explicit = explicit,
        _persona = persona,
-       _notificationsEnabled = notificationsEnabled,
-       _notificationTime = notificationTime,
        super(const WeatherState.loading()) {
     loadWeather();
   }
@@ -113,14 +105,16 @@ class WeatherNotifier extends StateNotifier<WeatherState> {
     final current = state;
     current.whenOrNull(
       loaded: (forecast, location, _) {
+        final quip = quipRepo.getLocalQuip(
+          weather: forecast.current,
+          explicit: _explicit,
+          persona: _persona,
+        );
+        _lastQuipKey = _quipKeyFor(forecast);
         state = WeatherState.loaded(
           forecast: forecast,
           location: location,
-          quip: quipRepo.getLocalQuip(
-            weather: forecast.current,
-            explicit: _explicit,
-            persona: _persona,
-          ),
+          quip: quip,
         );
         _pushToWidget();
       },
@@ -135,40 +129,8 @@ class WeatherNotifier extends StateNotifier<WeatherState> {
           location: location,
           quip: quip,
         );
-        _scheduleNotificationIfNeeded();
         _pushToWidget();
       },
-    );
-  }
-
-  void updateNotificationSettings({
-    required bool enabled,
-    required TimeOfDay time,
-  }) {
-    _notificationsEnabled = enabled;
-    _notificationTime = time;
-    _scheduleNotificationIfNeeded();
-  }
-
-  void _scheduleNotificationIfNeeded() {
-    final current = state;
-    if (current is! _Loaded) return;
-
-    if (!_notificationsEnabled) {
-      NotificationService().cancelNotification();
-      return;
-    }
-
-    final today = current.forecast.daily.first;
-    final high = today.temperatureMax.round();
-    final low = today.temperatureMin.round();
-    final description = current.forecast.current.description.toLowerCase();
-    final body = 'H:$high° L:$low° and $description. ${current.quip}';
-    NotificationService().scheduleDailyNotification(
-      hour: _notificationTime.hour,
-      minute: _notificationTime.minute,
-      title: NotificationService.randomTitle(persona: _persona),
-      body: body,
     );
   }
 
@@ -197,13 +159,13 @@ class WeatherNotifier extends StateNotifier<WeatherState> {
         explicit: _explicit,
         persona: _persona,
       );
+      _lastQuipKey = _quipKeyFor(forecast);
       if (!mounted) return;
       state = WeatherState.loaded(
         forecast: forecast,
         location: location,
         quip: quip,
       );
-      _scheduleNotificationIfNeeded();
       _pushToWidget();
     } catch (e) {
       if (!mounted) return;
@@ -218,18 +180,24 @@ class WeatherNotifier extends StateNotifier<WeatherState> {
         latitude: location.latitude,
         longitude: location.longitude,
       );
-      final quip = quipRepo.getLocalQuip(
-        weather: forecast.current,
-        explicit: _explicit,
-        persona: _persona,
-      );
+      final newKey = _quipKeyFor(forecast);
+      final String quip;
+      if (newKey == _lastQuipKey && state is _Loaded) {
+        quip = (state as _Loaded).quip;
+      } else {
+        quip = quipRepo.getLocalQuip(
+          weather: forecast.current,
+          explicit: _explicit,
+          persona: _persona,
+        );
+        _lastQuipKey = newKey;
+      }
       if (!mounted) return false;
       state = WeatherState.loaded(
         forecast: forecast,
         location: location,
         quip: quip,
       );
-      _scheduleNotificationIfNeeded();
       _pushToWidget();
       return true;
     } catch (e) {
@@ -289,6 +257,7 @@ class LocationForecastNotifier extends StateNotifier<LocationForecastState> {
   final double longitude;
   bool _explicit;
   Persona _persona;
+  _QuipKey? _lastQuipKey;
 
   LocationForecastNotifier({
     required this.weatherRepo,
@@ -317,14 +286,13 @@ class LocationForecastNotifier extends StateNotifier<LocationForecastState> {
   void _swapLocalQuip() {
     state.whenOrNull(
       loaded: (forecast, _) {
-        state = LocationForecastState.loaded(
-          forecast: forecast,
-          quip: quipRepo.getLocalQuip(
-            weather: forecast.current,
-            explicit: _explicit,
-            persona: _persona,
-          ),
+        final quip = quipRepo.getLocalQuip(
+          weather: forecast.current,
+          explicit: _explicit,
+          persona: _persona,
         );
+        _lastQuipKey = _quipKeyFor(forecast);
+        state = LocationForecastState.loaded(forecast: forecast, quip: quip);
       },
     );
   }
@@ -349,6 +317,7 @@ class LocationForecastNotifier extends StateNotifier<LocationForecastState> {
         explicit: _explicit,
         persona: _persona,
       );
+      _lastQuipKey = _quipKeyFor(forecast);
       if (!mounted) return;
       state = LocationForecastState.loaded(forecast: forecast, quip: quip);
     } catch (e) {
@@ -363,11 +332,18 @@ class LocationForecastNotifier extends StateNotifier<LocationForecastState> {
         latitude: latitude,
         longitude: longitude,
       );
-      final quip = quipRepo.getLocalQuip(
-        weather: forecast.current,
-        explicit: _explicit,
-        persona: _persona,
-      );
+      final newKey = _quipKeyFor(forecast);
+      final String quip;
+      if (newKey == _lastQuipKey && state is _LocationLoaded) {
+        quip = (state as _LocationLoaded).quip;
+      } else {
+        quip = quipRepo.getLocalQuip(
+          weather: forecast.current,
+          explicit: _explicit,
+          persona: _persona,
+        );
+        _lastQuipKey = newKey;
+      }
       if (!mounted) return false;
       state = LocationForecastState.loaded(forecast: forecast, quip: quip);
       return true;

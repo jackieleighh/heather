@@ -7,7 +7,7 @@ class AppColors {
   static const magenta = Color(0xFFb50060);
   static const vibrantPurple = Color(0xFF8B5CF6);
   static const mustardYellow = Color(0xFFFFD700);
-  static const teal = Color(0xFF018f91);
+  static const teal = Color(0xFF058285);
   static const chartreuse = Color(0xFFA3E635);
   static const orange = Color(0xFFFF8C00);
   static const electricIndigo = Color(0xFF6366F1);
@@ -32,7 +32,7 @@ class AppColors {
   static const fogSilver = Color(0xFFE2E8F0);
 
   // --- Cold tier palette (Stark & Icy) ---
-  static const icyBlue = Color(0xFF38BDF8);
+  static const icyBlue = Color(0xFF68B2DB);
   static const slateBlue = Color(0xFF475569);
   static const frostLavender = Color(0xFFC4B5FD);
   static const coldIndigo = Color(0xFF312E81);
@@ -41,7 +41,7 @@ class AppColors {
   // --- Sunny sky palette (natural, readable) ---
   static const skyPeriwinkle = Color(0xFF8B9DD4);
   static const lavenderBlue = Color(0xFF7C8FCC);
-  static const warmSkyBlue = Color(0xFF4A9BD9);
+  static const warmSkyBlue = Color(0xFF4A8EC2);
   static const sunnyGreen = Color(0xFF5BA847);
   static const goldenAmber = Color(0xFFD4960A);
 

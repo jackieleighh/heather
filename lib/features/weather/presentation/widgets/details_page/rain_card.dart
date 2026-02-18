@@ -42,7 +42,7 @@ class RainCard extends StatelessWidget {
               Icon(
                 WeatherIcons.raindrop,
                 size: compact ? 12 : 18,
-                color: AppColors.cream.withValues(alpha: 0.8),
+                color: AppColors.cream.withValues(alpha: 0.9),
               ),
               SizedBox(width: compact ? 5 : 8),
               Text(
@@ -66,7 +66,7 @@ class RainCard extends StatelessWidget {
                 style: GoogleFonts.poppins(
                   fontSize: compact ? 11 : 14,
                   fontWeight: FontWeight.w600,
-                  color: AppColors.cream.withValues(alpha: 0.6),
+                  color: AppColors.cream.withValues(alpha: 0.9),
                 ),
               ),
             ],
@@ -108,7 +108,7 @@ class _PrecipBarPainter extends CustomPainter {
 
     // Y-axis percentage labels
     final yLabelStyle = TextStyle(
-      color: AppColors.cream.withValues(alpha: 0.7),
+      color: AppColors.cream.withValues(alpha: 0.95),
       fontSize: 10,
       fontWeight: FontWeight.w600,
     );
@@ -124,7 +124,7 @@ class _PrecipBarPainter extends CustomPainter {
       canvas.drawLine(
         Offset(padLeft, y),
         Offset(size.width, y),
-        Paint()..color = AppColors.cream.withValues(alpha: 0.12),
+        Paint()..color = AppColors.cream.withValues(alpha: 0.25),
       );
     }
 
@@ -140,7 +140,7 @@ class _PrecipBarPainter extends CustomPainter {
           Rect.fromLTWH(x + 1, y, barW - 2, barH),
           const Radius.circular(2),
         ),
-        Paint()..color = AppColors.cream.withValues(alpha: 0.35 + 0.45 * pct),
+        Paint()..color = AppColors.cream.withValues(alpha: 0.45 + 0.45 * pct),
       );
     }
 
@@ -162,7 +162,7 @@ class _PrecipBarPainter extends CustomPainter {
             Offset(nowX, 0),
             Offset(nowX, graphH),
             Paint()
-              ..color = AppColors.cream.withValues(alpha: 0.75)
+              ..color = AppColors.cream.withValues(alpha: 0.9)
               ..strokeWidth = 1,
           );
         }
@@ -171,7 +171,7 @@ class _PrecipBarPainter extends CustomPainter {
 
     // Hour labels
     final labelStyle = TextStyle(
-      color: AppColors.cream.withValues(alpha: 0.75),
+      color: AppColors.cream.withValues(alpha: 0.9),
       fontSize: 10,
       fontWeight: FontWeight.w600,
     );

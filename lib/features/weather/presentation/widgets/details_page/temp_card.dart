@@ -39,7 +39,7 @@ class TemperatureCard extends StatelessWidget {
               Icon(
                 WeatherIcons.thermometer,
                 size: compact ? 12 : 18,
-                color: AppColors.cream.withValues(alpha: 0.8),
+                color: AppColors.cream.withValues(alpha: 0.9),
               ),
               SizedBox(width: compact ? 5 : 8),
               Text(
@@ -62,7 +62,7 @@ class TemperatureCard extends StatelessWidget {
                 style: GoogleFonts.poppins(
                   fontSize: compact ? 11 : 14,
                   fontWeight: FontWeight.w600,
-                  color: AppColors.cream.withValues(alpha: 0.6),
+                  color: AppColors.cream.withValues(alpha: 0.9),
                 ),
               ),
             ],
@@ -112,7 +112,7 @@ class _TempLinePainter extends CustomPainter {
 
     // Y-axis temp labels (high, mid, low)
     final yLabelStyle = TextStyle(
-      color: AppColors.cream.withValues(alpha: 0.7),
+      color: AppColors.cream.withValues(alpha: 0.95),
       fontSize: 10,
       fontWeight: FontWeight.w600,
     );
@@ -184,7 +184,7 @@ class _TempLinePainter extends CustomPainter {
 
     // Hour labels
     final labelStyle = TextStyle(
-      color: AppColors.cream.withValues(alpha: 0.8),
+      color: AppColors.cream.withValues(alpha: 0.9),
       fontSize: 10,
       fontWeight: FontWeight.w600,
     );

@@ -62,7 +62,7 @@ class _ConditionsCardState extends State<ConditionsCard> {
               Icon(
                 WeatherIcons.cloud,
                 size: widget.compact ? 12 : 18,
-                color: AppColors.cream.withValues(alpha: 0.8),
+                color: AppColors.cream.withValues(alpha: 0.9),
               ),
               SizedBox(width: widget.compact ? 5 : 8),
               Text(
@@ -123,7 +123,7 @@ class _ConditionsCardState extends State<ConditionsCard> {
                         Text(
                           hourLabel,
                           style: theme.textTheme.bodySmall?.copyWith(
-                            color: AppColors.cream.withValues(alpha: 0.8),
+                            color: AppColors.cream.withValues(alpha: 0.9),
                             fontSize: widget.compact ? 9 : 10,
                           ),
                         ),

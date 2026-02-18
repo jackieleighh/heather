@@ -104,7 +104,7 @@ class _WeeklyForecastPageState extends State<WeeklyForecastPage> {
                           height: targetHeight,
                           clipBehavior: Clip.hardEdge,
                           decoration: BoxDecoration(
-                            color: AppColors.cream.withValues(alpha: 0.1),
+                            color: AppColors.cream.withValues(alpha: 0.22),
                             borderRadius: BorderRadius.circular(20),
                           ),
                           child: Material(
@@ -186,13 +186,13 @@ class _CollapsedDayContent extends StatelessWidget {
               style: GoogleFonts.poppins(
                 fontSize: 13,
                 fontWeight: FontWeight.w500,
-                color: AppColors.cream.withValues(alpha: 0.5),
+                color: AppColors.cream.withValues(alpha: 0.95),
               ),
             ),
             const SizedBox(width: 10),
             Icon(
               conditionIcon(daily.weatherCode),
-              color: AppColors.cream.withValues(alpha: 0.7),
+              color: AppColors.cream.withValues(alpha: 0.95),
               size: 22,
             ),
             const Spacer(),
@@ -207,7 +207,7 @@ class _CollapsedDayContent extends StatelessWidget {
             Icon(
               WeatherIcons.raindrop,
               size: 12,
-              color: AppColors.cream.withValues(alpha: 0.7),
+              color: AppColors.cream.withValues(alpha: 0.95),
             ),
             const SizedBox(width: 2),
             Text(
@@ -231,7 +231,7 @@ class _CollapsedDayContent extends StatelessWidget {
           top: 0,
           child: Icon(
             conditionIcon(daily.weatherCode),
-            color: AppColors.cream.withValues(alpha: 0.7),
+            color: AppColors.cream.withValues(alpha: 0.95),
             size: 80,
           ),
         ),
@@ -257,7 +257,7 @@ class _CollapsedDayContent extends StatelessWidget {
                     style: GoogleFonts.poppins(
                       fontSize: 13,
                       fontWeight: FontWeight.w500,
-                      color: AppColors.cream.withValues(alpha: 0.5),
+                      color: AppColors.cream.withValues(alpha: 0.95),
                     ),
                   ),
                 ],
@@ -279,7 +279,7 @@ class _CollapsedDayContent extends StatelessWidget {
                     child: Icon(
                       WeatherIcons.raindrop,
                       size: 13,
-                      color: AppColors.cream.withValues(alpha: 0.7),
+                      color: AppColors.cream.withValues(alpha: 0.95),
                     ),
                   ),
                   const SizedBox(width: 3),
@@ -297,7 +297,7 @@ class _CollapsedDayContent extends StatelessWidget {
                     child: Icon(
                       moonPhaseIcon(daily.date),
                       size: 16,
-                      color: AppColors.cream.withValues(alpha: 0.7),
+                      color: AppColors.cream.withValues(alpha: 0.95),
                     ),
                   ),
                   const SizedBox(width: 3),
@@ -400,7 +400,7 @@ class _ExpandedDayContentState extends State<_ExpandedDayContent> {
                 style: GoogleFonts.poppins(
                   fontSize: 14,
                   fontWeight: FontWeight.w500,
-                  color: AppColors.cream.withValues(alpha: 0.5),
+                  color: AppColors.cream.withValues(alpha: 0.95),
                 ),
               ),
               const Spacer(),
@@ -414,7 +414,7 @@ class _ExpandedDayContentState extends State<_ExpandedDayContent> {
               const SizedBox(width: 6),
               Icon(
                 conditionIcon(daily.weatherCode),
-                color: AppColors.cream.withValues(alpha: 0.8),
+                color: AppColors.cream.withValues(alpha: 0.9),
                 size: 24,
               ),
             ],
@@ -519,7 +519,7 @@ class _SunMoonCard extends StatelessWidget {
               Icon(
                 WeatherIcons.day_sunny,
                 size: 12,
-                color: AppColors.cream.withValues(alpha: 0.8),
+                color: AppColors.cream.withValues(alpha: 0.9),
               ),
               const SizedBox(width: 5),
               Text(
@@ -537,7 +537,7 @@ class _SunMoonCard extends StatelessWidget {
               Icon(
                 WeatherIcons.sunrise,
                 size: 12,
-                color: AppColors.cream.withValues(alpha: 0.7),
+                color: AppColors.cream.withValues(alpha: 0.95),
               ),
               const SizedBox(width: 4),
               Text(
@@ -551,7 +551,7 @@ class _SunMoonCard extends StatelessWidget {
               Icon(
                 WeatherIcons.sunset,
                 size: 12,
-                color: AppColors.cream.withValues(alpha: 0.7),
+                color: AppColors.cream.withValues(alpha: 0.95),
               ),
               const SizedBox(width: 4),
               Text(
@@ -570,7 +570,7 @@ class _SunMoonCard extends StatelessWidget {
               Icon(
                 moonIcon,
                 size: 14,
-                color: AppColors.cream.withValues(alpha: 0.8),
+                color: AppColors.cream.withValues(alpha: 0.9),
               ),
               const SizedBox(width: 6),
               Text(
@@ -587,7 +587,7 @@ class _SunMoonCard extends StatelessWidget {
                 style: GoogleFonts.poppins(
                   fontSize: 12,
                   fontWeight: FontWeight.w500,
-                  color: AppColors.cream.withValues(alpha: 0.6),
+                  color: AppColors.cream.withValues(alpha: 0.9),
                 ),
               ),
             ],

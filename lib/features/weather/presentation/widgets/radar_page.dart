@@ -194,7 +194,7 @@ class _RadarPageState extends ConsumerState<RadarPage> {
                     : ClipRRect(
                         borderRadius: BorderRadius.circular(16),
                         child: Opacity(
-                          opacity: 0.8,
+                          opacity: 0.75,
                           child: FlutterMap(
                             options: MapOptions(
                               initialCenter: LatLng(
@@ -248,7 +248,7 @@ class _RadarPageState extends ConsumerState<RadarPage> {
                     : ClipRRect(
                         borderRadius: BorderRadius.circular(16),
                         child: Opacity(
-                          opacity: 0.8,
+                          opacity: 0.75,
                           child: FlutterMap(
                             options: MapOptions(
                               initialCenter: LatLng(
@@ -319,7 +319,7 @@ class _RadarPageState extends ConsumerState<RadarPage> {
                         ClipRRect(
                           borderRadius: BorderRadius.circular(16),
                           child: Opacity(
-                            opacity: 0.8,
+                            opacity: 0.75,
                             child: FlutterMap(
                               options: MapOptions(
                                 initialCenter: LatLng(

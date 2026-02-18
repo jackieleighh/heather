@@ -43,7 +43,7 @@ class MoonCard extends StatelessWidget {
               Icon(
                 moonPhaseIcon(now),
                 size: 18,
-                color: AppColors.cream.withValues(alpha: 0.8),
+                color: AppColors.cream.withValues(alpha: 0.9),
               ),
               const SizedBox(width: 8),
               Text(
@@ -69,7 +69,7 @@ class MoonCard extends StatelessWidget {
                     style: GoogleFonts.poppins(
                       fontSize: 12,
                       fontWeight: FontWeight.w500,
-                      color: AppColors.cream.withValues(alpha: 0.6),
+                      color: AppColors.cream.withValues(alpha: 0.9),
                     ),
                   ),
                 ],
@@ -83,7 +83,7 @@ class MoonCard extends StatelessWidget {
                 Icon(
                   firstIcon,
                   size: 13,
-                  color: AppColors.cream.withValues(alpha: 0.7),
+                  color: AppColors.cream.withValues(alpha: 0.95),
                 ),
                 const SizedBox(width: 4),
                 Text(
@@ -96,7 +96,7 @@ class MoonCard extends StatelessWidget {
                 Icon(
                   secondIcon,
                   size: 13,
-                  color: AppColors.cream.withValues(alpha: 0.7),
+                  color: AppColors.cream.withValues(alpha: 0.95),
                 ),
                 const SizedBox(width: 4),
                 Text(
