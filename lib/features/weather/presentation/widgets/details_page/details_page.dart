@@ -53,70 +53,53 @@ class DetailsPage extends ConsumerWidget {
                 ),
               ),
             ),
+            Expanded(child: ConditionsCard(hourly: forecast.hourly)),
+            const SizedBox(height: 6),
             Expanded(
-              child: Padding(
-                padding: const EdgeInsets.only(bottom: 5),
-                child: ConditionsCard(hourly: forecast.hourly),
+              child: TemperatureCard(
+                temps: next24.map((h) => h.temperature).toList(),
+                hours: next24.map((h) => h.time).toList(),
+                now: now,
               ),
             ),
+            const SizedBox(height: 6),
             Expanded(
-              child: Padding(
-                padding: const EdgeInsets.only(bottom: 5),
-                child: TemperatureCard(
-                  temps: next24.map((h) => h.temperature).toList(),
-                  hours: next24.map((h) => h.time).toList(),
-                  now: now,
-                ),
+              child: RainCard(
+                precipitationIn: today.precipitationSum / 25.4,
+                precipitationProbability: next24
+                    .map((h) => h.precipitationProbability)
+                    .reduce((a, b) => a > b ? a : b),
+                hourlyPrecipProb: next24
+                    .map((h) => h.precipitationProbability)
+                    .toList(),
+                hours: next24.map((h) => h.time).toList(),
+                now: now,
               ),
             ),
+            const SizedBox(height: 6),
             Expanded(
-              child: Padding(
-                padding: const EdgeInsets.only(bottom: 5),
-                child: RainCard(
-                  precipitationIn: today.precipitationSum / 25.4,
-                  precipitationProbability: next24
-                      .map((h) => h.precipitationProbability)
-                      .reduce((a, b) => a > b ? a : b),
-                  hourlyPrecipProb: next24
-                      .map((h) => h.precipitationProbability)
-                      .toList(),
-                  hours: next24.map((h) => h.time).toList(),
-                  now: now,
-                ),
+              child: AirCard(
+                aqi: aqi.whenOrNull(data: (v) => v),
+                isLoading: aqi.isLoading,
+                windSpeed: forecast.current.windSpeed,
+                hourlyWind: forecast.hourlyToday
+                    .map((h) => h.windSpeed)
+                    .toList(),
               ),
             ),
+            const SizedBox(height: 6),
             Expanded(
-              child: Padding(
-                padding: const EdgeInsets.only(bottom: 5),
-                child: AirCard(
-                  aqi: aqi.whenOrNull(data: (v) => v),
-                  isLoading: aqi.isLoading,
-                  windSpeed: forecast.current.windSpeed,
-                  hourlyWind: forecast.hourlyToday
-                      .map((h) => h.windSpeed)
-                      .toList(),
-                ),
+              child: SunCard(
+                sunrise: today.sunrise,
+                sunset: today.sunset,
+                uvIndex: forecast.current.uvIndex,
+                hourlyUv: next24.map((h) => h.uvIndex).toList(),
+                hours: next24.map((h) => h.time).toList(),
+                now: now,
               ),
             ),
-            Expanded(
-              child: Padding(
-                padding: const EdgeInsets.only(bottom: 5),
-                child: SunCard(
-                  sunrise: today.sunrise,
-                  sunset: today.sunset,
-                  uvIndex: forecast.current.uvIndex,
-                  hourlyUv: next24.map((h) => h.uvIndex).toList(),
-                  hours: next24.map((h) => h.time).toList(),
-                  now: now,
-                ),
-              ),
-            ),
-            Expanded(
-              child: Padding(
-                padding: const EdgeInsets.only(bottom: 5),
-                child: MoonCard(now: now),
-              ),
-            ),
+            const SizedBox(height: 6),
+            Expanded(child: MoonCard(now: now)),
           ],
         ),
       ),

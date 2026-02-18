@@ -1,4 +1,5 @@
 import 'dart:math';
+import 'dart:ui' as ui;
 
 import 'package:flutter/material.dart';
 
@@ -92,63 +93,80 @@ class _MostlySunnyDayPainter extends CustomPainter {
     final w = size.width;
     final h = size.height;
     final center = Offset(w * 0.8, h * 0.12);
+    final paint = Paint()..style = PaintingStyle.fill;
 
-    // Sun glow
-    final glowPaint = Paint()
-      ..style = PaintingStyle.fill
-      ..maskFilter = const MaskFilter.blur(BlurStyle.normal, 40);
+    // 1. Rays — narrow, distinct beams with varying lengths
+    final rayPaint = Paint()..style = PaintingStyle.fill;
+    const rayAngles = [0.0, 0.55, 1.05, 1.6, 2.15, 2.65, 3.2, 3.75, 4.3, 4.85, 5.35, 5.9];
+    const rayLengths = [300.0, 190.0, 260.0, 160.0, 290.0, 210.0, 270.0, 180.0, 240.0, 200.0, 280.0, 185.0];
+    const raySpreads = [0.055, 0.037, 0.05, 0.032, 0.055, 0.04, 0.05, 0.037, 0.045, 0.037, 0.055, 0.032];
+    const rayAlphas = [0.32, 0.20, 0.28, 0.16, 0.30, 0.22, 0.26, 0.18, 0.24, 0.19, 0.30, 0.15];
+    const innerR = 22.0;
+    final spin = time * 0.08;
 
-    glowPaint.color = Colors.white.withValues(alpha: 0.15 + sin(time) * 0.05);
-    canvas.drawCircle(center, 110, glowPaint);
+    for (var i = 0; i < rayAngles.length; i++) {
+      final angle = rayAngles[i] + spin;
+      final outerR = rayLengths[i];
+      final halfSpread = raySpreads[i];
+      final alpha = rayAlphas[i] + sin(time * 0.5 + i * 0.7).abs() * 0.04;
 
-    glowPaint.color = Colors.white.withValues(alpha: 0.2 + sin(time) * 0.05);
-    canvas.drawCircle(center, 65, glowPaint);
+      final cosA = cos(angle);
+      final sinA = sin(angle);
+      final cosL = cos(angle - halfSpread);
+      final sinL = sin(angle - halfSpread);
+      final cosR = cos(angle + halfSpread);
+      final sinR = sin(angle + halfSpread);
 
-    // Sun rays
-    final rayPaint = Paint()
-      ..style = PaintingStyle.stroke
-      ..strokeWidth = 2.5
-      ..color = Colors.white.withValues(alpha: 0.1);
+      final path = Path()
+        ..moveTo(center.dx + cosL * innerR, center.dy + sinL * innerR)
+        ..lineTo(center.dx + cosL * outerR, center.dy + sinL * outerR)
+        ..lineTo(center.dx + cosR * outerR, center.dy + sinR * outerR)
+        ..lineTo(center.dx + cosR * innerR, center.dy + sinR * innerR)
+        ..close();
 
-    for (var i = 0; i < 10; i++) {
-      final angle = (i * pi / 5) + time * 0.3;
-      final innerRadius = 55.0 + sin(time * 2 + i) * 5;
-      final outerRadius = 120.0 + sin(time + i * 0.5) * 15;
-
-      canvas.drawLine(
-        Offset(
-          center.dx + cos(angle) * innerRadius,
-          center.dy + sin(angle) * innerRadius,
-        ),
-        Offset(
-          center.dx + cos(angle) * outerRadius,
-          center.dy + sin(angle) * outerRadius,
-        ),
-        rayPaint,
-      );
+      rayPaint
+        ..maskFilter = const MaskFilter.blur(BlurStyle.normal, 5)
+        ..shader = ui.Gradient.linear(
+          Offset(center.dx + cosA * innerR, center.dy + sinA * innerR),
+          Offset(center.dx + cosA * outerR, center.dy + sinA * outerR),
+          [
+            Colors.white.withValues(alpha: alpha),
+            Colors.white.withValues(alpha: 0),
+          ],
+        );
+      canvas.drawPath(path, rayPaint);
     }
 
-    // Light cumulus clouds
-    _drawCloud(
-      canvas,
-      center: Offset(w * 0.15 + sin(time * 0.2) * 20, h * 0.18),
-      scale: w * 0.38,
-      alpha: 0.30,
+    // 2. Glow around core
+    paint.shader = ui.Gradient.radial(
+      center,
+      110,
+      [
+        Colors.white.withValues(alpha: 0.45),
+        Colors.white.withValues(alpha: 0.12),
+        Colors.white.withValues(alpha: 0.0),
+      ],
+      [0.0, 0.5, 1.0],
     );
+    canvas.drawRect(Offset.zero & size, paint);
 
-    _drawCloud(
-      canvas,
-      center: Offset(w * 0.58 + sin(time * 0.17 + 1.5) * 18, h * 0.38),
-      scale: w * 0.42,
-      alpha: 0.28,
+    // 3. Bright core
+    paint.shader = ui.Gradient.radial(
+      center,
+      45,
+      [
+        Colors.white.withValues(alpha: 0.95),
+        Colors.white.withValues(alpha: 0.60),
+        Colors.white.withValues(alpha: 0.0),
+      ],
+      [0.0, 0.35, 1.0],
     );
+    canvas.drawRect(Offset.zero & size, paint);
 
-    _drawCloud(
-      canvas,
-      center: Offset(w * 0.30 + sin(time * 0.14 + 3.0) * 15, h * 0.62),
-      scale: w * 0.35,
-      alpha: 0.22,
-    );
+    // Drifting cumulus clouds
+    _drawDriftingCloud(canvas, w, h, time, 0.15, 0.30, w * 0.38, 0.30, 0.06);
+    _drawDriftingCloud(canvas, w, h, time, 0.58, 0.38, w * 0.42, 0.28, 0.04);
+    _drawDriftingCloud(canvas, w, h, time, 0.30, 0.62, w * 0.35, 0.22, 0.05);
   }
 
   @override
@@ -208,31 +226,39 @@ class _MostlySunnyNightPainter extends CustomPainter {
       ..maskFilter = const MaskFilter.blur(BlurStyle.normal, 8);
     canvas.drawCircle(Offset(w * 0.8, h * 0.12), 25, moonPaint);
 
-    // Light cumulus clouds (same as day, kept visible at night)
-    _drawCloud(
-      canvas,
-      center: Offset(w * 0.15 + sin(time * 0.2) * 20, h * 0.18),
-      scale: w * 0.38,
-      alpha: 0.30,
-    );
-
-    _drawCloud(
-      canvas,
-      center: Offset(w * 0.58 + sin(time * 0.17 + 1.5) * 18, h * 0.38),
-      scale: w * 0.42,
-      alpha: 0.28,
-    );
-
-    _drawCloud(
-      canvas,
-      center: Offset(w * 0.30 + sin(time * 0.14 + 3.0) * 15, h * 0.62),
-      scale: w * 0.35,
-      alpha: 0.22,
-    );
+    // Drifting cumulus clouds (same positions as day)
+    _drawDriftingCloud(canvas, w, h, time, 0.15, 0.30, w * 0.38, 0.30, 0.04);
+    _drawDriftingCloud(canvas, w, h, time, 0.58, 0.38, w * 0.42, 0.28, 0.03);
+    _drawDriftingCloud(canvas, w, h, time, 0.30, 0.62, w * 0.35, 0.22, 0.035);
   }
 
   @override
   bool shouldRepaint(covariant CustomPainter oldDelegate) => true;
+}
+
+/// Draws a cloud that drifts continuously across the screen and wraps around.
+void _drawDriftingCloud(
+  Canvas canvas,
+  double w,
+  double h,
+  double time,
+  double startXFrac,
+  double yFrac,
+  double scale,
+  double alpha,
+  double speed,
+) {
+  // Continuous horizontal drift with wrap-around
+  final totalWidth = w + scale * 1.5;
+  final rawX = (startXFrac * w + time * w * speed) % totalWidth - scale * 0.75;
+  final y = h * yFrac + sin(time * 0.3 + startXFrac * 10) * 8;
+
+  _drawCloud(
+    canvas,
+    center: Offset(rawX, y),
+    scale: scale,
+    alpha: alpha,
+  );
 }
 
 void _drawCloud(

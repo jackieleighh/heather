@@ -54,6 +54,9 @@ class _SnowBackgroundState extends State<SnowBackground>
                 colors: widget.gradientColors,
               ),
             ),
+            foregroundDecoration: BoxDecoration(
+              color: Colors.black.withValues(alpha: 0.18),
+            ),
           ),
         );
       },

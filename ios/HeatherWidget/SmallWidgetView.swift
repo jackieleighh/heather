@@ -76,7 +76,7 @@ struct SmallWidgetView: View {
         .containerBackground(for: .widget) {
             ZStack {
                 LinearGradient(
-                    colors: data.gradientColors.map { Color(hex: $0) },
+                    colors: WidgetGradients.smoothed(data.gradientColors).map { Color(hex: $0) },
                     startPoint: .topTrailing,
                     endPoint: .bottomLeading
                 )

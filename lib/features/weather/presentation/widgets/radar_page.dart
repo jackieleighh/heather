@@ -154,7 +154,7 @@ class _RadarPageState extends ConsumerState<RadarPage> {
 
     return SafeArea(
       child: Padding(
-        padding: const EdgeInsets.fromLTRB(26, 0, 26, 30),
+        padding: const EdgeInsets.fromLTRB(16, 0, 26, 16),
         child: Column(
           children: [
             // Header

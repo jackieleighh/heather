@@ -1,4 +1,5 @@
 import 'dart:math';
+import 'dart:ui' as ui;
 
 import 'package:flutter/material.dart';
 
@@ -93,19 +94,75 @@ class _PartlyCloudyDayPainter extends CustomPainter {
     final w = size.width;
     final h = size.height;
 
-    // Sun glow peeking through gaps
+    // Sun rays peeking through gaps
     final sunCenter = Offset(w * 0.75, h * 0.12);
-    final glowPaint = Paint()
-      ..style = PaintingStyle.fill
-      ..maskFilter = const MaskFilter.blur(BlurStyle.normal, 40);
+    final rayPaint = Paint()..style = PaintingStyle.fill;
+    const rayAngles = [0.0, 0.7, 1.3, 2.0, 2.7, 3.3, 4.0, 4.7, 5.3, 5.95];
+    const rayLengths = [200.0, 130.0, 180.0, 120.0, 190.0, 140.0, 170.0, 125.0, 160.0, 135.0];
+    const raySpreads = [0.05, 0.033, 0.045, 0.028, 0.05, 0.035, 0.045, 0.033, 0.04, 0.033];
+    const rayAlphas = [0.25, 0.15, 0.22, 0.13, 0.24, 0.17, 0.20, 0.14, 0.19, 0.15];
+    const innerR = 18.0;
+    final spin = time * 0.08;
 
-    glowPaint.color =
-        Colors.white.withValues(alpha: 0.18 + sin(time * 0.8) * 0.04);
-    canvas.drawCircle(sunCenter, 80, glowPaint);
+    for (var i = 0; i < rayAngles.length; i++) {
+      final angle = rayAngles[i] + spin;
+      final outerR = rayLengths[i];
+      final halfSpread = raySpreads[i];
+      final alpha = rayAlphas[i] + sin(time * 0.5 + i * 0.7).abs() * 0.03;
 
-    glowPaint.color = Colors.white.withValues(alpha: 0.22);
-    glowPaint.maskFilter = const MaskFilter.blur(BlurStyle.normal, 16);
-    canvas.drawCircle(sunCenter, 35, glowPaint);
+      final cosA = cos(angle);
+      final sinA = sin(angle);
+      final cosL = cos(angle - halfSpread);
+      final sinL = sin(angle - halfSpread);
+      final cosR = cos(angle + halfSpread);
+      final sinR = sin(angle + halfSpread);
+
+      final path = Path()
+        ..moveTo(sunCenter.dx + cosL * innerR, sunCenter.dy + sinL * innerR)
+        ..lineTo(sunCenter.dx + cosL * outerR, sunCenter.dy + sinL * outerR)
+        ..lineTo(sunCenter.dx + cosR * outerR, sunCenter.dy + sinR * outerR)
+        ..lineTo(sunCenter.dx + cosR * innerR, sunCenter.dy + sinR * innerR)
+        ..close();
+
+      rayPaint
+        ..maskFilter = const MaskFilter.blur(BlurStyle.normal, 4)
+        ..shader = ui.Gradient.linear(
+          Offset(sunCenter.dx + cosA * innerR, sunCenter.dy + sinA * innerR),
+          Offset(sunCenter.dx + cosA * outerR, sunCenter.dy + sinA * outerR),
+          [
+            Colors.white.withValues(alpha: alpha),
+            Colors.white.withValues(alpha: 0),
+          ],
+        );
+      canvas.drawPath(path, rayPaint);
+    }
+
+    // Glow around core
+    final glowPaint = Paint()..style = PaintingStyle.fill;
+    glowPaint.shader = ui.Gradient.radial(
+      sunCenter,
+      90,
+      [
+        Colors.white.withValues(alpha: 0.38),
+        Colors.white.withValues(alpha: 0.10),
+        Colors.white.withValues(alpha: 0.0),
+      ],
+      [0.0, 0.5, 1.0],
+    );
+    canvas.drawRect(Offset.zero & size, glowPaint);
+
+    // Bright core
+    glowPaint.shader = ui.Gradient.radial(
+      sunCenter,
+      35,
+      [
+        Colors.white.withValues(alpha: 0.90),
+        Colors.white.withValues(alpha: 0.50),
+        Colors.white.withValues(alpha: 0.0),
+      ],
+      [0.0, 0.35, 1.0],
+    );
+    canvas.drawRect(Offset.zero & size, glowPaint);
 
     // Cumulus clouds
     _drawClouds(canvas, w, h, time);
@@ -177,42 +234,37 @@ class _PartlyCloudyNightPainter extends CustomPainter {
   bool shouldRepaint(covariant CustomPainter oldDelegate) => true;
 }
 
+/// Draws a cloud that drifts continuously across the screen and wraps around.
+void _drawDriftingCloud(
+  Canvas canvas,
+  double w,
+  double h,
+  double time,
+  double startXFrac,
+  double yFrac,
+  double scale,
+  double alpha,
+  double speed,
+) {
+  final totalWidth = w + scale * 1.5;
+  final rawX = (startXFrac * w + time * w * speed) % totalWidth - scale * 0.75;
+  final y = h * yFrac + sin(time * 0.3 + startXFrac * 10) * 8;
+
+  _drawCloud(
+    canvas,
+    center: Offset(rawX, y),
+    scale: scale,
+    alpha: alpha,
+  );
+}
+
 /// Draws the 5 cumulus clouds shared by both day and night painters.
 void _drawClouds(Canvas canvas, double w, double h, double time) {
-  _drawCloud(
-    canvas,
-    center: Offset(w * 0.2 + sin(time * 0.18) * 25, h * 0.08),
-    scale: w * 0.40,
-    alpha: 0.35,
-  );
-
-  _drawCloud(
-    canvas,
-    center: Offset(w * 0.65 + sin(time * 0.15 + 1.2) * 20, h * 0.20),
-    scale: w * 0.48,
-    alpha: 0.38,
-  );
-
-  _drawCloud(
-    canvas,
-    center: Offset(w * 0.10 + sin(time * 0.12 + 2.5) * 30, h * 0.38),
-    scale: w * 0.42,
-    alpha: 0.32,
-  );
-
-  _drawCloud(
-    canvas,
-    center: Offset(w * 0.75 + sin(time * 0.14 + 3.8) * 18, h * 0.55),
-    scale: w * 0.36,
-    alpha: 0.28,
-  );
-
-  _drawCloud(
-    canvas,
-    center: Offset(w * 0.40 + sin(time * 0.16 + 5.0) * 22, h * 0.72),
-    scale: w * 0.34,
-    alpha: 0.24,
-  );
+  _drawDriftingCloud(canvas, w, h, time, 0.20, 0.08, w * 0.40, 0.35, 0.05);
+  _drawDriftingCloud(canvas, w, h, time, 0.65, 0.20, w * 0.48, 0.38, 0.035);
+  _drawDriftingCloud(canvas, w, h, time, 0.10, 0.38, w * 0.42, 0.32, 0.06);
+  _drawDriftingCloud(canvas, w, h, time, 0.75, 0.55, w * 0.36, 0.28, 0.045);
+  _drawDriftingCloud(canvas, w, h, time, 0.40, 0.72, w * 0.34, 0.24, 0.055);
 }
 
 /// Draws a single cumulus cloud as a cluster of overlapping soft circles.

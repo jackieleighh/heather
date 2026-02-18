@@ -27,6 +27,12 @@ export const registerDevice = onCall({invoker: "public"}, async (request) => {
     throw new HttpsError("invalid-argument", "fcmToken is required.");
   }
 
+  // Empty locations array = unregister (user disabled alerts)
+  if (Array.isArray(locations) && locations.length === 0) {
+    await db.collection("devices").doc(fcmToken).delete();
+    return {success: true};
+  }
+
   // Support new `locations` array or fall back to legacy single lat/lon
   let resolvedLocations: Array<{
     latitude: number;

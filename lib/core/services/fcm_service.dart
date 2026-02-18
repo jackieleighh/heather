@@ -59,11 +59,13 @@ class FcmService {
       await _createAndroidAlertChannel();
     }
 
-    // Get and log the FCM token
-    final token = await _messaging.getToken();
-    if (kDebugMode) {
-      print('FCM token: $token');
-    }
+    // Fetch FCM token without blocking startup (on iOS this hangs until
+    // notification permission is granted, which happens later in onboarding).
+    _messaging.getToken().then((token) {
+      if (kDebugMode) {
+        print('FCM token: $token');
+      }
+    });
 
     // Listen for token refreshes – re-register with cached locations
     _messaging.onTokenRefresh.listen((newToken) {
@@ -178,6 +180,26 @@ class FcmService {
     } catch (e) {
       if (kDebugMode) {
         print('Failed to register device: $e');
+      }
+    }
+  }
+
+  /// Unregisters the device by sending an empty locations array so the backend
+  /// stops sending push alerts. Called when the user disables severe alerts.
+  Future<void> unregisterDevice() async {
+    final token = await _messaging.getToken();
+    if (token == null) return;
+
+    _lastLocations = null;
+
+    try {
+      await _functions.httpsCallable('registerDevice').call({
+        'fcmToken': token,
+        'locations': <Map<String, dynamic>>[],
+      });
+    } catch (e) {
+      if (kDebugMode) {
+        print('Failed to unregister device: $e');
       }
     }
   }

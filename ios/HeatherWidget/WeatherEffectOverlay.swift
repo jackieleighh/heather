@@ -31,7 +31,7 @@ struct WeatherEffectOverlay: View {
                 drawSunGlow(ctx: ctx, size: size, time: time)
                 drawSunRays(ctx: ctx, size: size, time: time)
             } else {
-                drawStars(ctx: ctx, size: size, time: time, count: Int(30 * scale))
+                drawStars(ctx: ctx, size: size, time: time, count: Int(40 * scale))
                 drawMoonGlow(ctx: ctx, size: size, time: time)
             }
         case "mostlySunny":
@@ -77,17 +77,18 @@ struct WeatherEffectOverlay: View {
         case "heavyRain":
             drawRain(ctx: ctx, size: size, time: time, count: Int(100 * scale), lineLength: 16, strokeWidth: 1.2, maxOpacity: 0.35)
         case "freezingRain":
-            drawFreezingRain(ctx: ctx, size: size, time: time, count: Int(70 * scale))
+            drawFreezingRain(ctx: ctx, size: size, time: time, count: Int(90 * scale))
         case "snow":
             drawSnow(ctx: ctx, size: size, time: time, count: Int(50 * scale))
         case "blizzard":
-            drawSnow(ctx: ctx, size: size, time: time, count: Int(80 * scale), maxSize: 4.0)
+            drawSnow(ctx: ctx, size: size, time: time, count: Int(150 * scale), maxSize: 4.0)
             drawWhiteoutHaze(ctx: ctx, size: size, time: time)
         case "thunderstorm":
-            drawRain(ctx: ctx, size: size, time: time, count: Int(80 * scale), lineLength: 15, strokeWidth: 1.0, maxOpacity: 0.3)
-            drawLightningBolt(ctx: ctx, size: size, time: time)
+            drawRain(ctx: ctx, size: size, time: time, count: Int(120 * scale), lineLength: 15, strokeWidth: 1.0, maxOpacity: 0.3)
+            drawLightningFlash(ctx: ctx, size: size, time: time)
         case "hail":
-            drawHail(ctx: ctx, size: size, time: time, count: Int(50 * scale))
+            drawHail(ctx: ctx, size: size, time: time, count: Int(60 * scale))
+            drawLightningFlash(ctx: ctx, size: size, time: time)
         default:
             break
         }
@@ -538,29 +539,18 @@ struct WeatherEffectOverlay: View {
         )
     }
 
-    // MARK: - Lightning Bolt (Thunderstorm)
+    // MARK: - Lightning Flash (Thunderstorm / Hail)
 
-    private func drawLightningBolt(ctx: GraphicsContext, size: CGSize, time: Double) {
-        // Static zigzag bolt shape in upper portion
-        let startX = size.width * 0.35
-        let startY = size.height * 0.05
+    private func drawLightningFlash(ctx: GraphicsContext, size: CGSize, time: Double) {
+        // Show flash ~40% of the time for variety between widget refreshes
+        let seed = UInt64(time.truncatingRemainder(dividingBy: 10000) * 100)
+        let showFlash = seed % 5 < 2
+        guard showFlash else { return }
 
-        var bolt = Path()
-        bolt.move(to: CGPoint(x: startX, y: startY))
-        bolt.addLine(to: CGPoint(x: startX - 8, y: startY + size.height * 0.12))
-        bolt.addLine(to: CGPoint(x: startX + 4, y: startY + size.height * 0.14))
-        bolt.addLine(to: CGPoint(x: startX - 12, y: startY + size.height * 0.28))
-        bolt.addLine(to: CGPoint(x: startX - 2, y: startY + size.height * 0.22))
-        bolt.addLine(to: CGPoint(x: startX + 6, y: startY + size.height * 0.20))
-        bolt.addLine(to: CGPoint(x: startX, y: startY))
-
-        // Subtle glow bolt
-        var glowCtx = ctx
-        glowCtx.addFilter(.blur(radius: 6))
-        glowCtx.fill(bolt, with: .color(.white.opacity(0.08)))
-
-        // Sharp bolt outline
-        ctx.stroke(bolt, with: .color(.white.opacity(0.12)), lineWidth: 1)
+        ctx.fill(
+            Rectangle().path(in: CGRect(origin: .zero, size: size)),
+            with: .color(.white.opacity(0.08))
+        )
     }
 
     // MARK: - Hail

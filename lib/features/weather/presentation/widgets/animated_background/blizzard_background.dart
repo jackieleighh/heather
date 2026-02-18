@@ -54,6 +54,9 @@ class _BlizzardBackgroundState extends State<BlizzardBackground>
                 colors: widget.gradientColors,
               ),
             ),
+            foregroundDecoration: BoxDecoration(
+              color: Colors.black.withValues(alpha: 0.18),
+            ),
           ),
         );
       },

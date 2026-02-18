@@ -148,7 +148,7 @@ struct MediumWidgetView: View {
         .containerBackground(for: .widget) {
             ZStack {
                 LinearGradient(
-                    colors: data.gradientColors.map { Color(hex: $0) },
+                    colors: WidgetGradients.smoothed(data.gradientColors).map { Color(hex: $0) },
                     startPoint: (data.conditionName == "sunny" || data.conditionName == "mostlySunny") ? .topTrailing : .top,
                     endPoint: (data.conditionName == "sunny" || data.conditionName == "mostlySunny") ? .bottomLeading : .bottom
                 )

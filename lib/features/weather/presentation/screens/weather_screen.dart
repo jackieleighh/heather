@@ -13,6 +13,7 @@ import '../../../../core/services/fcm_service.dart';
 import '../../../../core/services/widget_service.dart';
 import '../providers/alert_provider.dart';
 import '../providers/location_provider.dart';
+import '../providers/settings_provider.dart';
 import '../providers/weather_provider.dart';
 import '../screens/location_search_screen.dart';
 import '../widgets/animated_background/weather_background.dart';
@@ -129,6 +130,12 @@ class _WeatherScreenState extends ConsumerState<WeatherScreen>
     required double gpsLatitude,
     required double gpsLongitude,
   }) {
+    final alertsEnabled = ref.read(settingsProvider).severeAlertsEnabled;
+    if (!alertsEnabled) {
+      FcmService().unregisterDevice();
+      return;
+    }
+
     final savedLocations = ref.read(savedLocationsProvider);
     final locations = <Map<String, dynamic>>[
       {'latitude': gpsLatitude, 'longitude': gpsLongitude, 'name': 'GPS'},
@@ -208,6 +215,15 @@ class _WeatherScreenState extends ConsumerState<WeatherScreen>
               gpsLongitude: location.longitude,
             );
           });
+          // Re-register or unregister when alert setting is toggled
+          ref.listen<SettingsState>(settingsProvider, (prev, next) {
+            if (prev?.severeAlertsEnabled != next.severeAlertsEnabled) {
+              _registerAllLocations(
+                gpsLatitude: location.latitude,
+                gpsLongitude: location.longitude,
+              );
+            }
+          });
         }
 
         final pages = <Widget>[
@@ -253,7 +269,7 @@ class _WeatherScreenState extends ConsumerState<WeatherScreen>
               isDay: bgIsDay,
               temperature: bgTemperature,
             ),
-            // Dark gradient scrim for text readability against light sky
+            // Light scrim for text readability
             Positioned.fill(
               child: DecoratedBox(
                 decoration: BoxDecoration(
@@ -262,14 +278,14 @@ class _WeatherScreenState extends ConsumerState<WeatherScreen>
                     end: Alignment.bottomCenter,
                     colors: bgIsDay
                         ? [
-                            Colors.black.withValues(alpha: 0.15),
-                            Colors.black.withValues(alpha: 0.08),
-                            Colors.black.withValues(alpha: 0.2),
+                            Colors.black.withValues(alpha: 0.03),
+                            Colors.black.withValues(alpha: 0.0),
+                            Colors.black.withValues(alpha: 0.06),
                           ]
                         : [
+                            Colors.black.withValues(alpha: 0.03),
+                            Colors.black.withValues(alpha: 0.0),
                             Colors.black.withValues(alpha: 0.05),
-                            Colors.black.withValues(alpha: 0.01),
-                            Colors.black.withValues(alpha: 0.08),
                           ],
                   ),
                 ),

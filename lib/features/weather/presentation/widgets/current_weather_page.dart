@@ -36,8 +36,7 @@ class CurrentWeatherPage extends ConsumerStatefulWidget {
   });
 
   @override
-  ConsumerState<CurrentWeatherPage> createState() =>
-      _CurrentWeatherPageState();
+  ConsumerState<CurrentWeatherPage> createState() => _CurrentWeatherPageState();
 }
 
 class _CurrentWeatherPageState extends ConsumerState<CurrentWeatherPage> {
@@ -126,7 +125,7 @@ class _CurrentWeatherPageState extends ConsumerState<CurrentWeatherPage> {
               SliverFillRemaining(
                 hasScrollBody: false,
                 child: Padding(
-                  padding: const EdgeInsets.symmetric(horizontal: 28),
+                  padding: const EdgeInsets.fromLTRB(16, 0, 26, 16),
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.end,
                     children: [
@@ -140,7 +139,10 @@ class _CurrentWeatherPageState extends ConsumerState<CurrentWeatherPage> {
                         const SizedBox(height: 10),
                         AlertCard(
                           alerts: alerts,
-                          heroColor: ref.watch(settingsProvider).persona.heroColor,
+                          heroColor: ref
+                              .watch(settingsProvider)
+                              .persona
+                              .heroColor,
                         ),
                       ],
                       const SizedBox(height: 8),

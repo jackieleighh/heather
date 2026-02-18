@@ -5,6 +5,7 @@ import 'package:heather/features/weather/presentation/widgets/logo_overlay.dart'
 
 import '../../../../core/constants/app_colors.dart';
 import '../../../../core/constants/persona.dart';
+import '../../../../core/services/fcm_service.dart';
 import '../providers/location_provider.dart';
 import '../providers/settings_provider.dart';
 
@@ -273,7 +274,12 @@ class SettingsScreen extends ConsumerWidget {
                                 trackOutlineColor: WidgetStatePropertyAll(
                                   AppColors.cream.withValues(alpha: 0.1),
                                 ),
-                                onChanged: (value) {
+                                onChanged: (value) async {
+                                  if (value) {
+                                    final granted =
+                                        await FcmService().requestPermission();
+                                    if (!granted) return;
+                                  }
                                   ref
                                       .read(settingsProvider.notifier)
                                       .setSevereAlertsEnabled(value);

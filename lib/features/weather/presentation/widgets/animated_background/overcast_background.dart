@@ -2,6 +2,34 @@ import 'dart:math';
 
 import 'package:flutter/material.dart';
 
+class _Blob {
+  final double dx;
+  final double dy;
+  final double radius;
+
+  const _Blob({required this.dx, required this.dy, required this.radius});
+}
+
+class _CloudMass {
+  final double startX;
+  final double yFraction;
+  final double speed;
+  final double scale;
+  final double alpha;
+  final double wobblePhase;
+  final List<_Blob> blobs;
+
+  const _CloudMass({
+    required this.startX,
+    required this.yFraction,
+    required this.speed,
+    required this.scale,
+    required this.alpha,
+    required this.wobblePhase,
+    required this.blobs,
+  });
+}
+
 class OvercastBackground extends StatefulWidget {
   final List<Color> gradientColors;
 
@@ -15,10 +43,13 @@ class _OvercastBackgroundState extends State<OvercastBackground>
     with SingleTickerProviderStateMixin {
   late final AnimationController _controller;
   double _time = 0;
+  final Random _random = Random();
+  late final List<_CloudMass> _masses;
 
   @override
   void initState() {
     super.initState();
+    _masses = _generateMasses();
     _controller = AnimationController(
       vsync: this,
       duration: const Duration(seconds: 1),
@@ -26,6 +57,39 @@ class _OvercastBackgroundState extends State<OvercastBackground>
     _controller.addListener(() {
       _time += 0.004;
     });
+  }
+
+  List<_CloudMass> _generateMasses() {
+    const params = [
+      // (yFraction, scale, speed, alpha)
+      (0.08, 0.55, 0.14, 0.18),
+      (0.22, 0.50, 0.18, 0.16),
+      (0.38, 0.48, 0.26, 0.14),
+      (0.52, 0.52, 0.16, 0.13),
+      (0.66, 0.45, 0.28, 0.12),
+      (0.80, 0.42, 0.20, 0.10),
+    ];
+
+    return params.map((p) {
+      final (yFrac, scale, speed, alpha) = p;
+      final blobCount = 7 + _random.nextInt(6);
+      final blobs = List.generate(blobCount, (_) {
+        return _Blob(
+          dx: (_random.nextDouble() - 0.5) * 1.4,
+          dy: (_random.nextDouble() - 0.5) * 0.6,
+          radius: 0.14 + _random.nextDouble() * 0.20,
+        );
+      });
+      return _CloudMass(
+        startX: _random.nextDouble() * 2.2,
+        yFraction: yFrac,
+        speed: speed,
+        scale: scale,
+        alpha: alpha,
+        wobblePhase: _random.nextDouble() * pi * 2,
+        blobs: blobs,
+      );
+    }).toList();
   }
 
   @override
@@ -40,7 +104,7 @@ class _OvercastBackgroundState extends State<OvercastBackground>
       animation: _controller,
       builder: (context, child) {
         return CustomPaint(
-          foregroundPainter: _OvercastPainter(_time),
+          foregroundPainter: _OvercastPainter(_time, _masses),
           size: Size.infinite,
           child: Container(
             decoration: BoxDecoration(
@@ -59,8 +123,9 @@ class _OvercastBackgroundState extends State<OvercastBackground>
 
 class _OvercastPainter extends CustomPainter {
   final double time;
+  final List<_CloudMass> masses;
 
-  _OvercastPainter(this.time);
+  _OvercastPainter(this.time, this.masses);
 
   @override
   void paint(Canvas canvas, Size size) {
@@ -75,135 +140,36 @@ class _OvercastPainter extends CustomPainter {
         Colors.white.withValues(alpha: 0.15 + sin(time * 0.4) * 0.03);
     canvas.drawCircle(Offset(w * 0.7, h * 0.08), 90, glowPaint);
 
-    // Cloud sheet masses — broad filled ovals with heavy blur
-    _drawCloudSheets(canvas, w, h);
+    // Drifting cloud masses
+    final paint = Paint()..style = PaintingStyle.fill;
 
-    // Cirrus streaks — thin curved strokes
-    final cirrusPaint = Paint()
-      ..style = PaintingStyle.stroke
-      ..strokeCap = StrokeCap.round
-      ..maskFilter = const MaskFilter.blur(BlurStyle.normal, 8);
+    for (final mass in masses) {
+      final raw = mass.startX + time * mass.speed;
+      final xNorm = (raw % 2.2) - 0.6;
+      final centerX = xNorm * w;
+      final wobble = sin(time * 0.5 + mass.wobblePhase) * h * 0.012;
+      final centerY = h * mass.yFraction + wobble;
+      final scale = w * mass.scale;
 
-    // Upper sky — main cirrus band
-    _drawCirrus(canvas, cirrusPaint,
-      start: Offset(w * -0.1 + sin(time * 0.10) * 15, h * 0.06),
-      control: Offset(w * 0.35, h * 0.04 + sin(time * 0.12) * 5),
-      end: Offset(w * 0.85 + sin(time * 0.08) * 20, h * 0.10),
-      strokeWidth: 3.0, alpha: 0.12,
-    );
-    _drawCirrus(canvas, cirrusPaint,
-      start: Offset(w * 0.05 + sin(time * 0.09 + 1) * 18, h * 0.11),
-      control: Offset(w * 0.50, h * 0.08 + sin(time * 0.11 + 1) * 6),
-      end: Offset(w * 1.1 + sin(time * 0.07 + 1) * 15, h * 0.13),
-      strokeWidth: 2.5, alpha: 0.10,
-    );
-    _drawCirrus(canvas, cirrusPaint,
-      start: Offset(w * 0.15 + sin(time * 0.12 + 2) * 20, h * 0.16),
-      control: Offset(w * 0.55, h * 0.13 + sin(time * 0.10 + 2) * 7),
-      end: Offset(w * 1.05 + sin(time * 0.09 + 2) * 18, h * 0.19),
-      strokeWidth: 4.0, alpha: 0.14,
-    );
+      paint.maskFilter = MaskFilter.blur(BlurStyle.normal, scale * 0.12);
 
-    // Mid-upper — lighter, thinner
-    _drawCirrus(canvas, cirrusPaint,
-      start: Offset(w * -0.05 + sin(time * 0.08 + 3) * 22, h * 0.24),
-      control: Offset(w * 0.40, h * 0.21 + sin(time * 0.13 + 3) * 5),
-      end: Offset(w * 0.90 + sin(time * 0.10 + 3) * 15, h * 0.27),
-      strokeWidth: 2.0, alpha: 0.09,
-    );
-    _drawCirrus(canvas, cirrusPaint,
-      start: Offset(w * 0.20 + sin(time * 0.11 + 4) * 16, h * 0.30),
-      control: Offset(w * 0.60, h * 0.27 + sin(time * 0.09 + 4) * 6),
-      end: Offset(w * 1.1 + sin(time * 0.07 + 4) * 20, h * 0.32),
-      strokeWidth: 3.0, alpha: 0.11,
-    );
+      for (final blob in mass.blobs) {
+        paint.color = Colors.white.withValues(alpha: mass.alpha);
+        canvas.drawCircle(
+          Offset(centerX + blob.dx * scale, centerY + blob.dy * scale),
+          blob.radius * scale,
+          paint,
+        );
+      }
+    }
 
-    // Center — sparse
-    _drawCirrus(canvas, cirrusPaint,
-      start: Offset(w * 0.10 + sin(time * 0.10 + 5) * 18, h * 0.40),
-      control: Offset(w * 0.45, h * 0.37 + sin(time * 0.11 + 5) * 4),
-      end: Offset(w * 0.95 + sin(time * 0.08 + 5) * 15, h * 0.42),
-      strokeWidth: 2.0, alpha: 0.07,
-    );
-
-    // Lower-mid — faint
-    _drawCirrus(canvas, cirrusPaint,
-      start: Offset(w * -0.05 + sin(time * 0.09 + 6) * 20, h * 0.55),
-      control: Offset(w * 0.35, h * 0.52 + sin(time * 0.12 + 6) * 5),
-      end: Offset(w * 0.80 + sin(time * 0.07 + 6) * 18, h * 0.57),
-      strokeWidth: 2.5, alpha: 0.08,
-    );
-    _drawCirrus(canvas, cirrusPaint,
-      start: Offset(w * 0.25 + sin(time * 0.11 + 7) * 15, h * 0.65),
-      control: Offset(w * 0.55, h * 0.62 + sin(time * 0.10 + 7) * 6),
-      end: Offset(w * 1.05 + sin(time * 0.08 + 7) * 20, h * 0.67),
-      strokeWidth: 2.0, alpha: 0.06,
-    );
-
-    // Low — barely there
-    _drawCirrus(canvas, cirrusPaint,
-      start: Offset(w * 0.05 + sin(time * 0.10 + 8) * 18, h * 0.78),
-      control: Offset(w * 0.40, h * 0.75 + sin(time * 0.09 + 8) * 5),
-      end: Offset(w * 0.90 + sin(time * 0.07 + 8) * 15, h * 0.80),
-      strokeWidth: 1.5, alpha: 0.05,
-    );
-
-    // Mare's tail hooks — shorter, curvier
-    _drawCirrus(canvas, cirrusPaint,
-      start: Offset(w * 0.55 + sin(time * 0.13 + 9) * 12, h * 0.09),
-      control: Offset(w * 0.68, h * 0.05 + sin(time * 0.11 + 9) * 4),
-      end: Offset(w * 0.78 + sin(time * 0.09 + 9) * 10, h * 0.12),
-      strokeWidth: 1.5, alpha: 0.08,
-    );
-    _drawCirrus(canvas, cirrusPaint,
-      start: Offset(w * 0.30 + sin(time * 0.12 + 10) * 14, h * 0.22),
-      control: Offset(w * 0.42, h * 0.18 + sin(time * 0.10 + 10) * 5),
-      end: Offset(w * 0.50 + sin(time * 0.08 + 10) * 12, h * 0.25),
-      strokeWidth: 1.5, alpha: 0.07,
-    );
-
-    // Haze overlay — ties the scene together
+    // Haze overlay
     _drawHaze(canvas, w, h);
   }
 
-  /// 8 broad filled ovals with heavy blur at different heights.
-  /// Top-heavy distribution (denser/more opaque higher up).
-  void _drawCloudSheets(Canvas canvas, double w, double h) {
-    final paint = Paint()..style = PaintingStyle.fill;
-
-    // Each sheet: (yFraction, widthFactor, heightFactor, blur, alpha, driftPhase)
-    const sheets = [
-      (0.05, 1.8, 0.18, 90.0, 0.10, 0.0),
-      (0.12, 1.6, 0.16, 85.0, 0.09, 1.2),
-      (0.20, 1.7, 0.20, 80.0, 0.08, 2.4),
-      (0.30, 1.5, 0.15, 75.0, 0.07, 3.6),
-      (0.42, 1.6, 0.18, 80.0, 0.06, 4.8),
-      (0.55, 1.4, 0.14, 70.0, 0.05, 6.0),
-      (0.68, 1.5, 0.16, 75.0, 0.04, 7.2),
-      (0.80, 1.4, 0.14, 70.0, 0.04, 8.4),
-    ];
-
-    for (final (yFrac, wFactor, hFactor, blur, alpha, phase) in sheets) {
-      final drift = sin(time * 0.08 + phase) * w * 0.03;
-      paint
-        ..color = Colors.white.withValues(alpha: alpha)
-        ..maskFilter = MaskFilter.blur(BlurStyle.normal, blur);
-      canvas.drawOval(
-        Rect.fromCenter(
-          center: Offset(w * 0.5 + drift, h * yFrac),
-          width: w * wFactor,
-          height: h * hFactor,
-        ),
-        paint,
-      );
-    }
-  }
-
-  /// Two very wide, subtle blurred ovals spanning the screen.
   void _drawHaze(Canvas canvas, double w, double h) {
     final paint = Paint()..style = PaintingStyle.fill;
 
-    // Upper haze
     paint
       ..color = Colors.white.withValues(
         alpha: 0.03 + sin(time * 0.15) * 0.01,
@@ -218,7 +184,6 @@ class _OvercastPainter extends CustomPainter {
       paint,
     );
 
-    // Lower haze
     paint.color = Colors.white.withValues(
       alpha: 0.02 + sin(time * 0.12 + 2.0) * 0.01,
     );
@@ -230,24 +195,6 @@ class _OvercastPainter extends CustomPainter {
       ),
       paint,
     );
-  }
-
-  void _drawCirrus(
-    Canvas canvas,
-    Paint paint, {
-    required Offset start,
-    required Offset control,
-    required Offset end,
-    required double strokeWidth,
-    required double alpha,
-  }) {
-    paint
-      ..strokeWidth = strokeWidth
-      ..color = Colors.white.withValues(alpha: alpha);
-    final path = Path()
-      ..moveTo(start.dx, start.dy)
-      ..quadraticBezierTo(control.dx, control.dy, end.dx, end.dy);
-    canvas.drawPath(path, paint);
   }
 
   @override

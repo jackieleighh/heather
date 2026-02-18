@@ -11,6 +11,46 @@ struct WidgetGradients {
         return nightGradients[resolved]?[tier] ?? nightGradients["overcast"]![tier]
     }
 
+    /// Interpolates additional color stops between each pair for smoother gradients.
+    static func smoothed(_ hexColors: [String]) -> [String] {
+        guard hexColors.count >= 2 else { return hexColors }
+        let stepsPerSegment = 8
+        var result: [String] = []
+        for i in 0..<hexColors.count - 1 {
+            let c1 = parseRGB(hexColors[i])
+            let c2 = parseRGB(hexColors[i + 1])
+            for s in 0...stepsPerSegment {
+                if i > 0 && s == 0 { continue }
+                let linear = Double(s) / Double(stepsPerSegment)
+                // Ease-in-out (smoothstep) for perceptually even transitions
+                let t = linear * linear * (3.0 - 2.0 * linear)
+                // Interpolate in linear-light (gamma 2.2)
+                let r = pow(pow(c1.r, 2.2) * (1 - t) + pow(c2.r, 2.2) * t, 1 / 2.2)
+                let g = pow(pow(c1.g, 2.2) * (1 - t) + pow(c2.g, 2.2) * t, 1 / 2.2)
+                let b = pow(pow(c1.b, 2.2) * (1 - t) + pow(c2.b, 2.2) * t, 1 / 2.2)
+                result.append(String(format: "#FF%02X%02X%02X",
+                    min(max(Int(r * 255), 0), 255),
+                    min(max(Int(g * 255), 0), 255),
+                    min(max(Int(b * 255), 0), 255)))
+            }
+        }
+        return result
+    }
+
+    private static func parseRGB(_ hex: String) -> (r: Double, g: Double, b: Double) {
+        let clean = hex.hasPrefix("#") ? String(hex.dropFirst()) : hex
+        var value: UInt64 = 0
+        Scanner(string: clean).scanHexInt64(&value)
+        if clean.count == 8 { // AARRGGBB
+            return (Double((value >> 16) & 0xFF) / 255.0,
+                    Double((value >> 8) & 0xFF) / 255.0,
+                    Double(value & 0xFF) / 255.0)
+        }
+        return (Double((value >> 16) & 0xFF) / 255.0,
+                Double((value >> 8) & 0xFF) / 255.0,
+                Double(value & 0xFF) / 255.0)
+    }
+
     // MARK: - Temperature Tiers
 
     /// 0=singleDigits, 1=freezing, 2=jacket, 3=flannel, 4=shorts, 5=scorcher
@@ -41,9 +81,9 @@ struct WidgetGradients {
     private static let dayGradients: [String: [[String]]] = [
         "sunny": [
             ["#FF8B9DD4", "#FFC4B5FD", "#FF2563EB"],
-            ["#FF8B9DD4", "#FF7C8FCC", "#FF38BDF8"],
-            ["#FF4A9BD9", "#FF38BDF8", "#FF018F91"],
-            ["#FF4A9BD9", "#FF5BA847", "#FFD4960A"],
+            ["#FF8B9DD4", "#FF7C8FCC", "#FF68B2DB"],
+            ["#FF4A8EC2", "#FF68B2DB", "#FF058285"],
+            ["#FF4A8EC2", "#FF5BA847", "#FFD4960A"],
             ["#FF5BA847", "#FFD4960A", "#FFFF8C00"],
             ["#FFFBBF24", "#FFFF8C00", "#FFF472B6"],
         ],
@@ -58,18 +98,18 @@ struct WidgetGradients {
         "drizzle": [
             ["#FF7C8FCC", "#FF8B9DD4", "#FF312E81"],
             ["#FF7C8FCC", "#FF94A3B8", "#FF475569"],
-            ["#FF4A9BD9", "#FF475569", "#FF0C4A5E"],
-            ["#FF4A9BD9", "#FF6E8A5E", "#FF9C8535"],
-            ["#FF4A9BD9", "#FF9C8535", "#FFC2410C"],
-            ["#FF4A9BD9", "#FFC2410C", "#FF831843"],
+            ["#FF4A8EC2", "#FF475569", "#FF0C4A5E"],
+            ["#FF4A8EC2", "#FF6E8A5E", "#FF9C8535"],
+            ["#FF4A8EC2", "#FF9C8535", "#FFC2410C"],
+            ["#FF4A8EC2", "#FFC2410C", "#FF831843"],
         ],
         "rain": [
             ["#FF7C8FCC", "#FF8B9DD4", "#FF312E81"],
             ["#FF7C8FCC", "#FF94A3B8", "#FF475569"],
-            ["#FF4A9BD9", "#FF475569", "#FF0C4A5E"],
-            ["#FF4A9BD9", "#FF6E8A5E", "#FF9C8535"],
-            ["#FF4A9BD9", "#FF9C8535", "#FFC2410C"],
-            ["#FF4A9BD9", "#FFC2410C", "#FF831843"],
+            ["#FF4A8EC2", "#FF475569", "#FF0C4A5E"],
+            ["#FF4A8EC2", "#FF6E8A5E", "#FF9C8535"],
+            ["#FF4A8EC2", "#FF9C8535", "#FFC2410C"],
+            ["#FF4A8EC2", "#FFC2410C", "#FF831843"],
         ],
         "heavyRain": [
             ["#FF312E81", "#FF2563EB", "#FF475569"],
@@ -104,20 +144,20 @@ struct WidgetGradients {
             ["#FFE2E8F0", "#FF8B9DD4", "#FF475569"],
         ],
         "thunderstorm": [
-            ["#FF1E1B4B", "#FF6366F1", "#FF8B5CF6"],
-            ["#FF0F0716", "#FF2563EB", "#FFA3E635"],
-            ["#FF050308", "#FF2E1065", "#FF6366F1"],
-            ["#FF050308", "#FF1E1B4B", "#FF8B5CF6"],
-            ["#FF050308", "#FF2E1065", "#FF2563EB"],
-            ["#FF050308", "#FF831843", "#FF8B5CF6"],
+            ["#FF312E81", "#FF2563EB", "#FF475569"],
+            ["#FF312E81", "#FF475569", "#FF7C8FCC"],
+            ["#FF312E81", "#FF475569", "#FF0C4A5E"],
+            ["#FF312E81", "#FF6E8A5E", "#FF9C8535"],
+            ["#FF312E81", "#FF9C8535", "#FFC2410C"],
+            ["#FF312E81", "#FFC2410C", "#FF831843"],
         ],
         "hail": [
-            ["#FF94A3B8", "#FF475569", "#FF0C4A5E"],
-            ["#FF475569", "#FF0C4A5E", "#FFE2E8F0"],
-            ["#FF0F0716", "#FF0C4A5E", "#FF94A3B8"],
-            ["#FF1E1B4B", "#FF2E1065", "#FF0C4A5E"],
-            ["#FF050308", "#FF0C4A5E", "#FFA3E635"],
-            ["#FF050308", "#FF831843", "#FF0C4A5E"],
+            ["#FF312E81", "#FF2563EB", "#FF475569"],
+            ["#FF312E81", "#FF475569", "#FF7C8FCC"],
+            ["#FF312E81", "#FF475569", "#FF0C4A5E"],
+            ["#FF312E81", "#FF6E8A5E", "#FF9C8535"],
+            ["#FF312E81", "#FF9C8535", "#FFC2410C"],
+            ["#FF312E81", "#FFC2410C", "#FF831843"],
         ],
     ]
 
@@ -130,7 +170,7 @@ struct WidgetGradients {
             ["#FF1E1B4B", "#FF2E1065", "#FF312E81"],
             ["#FF1E1B4B", "#FF2E1065", "#FF0C4A5E"],
             ["#FF1E1B4B", "#FF2E1065", "#FF831843"],
-            ["#FF1E1B4B", "#FF831843", "#FFB91C1C"],
+            ["#FF1E1B4B", "#FF2E1065", "#FFB91C1C"],
         ],
         "overcast": [
             ["#FF0F0716", "#FF1E1B4B", "#FF1A2744"],
@@ -141,68 +181,68 @@ struct WidgetGradients {
             ["#FF0F0716", "#FF831843", "#FFB91C1C"],
         ],
         "drizzle": [
-            ["#FF050308", "#FF1E1B4B", "#FF1A2744"],  // singleDigits
-            ["#FF050308", "#FF1E1B4B", "#FF475569"],  // freezing
-            ["#FF050308", "#FF1E1B4B", "#FF312E81"],  // jacketWeather
-            ["#FF050308", "#FF1E1B4B", "#FF0C4A5E"],  // flannelWeather
-            ["#FF050308", "#FF2E1065", "#FF831843"],  // shortsWeather
-            ["#FF050308", "#FF831843", "#FFB91C1C"],  // scorcher
+            ["#FF050308", "#FF1E1B4B", "#FF1A2744"],
+            ["#FF050308", "#FF1E1B4B", "#FF475569"],
+            ["#FF050308", "#FF1E1B4B", "#FF312E81"],
+            ["#FF050308", "#FF1E1B4B", "#FF0C4A5E"],
+            ["#FF050308", "#FF2E1065", "#FF831843"],
+            ["#FF050308", "#FF831843", "#FFB91C1C"],
         ],
         "rain": [
-            ["#FF050308", "#FF1E1B4B", "#FF1A2744"],  // singleDigits
-            ["#FF050308", "#FF1E1B4B", "#FF475569"],  // freezing
-            ["#FF050308", "#FF1E1B4B", "#FF312E81"],  // jacketWeather
-            ["#FF050308", "#FF1E1B4B", "#FF0C4A5E"],  // flannelWeather
-            ["#FF050308", "#FF2E1065", "#FF831843"],  // shortsWeather
-            ["#FF050308", "#FF831843", "#FFB91C1C"],  // scorcher
+            ["#FF050308", "#FF1E1B4B", "#FF1A2744"],
+            ["#FF050308", "#FF1E1B4B", "#FF475569"],
+            ["#FF050308", "#FF1E1B4B", "#FF312E81"],
+            ["#FF050308", "#FF1E1B4B", "#FF0C4A5E"],
+            ["#FF050308", "#FF2E1065", "#FF831843"],
+            ["#FF050308", "#FF831843", "#FFB91C1C"],
         ],
         "heavyRain": [
-            ["#FF050308", "#FF0A0F1E", "#FF475569"],  // singleDigits
-            ["#FF050308", "#FF0A0F1E", "#FF312E81"],  // freezing
-            ["#FF050308", "#FF0A0F1E", "#FF6366F1"],  // jacketWeather
-            ["#FF050308", "#FF0A0F1E", "#FF018F91"],  // flannelWeather
-            ["#FF050308", "#FF0F0716", "#FFB50060"],  // shortsWeather
-            ["#FF050308", "#FF831843", "#FFF97316"],  // scorcher
+            ["#FF050308", "#FF0A0F1E", "#FF475569"],
+            ["#FF050308", "#FF0A0F1E", "#FF312E81"],
+            ["#FF050308", "#FF0A0F1E", "#FF6366F1"],
+            ["#FF050308", "#FF0A0F1E", "#FF058285"],
+            ["#FF050308", "#FF0F0716", "#FFB50060"],
+            ["#FF050308", "#FF831843", "#FFF97316"],
         ],
         "freezingRain": [
-            ["#FF050308", "#FF0A0F1E", "#FF475569"],  // singleDigits
-            ["#FF050308", "#FF0A0F1E", "#FF312E81"],  // freezing
-            ["#FF050308", "#FF0A0F1E", "#FF6366F1"],  // jacketWeather
-            ["#FF050308", "#FF0A0F1E", "#FF018F91"],  // flannelWeather
-            ["#FF050308", "#FF0F0716", "#FFB50060"],  // shortsWeather
-            ["#FF050308", "#FF831843", "#FFF97316"],  // scorcher
+            ["#FF050308", "#FF0A0F1E", "#FF475569"],
+            ["#FF050308", "#FF0A0F1E", "#FF312E81"],
+            ["#FF050308", "#FF0A0F1E", "#FF6366F1"],
+            ["#FF050308", "#FF0A0F1E", "#FF058285"],
+            ["#FF050308", "#FF0F0716", "#FFB50060"],
+            ["#FF050308", "#FF831843", "#FFF97316"],
         ],
         "snow": [
-            ["#FF0F0716", "#FF1E1B4B", "#FFEDE9FE"],  // singleDigits
-            ["#FF0F0716", "#FF1E1B4B", "#FFC4B5FD"],  // freezing
-            ["#FF0F0716", "#FF1E1B4B", "#FFE2E8F0"],  // jacketWeather
-            ["#FF0F0716", "#FF1E1B4B", "#FF94A3B8"],  // flannelWeather
-            ["#FF0F0716", "#FF2E1065", "#FF831843"],  // shortsWeather
-            ["#FF0F0716", "#FF831843", "#FFB91C1C"],  // scorcher
+            ["#FF0F0716", "#FF1E1B4B", "#FFEDE9FE"],
+            ["#FF0F0716", "#FF1E1B4B", "#FFC4B5FD"],
+            ["#FF0F0716", "#FF1E1B4B", "#FFE2E8F0"],
+            ["#FF0F0716", "#FF1E1B4B", "#FF94A3B8"],
+            ["#FF0F0716", "#FF2E1065", "#FF831843"],
+            ["#FF0F0716", "#FF831843", "#FFB91C1C"],
         ],
         "blizzard": [
-            ["#FF050308", "#FF475569", "#FFEDE9FE"],  // singleDigits
-            ["#FF050308", "#FF475569", "#FFC4B5FD"],  // freezing
-            ["#FF050308", "#FF475569", "#FFE2E8F0"],  // jacketWeather
-            ["#FF050308", "#FF475569", "#FFFAFAFA"],  // flannelWeather
-            ["#FF050308", "#FF2E1065", "#FF831843"],  // shortsWeather
-            ["#FF050308", "#FF831843", "#FFB91C1C"],  // scorcher
+            ["#FF050308", "#FF475569", "#FFEDE9FE"],
+            ["#FF050308", "#FF475569", "#FFC4B5FD"],
+            ["#FF050308", "#FF475569", "#FFE2E8F0"],
+            ["#FF050308", "#FF475569", "#FFFAFAFA"],
+            ["#FF050308", "#FF2E1065", "#FF831843"],
+            ["#FF050308", "#FF831843", "#FFB91C1C"],
         ],
         "thunderstorm": [
-            ["#FF050308", "#FF1E1B4B", "#FF2563EB"],
-            ["#FF050308", "#FF0F0716", "#FF6366F1"],
-            ["#FF050308", "#FF2E1065", "#FF8B5CF6"],
-            ["#FF050308", "#FF1E1B4B", "#FFE6007A"],
-            ["#FF050308", "#FF0F0716", "#FFA3E635"],
-            ["#FF050308", "#FF831843", "#FFE6007A"],
+            ["#FF050308", "#FF0A0F1E", "#FF475569"],
+            ["#FF050308", "#FF0A0F1E", "#FF312E81"],
+            ["#FF050308", "#FF0A0F1E", "#FF6366F1"],
+            ["#FF050308", "#FF0A0F1E", "#FF058285"],
+            ["#FF050308", "#FF0F0716", "#FFB50060"],
+            ["#FF050308", "#FF831843", "#FFF97316"],
         ],
         "hail": [
-            ["#FF050308", "#FF1E1B4B", "#FF94A3B8"],
-            ["#FF050308", "#FF0A0F1E", "#FFE2E8F0"],
-            ["#FF050308", "#FF0C4A5E", "#FF0F0716"],
-            ["#FF050308", "#FF2E1065", "#FF0C4A5E"],
-            ["#FF050308", "#FF831843", "#FF0C4A5E"],
-            ["#FF050308", "#FFB91C1C", "#FF0C4A5E"],
+            ["#FF050308", "#FF0A0F1E", "#FF475569"],
+            ["#FF050308", "#FF0A0F1E", "#FF312E81"],
+            ["#FF050308", "#FF0A0F1E", "#FF6366F1"],
+            ["#FF050308", "#FF0A0F1E", "#FF058285"],
+            ["#FF050308", "#FF0F0716", "#FFB50060"],
+            ["#FF050308", "#FF831843", "#FFF97316"],
         ],
     ]
 }
