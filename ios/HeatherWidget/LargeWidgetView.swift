@@ -32,45 +32,46 @@ struct LargeWidgetView: View {
                     .opacity(0.2)
                     .offset(x:20,y:16)
 
+                // Dark scrim for text readability
+                Color.black.opacity(0.08)
+                    .clipShape(ContainerRelativeShape())
+
                 VStack(alignment: .leading, spacing: 2) {
-                    // City name
-                    Text(data.cityName)
-                        .font(.subheadline)
-                        .fontWeight(.semibold)
-                        .lineLimit(1)
-
-                    // Temperature row with icon + sun/moon stacked on right
+                    // Two-column layout
                     HStack(alignment: .top) {
-                        VStack(alignment: .leading, spacing: 0) {
-                            HStack(alignment: .firstTextBaseline, spacing: 6) {
-                                Text("\(data.temperature)°")
-                                    .font(.system(size: 52, weight: .semibold, design: .rounded))
-                                    .minimumScaleFactor(0.7)
+                        VStack(alignment: .leading, spacing: 2) {
+                            Text(data.cityName)
+                                .font(.subheadline)
+                                .fontWeight(.semibold)
+                                .lineLimit(1)
 
-                                Text("\(data.high)°/\(data.low)°")
-                                    .font(.caption)
-                                    .fontWeight(.medium)
-                                    .opacity(0.9)
-                            }
+                            Text("\(data.temperature)°")
+                                .font(.system(size: 52, weight: .semibold, design: .rounded))
+                                .minimumScaleFactor(0.7)
+
+                            Text("\(data.high)°/\(data.low)°")
+                                .font(.caption)
+                                .fontWeight(.medium)
+                                .opacity(0.9)
 
                             Text("Feels like \(data.feelsLike)°")
                                 .font(.caption2)
                                 .opacity(0.7)
-                                .padding(.leading, 2)
 
                             Text(data.description.capitalized)
                                 .font(.caption2)
                                 .opacity(0.7)
-                                .padding(.leading, 2)
                         }
+
                         Spacer()
-                        // Condition icon + sunrise/sunset + UV/moon stacked
+
                         VStack(alignment: .trailing, spacing: 4) {
                             WidgetConditionIcon(
                                 conditionName: data.conditionName,
                                 isDay: data.isDay,
                                 size: 48
                             )
+
                             if data.isDay {
                                 if let sunsetLabel = data.sunsetLabel {
                                     DetailLabel(
@@ -100,10 +101,20 @@ struct LargeWidgetView: View {
 
                     Spacer()
 
+                    // Quip
+                    Text(data.quip)
+                        .font(.caption)
+                        .fontWeight(.medium)
+                        .lineLimit(3)
+                        .opacity(0.95)
+
+                    Spacer()
+
                     // Hourly forecast
                     if let hours = data.hourly, !hours.isEmpty {
+                        let items = Array(hours.prefix(6))
                         HStack(spacing: 0) {
-                            ForEach(Array(hours.prefix(6).enumerated()), id: \.offset) { _, entry in
+                            ForEach(Array(items.enumerated()), id: \.offset) { index, entry in
                                 VStack(spacing: 3) {
                                     Text(entry.hourLabel)
                                         .font(.system(size: 10))
@@ -116,32 +127,29 @@ struct LargeWidgetView: View {
                                     Text("\(entry.temperature)°")
                                         .font(.system(size: 12, weight: .semibold))
                                 }
-                                .frame(maxWidth: .infinity)
+                                if index < items.count - 1 {
+                                    Spacer(minLength: 0)
+                                }
                             }
                         }
+                        .frame(maxWidth: .infinity)
                     }
-
-                    Spacer()
-
-                    // Quip
-                    Text(data.quip)
-                        .font(.callout)
-                        .fontWeight(.medium)
-                        .lineLimit(3)
-                        .opacity(0.95)
-                        .padding(.top, 8)
-
-                    Spacer()
                 }
+                .padding()
                 .foregroundStyle(.white)
+                .shadow(color: .black.opacity(0.3), radius: 1.5, x: 0, y: 1)
             }
         }
         .containerBackground(for: .widget) {
-            LinearGradient(
-                colors: data.gradientColors.map { Color(hex: $0) },
-                startPoint: .topTrailing,
-                endPoint: .bottomLeading
-            )
+            ZStack {
+                LinearGradient(
+                    colors: data.gradientColors.map { Color(hex: $0) },
+                    startPoint: (data.conditionName == "sunny" || data.conditionName == "mostlySunny") ? .topTrailing : .top,
+                    endPoint: (data.conditionName == "sunny" || data.conditionName == "mostlySunny") ? .bottomLeading : .bottom
+                )
+                ContainerRelativeShape()
+                    .strokeBorder(.white.opacity(0.15), lineWidth: 0.5)
+            }
         }
     }
 }

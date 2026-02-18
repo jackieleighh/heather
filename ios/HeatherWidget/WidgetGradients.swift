@@ -28,6 +28,7 @@ struct WidgetGradients {
     private static func resolveCondition(_ condition: String) -> String {
         switch condition {
         case "mostlySunny": return "sunny"
+        case "partlyCloudy": return "sunny"
         case "foggy": return "overcast"
         case "unknown": return "overcast"
         default: return condition
@@ -45,14 +46,6 @@ struct WidgetGradients {
             ["#FF4A9BD9", "#FF5BA847", "#FFD4960A"],
             ["#FF5BA847", "#FFD4960A", "#FFFF8C00"],
             ["#FFFBBF24", "#FFFF8C00", "#FFF472B6"],
-        ],
-        "partlyCloudy": [
-            ["#FFE2E8F0", "#FF94A3B8", "#FF38BDF8"],
-            ["#FF94A3B8", "#FF475569", "#FF96D9DB"],
-            ["#FF475569", "#FF96D9DB", "#FF2563EB"],
-            ["#FF94A3B8", "#FF38BDF8", "#FFA3E635"],
-            ["#FF94A3B8", "#FFA3E635", "#FFFFD700"],
-            ["#FF475569", "#FFF97316", "#FFFBBF24"],
         ],
         "overcast": [
             ["#FF94A3B8", "#FF8B9DD4", "#FF312E81"],
@@ -138,14 +131,6 @@ struct WidgetGradients {
             ["#FF1E1B4B", "#FF2E1065", "#FF0C4A5E"],
             ["#FF1E1B4B", "#FF2E1065", "#FF831843"],
             ["#FF1E1B4B", "#FF831843", "#FFB91C1C"],
-        ],
-        "partlyCloudy": [
-            ["#FF050308", "#FF1E1B4B", "#FF475569"],
-            ["#FF0F0716", "#FF1E1B4B", "#FF94A3B8"],
-            ["#FF0F0716", "#FF0C4A5E", "#FF2E1065"],
-            ["#FF1E1B4B", "#FF2E1065", "#FF831843"],
-            ["#FF0F0716", "#FF831843", "#FFC2410C"],
-            ["#FF050308", "#FF831843", "#FFB91C1C"],
         ],
         "overcast": [
             ["#FF0F0716", "#FF1E1B4B", "#FF1A2744"],

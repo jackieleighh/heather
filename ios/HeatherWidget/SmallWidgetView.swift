@@ -32,6 +32,18 @@ struct SmallWidgetView: View {
                     .opacity(0.2)
                     .offset(x:20,y:16)
 
+                // Dark scrim for text readability
+                LinearGradient(
+                    colors: [
+                        Color.black.opacity(0.08),
+                        Color.black.opacity(0.04),
+                        Color.black.opacity(0.12)
+                    ],
+                    startPoint: .top,
+                    endPoint: .bottom
+                )
+                .clipShape(ContainerRelativeShape())
+
                 VStack(alignment: .leading, spacing: 4) {
                     HStack {
                         Text(data.cityName)
@@ -56,15 +68,21 @@ struct SmallWidgetView: View {
                         .font(.caption2)
                         .opacity(0.8)
                 }
+                .padding()
                 .foregroundStyle(.white)
+                .shadow(color: .black.opacity(0.3), radius: 1.5, x: 0, y: 1)
             }
         }
         .containerBackground(for: .widget) {
-            LinearGradient(
-                colors: data.gradientColors.map { Color(hex: $0) },
-                startPoint: .topTrailing,
-                endPoint: .bottomLeading
-            )
+            ZStack {
+                LinearGradient(
+                    colors: data.gradientColors.map { Color(hex: $0) },
+                    startPoint: .topTrailing,
+                    endPoint: .bottomLeading
+                )
+                ContainerRelativeShape()
+                    .strokeBorder(.white.opacity(0.25), lineWidth: 0.75)
+            }
         }
     }
 }
