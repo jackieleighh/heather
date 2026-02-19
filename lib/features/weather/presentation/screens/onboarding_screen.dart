@@ -5,7 +5,6 @@ import 'package:go_router/go_router.dart';
 import 'package:google_fonts/google_fonts.dart';
 
 import '../../../../core/constants/app_colors.dart';
-import '../../../../core/constants/persona.dart';
 import '../../../../core/services/fcm_service.dart';
 import '../providers/settings_provider.dart';
 import '../widgets/logo_overlay.dart';
@@ -19,7 +18,7 @@ class OnboardingScreen extends ConsumerStatefulWidget {
 
 class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
   int _step = 0; // 0 = tone, 1 = notifications
-  bool? _explicitLanguage;
+  bool _keepItPG = true;
   bool _severeAlertsEnabled = false;
 
   @override
@@ -31,9 +30,7 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
   Future<void> _finish() async {
     final notifier = ref.read(settingsProvider.notifier);
 
-    if (_explicitLanguage != null) {
-      await notifier.setExplicitLanguage(_explicitLanguage!);
-    }
+    await notifier.setExplicitLanguage(!_keepItPG);
 
     await notifier.setSevereAlertsEnabled(_severeAlertsEnabled);
 
@@ -44,7 +41,7 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
     }
   }
 
-  Color get _accentColor => Persona.heather.heroColor;
+  Color get _accentColor => AppColors.magenta;
 
   @override
   Widget build(BuildContext context) {
@@ -89,24 +86,41 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
           ),
         ),
         const SizedBox(height: 32),
-        _ToneOption(
-          label: Persona.heather.toneLabel,
-          selected: _explicitLanguage == false,
-          onTap: () => setState(() => _explicitLanguage = false),
-        ),
-        const SizedBox(height: 12),
-        _ToneOption(
-          label: Persona.heather.altToneLabel,
-          selected: _explicitLanguage == true,
-          onTap: () => setState(() => _explicitLanguage = true),
+        Container(
+          decoration: BoxDecoration(
+            color: AppColors.cream.withValues(alpha: 0.15),
+            borderRadius: BorderRadius.circular(12),
+          ),
+          child: SwitchListTile(
+            contentPadding: const EdgeInsets.symmetric(
+              horizontal: 16,
+              vertical: 4,
+            ),
+            title: Text(
+              'Keep it PG',
+              style: GoogleFonts.poppins(
+                fontSize: 16,
+                fontWeight: FontWeight.w600,
+                color: AppColors.cream,
+              ),
+            ),
+            value: _keepItPG,
+            activeTrackColor: AppColors.cream.withValues(alpha: 0.3),
+            activeThumbColor: AppColors.cream,
+            inactiveTrackColor: AppColors.cream.withValues(alpha: 0.1),
+            inactiveThumbColor: AppColors.cream.withValues(alpha: 0.4),
+            trackOutlineColor: WidgetStatePropertyAll(
+              AppColors.cream.withValues(alpha: 0.1),
+            ),
+            onChanged: (value) => setState(() => _keepItPG = value),
+          ),
         ),
         const Spacer(flex: 3),
-        if (_explicitLanguage != null)
-          _BottomButton(
-            label: 'Next',
-            accentColor: _accentColor,
-            onTap: () => setState(() => _step = 1),
-          ),
+        _BottomButton(
+          label: 'Next',
+          accentColor: _accentColor,
+          onTap: () => setState(() => _step = 1),
+        ),
         const SizedBox(height: 48),
       ],
     );
@@ -177,64 +191,6 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
         ),
         const SizedBox(height: 48),
       ],
-    );
-  }
-}
-
-class _ToneOption extends StatelessWidget {
-  final String label;
-  final bool selected;
-  final VoidCallback onTap;
-
-  const _ToneOption({
-    required this.label,
-    required this.selected,
-    required this.onTap,
-  });
-
-  @override
-  Widget build(BuildContext context) {
-    return GestureDetector(
-      onTap: onTap,
-      child: AnimatedContainer(
-        duration: const Duration(milliseconds: 200),
-        padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
-        decoration: BoxDecoration(
-          color: AppColors.cream.withValues(alpha: 0.15),
-          borderRadius: BorderRadius.circular(12),
-          border: Border.all(
-            color: selected
-                ? AppColors.cream.withValues(alpha: 0.5)
-                : Colors.transparent,
-            width: 1.5,
-          ),
-        ),
-        child: Row(
-          children: [
-            Expanded(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
-                    label,
-                    style: GoogleFonts.poppins(
-                      fontSize: 16,
-                      fontWeight: FontWeight.w600,
-                      color: AppColors.cream,
-                    ),
-                  ),
-                ],
-              ),
-            ),
-            if (selected)
-              const Icon(
-                Icons.check_circle,
-                color: AppColors.cream,
-                size: 24,
-              ),
-          ],
-        ),
-      ),
     );
   }
 }

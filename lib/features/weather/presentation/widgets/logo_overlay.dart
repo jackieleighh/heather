@@ -14,8 +14,8 @@ class LogoOverlay extends ConsumerWidget {
     final screenHeight = MediaQuery.sizeOf(context).height;
 
     return Positioned(
-      left: -50,
-      bottom: -10,
+      left: -20,
+      bottom: 0,
       child: IgnorePointer(
         child: Opacity(
           opacity: 0.2,

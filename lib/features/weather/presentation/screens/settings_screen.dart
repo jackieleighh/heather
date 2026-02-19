@@ -187,24 +187,44 @@ class SettingsScreen extends ConsumerWidget {
                         // ── Preferences ──
                         const _SectionHeader(title: 'Preferences'),
                         const SizedBox(height: 4),
-                        _ToneTile(
-                          label: settings.persona.toneLabel,
-                          selected: !settings.explicitLanguage,
-                          onTap: () {
-                            ref
-                                .read(settingsProvider.notifier)
-                                .setExplicitLanguage(false);
-                          },
-                        ),
-                        const SizedBox(height: 8),
-                        _ToneTile(
-                          label: settings.persona.altToneLabel,
-                          selected: settings.explicitLanguage,
-                          onTap: () {
-                            ref
-                                .read(settingsProvider.notifier)
-                                .setExplicitLanguage(true);
-                          },
+                        Container(
+                          decoration: BoxDecoration(
+                            color: AppColors.cream.withValues(alpha: 0.15),
+                            borderRadius: BorderRadius.circular(12),
+                          ),
+                          child: SwitchListTile(
+                            contentPadding: const EdgeInsets.symmetric(
+                              horizontal: 16,
+                              vertical: 4,
+                            ),
+                            title: Text(
+                              'Keep it PG',
+                              style: GoogleFonts.poppins(
+                                fontSize: 15,
+                                fontWeight: FontWeight.w500,
+                                color: AppColors.cream,
+                              ),
+                            ),
+                            value: !settings.explicitLanguage,
+                            activeTrackColor: AppColors.cream.withValues(
+                              alpha: 0.3,
+                            ),
+                            activeThumbColor: AppColors.cream,
+                            inactiveTrackColor: AppColors.cream.withValues(
+                              alpha: 0.1,
+                            ),
+                            inactiveThumbColor: AppColors.cream.withValues(
+                              alpha: 0.4,
+                            ),
+                            trackOutlineColor: WidgetStatePropertyAll(
+                              AppColors.cream.withValues(alpha: 0.1),
+                            ),
+                            onChanged: (value) {
+                              ref
+                                  .read(settingsProvider.notifier)
+                                  .setExplicitLanguage(!value);
+                            },
+                          ),
                         ),
 
                         const SizedBox(height: 24),
@@ -276,59 +296,6 @@ class SettingsScreen extends ConsumerWidget {
               ),
             ),
             const LogoOverlay(),
-          ],
-        ),
-      ),
-    );
-  }
-}
-
-class _ToneTile extends StatelessWidget {
-  final String label;
-  final bool selected;
-  final VoidCallback onTap;
-
-  const _ToneTile({
-    required this.label,
-    required this.selected,
-    required this.onTap,
-  });
-
-  @override
-  Widget build(BuildContext context) {
-    return GestureDetector(
-      onTap: onTap,
-      child: AnimatedContainer(
-        duration: const Duration(milliseconds: 200),
-        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
-        decoration: BoxDecoration(
-          color: AppColors.cream.withValues(alpha: 0.15),
-          borderRadius: BorderRadius.circular(12),
-          border: Border.all(
-            color: selected
-                ? AppColors.cream.withValues(alpha: 0.5)
-                : Colors.transparent,
-            width: 1.5,
-          ),
-        ),
-        child: Row(
-          children: [
-            Expanded(
-              child: Text(
-                label,
-                style: GoogleFonts.poppins(
-                  fontSize: 15,
-                  fontWeight: FontWeight.w500,
-                  color: AppColors.cream,
-                ),
-              ),
-            ),
-            if (selected)
-              const Icon(
-                Icons.check_circle,
-                color: AppColors.cream,
-                size: 22,
-              ),
           ],
         ),
       ),

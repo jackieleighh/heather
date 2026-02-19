@@ -7,13 +7,13 @@
       "layers" : [
         {
           "glass" : false,
-          "image-name" : "heather_v2 (1).svg",
-          "name" : "heather_v2 (1)",
+          "image-name" : "heather_v2 (1) 2.svg",
+          "name" : "heather_v2 (1) 2",
           "position" : {
             "scale" : 0.9,
             "translation-in-points" : [
               0.03341838289952648,
-              48.562420020062405
+              36.64683650117024
             ]
           }
         }
