@@ -18,8 +18,7 @@ class OnboardingScreen extends ConsumerStatefulWidget {
 }
 
 class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
-  int _step = 0; // 0 = persona, 1 = tone, 2 = notifications
-  Persona _persona = Persona.heather;
+  int _step = 0; // 0 = tone, 1 = notifications
   bool? _explicitLanguage;
   bool _severeAlertsEnabled = false;
 
@@ -31,8 +30,6 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
 
   Future<void> _finish() async {
     final notifier = ref.read(settingsProvider.notifier);
-
-    await notifier.setPersona(_persona);
 
     if (_explicitLanguage != null) {
       await notifier.setExplicitLanguage(_explicitLanguage!);
@@ -47,7 +44,7 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
     }
   }
 
-  Color get _accentColor => _persona.heroColor;
+  Color get _accentColor => Persona.heather.heroColor;
 
   @override
   Widget build(BuildContext context) {
@@ -65,53 +62,15 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
                 child: AnimatedSwitcher(
                   duration: const Duration(milliseconds: 300),
                   child: _step == 0
-                      ? _buildPersonaStep()
-                      : _step == 1
                       ? _buildToneStep()
                       : _buildNotificationsStep(),
                 ),
               ),
             ),
-            LogoOverlay(personaOverride: _persona),
+            const LogoOverlay(),
           ],
         ),
       ),
-    );
-  }
-
-  Widget _buildPersonaStep() {
-    return Column(
-      key: const ValueKey('persona'),
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        const Spacer(flex: 2),
-        Text(
-          'Pick your\nweather girl.',
-          style: GoogleFonts.quicksand(
-            fontSize: 32,
-            fontWeight: FontWeight.w700,
-            color: AppColors.cream,
-          ),
-        ),
-        const SizedBox(height: 32),
-        ...Persona.values.map(
-          (p) => Padding(
-            padding: const EdgeInsets.only(bottom: 12),
-            child: _PersonaCard(
-              persona: p,
-              selected: _persona == p,
-              onTap: () => setState(() => _persona = p),
-            ),
-          ),
-        ),
-        const Spacer(flex: 3),
-        _BottomButton(
-          label: 'Next',
-          accentColor: _accentColor,
-          onTap: () => setState(() => _step = 1),
-        ),
-        const SizedBox(height: 48),
-      ],
     );
   }
 
@@ -131,13 +90,13 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
         ),
         const SizedBox(height: 32),
         _ToneOption(
-          label: _persona.toneLabel,
+          label: Persona.heather.toneLabel,
           selected: _explicitLanguage == false,
           onTap: () => setState(() => _explicitLanguage = false),
         ),
         const SizedBox(height: 12),
         _ToneOption(
-          label: _persona.altToneLabel,
+          label: Persona.heather.altToneLabel,
           selected: _explicitLanguage == true,
           onTap: () => setState(() => _explicitLanguage = true),
         ),
@@ -146,7 +105,7 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
           _BottomButton(
             label: 'Next',
             accentColor: _accentColor,
-            onTap: () => setState(() => _step = 2),
+            onTap: () => setState(() => _step = 1),
           ),
         const SizedBox(height: 48),
       ],
@@ -218,83 +177,6 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
         ),
         const SizedBox(height: 48),
       ],
-    );
-  }
-}
-
-class _PersonaCard extends StatelessWidget {
-  final Persona persona;
-  final bool selected;
-  final VoidCallback onTap;
-
-  const _PersonaCard({
-    required this.persona,
-    required this.selected,
-    required this.onTap,
-  });
-
-  @override
-  Widget build(BuildContext context) {
-    return GestureDetector(
-      onTap: onTap,
-      child: AnimatedContainer(
-        duration: const Duration(milliseconds: 300),
-        padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
-        decoration: BoxDecoration(
-          color: AppColors.cream.withValues(alpha: 0.15),
-          borderRadius: BorderRadius.circular(12),
-          border: Border.all(
-            color: selected
-                ? AppColors.cream.withValues(alpha: 0.5)
-                : Colors.transparent,
-            width: 1.5,
-          ),
-        ),
-        child: Row(
-          children: [
-            Container(
-              width: 40,
-              height: 40,
-              decoration: BoxDecoration(
-                color: AppColors.cream.withValues(alpha: 0.15),
-                shape: BoxShape.circle,
-              ),
-              child: Center(
-                child: Text(
-                  persona.initial,
-                  style: GoogleFonts.quicksand(
-                    fontSize: 18,
-                    fontWeight: FontWeight.w700,
-                    color: AppColors.cream,
-                  ),
-                ),
-              ),
-            ),
-            const SizedBox(width: 16),
-            Expanded(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
-                    persona.displayName,
-                    style: GoogleFonts.poppins(
-                      fontSize: 16,
-                      fontWeight: FontWeight.w600,
-                      color: AppColors.cream,
-                    ),
-                  ),
-                ],
-              ),
-            ),
-            if (selected)
-              const Icon(
-                Icons.check_circle,
-                color: AppColors.cream,
-                size: 24,
-              ),
-          ],
-        ),
-      ),
     );
   }
 }

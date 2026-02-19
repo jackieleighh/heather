@@ -6,25 +6,14 @@
     {
       "layers" : [
         {
-          "image-name" : "heather_logo.svg",
-          "name" : "heather_logo",
-          "position" : {
-            "scale" : 0.8,
-            "translation-in-points" : [
-              -2.592071171387829,
-              176.87589344967284
-            ]
-          }
-        },
-        {
           "glass" : false,
-          "image-name" : "text (1).svg",
-          "name" : "text (1)",
+          "image-name" : "heather_v2 (1).svg",
+          "name" : "heather_v2 (1)",
           "position" : {
-            "scale" : 3.5,
+            "scale" : 0.9,
             "translation-in-points" : [
-              -1.0681152389224735e-05,
-              -302.7573044631422
+              0.03341838289952648,
+              48.562420020062405
             ]
           }
         }

@@ -4,14 +4,15 @@ import WidgetKit
 struct SmallWidgetView: View {
     let data: WeatherData
 
-    private var personaLogoName: String {
-        switch data.persona {
-        case "jade": return "jade_logo"
-        case "luna": return "luna_logo"
-        case "aurelia": return "aurelia_logo"
-        default: return "heather_logo"
-        }
-    }
+    // Persona switching commented out for now:
+    // private var personaLogoName: String {
+    //     switch data.persona {
+    //     case "jade": return "jade_logo"
+    //     case "luna": return "luna_logo"
+    //     case "aurelia": return "aurelia_logo"
+    //     default: return "heather_logo"
+    //     }
+    // }
 
     var body: some View {
         WidgetView() {
@@ -23,7 +24,7 @@ struct SmallWidgetView: View {
                 )
 
                 // Persona logo overlay
-                Image(personaLogoName)
+                Image("heather_logo")
                     .renderingMode(.template)
                     .resizable()
                     .scaledToFit()

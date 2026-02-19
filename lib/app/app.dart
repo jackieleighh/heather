@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
-import '../features/weather/presentation/providers/settings_provider.dart';
+import '../core/constants/app_colors.dart';
 import 'theme.dart';
 
 class HeatherApp extends ConsumerWidget {
@@ -12,10 +12,12 @@ class HeatherApp extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final persona = ref.watch(settingsProvider.select((s) => s.persona));
+    // Persona switching commented out for now:
+    // final persona = ref.watch(settingsProvider.select((s) => s.persona));
+    // theme: HeatherTheme.light(accentColor: persona.heroColor),
     return MaterialApp.router(
       title: 'Heather',
-      theme: HeatherTheme.light(accentColor: persona.heroColor),
+      theme: HeatherTheme.light(accentColor: AppColors.magenta),
       routerConfig: router,
       debugShowCheckedModeBanner: false,
     );

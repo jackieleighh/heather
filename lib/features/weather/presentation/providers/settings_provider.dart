@@ -70,11 +70,11 @@ class SettingsNotifier extends StateNotifier<SettingsState> {
     state = state.copyWith(explicitLanguage: value);
   }
 
-  Future<void> setPersona(Persona persona) async {
-    final prefs = await SharedPreferences.getInstance();
-    await prefs.setString(_personaKey, persona.name);
-    state = state.copyWith(persona: persona);
-  }
+  // Future<void> setPersona(Persona persona) async {
+  //   final prefs = await SharedPreferences.getInstance();
+  //   await prefs.setString(_personaKey, persona.name);
+  //   state = state.copyWith(persona: persona);
+  // }
 
   Future<void> setSevereAlertsEnabled(bool value) async {
     final prefs = await SharedPreferences.getInstance();

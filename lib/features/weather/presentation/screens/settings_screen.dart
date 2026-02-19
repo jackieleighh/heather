@@ -4,7 +4,6 @@ import 'package:google_fonts/google_fonts.dart';
 import 'package:heather/features/weather/presentation/widgets/logo_overlay.dart';
 
 import '../../../../core/constants/app_colors.dart';
-import '../../../../core/constants/persona.dart';
 import '../../../../core/services/fcm_service.dart';
 import '../providers/location_provider.dart';
 import '../providers/settings_provider.dart';
@@ -185,26 +184,6 @@ class SettingsScreen extends ConsumerWidget {
 
                         const SizedBox(height: 24),
 
-                        // ── Persona ──
-                        const _SectionHeader(title: 'Persona'),
-                        const SizedBox(height: 4),
-                        ...Persona.values.map(
-                          (p) => Padding(
-                            padding: const EdgeInsets.only(bottom: 8),
-                            child: _PersonaTile(
-                              persona: p,
-                              selected: settings.persona == p,
-                              onTap: () {
-                                ref
-                                    .read(settingsProvider.notifier)
-                                    .setPersona(p);
-                              },
-                            ),
-                          ),
-                        ),
-
-                        const SizedBox(height: 24),
-
                         // ── Preferences ──
                         const _SectionHeader(title: 'Preferences'),
                         const SizedBox(height: 4),
@@ -297,78 +276,6 @@ class SettingsScreen extends ConsumerWidget {
               ),
             ),
             const LogoOverlay(),
-          ],
-        ),
-      ),
-    );
-  }
-}
-
-class _PersonaTile extends StatelessWidget {
-  final Persona persona;
-  final bool selected;
-  final VoidCallback onTap;
-
-  const _PersonaTile({
-    required this.persona,
-    required this.selected,
-    required this.onTap,
-  });
-
-  @override
-  Widget build(BuildContext context) {
-    return GestureDetector(
-      onTap: onTap,
-      child: AnimatedContainer(
-        duration: const Duration(milliseconds: 300),
-        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-        decoration: BoxDecoration(
-          color: AppColors.cream.withValues(alpha: 0.15),
-          borderRadius: BorderRadius.circular(12),
-          border: Border.all(
-            color: selected
-                ? AppColors.cream.withValues(alpha: 0.5)
-                : Colors.transparent,
-            width: 1.5,
-          ),
-        ),
-        child: Row(
-          children: [
-            Container(
-              width: 36,
-              height: 36,
-              decoration: BoxDecoration(
-                color: AppColors.cream.withValues(alpha: 0.15),
-                shape: BoxShape.circle,
-              ),
-              child: Center(
-                child: Text(
-                  persona.initial,
-                  style: GoogleFonts.quicksand(
-                    fontSize: 16,
-                    fontWeight: FontWeight.w700,
-                    color: AppColors.cream,
-                  ),
-                ),
-              ),
-            ),
-            const SizedBox(width: 12),
-            Expanded(
-              child: Text(
-                persona.displayName,
-                style: GoogleFonts.poppins(
-                  fontSize: 15,
-                  fontWeight: FontWeight.w500,
-                  color: AppColors.cream,
-                ),
-              ),
-            ),
-            if (selected)
-              const Icon(
-                Icons.check_circle,
-                color: AppColors.cream,
-                size: 22,
-              ),
           ],
         ),
       ),
