@@ -23,7 +23,8 @@ class AlertDetailSheet extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final heroColor = ref.watch(settingsProvider).persona.heroColor;
+    // Persona switching disabled — hardcode to Heather's color
+    final heroColor = AppColors.magenta;
     return DraggableScrollableSheet(
       initialChildSize: 0.7,
       minChildSize: 0.4,

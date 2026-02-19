@@ -16,7 +16,8 @@ class SettingsScreen extends ConsumerWidget {
     final savedLocations = ref.watch(savedLocationsProvider);
     final settings = ref.watch(settingsProvider);
 
-    final accentColor = settings.persona.heroColor;
+    // Persona switching disabled — hardcode to Heather's color
+    final accentColor = AppColors.magenta;
 
     return Scaffold(
       backgroundColor: Colors.transparent,

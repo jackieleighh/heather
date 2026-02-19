@@ -17,7 +17,6 @@ class OnboardingScreen extends ConsumerStatefulWidget {
 }
 
 class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
-  int _step = 0; // 0 = tone, 1 = notifications
   bool _keepItPG = true;
   bool _severeAlertsEnabled = false;
 
@@ -41,26 +40,123 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
     }
   }
 
-  Color get _accentColor => AppColors.magenta;
-
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: Colors.transparent,
-      body: AnimatedContainer(
-        duration: const Duration(milliseconds: 400),
-        curve: Curves.easeInOut,
-        color: _accentColor,
+      body: Container(
+        color: AppColors.magenta,
         child: Stack(
           children: [
             SafeArea(
               child: Padding(
                 padding: const EdgeInsets.symmetric(horizontal: 32),
-                child: AnimatedSwitcher(
-                  duration: const Duration(milliseconds: 300),
-                  child: _step == 0
-                      ? _buildToneStep()
-                      : _buildNotificationsStep(),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    const Spacer(flex: 2),
+                    Text(
+                      "What's the vibe?",
+                      style: GoogleFonts.quicksand(
+                        fontSize: 32,
+                        fontWeight: FontWeight.w700,
+                        color: AppColors.cream,
+                      ),
+                    ),
+                    const SizedBox(height: 32),
+                    Container(
+                      decoration: BoxDecoration(
+                        color: AppColors.cream.withValues(alpha: 0.15),
+                        borderRadius: BorderRadius.circular(12),
+                      ),
+                      child: SwitchListTile(
+                        contentPadding: const EdgeInsets.symmetric(
+                          horizontal: 16,
+                          vertical: 4,
+                        ),
+                        title: Text(
+                          'Keep it PG',
+                          style: GoogleFonts.poppins(
+                            fontSize: 16,
+                            fontWeight: FontWeight.w600,
+                            color: AppColors.cream,
+                          ),
+                        ),
+                        value: _keepItPG,
+                        activeTrackColor: AppColors.cream.withValues(
+                          alpha: 0.3,
+                        ),
+                        activeThumbColor: AppColors.cream,
+                        inactiveTrackColor: AppColors.cream.withValues(
+                          alpha: 0.1,
+                        ),
+                        inactiveThumbColor: AppColors.cream.withValues(
+                          alpha: 0.4,
+                        ),
+                        trackOutlineColor: WidgetStatePropertyAll(
+                          AppColors.cream.withValues(alpha: 0.1),
+                        ),
+                        onChanged: (value) => setState(() => _keepItPG = value),
+                      ),
+                    ),
+                    const SizedBox(height: 12),
+                    Container(
+                      decoration: BoxDecoration(
+                        color: AppColors.cream.withValues(alpha: 0.15),
+                        borderRadius: BorderRadius.circular(12),
+                      ),
+                      child: SwitchListTile(
+                        contentPadding: const EdgeInsets.symmetric(
+                          horizontal: 16,
+                          vertical: 4,
+                        ),
+                        title: Text(
+                          'Severe weather alerts',
+                          style: GoogleFonts.poppins(
+                            fontSize: 15,
+                            fontWeight: FontWeight.w500,
+                            color: AppColors.cream,
+                          ),
+                        ),
+                        subtitle: Text(
+                          'Tornado warnings, severe thunderstorms, and other NWS alerts.',
+                          style: GoogleFonts.poppins(
+                            fontSize: 12,
+                            color: AppColors.cream,
+                          ),
+                        ),
+                        value: _severeAlertsEnabled,
+                        activeTrackColor: AppColors.cream.withValues(
+                          alpha: 0.3,
+                        ),
+                        activeThumbColor: AppColors.cream,
+                        inactiveTrackColor: AppColors.cream.withValues(
+                          alpha: 0.1,
+                        ),
+                        inactiveThumbColor: AppColors.cream.withValues(
+                          alpha: 0.4,
+                        ),
+                        trackOutlineColor: WidgetStatePropertyAll(
+                          AppColors.cream.withValues(alpha: 0.1),
+                        ),
+                        onChanged: (value) async {
+                          if (value) {
+                            final granted = await FcmService()
+                                .requestPermission();
+                            if (!granted) return;
+                          }
+                          setState(() => _severeAlertsEnabled = value);
+                        },
+                      ),
+                    ),
+                    const Spacer(flex: 3),
+                    _BottomButton(
+                      label: "Let's go",
+                      accentColor: AppColors.magenta,
+                      onTap: _finish,
+                    ),
+                    const SizedBox(height: 48),
+                  ],
                 ),
               ),
             ),
@@ -68,129 +164,6 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
           ],
         ),
       ),
-    );
-  }
-
-  Widget _buildToneStep() {
-    return Column(
-      key: const ValueKey('tone'),
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        const Spacer(flex: 2),
-        Text(
-          "What's the vibe?",
-          style: GoogleFonts.quicksand(
-            fontSize: 32,
-            fontWeight: FontWeight.w700,
-            color: AppColors.cream,
-          ),
-        ),
-        const SizedBox(height: 32),
-        Container(
-          decoration: BoxDecoration(
-            color: AppColors.cream.withValues(alpha: 0.15),
-            borderRadius: BorderRadius.circular(12),
-          ),
-          child: SwitchListTile(
-            contentPadding: const EdgeInsets.symmetric(
-              horizontal: 16,
-              vertical: 4,
-            ),
-            title: Text(
-              'Keep it PG',
-              style: GoogleFonts.poppins(
-                fontSize: 16,
-                fontWeight: FontWeight.w600,
-                color: AppColors.cream,
-              ),
-            ),
-            value: _keepItPG,
-            activeTrackColor: AppColors.cream.withValues(alpha: 0.3),
-            activeThumbColor: AppColors.cream,
-            inactiveTrackColor: AppColors.cream.withValues(alpha: 0.1),
-            inactiveThumbColor: AppColors.cream.withValues(alpha: 0.4),
-            trackOutlineColor: WidgetStatePropertyAll(
-              AppColors.cream.withValues(alpha: 0.1),
-            ),
-            onChanged: (value) => setState(() => _keepItPG = value),
-          ),
-        ),
-        const Spacer(flex: 3),
-        _BottomButton(
-          label: 'Next',
-          accentColor: _accentColor,
-          onTap: () => setState(() => _step = 1),
-        ),
-        const SizedBox(height: 48),
-      ],
-    );
-  }
-
-  Widget _buildNotificationsStep() {
-    return Column(
-      key: const ValueKey('notifications'),
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        const Spacer(flex: 2),
-        Text(
-          'Want severe\nweather alerts?',
-          style: GoogleFonts.quicksand(
-            fontSize: 32,
-            fontWeight: FontWeight.w700,
-            color: AppColors.cream,
-          ),
-        ),
-        const SizedBox(height: 32),
-        Container(
-          decoration: BoxDecoration(
-            color: AppColors.cream.withValues(alpha: 0.15),
-            borderRadius: BorderRadius.circular(12),
-          ),
-          child: SwitchListTile(
-            contentPadding: const EdgeInsets.symmetric(
-              horizontal: 16,
-              vertical: 4,
-            ),
-            title: Text(
-              'Severe weather alerts',
-              style: GoogleFonts.poppins(
-                fontSize: 15,
-                fontWeight: FontWeight.w500,
-                color: AppColors.cream,
-              ),
-            ),
-            subtitle: Text(
-              'Tornado warnings, severe thunderstorms, and other NWS alerts.',
-              style: GoogleFonts.poppins(
-                fontSize: 12,
-                color: AppColors.cream,
-              ),
-            ),
-            value: _severeAlertsEnabled,
-            activeTrackColor: AppColors.cream.withValues(alpha: 0.3),
-            activeThumbColor: AppColors.cream,
-            inactiveTrackColor: AppColors.cream.withValues(alpha: 0.1),
-            inactiveThumbColor: AppColors.cream.withValues(alpha: 0.4),
-            trackOutlineColor: WidgetStatePropertyAll(
-              AppColors.cream.withValues(alpha: 0.1),
-            ),
-            onChanged: (value) async {
-              if (value) {
-                final granted = await FcmService().requestPermission();
-                if (!granted) return;
-              }
-              setState(() => _severeAlertsEnabled = value);
-            },
-          ),
-        ),
-        const Spacer(flex: 3),
-        _BottomButton(
-          label: "Let's go",
-          accentColor: _accentColor,
-          onTap: _finish,
-        ),
-        const SizedBox(height: 48),
-      ],
     );
   }
 }
