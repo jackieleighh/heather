@@ -26,10 +26,37 @@ class DetailsPage extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final today = forecast.daily.first;
     final now = forecast.locationNow;
     final next24 = forecast.hourly.take(24).toList();
     final aqi = ref.watch(airQualityProvider((lat: latitude, lon: longitude)));
+
+    // Aggregate precipitation across the days the next 24 hours span
+    final next24Start = next24.first.time;
+    final next24End = next24.last.time;
+    var precipSum = 0.0;
+    for (final d in forecast.daily) {
+      final dayStart = d.date;
+      final dayEnd = dayStart.add(const Duration(days: 1));
+      if (dayEnd.isAfter(next24Start) && dayStart.isBefore(next24End)) {
+        precipSum += d.precipitationSum;
+      }
+    }
+
+    // Pick sunrise/sunset relevant to the next 24 hours
+    final todayDaily = forecast.todayDaily;
+    final tomorrowDaily = forecast.daily.length > 1
+        ? forecast.daily[forecast.daily.indexOf(todayDaily) + 1 <
+                  forecast.daily.length
+              ? forecast.daily.indexOf(todayDaily) + 1
+              : 0]
+        : todayDaily;
+    // If current time is past today's sunset, show tomorrow's sunrise/sunset
+    final sunrise = now.isAfter(todayDaily.sunset)
+        ? tomorrowDaily.sunrise
+        : todayDaily.sunrise;
+    final sunset = now.isAfter(todayDaily.sunset)
+        ? tomorrowDaily.sunset
+        : todayDaily.sunset;
 
     return SafeArea(
       child: Padding(
@@ -43,7 +70,7 @@ class DetailsPage extends ConsumerWidget {
                 child: Align(
                   alignment: Alignment.centerRight,
                   child: Text(
-                    '24 hours',
+                    'Next 24 hours',
                     style: GoogleFonts.quicksand(
                       fontSize: 22,
                       fontWeight: FontWeight.w700,
@@ -65,7 +92,7 @@ class DetailsPage extends ConsumerWidget {
             const SizedBox(height: 6),
             Expanded(
               child: RainCard(
-                precipitationIn: today.precipitationSum / 25.4,
+                precipitationIn: precipSum / 25.4,
                 precipitationProbability: next24
                     .map((h) => h.precipitationProbability)
                     .reduce((a, b) => a > b ? a : b),
@@ -82,16 +109,14 @@ class DetailsPage extends ConsumerWidget {
                 aqi: aqi.whenOrNull(data: (v) => v),
                 isLoading: aqi.isLoading,
                 windSpeed: forecast.current.windSpeed,
-                hourlyWind: forecast.hourlyToday
-                    .map((h) => h.windSpeed)
-                    .toList(),
+                hourlyWind: next24.map((h) => h.windSpeed).toList(),
               ),
             ),
             const SizedBox(height: 6),
             Expanded(
               child: SunCard(
-                sunrise: today.sunrise,
-                sunset: today.sunset,
+                sunrise: sunrise,
+                sunset: sunset,
                 uvIndex: forecast.current.uvIndex,
                 hourlyUv: next24.map((h) => h.uvIndex).toList(),
                 hours: next24.map((h) => h.time).toList(),

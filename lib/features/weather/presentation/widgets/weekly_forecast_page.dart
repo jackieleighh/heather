@@ -52,7 +52,7 @@ class _WeeklyForecastPageState extends State<WeeklyForecastPage> {
                 child: Align(
                   alignment: Alignment.centerRight,
                   child: Text(
-                    '7 days',
+                    'Next 7 days',
                     style: GoogleFonts.quicksand(
                       fontSize: 22,
                       fontWeight: FontWeight.w700,

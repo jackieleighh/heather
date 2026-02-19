@@ -1,3 +1,5 @@
+import 'dart:math' as math;
+
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:heather/features/weather/presentation/widgets/pulsing_dots.dart';
@@ -6,7 +8,6 @@ import 'package:pull_to_refresh/pull_to_refresh.dart';
 import '../../../../core/constants/app_colors.dart';
 import '../../domain/entities/forecast.dart';
 import '../providers/alert_provider.dart';
-import '../providers/settings_provider.dart';
 import 'alert_card.dart';
 import 'location_header.dart';
 import 'sassy_quip.dart';
@@ -139,17 +140,14 @@ class _CurrentWeatherPageState extends ConsumerState<CurrentWeatherPage> {
                         const SizedBox(height: 10),
                         AlertCard(
                           alerts: alerts,
-                          heroColor: ref
-                              .watch(settingsProvider)
-                              .persona
-                              .heroColor,
+                          heroColor: AppColors.magenta,
                         ),
                       ],
                       const SizedBox(height: 8),
                       TemperatureDisplay(
                         temperature: weather.temperature,
-                        high: widget.forecast.daily.first.temperatureMax,
-                        low: widget.forecast.daily.first.temperatureMin,
+                        high: math.max(widget.forecast.todayDaily.temperatureMax, weather.temperature),
+                        low: math.min(widget.forecast.todayDaily.temperatureMin, weather.temperature),
                       ),
                       const Spacer(flex: 1),
                       SassyQuip(quip: widget.quip),

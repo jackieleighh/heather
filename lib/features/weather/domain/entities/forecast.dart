@@ -19,6 +19,18 @@ class Forecast with _$Forecast {
     required int utcOffsetSeconds,
   }) = _Forecast;
 
+  /// Today's daily entry, matched by calendar date at the forecast location.
+  DailyWeather get todayDaily {
+    final now = locationNow;
+    return daily.firstWhere(
+      (d) =>
+          d.date.year == now.year &&
+          d.date.month == now.month &&
+          d.date.day == now.day,
+      orElse: () => daily.first,
+    );
+  }
+
   /// Current time at the forecast location, as a local-flagged DateTime
   /// so comparisons with API-parsed times (also local-flagged) work correctly.
   DateTime get locationNow {

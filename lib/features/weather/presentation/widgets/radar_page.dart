@@ -165,7 +165,7 @@ class _RadarPageState extends ConsumerState<RadarPage> {
                 child: Align(
                   alignment: Alignment.centerRight,
                   child: Text(
-                    'Maps',
+                    'Current Maps',
                     style: GoogleFonts.quicksand(
                       fontSize: 22,
                       fontWeight: FontWeight.w700,
