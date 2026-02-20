@@ -77,6 +77,13 @@ class FcmService {
       }
     });
 
+    // Tell iOS to show banners/badges/sound even when the app is in foreground
+    await _messaging.setForegroundNotificationPresentationOptions(
+      alert: true,
+      badge: true,
+      sound: true,
+    );
+
     // Handle foreground messages
     FirebaseMessaging.onMessage.listen(_handleForegroundMessage);
 
@@ -167,6 +174,16 @@ class FcmService {
   Future<void> registerDevice({
     required List<Map<String, dynamic>> locations,
   }) async {
+    // On iOS, getToken() returns null until notification permission is granted.
+    // Ensure we have permission before attempting to fetch the token.
+    final status = await _messaging.getNotificationSettings();
+    if (status.authorizationStatus == AuthorizationStatus.notDetermined) {
+      final granted = await requestPermission();
+      if (!granted) return;
+    } else if (status.authorizationStatus == AuthorizationStatus.denied) {
+      return;
+    }
+
     final token = await _messaging.getToken();
     if (token == null) return;
 

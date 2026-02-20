@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:heather/features/weather/presentation/widgets/logo_overlay.dart';
+import 'package:url_launcher/url_launcher.dart';
 
 import '../../../../core/constants/app_colors.dart';
 import '../../../../core/services/fcm_service.dart';
@@ -296,6 +297,37 @@ class SettingsScreen extends ConsumerWidget {
                           ),
                         ),
 
+                        const SizedBox(height: 32),
+
+                        Center(
+                          child: GestureDetector(
+                            onTap: () => launchUrl(
+                              Uri.parse('https://jackie-the-dev.web.app/'),
+                              mode: LaunchMode.externalApplication,
+                            ),
+                            child: Text.rich(
+                              TextSpan(
+                                text: 'made with love by ',
+                                style: GoogleFonts.poppins(
+                                  fontSize: 12,
+                                  color: AppColors.cream.withValues(alpha: 0.6),
+                                ),
+                                children: [
+                                  TextSpan(
+                                    text: 'jackie',
+                                    style: GoogleFonts.poppins(
+                                      fontSize: 12,
+                                      fontWeight: FontWeight.w600,
+                                      color: AppColors.cream,
+                                      decoration: TextDecoration.underline,
+                                      decorationColor: AppColors.cream,
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            ),
+                          ),
+                        ),
                         const SizedBox(height: 32),
                       ],
                     ),

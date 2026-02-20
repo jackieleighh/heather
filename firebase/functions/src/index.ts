@@ -186,8 +186,16 @@ export const checkAlerts = onSchedule("every 5 minutes", async () => {
         },
       },
       apns: {
+        headers: {
+          "apns-priority": "10",
+          "apns-push-type": "alert",
+        },
         payload: {
           aps: {
+            alert: {
+              title: alert.event,
+              body: alert.headline || `${alert.event} for ${alert.areaDesc}`,
+            },
             sound: "default",
             "content-available": 1,
           },

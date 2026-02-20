@@ -1,7 +1,7 @@
 name: heather
 description: "Heather - Your sassy weather babe"
 publish_to: "none"
-version: 1.2.19+2
+version: 1.2.20+3
 
 environment:
   sdk: ^3.10.8
@@ -32,6 +32,7 @@ dependencies:
   firebase_core: ^3.12.1
   firebase_messaging: ^15.2.4
   cloud_functions: ^5.3.4
+  url_launcher: ^6.2.0
 
 dev_dependencies:
   flutter_test:

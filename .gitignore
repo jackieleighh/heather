@@ -56,5 +56,8 @@ app.*.map.json
 .env
 .env.*
 
+# APNs Auth Key
+*.p8
+
 # Coverage
 coverage/
