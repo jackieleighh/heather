@@ -75,7 +75,7 @@ class SettingsScreen extends ConsumerWidget {
                           Padding(
                             padding: const EdgeInsets.only(bottom: 16),
                             child: Text(
-                              'Um... No saved locations yet.  This is awkward.',
+                              'Um... this is awkward.  No saved locations yet.',
                               style: GoogleFonts.poppins(
                                 fontSize: 13,
                                 color: AppColors.cream,
@@ -206,6 +206,13 @@ class SettingsScreen extends ConsumerWidget {
                                 color: AppColors.cream,
                               ),
                             ),
+                            subtitle: Text(
+                              'No swearing.  Clean vibes only.',
+                              style: GoogleFonts.poppins(
+                                fontSize: 12,
+                                color: AppColors.cream,
+                              ),
+                            ),
                             value: !settings.explicitLanguage,
                             activeTrackColor: AppColors.cream.withValues(
                               alpha: 0.3,
@@ -276,8 +283,8 @@ class SettingsScreen extends ConsumerWidget {
                                 ),
                                 onChanged: (value) async {
                                   if (value) {
-                                    final granted =
-                                        await FcmService().requestPermission();
+                                    final granted = await FcmService()
+                                        .requestPermission();
                                     if (!granted) return;
                                   }
                                   ref

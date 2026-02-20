@@ -25,28 +25,14 @@ struct SmallWidgetView: View {
 
                 // Persona logo overlay
                 Image("heather_logo")
-                    .renderingMode(.template)
                     .resizable()
                     .scaledToFit()
-                    .frame(width: 100, height: 100)
-                    .foregroundColor(.black)
+                    .frame(height: 120)
                     .opacity(0.2)
-                    .offset(x:20,y:16)
+                    .offset(x: 20, y: 16)
 
-                // Dark scrim for text readability
-                LinearGradient(
-                    colors: [
-                        Color.black.opacity(0.08),
-                        Color.black.opacity(0.04),
-                        Color.black.opacity(0.12)
-                    ],
-                    startPoint: .top,
-                    endPoint: .bottom
-                )
-                .clipShape(ContainerRelativeShape())
-
-                VStack(alignment: .leading, spacing: 4) {
-                    HStack {
+                VStack(alignment: .leading, spacing: 2) {
+                    HStack(alignment: .top) {
                         Text(data.cityName)
                             .font(.caption)
                             .fontWeight(.medium)
@@ -55,34 +41,44 @@ struct SmallWidgetView: View {
                         WidgetConditionIcon(
                             conditionName: data.conditionName,
                             isDay: data.isDay,
-                            size: 30
+                            size: 26
                         )
                     }
 
                     Spacer()
 
                     Text("\(data.temperature)°")
-                        .font(.system(size: 44, weight: .semibold, design: .rounded))
+                        .font(.system(size: 40, weight: .semibold, design: .rounded))
                         .minimumScaleFactor(0.7)
 
-                    Text("H:\(data.high)° L:\(data.low)°")
+                    Text("\(data.high)°/\(data.low)°")
                         .font(.caption2)
                         .opacity(0.8)
+
+                    Text("Feels like \(data.feelsLike)°")
+                        .font(.system(size: 9))
+                        .opacity(0.7)
+
+                    Text(data.description.capitalized)
+                        .font(.system(size: 9))
+                        .opacity(0.7)
                 }
-                .padding()
+                .padding(16)
                 .foregroundStyle(.white)
-                .shadow(color: .black.opacity(0.3), radius: 1.5, x: 0, y: 1)
+                .shadow(color: .black.opacity(0.5), radius: 1, x: 0, y: 1)
+                .shadow(color: .black.opacity(0.3), radius: 3, x: 0, y: 2)
+                .shadow(color: .black.opacity(0.15), radius: 6, x: 0, y: 3)
             }
         }
         .containerBackground(for: .widget) {
             ZStack {
                 LinearGradient(
-                    colors: WidgetGradients.smoothed(data.gradientColors).map { Color(hex: $0) },
+                    colors: data.gradientColors.count >= 2
+                        ? [Color(hex: data.gradientColors.first!), Color(hex: data.gradientColors.last!)]
+                        : data.gradientColors.map { Color(hex: $0) },
                     startPoint: .topTrailing,
                     endPoint: .bottomLeading
                 )
-                ContainerRelativeShape()
-                    .strokeBorder(.white.opacity(0.25), lineWidth: 0.75)
             }
         }
     }

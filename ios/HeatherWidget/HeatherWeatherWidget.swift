@@ -116,5 +116,6 @@ struct HeatherWeatherWidget: Widget {
         .configurationDisplayName("Heather Weather")
         .description("Your sassy weather at a glance.")
         .supportedFamilies([.systemSmall, .systemMedium, .systemLarge])
+        .contentMarginsDisabled()
     }
 }

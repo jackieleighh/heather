@@ -25,17 +25,11 @@ struct LargeWidgetView: View {
 
                 // Persona logo overlay
                 Image("heather_logo")
-                    .renderingMode(.template)
                     .resizable()
                     .scaledToFit()
-                    .frame(width: 160, height: 160)
-                    .foregroundColor(.black)
+                    .frame(height: 200)
                     .opacity(0.2)
-                    .offset(x:20,y:16)
-
-                // Dark scrim for text readability
-                Color.black.opacity(0.08)
-                    .clipShape(ContainerRelativeShape())
+                    .offset(x: 30, y: 20)
 
                 VStack(alignment: .leading, spacing: 2) {
                     // Two-column layout
@@ -123,8 +117,8 @@ struct LargeWidgetView: View {
                                     WidgetConditionIcon(
                                         conditionName: entry.conditionName,
                                         isDay: data.isDay,
-                                        size: 16
-                                    ).frame(height: 20)
+                                        size: 28
+                                    ).frame(height: 30)
                                     Text("\(entry.temperature)°")
                                         .font(.system(size: 12, weight: .semibold))
                                 }
@@ -136,20 +130,22 @@ struct LargeWidgetView: View {
                         .frame(maxWidth: .infinity)
                     }
                 }
-                .padding()
+                .padding(16)
                 .foregroundStyle(.white)
-                .shadow(color: .black.opacity(0.3), radius: 1.5, x: 0, y: 1)
+                .shadow(color: .black.opacity(0.5), radius: 1, x: 0, y: 1)
+                .shadow(color: .black.opacity(0.3), radius: 3, x: 0, y: 2)
+                .shadow(color: .black.opacity(0.15), radius: 6, x: 0, y: 3)
             }
         }
         .containerBackground(for: .widget) {
             ZStack {
                 LinearGradient(
-                    colors: WidgetGradients.smoothed(data.gradientColors).map { Color(hex: $0) },
+                    colors: data.gradientColors.count >= 2
+                        ? [Color(hex: data.gradientColors.first!), Color(hex: data.gradientColors.last!)]
+                        : data.gradientColors.map { Color(hex: $0) },
                     startPoint: (data.conditionName == "sunny" || data.conditionName == "mostlySunny") ? .topTrailing : .top,
                     endPoint: (data.conditionName == "sunny" || data.conditionName == "mostlySunny") ? .bottomLeading : .bottom
                 )
-                ContainerRelativeShape()
-                    .strokeBorder(.white.opacity(0.15), lineWidth: 0.5)
             }
         }
     }

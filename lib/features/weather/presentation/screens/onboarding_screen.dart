@@ -82,6 +82,13 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
                             color: AppColors.cream,
                           ),
                         ),
+                        subtitle: Text(
+                          'No swearing.  Clean vibes only.',
+                          style: GoogleFonts.poppins(
+                            fontSize: 12,
+                            color: AppColors.cream,
+                          ),
+                        ),
                         value: _keepItPG,
                         activeTrackColor: AppColors.cream.withValues(
                           alpha: 0.3,

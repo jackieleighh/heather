@@ -9,7 +9,6 @@ import android.graphics.LinearGradient
 import android.graphics.Paint
 import android.graphics.Shader
 import androidx.compose.runtime.Composable
-import androidx.compose.ui.unit.DpSize
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.glance.BitmapImageProvider
@@ -49,13 +48,7 @@ import es.antonborri.home_widget.actionStartActivity
 
 class HeatherGlanceWidget : GlanceAppWidget() {
 
-    companion object {
-        private val SMALL = DpSize(110.dp, 110.dp)
-        private val MEDIUM = DpSize(250.dp, 110.dp)
-        private val LARGE = DpSize(250.dp, 250.dp)
-    }
-
-    override val sizeMode = SizeMode.Responsive(setOf(SMALL, MEDIUM, LARGE))
+    override val sizeMode = SizeMode.Exact
 
     override val stateDefinition = HomeWidgetGlanceStateDefinition()
 
@@ -71,33 +64,43 @@ class HeatherGlanceWidget : GlanceAppWidget() {
     private fun WidgetContent(data: WeatherWidgetData) {
         val size = LocalSize.current
         val context = LocalContext.current
-        val gradientBitmap = createGradientBitmap(data.gradientColors, 500, 500)
+
+        // Gradient direction: diagonal for sunny/mostlySunny, vertical for others (matching iOS)
+        val diagonalGradient = data.conditionName == "sunny" || data.conditionName == "mostlySunny"
+                || size.width < 250.dp // Small widget always uses diagonal
+
+        // Match bitmap aspect ratio to widget size so the background
+        // doesn't stretch/distort the persona logo overlay.
+        val bitmapLong = 500
+        val aspectRatio = size.width.value / size.height.value
+        val bitmapW: Int
+        val bitmapH: Int
+        if (aspectRatio >= 1f) {
+            bitmapW = bitmapLong
+            bitmapH = (bitmapLong / aspectRatio).toInt().coerceAtLeast(1)
+        } else {
+            bitmapH = bitmapLong
+            bitmapW = (bitmapLong * aspectRatio).toInt().coerceAtLeast(1)
+        }
+
+        val gradientBitmap = createWeatherBitmap(
+            context = context,
+            hexColors = data.gradientColors,
+            conditionName = data.conditionName,
+            isDay = data.isDay,
+            persona = data.persona,
+            width = bitmapW,
+            height = bitmapH,
+            diagonalGradient = diagonalGradient,
+        )
 
         Box(
             modifier = GlanceModifier
                 .fillMaxSize()
                 .background(BitmapImageProvider(gradientBitmap))
                 .clickable(actionStartActivity<MainActivity>(context))
-                .cornerRadius(16.dp)
-                .padding(12.dp),
+                .cornerRadius(16.dp),
         ) {
-            // Persona logo overlay (bottom-right, matching iOS style)
-            Box(
-                modifier = GlanceModifier.fillMaxSize(),
-                contentAlignment = Alignment.BottomEnd,
-            ) {
-                val logoSize = when {
-                    size.width >= 250.dp && size.height >= 250.dp -> 160.dp
-                    size.width >= 250.dp -> 100.dp
-                    else -> 100.dp
-                }
-                Image(
-                    provider = ImageProvider(ConditionIcons.personaLogoRes(data.persona)),
-                    contentDescription = null,
-                    modifier = GlanceModifier.size(logoSize),
-                )
-            }
-
             when {
                 size.width >= 250.dp && size.height >= 250.dp -> LargeContent(data)
                 size.width >= 250.dp -> MediumContent(data)
@@ -106,10 +109,12 @@ class HeatherGlanceWidget : GlanceAppWidget() {
         }
     }
 
+    // ── Small layout (matching iOS SmallWidgetView) ──────────────
+
     @Composable
     private fun SmallContent(data: WeatherWidgetData) {
         Column(
-            modifier = GlanceModifier.fillMaxSize(),
+            modifier = GlanceModifier.fillMaxSize().padding(14.dp),
         ) {
             // Top: city + icon
             Row(
@@ -120,7 +125,7 @@ class HeatherGlanceWidget : GlanceAppWidget() {
                     text = data.cityName,
                     style = TextStyle(
                         color = ColorProvider(white),
-                        fontSize = 13.sp,
+                        fontSize = 12.sp,
                         fontWeight = FontWeight.Medium,
                     ),
                     maxLines = 1,
@@ -129,95 +134,117 @@ class HeatherGlanceWidget : GlanceAppWidget() {
                 Image(
                     provider = ImageProvider(ConditionIcons.iconRes(data.conditionName, data.isDay)),
                     contentDescription = data.conditionName,
-                    modifier = GlanceModifier.size(30.dp),
+                    modifier = GlanceModifier.size(26.dp),
                     colorFilter = ColorFilter.tint(ColorProvider(white80)),
                 )
             }
 
             Spacer(modifier = GlanceModifier.defaultWeight())
 
-            // Large temp
+            // Temperature
             Text(
                 text = "${data.temperature}°",
                 style = TextStyle(
                     color = ColorProvider(white),
-                    fontSize = 44.sp,
+                    fontSize = 40.sp,
                     fontWeight = FontWeight.Bold,
                 ),
             )
 
-            // H/L
+            // H/L (matching iOS format: no H:/L: prefix)
             Text(
-                text = "H:${data.high}° L:${data.low}°",
+                text = "${data.high}°/${data.low}°",
                 style = TextStyle(
                     color = ColorProvider(white80),
                     fontSize = 11.sp,
+                    fontWeight = FontWeight.Medium,
+                ),
+            )
+
+            // Feels like
+            Text(
+                text = "Feels like ${data.feelsLike}°",
+                style = TextStyle(
+                    color = ColorProvider(white70),
+                    fontSize = 9.sp,
+                ),
+            )
+
+            // Description
+            Text(
+                text = data.description.replaceFirstChar { it.uppercase() },
+                style = TextStyle(
+                    color = ColorProvider(white70),
+                    fontSize = 9.sp,
                 ),
             )
         }
     }
 
+    // ── Medium layout (matching iOS MediumWidgetView) ────────────
+
     @Composable
     private fun MediumContent(data: WeatherWidgetData) {
         Column(
-            modifier = GlanceModifier.fillMaxSize(),
+            modifier = GlanceModifier.fillMaxSize()
+                .padding(horizontal = 16.dp, vertical = 14.dp),
         ) {
-            // Top row: left info + right icon/details
+            // City name
+            Text(
+                text = data.cityName,
+                style = TextStyle(
+                    color = ColorProvider(white),
+                    fontSize = 12.sp,
+                    fontWeight = FontWeight.Medium,
+                ),
+                maxLines = 1,
+            )
+
+            // Details row: temp+info on left, labels+icon on right
             Row(
                 modifier = GlanceModifier.fillMaxWidth(),
-                verticalAlignment = Alignment.Top,
+                verticalAlignment = Alignment.Bottom,
             ) {
-                // Left: city, temp, H/L, feels like
-                Column(modifier = GlanceModifier.defaultWeight()) {
+                // Left: temp
+                Text(
+                    text = "${data.temperature}°",
+                    style = TextStyle(
+                        color = ColorProvider(white),
+                        fontSize = 36.sp,
+                        fontWeight = FontWeight.Bold,
+                    ),
+                )
+
+                Spacer(modifier = GlanceModifier.width(6.dp))
+
+                // Left: H/L, feels like, description
+                Column(modifier = GlanceModifier.defaultWeight().padding(bottom = 6.dp)) {
                     Text(
-                        text = data.cityName,
+                        text = "${data.high}°/${data.low}°",
                         style = TextStyle(
-                            color = ColorProvider(white),
-                            fontSize = 13.sp,
+                            color = ColorProvider(white80),
+                            fontSize = 11.sp,
                             fontWeight = FontWeight.Medium,
                         ),
-                        maxLines = 1,
                     )
-
-                    Row(verticalAlignment = Alignment.Bottom) {
-                        Text(
-                            text = "${data.temperature}°",
-                            style = TextStyle(
-                                color = ColorProvider(white),
-                                fontSize = 36.sp,
-                                fontWeight = FontWeight.Bold,
-                            ),
-                        )
-                        Spacer(modifier = GlanceModifier.width(4.dp))
-                        Text(
-                            text = "${data.high}°/${data.low}°",
-                            style = TextStyle(
-                                color = ColorProvider(white80),
-                                fontSize = 11.sp,
-                                fontWeight = FontWeight.Medium,
-                            ),
-                            modifier = GlanceModifier.padding(bottom = 6.dp),
-                        )
-                    }
-
                     Text(
                         text = "Feels like ${data.feelsLike}°",
                         style = TextStyle(
                             color = ColorProvider(white70),
-                            fontSize = 10.sp,
+                            fontSize = 9.sp,
+                        ),
+                    )
+                    Text(
+                        text = data.description.replaceFirstChar { it.uppercase() },
+                        style = TextStyle(
+                            color = ColorProvider(white70),
+                            fontSize = 9.sp,
                         ),
                     )
                 }
 
-                // Right: icon + sun/moon details
+                // Right: details + icon
                 Column(horizontalAlignment = Alignment.End) {
-                    Image(
-                        provider = ImageProvider(ConditionIcons.iconRes(data.conditionName, data.isDay)),
-                        contentDescription = data.conditionName,
-                        modifier = GlanceModifier.size(32.dp),
-                        colorFilter = ColorFilter.tint(ColorProvider(white80)),
-                    )
-                    Spacer(modifier = GlanceModifier.height(2.dp))
                     if (data.isDay) {
                         data.sunsetLabel?.let { label ->
                             DetailRow(iconRes = R.drawable.ic_weather_sunset, value = label)
@@ -234,81 +261,73 @@ class HeatherGlanceWidget : GlanceAppWidget() {
                         DetailRow(iconRes = phase.iconRes, value = "${moonIllumination()}%")
                     }
                 }
+
+                Spacer(modifier = GlanceModifier.width(4.dp))
+
+                Image(
+                    provider = ImageProvider(ConditionIcons.iconRes(data.conditionName, data.isDay)),
+                    contentDescription = data.conditionName,
+                    modifier = GlanceModifier.size(32.dp),
+                    colorFilter = ColorFilter.tint(ColorProvider(white80)),
+                )
             }
 
             Spacer(modifier = GlanceModifier.defaultWeight())
 
-            // Quip
-            Text(
-                text = data.quip,
-                style = TextStyle(
-                    color = ColorProvider(white90),
-                    fontSize = 13.sp,
-                    fontWeight = FontWeight.Medium,
-                ),
-                maxLines = 2,
-            )
-
-            Spacer(modifier = GlanceModifier.defaultWeight())
-
-            // Hourly forecast row
+            // Hourly forecast (6 items, matching iOS)
             if (data.hourly.isNotEmpty()) {
-                HourlyRow(data.hourly.take(8), data.isDay, compact = true)
+                HourlyRow(data.hourly.take(6), data.isDay, compact = true)
             }
         }
     }
 
+    // ── Large layout (matching iOS LargeWidgetView) ──────────────
+
     @Composable
     private fun LargeContent(data: WeatherWidgetData) {
         Column(
-            modifier = GlanceModifier.fillMaxSize(),
+            modifier = GlanceModifier.fillMaxSize().padding(16.dp),
         ) {
-            // City name
-            Text(
-                text = data.cityName,
-                style = TextStyle(
-                    color = ColorProvider(white),
-                    fontSize = 15.sp,
-                    fontWeight = FontWeight.Medium,
-                ),
-                maxLines = 1,
-            )
-
-            Spacer(modifier = GlanceModifier.height(2.dp))
-
-            // Temp row with icon + details on right
+            // Two-column layout: left info, right icon+details
             Row(
                 modifier = GlanceModifier.fillMaxWidth(),
                 verticalAlignment = Alignment.Top,
             ) {
-                // Left: temp, H/L, feels like, description
+                // Left column
                 Column(modifier = GlanceModifier.defaultWeight()) {
-                    Row(verticalAlignment = Alignment.Bottom) {
-                        Text(
-                            text = "${data.temperature}°",
-                            style = TextStyle(
-                                color = ColorProvider(white),
-                                fontSize = 52.sp,
-                                fontWeight = FontWeight.Bold,
-                            ),
-                        )
-                        Spacer(modifier = GlanceModifier.width(6.dp))
-                        Text(
-                            text = "${data.high}°/${data.low}°",
-                            style = TextStyle(
-                                color = ColorProvider(white90),
-                                fontSize = 13.sp,
-                                fontWeight = FontWeight.Medium,
-                            ),
-                            modifier = GlanceModifier.padding(bottom = 10.dp),
-                        )
-                    }
+                    Text(
+                        text = data.cityName,
+                        style = TextStyle(
+                            color = ColorProvider(white),
+                            fontSize = 15.sp,
+                            fontWeight = FontWeight.Medium,
+                        ),
+                        maxLines = 1,
+                    )
+
+                    Text(
+                        text = "${data.temperature}°",
+                        style = TextStyle(
+                            color = ColorProvider(white),
+                            fontSize = 52.sp,
+                            fontWeight = FontWeight.Bold,
+                        ),
+                    )
+
+                    Text(
+                        text = "${data.high}°/${data.low}°",
+                        style = TextStyle(
+                            color = ColorProvider(white90),
+                            fontSize = 12.sp,
+                            fontWeight = FontWeight.Medium,
+                        ),
+                    )
 
                     Text(
                         text = "Feels like ${data.feelsLike}°",
                         style = TextStyle(
                             color = ColorProvider(white70),
-                            fontSize = 12.sp,
+                            fontSize = 11.sp,
                         ),
                     )
 
@@ -316,12 +335,12 @@ class HeatherGlanceWidget : GlanceAppWidget() {
                         text = data.description.replaceFirstChar { it.uppercase() },
                         style = TextStyle(
                             color = ColorProvider(white70),
-                            fontSize = 12.sp,
+                            fontSize = 11.sp,
                         ),
                     )
                 }
 
-                // Right: icon + sun/moon details
+                // Right column: icon + details
                 Column(horizontalAlignment = Alignment.End) {
                     Image(
                         provider = ImageProvider(ConditionIcons.iconRes(data.conditionName, data.isDay)),
@@ -350,27 +369,27 @@ class HeatherGlanceWidget : GlanceAppWidget() {
 
             Spacer(modifier = GlanceModifier.defaultWeight())
 
-            // Hourly forecast row
-            if (data.hourly.isNotEmpty()) {
-                HourlyRow(data.hourly.take(8), data.isDay, compact = false)
-            }
-
-            Spacer(modifier = GlanceModifier.defaultWeight())
-
-            // Quip
+            // Quip (between info and hourly, matching iOS)
             Text(
                 text = data.quip,
                 style = TextStyle(
                     color = ColorProvider(white95),
-                    fontSize = 15.sp,
+                    fontSize = 12.sp,
                     fontWeight = FontWeight.Medium,
                 ),
                 maxLines = 3,
             )
 
             Spacer(modifier = GlanceModifier.defaultWeight())
+
+            // Hourly forecast (6 items, matching iOS)
+            if (data.hourly.isNotEmpty()) {
+                HourlyRow(data.hourly.take(6), data.isDay, compact = false)
+            }
         }
     }
+
+    // ── Shared components ────────────────────────────────────────
 
     @Composable
     private fun DetailRow(iconRes: Int, value: String) {
@@ -378,15 +397,15 @@ class HeatherGlanceWidget : GlanceAppWidget() {
             Image(
                 provider = ImageProvider(iconRes),
                 contentDescription = null,
-                modifier = GlanceModifier.size(11.dp),
-                colorFilter = ColorFilter.tint(ColorProvider(white80)),
+                modifier = GlanceModifier.size(10.dp),
+                colorFilter = ColorFilter.tint(ColorProvider(white70)),
             )
             Spacer(modifier = GlanceModifier.width(3.dp))
             Text(
                 text = value,
                 style = TextStyle(
                     color = ColorProvider(white80),
-                    fontSize = 11.sp,
+                    fontSize = 10.sp,
                     fontWeight = FontWeight.Medium,
                 ),
             )
@@ -395,7 +414,7 @@ class HeatherGlanceWidget : GlanceAppWidget() {
 
     @Composable
     private fun HourlyRow(hours: List<HourlyEntry>, isDay: Boolean, compact: Boolean) {
-        val iconSize = if (compact) 12.dp else 16.dp
+        val iconSize = if (compact) 24.dp else 28.dp
         val timeFontSize = if (compact) 8.sp else 10.sp
         val tempFontSize = if (compact) 9.sp else 12.sp
 
@@ -413,14 +432,14 @@ class HeatherGlanceWidget : GlanceAppWidget() {
                             textAlign = TextAlign.Center,
                         ),
                     )
-                    Spacer(modifier = GlanceModifier.height(if (compact) 1.dp else 2.dp))
+                    Spacer(modifier = GlanceModifier.height(if (compact) 1.dp else 3.dp))
                     Image(
                         provider = ImageProvider(ConditionIcons.iconRes(entry.conditionName, isDay)),
                         contentDescription = null,
                         modifier = GlanceModifier.size(iconSize),
-                        colorFilter = ColorFilter.tint(ColorProvider(white70)),
+                        colorFilter = ColorFilter.tint(ColorProvider(white80)),
                     )
-                    Spacer(modifier = GlanceModifier.height(if (compact) 1.dp else 2.dp))
+                    Spacer(modifier = GlanceModifier.height(if (compact) 1.dp else 3.dp))
                     Text(
                         text = "${entry.temperature}°",
                         style = TextStyle(
@@ -435,24 +454,74 @@ class HeatherGlanceWidget : GlanceAppWidget() {
         }
     }
 
-    private fun createGradientBitmap(hexColors: List<String>, width: Int, height: Int): Bitmap {
+    // ── Bitmap creation (gradient + weather effects + scrim) ─────
+
+    private fun createWeatherBitmap(
+        context: Context,
+        hexColors: List<String>,
+        conditionName: String,
+        isDay: Boolean,
+        persona: String,
+        width: Int,
+        height: Int,
+        diagonalGradient: Boolean,
+    ): Bitmap {
         val bitmap = Bitmap.createBitmap(width, height, Bitmap.Config.ARGB_8888)
         val canvas = Canvas(bitmap)
+        val w = width.toFloat()
+        val h = height.toFloat()
+
+        // 1. Draw gradient background
         val colors = hexColors.map { parseHexColor(it) }.toIntArray()
         if (colors.size < 2) {
             canvas.drawColor(colors.firstOrNull() ?: android.graphics.Color.parseColor("#5B86E5"))
-            return bitmap
+        } else {
+            val paint = Paint()
+            paint.shader = if (diagonalGradient) {
+                LinearGradient(w, 0f, 0f, h, colors, null, Shader.TileMode.CLAMP)
+            } else {
+                LinearGradient(0f, 0f, 0f, h, colors, null, Shader.TileMode.CLAMP)
+            }
+            canvas.drawRect(0f, 0f, w, h, paint)
         }
-        val paint = Paint()
-        paint.shader = LinearGradient(
-            width.toFloat(), 0f,
-            0f, height.toFloat(),
-            colors,
-            null,
-            Shader.TileMode.CLAMP,
-        )
-        canvas.drawRect(0f, 0f, width.toFloat(), height.toFloat(), paint)
+
+        // 2. Draw weather effects
+        WeatherEffectRenderer.render(canvas, conditionName, isDay, w, h)
+
+        // 3. Draw persona logo overlay (bottom-right, 0.2 opacity)
+        drawPersonaLogo(context, canvas, persona, w, h)
+
+        // 4. Draw text contrast scrim (simulates iOS drop shadows)
+        WeatherEffectRenderer.drawTextScrim(canvas, w, h)
+
         return bitmap
+    }
+
+    private fun drawPersonaLogo(
+        context: Context,
+        canvas: Canvas,
+        persona: String,
+        w: Float,
+        h: Float,
+    ) {
+        val logoRes = ConditionIcons.personaLogoRes(persona)
+        val drawable = androidx.core.content.ContextCompat.getDrawable(context, logoRes) ?: return
+
+        val intrinsicW = drawable.intrinsicWidth.toFloat()
+        val intrinsicH = drawable.intrinsicHeight.toFloat()
+        if (intrinsicW <= 0 || intrinsicH <= 0) return
+
+        // Scale logo to ~60% of bitmap height, preserving aspect ratio
+        val targetH = (h * 0.6f).toInt()
+        val targetW = (targetH * (intrinsicW / intrinsicH)).toInt()
+
+        // Position: bottom-right with slight offset
+        val left = (w - targetW + targetW * 0.1f).toInt()
+        val top = (h - targetH + targetH * 0.08f).toInt()
+
+        drawable.setBounds(left, top, left + targetW, top + targetH)
+        drawable.alpha = 51 // 0.2 * 255 = 51
+        drawable.draw(canvas)
     }
 
     private fun parseHexColor(hex: String): Int {
@@ -466,7 +535,7 @@ class HeatherGlanceWidget : GlanceAppWidget() {
 }
 
 private val white = androidx.compose.ui.graphics.Color.White
-private val white95 = androidx.compose.ui.graphics.Color(0xF2FFFFFF)
-private val white90 = androidx.compose.ui.graphics.Color(0xE6FFFFFF)
-private val white80 = androidx.compose.ui.graphics.Color(0xCCFFFFFF)
-private val white70 = androidx.compose.ui.graphics.Color(0xB3FFFFFF)
+private val white95 = androidx.compose.ui.graphics.Color(0xF2FFFFFF.toInt())
+private val white90 = androidx.compose.ui.graphics.Color(0xE6FFFFFF.toInt())
+private val white80 = androidx.compose.ui.graphics.Color(0xCCFFFFFF.toInt())
+private val white70 = androidx.compose.ui.graphics.Color(0xB3FFFFFF.toInt())

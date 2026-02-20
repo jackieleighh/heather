@@ -11,33 +11,8 @@ struct WidgetGradients {
         return nightGradients[resolved]?[tier] ?? nightGradients["overcast"]![tier]
     }
 
-    /// Interpolates additional color stops between each pair for smoother gradients.
-    static func smoothed(_ hexColors: [String]) -> [String] {
-        guard hexColors.count >= 2 else { return hexColors }
-        let stepsPerSegment = 8
-        var result: [String] = []
-        for i in 0..<hexColors.count - 1 {
-            let c1 = parseRGB(hexColors[i])
-            let c2 = parseRGB(hexColors[i + 1])
-            for s in 0...stepsPerSegment {
-                if i > 0 && s == 0 { continue }
-                let linear = Double(s) / Double(stepsPerSegment)
-                // Ease-in-out (smoothstep) for perceptually even transitions
-                let t = linear * linear * (3.0 - 2.0 * linear)
-                // Interpolate in linear-light (gamma 2.2)
-                let r = pow(pow(c1.r, 2.2) * (1 - t) + pow(c2.r, 2.2) * t, 1 / 2.2)
-                let g = pow(pow(c1.g, 2.2) * (1 - t) + pow(c2.g, 2.2) * t, 1 / 2.2)
-                let b = pow(pow(c1.b, 2.2) * (1 - t) + pow(c2.b, 2.2) * t, 1 / 2.2)
-                result.append(String(format: "#FF%02X%02X%02X",
-                    min(max(Int(r * 255), 0), 255),
-                    min(max(Int(g * 255), 0), 255),
-                    min(max(Int(b * 255), 0), 255)))
-            }
-        }
-        return result
-    }
-
-    private static func parseRGB(_ hex: String) -> (r: Double, g: Double, b: Double) {
+    /// Parses a hex color string to SwiftUI-compatible components.
+    static func parseRGB(_ hex: String) -> (r: Double, g: Double, b: Double) {
         let clean = hex.hasPrefix("#") ? String(hex.dropFirst()) : hex
         var value: UInt64 = 0
         Scanner(string: clean).scanHexInt64(&value)
