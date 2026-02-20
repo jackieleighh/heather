@@ -16,6 +16,18 @@
     {
       "layers" : [
         {
+          "glass" : false,
+          "image-name" : "Heather (2).svg",
+          "name" : "Heather (2)",
+          "position" : {
+            "scale" : 1.8,
+            "translation-in-points" : [
+              0,
+              -240.57512130830656
+            ]
+          }
+        },
+        {
           "fill-specializations" : [
             {
               "appearance" : "dark",
@@ -31,7 +43,7 @@
             "scale" : 0.9,
             "translation-in-points" : [
               0.03341838289952648,
-              36.64683650117024
+              172.23611093166448
             ]
           }
         }
