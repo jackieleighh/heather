@@ -2,7 +2,6 @@ import 'dart:async';
 import 'dart:io';
 import 'dart:typed_data';
 import 'package:flutter/material.dart';
-import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:flutter_map/flutter_map.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:google_fonts/google_fonts.dart';
@@ -32,9 +31,6 @@ class _RadarPageState extends ConsumerState<RadarPage> {
 
   final Map<String, Uint8List> _tileCache = {};
   final HttpClient _tileHttpClient = HttpClient();
-  final String _owmApiKey = dotenv.env['OWM_API_KEY'] ?? '';
-  final String _waqiToken = dotenv.env['WAQI_TOKEN'] ?? '';
-
   MarkerLayer get _locationMarker => MarkerLayer(
     markers: [
       Marker(
@@ -165,7 +161,7 @@ class _RadarPageState extends ConsumerState<RadarPage> {
                 child: Align(
                   alignment: Alignment.centerRight,
                   child: Text(
-                    'Current Maps',
+                    'Radar',
                     style: GoogleFonts.quicksand(
                       fontSize: 22,
                       fontWeight: FontWeight.w700,
@@ -173,117 +169,6 @@ class _RadarPageState extends ConsumerState<RadarPage> {
                     ),
                   ),
                 ),
-              ),
-            ),
-            const SizedBox(height: 8),
-            // Wind map
-            Expanded(
-              child: _MapCard(
-                label: 'Wind',
-                child: _owmApiKey.isEmpty
-                    ? Center(
-                        child: Text(
-                          'OWM_API_KEY required',
-                          style: GoogleFonts.quicksand(
-                            fontSize: 16,
-                            fontWeight: FontWeight.w600,
-                            color: AppColors.cream.withValues(alpha: 0.7),
-                          ),
-                        ),
-                      )
-                    : ClipRRect(
-                        borderRadius: BorderRadius.circular(16),
-                        child: Opacity(
-                          opacity: 0.75,
-                          child: FlutterMap(
-                            options: MapOptions(
-                              initialCenter: LatLng(
-                                widget.latitude,
-                                widget.longitude,
-                              ),
-                              initialZoom: 7.0,
-                              interactionOptions: const InteractionOptions(
-                                flags:
-                                    InteractiveFlag.all &
-                                    ~InteractiveFlag.rotate,
-                              ),
-                            ),
-                            children: [
-                              TileLayer(
-                                urlTemplate:
-                                    'https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png',
-                                subdomains: const ['a', 'b', 'c', 'd'],
-                                retinaMode:
-                                    MediaQuery.of(context).devicePixelRatio >
-                                    1.0,
-                              ),
-                              TileLayer(
-                                urlTemplate:
-                                    'https://tile.openweathermap.org/map/wind_new/{z}/{x}/{y}.png?appid=$_owmApiKey',
-                                userAgentPackageName: 'com.heather.app',
-                              ),
-                              _locationMarker,
-                            ],
-                          ),
-                        ),
-                      ),
-              ),
-            ),
-            const SizedBox(height: 8),
-            // Air quality map
-            Expanded(
-              child: _MapCard(
-                label: 'Air Quality',
-                child: _waqiToken.isEmpty
-                    ? Center(
-                        child: Text(
-                          'WAQI_TOKEN required',
-                          style: GoogleFonts.quicksand(
-                            fontSize: 16,
-                            fontWeight: FontWeight.w600,
-                            color: AppColors.cream.withValues(alpha: 0.7),
-                          ),
-                        ),
-                      )
-                    : ClipRRect(
-                        borderRadius: BorderRadius.circular(16),
-                        child: Opacity(
-                          opacity: 0.75,
-                          child: FlutterMap(
-                            options: MapOptions(
-                              initialCenter: LatLng(
-                                widget.latitude,
-                                widget.longitude,
-                              ),
-                              initialZoom: 7.0,
-                              interactionOptions: const InteractionOptions(
-                                flags:
-                                    InteractiveFlag.all &
-                                    ~InteractiveFlag.rotate,
-                              ),
-                            ),
-                            children: [
-                              TileLayer(
-                                urlTemplate:
-                                    'https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png',
-                                subdomains: const ['a', 'b', 'c', 'd'],
-                                retinaMode:
-                                    MediaQuery.of(context).devicePixelRatio >
-                                    1.0,
-                              ),
-                              Opacity(
-                                opacity: 0.6,
-                                child: TileLayer(
-                                  urlTemplate:
-                                      'https://tiles.aqicn.org/tiles/usepa-aqi/{z}/{x}/{y}.png?token=$_waqiToken',
-                                  userAgentPackageName: 'com.heather.app',
-                                ),
-                              ),
-                              _locationMarker,
-                            ],
-                          ),
-                        ),
-                      ),
               ),
             ),
             const SizedBox(height: 8),

@@ -4,16 +4,6 @@ import WidgetKit
 struct SmallWidgetView: View {
     let data: WeatherData
 
-    // Persona switching commented out for now:
-    // private var personaLogoName: String {
-    //     switch data.persona {
-    //     case "jade": return "jade_logo"
-    //     case "luna": return "luna_logo"
-    //     case "aurelia": return "aurelia_logo"
-    //     default: return "heather_logo"
-    //     }
-    // }
-
     var body: some View {
         WidgetView() {
             ZStack(alignment: .bottomTrailing) {
@@ -23,7 +13,7 @@ struct SmallWidgetView: View {
                     scale: 0.6
                 )
 
-                // Persona logo overlay
+                // Logo overlay
                 Image("heather_logo")
                     .resizable()
                     .scaledToFit()

@@ -5,7 +5,6 @@ import 'package:intl/intl.dart';
 
 import '../../../../core/constants/app_colors.dart';
 import '../../domain/entities/weather_alert.dart';
-import '../providers/settings_provider.dart';
 
 void showAlertDetailSheet(BuildContext context, List<WeatherAlert> alerts) {
   showModalBottomSheet(
@@ -23,8 +22,7 @@ class AlertDetailSheet extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    // Persona switching disabled — hardcode to Heather's color
-    final heroColor = AppColors.magenta;
+    const heroColor = AppColors.magenta;
     return DraggableScrollableSheet(
       initialChildSize: 0.7,
       minChildSize: 0.4,

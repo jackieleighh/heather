@@ -40,7 +40,6 @@ class WidgetService {
     required Forecast forecast,
     required LocationInfo location,
     required String quip,
-    required Persona persona,
     required bool explicit,
   }) async {
     final current = forecast.current;
@@ -65,7 +64,7 @@ class WidgetService {
       'windSpeed': current.windSpeed.round(),
       'uvIndex': current.uvIndex.round(),
       'quip': quip,
-      'persona': persona.name,
+      'persona': 'heather',
       'cityName': location.cityName,
       'latitude': location.latitude,
       'longitude': location.longitude,
@@ -82,15 +81,15 @@ class WidgetService {
     });
 
     await HomeWidget.saveWidgetData<String>(_dataKey, payload);
-    await _writeQuipMap(persona, explicit, isDay: isDay);
+    await _writeQuipMap(explicit, isDay: isDay);
     await HomeWidget.updateWidget(
       iOSName: _iOSWidgetName,
       androidName: _androidWidgetName,
     );
   }
 
-  static Future<void> _writeQuipMap(Persona persona, bool explicit, {required bool isDay}) async {
-    final map = persona.quipMap(altTone: explicit, isDay: isDay);
+  static Future<void> _writeQuipMap(bool explicit, {required bool isDay}) async {
+    final map = heatherQuipMap(altTone: explicit, isDay: isDay);
     final json = map.map(
       (condition, tiers) => MapEntry(
         condition.name,

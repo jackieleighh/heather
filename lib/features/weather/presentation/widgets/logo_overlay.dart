@@ -1,16 +1,11 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_svg/svg.dart';
 
-class LogoOverlay extends ConsumerWidget {
-  // final Persona? personaOverride;
-
+class LogoOverlay extends StatelessWidget {
   const LogoOverlay({super.key});
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
-    // final persona =
-    //     personaOverride ?? ref.watch(settingsProvider.select((s) => s.persona));
+  Widget build(BuildContext context) {
     final screenHeight = MediaQuery.sizeOf(context).height;
 
     return Positioned(
@@ -23,16 +18,6 @@ class LogoOverlay extends ConsumerWidget {
             'assets/images/heather_logo.svg',
             height: screenHeight * 0.5,
           ),
-          // Persona switching commented out for now:
-          // child: persona == Persona.jade
-          //     ? SvgPicture.asset(
-          //         'assets/images/jade_logo.svg',
-          //         height: screenHeight * 0.5,
-          //       )
-          //     : SvgPicture.asset(
-          //         'assets/images/heather_logo.svg',
-          //         height: screenHeight * 0.5,
-          //       ),
         ),
       ),
     );

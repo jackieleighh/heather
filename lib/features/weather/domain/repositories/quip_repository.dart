@@ -1,4 +1,3 @@
-import '../../../../core/constants/persona.dart';
 import '../entities/weather.dart';
 
 abstract class QuipRepository {
@@ -6,6 +5,5 @@ abstract class QuipRepository {
   String getLocalQuip({
     required Weather weather,
     bool explicit = false,
-    Persona persona = Persona.heather,
   });
 }

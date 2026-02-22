@@ -20,12 +20,5 @@ object ConditionIcons {
         else -> R.drawable.ic_weather_overcast
     }
 
-    // Persona switching commented out for now:
-    // fun personaLogoRes(persona: String): Int = when (persona) {
-    //     "jade" -> R.drawable.persona_jade
-    //     "luna" -> R.drawable.persona_luna
-    //     "aurelia" -> R.drawable.persona_aurelia
-    //     else -> R.drawable.persona_heather
-    // }
-    fun personaLogoRes(@Suppress("UNUSED_PARAMETER") persona: String): Int = R.drawable.persona_heather
+    fun personaLogoRes(): Int = R.drawable.persona_heather
 }

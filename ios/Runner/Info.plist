@@ -70,6 +70,11 @@
 		<array>
 			<string>fetch</string>
 			<string>remote-notification</string>
+			<string>processing</string>
+		</array>
+		<key>BGTaskSchedulerPermittedIdentifiers</key>
+		<array>
+			<string>com.totms.heather.alertCheck</string>
 		</array>
 		<key>FirebaseMessagingAutoInitEnabled</key>
 		<true/>

@@ -12,11 +12,10 @@ class QuipRepositoryImpl implements QuipRepository {
   String getLocalQuip({
     required Weather weather,
     bool explicit = false,
-    Persona persona = Persona.heather,
   }) {
     final condition = weather.condition;
     final tier = TemperatureTier.fromTemperature(weather.temperature);
-    final quipMap = persona.quipMap(altTone: explicit, isDay: weather.isDay);
+    final quipMap = heatherQuipMap(altTone: explicit, isDay: weather.isDay);
 
     final quips =
         quipMap[condition]?[tier] ??

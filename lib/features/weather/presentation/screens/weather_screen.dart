@@ -9,7 +9,7 @@ import 'package:heather/features/weather/domain/entities/saved_location.dart';
 import 'package:heather/features/weather/presentation/screens/saved_locations_page.dart';
 import 'package:heather/features/weather/presentation/widgets/logo_overlay.dart';
 import '../../../../core/constants/app_colors.dart';
-import '../../../../core/services/fcm_service.dart';
+import '../../../../core/services/background_alert_service.dart';
 import '../../../../core/services/widget_service.dart';
 import '../providers/alert_provider.dart';
 import '../providers/location_provider.dart';
@@ -126,13 +126,13 @@ class _WeatherScreenState extends ConsumerState<WeatherScreen>
     context.push('/settings');
   }
 
-  void _registerAllLocations({
+  Future<void> _registerAllLocations({
     required double gpsLatitude,
     required double gpsLongitude,
-  }) {
+  }) async {
     final alertsEnabled = ref.read(settingsProvider).severeAlertsEnabled;
     if (!alertsEnabled) {
-      FcmService().unregisterDevice();
+      await BackgroundAlertService.cancelPeriodicCheck();
       return;
     }
 
@@ -147,7 +147,8 @@ class _WeatherScreenState extends ConsumerState<WeatherScreen>
         },
       ),
     ];
-    FcmService().registerDevice(locations: locations);
+    await BackgroundAlertService.updateLocations(locations);
+    await BackgroundAlertService.registerPeriodicCheck();
   }
 
   Future<bool> _refreshAll() async {

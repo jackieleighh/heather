@@ -2,6 +2,7 @@ import Flutter
 import UIKit
 import FirebaseCore
 import FirebaseMessaging
+import workmanager
 
 @main
 @objc class AppDelegate: FlutterAppDelegate {
@@ -17,7 +18,16 @@ import FirebaseMessaging
 
     application.registerForRemoteNotifications()
 
+    // WorkManager: register plugin callback for background isolate
+    WorkmanagerPlugin.setPluginRegistrantCallback { registry in
+      GeneratedPluginRegistrant.register(with: registry)
+    }
+
     GeneratedPluginRegistrant.register(with: self)
+
+    // WorkManager: register BGTask identifier
+    WorkmanagerPlugin.registerTask(withIdentifier: "com.totms.heather.alertCheck")
+
     return super.application(application, didFinishLaunchingWithOptions: launchOptions)
   }
 

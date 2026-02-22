@@ -12,9 +12,6 @@ class HeatherApp extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    // Persona switching commented out for now:
-    // final persona = ref.watch(settingsProvider.select((s) => s.persona));
-    // theme: HeatherTheme.light(accentColor: persona.heroColor),
     return MaterialApp.router(
       title: 'Heather',
       theme: HeatherTheme.light(accentColor: AppColors.magenta),

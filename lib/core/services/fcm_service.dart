@@ -1,6 +1,5 @@
 import 'dart:io';
 
-import 'package:cloud_functions/cloud_functions.dart';
 import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
@@ -29,9 +28,7 @@ class FcmService {
 
   final _messaging = FirebaseMessaging.instance;
   final _localNotifications = FlutterLocalNotificationsPlugin();
-  final _functions = FirebaseFunctions.instance;
   bool _initialized = false;
-  List<Map<String, dynamic>>? _lastLocations;
 
   Future<void> init() async {
     if (_initialized) return;
@@ -64,16 +61,6 @@ class FcmService {
     _messaging.getToken().then((token) {
       if (kDebugMode) {
         print('FCM token: $token');
-      }
-    });
-
-    // Listen for token refreshes – re-register with cached locations
-    _messaging.onTokenRefresh.listen((newToken) {
-      if (kDebugMode) {
-        print('FCM token refreshed: $newToken');
-      }
-      if (_lastLocations != null) {
-        registerDevice(locations: _lastLocations!);
       }
     });
 
@@ -169,66 +156,4 @@ class FcmService {
         settings.authorizationStatus == AuthorizationStatus.provisional;
   }
 
-  /// Registers the device's FCM token + all locations with the cloud function
-  /// so the backend can send location-targeted severe weather push alerts.
-  Future<void> registerDevice({
-    required List<Map<String, dynamic>> locations,
-  }) async {
-    // On iOS, getToken() returns null until notification permission is granted.
-    // Ensure we have permission before attempting to fetch the token.
-    final status = await _messaging.getNotificationSettings();
-    if (status.authorizationStatus == AuthorizationStatus.notDetermined) {
-      final granted = await requestPermission();
-      if (!granted) return;
-    } else if (status.authorizationStatus == AuthorizationStatus.denied) {
-      return;
-    }
-
-    final token = await _messaging.getToken();
-    if (token == null) return;
-
-    _lastLocations = locations;
-
-    try {
-      await _functions.httpsCallable('registerDevice').call({
-        'fcmToken': token,
-        'locations': locations,
-      });
-    } catch (e) {
-      if (kDebugMode) {
-        print('Failed to register device: $e');
-      }
-    }
-  }
-
-  /// Unregisters the device by sending an empty locations array so the backend
-  /// stops sending push alerts. Called when the user disables severe alerts.
-  Future<void> unregisterDevice() async {
-    final token = await _messaging.getToken();
-    if (token == null) return;
-
-    _lastLocations = null;
-
-    try {
-      await _functions.httpsCallable('registerDevice').call({
-        'fcmToken': token,
-        'locations': <Map<String, dynamic>>[],
-      });
-    } catch (e) {
-      if (kDebugMode) {
-        print('Failed to unregister device: $e');
-      }
-    }
-  }
-
-  /// Returns the current FCM token, or null if unavailable.
-  Future<String?> getToken() => _messaging.getToken();
-
-  /// Subscribe to a topic (e.g., for location-based alert routing).
-  Future<void> subscribeToTopic(String topic) =>
-      _messaging.subscribeToTopic(topic);
-
-  /// Unsubscribe from a topic.
-  Future<void> unsubscribeFromTopic(String topic) =>
-      _messaging.unsubscribeFromTopic(topic);
 }

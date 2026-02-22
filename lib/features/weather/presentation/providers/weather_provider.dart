@@ -1,7 +1,6 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:freezed_annotation/freezed_annotation.dart';
 
-import '../../../../core/constants/persona.dart';
 import '../../../../core/network/api_client.dart';
 import '../../../../core/services/widget_service.dart';
 import '../../data/repositories/quip_repository_impl.dart';
@@ -57,17 +56,12 @@ final weatherStateProvider =
         weatherRepo: ref.watch(weatherRepositoryProvider),
         quipRepo: ref.watch(quipRepositoryProvider),
         explicit: settings.explicitLanguage,
-        persona: settings.persona,
       );
 
       ref.listen<SettingsState>(settingsProvider, (previous, next) {
         if (previous?.explicitLanguage != next.explicitLanguage) {
           notifier.updateExplicit(next.explicitLanguage);
         }
-        // final personaChanged = previous?.persona != next.persona;
-        // if (personaChanged) {
-        //   notifier.updatePersona(next.persona);
-        // }
       });
 
       return notifier;
@@ -77,16 +71,13 @@ class WeatherNotifier extends StateNotifier<WeatherState> {
   final WeatherRepositoryImpl weatherRepo;
   final QuipRepositoryImpl quipRepo;
   bool _explicit;
-  final Persona _persona; // made final while persona switching is disabled
   _QuipKey? _lastQuipKey;
 
   WeatherNotifier({
     required this.weatherRepo,
     required this.quipRepo,
     required bool explicit,
-    required Persona persona,
   }) : _explicit = explicit,
-       _persona = persona,
        super(const WeatherState.loading()) {
     loadWeather();
   }
@@ -96,11 +87,6 @@ class WeatherNotifier extends StateNotifier<WeatherState> {
     _swapLocalQuip();
   }
 
-  // void updatePersona(Persona persona) {
-  //   _persona = persona;
-  //   _swapLocalQuip();
-  // }
-
   void _swapLocalQuip() {
     final current = state;
     current.whenOrNull(
@@ -108,7 +94,6 @@ class WeatherNotifier extends StateNotifier<WeatherState> {
         final quip = quipRepo.getLocalQuip(
           weather: forecast.current,
           explicit: _explicit,
-          persona: _persona,
         );
         _lastQuipKey = _quipKeyFor(forecast);
         state = WeatherState.loaded(
@@ -141,7 +126,6 @@ class WeatherNotifier extends StateNotifier<WeatherState> {
       forecast: current.forecast,
       location: current.location,
       quip: current.quip,
-      persona: _persona,
       explicit: _explicit,
     );
   }
@@ -157,7 +141,6 @@ class WeatherNotifier extends StateNotifier<WeatherState> {
       final quip = quipRepo.getLocalQuip(
         weather: forecast.current,
         explicit: _explicit,
-        persona: _persona,
       );
       _lastQuipKey = _quipKeyFor(forecast);
       if (!mounted) return;
@@ -188,7 +171,6 @@ class WeatherNotifier extends StateNotifier<WeatherState> {
         quip = quipRepo.getLocalQuip(
           weather: forecast.current,
           explicit: _explicit,
-          persona: _persona,
         );
         _lastQuipKey = newKey;
       }
@@ -235,17 +217,12 @@ final locationForecastProvider =
         latitude: params.lat,
         longitude: params.lon,
         explicit: settings.explicitLanguage,
-        persona: settings.persona,
       );
 
       ref.listen<SettingsState>(settingsProvider, (previous, next) {
         if (previous?.explicitLanguage != next.explicitLanguage) {
           notifier.updateExplicit(next.explicitLanguage);
         }
-        // final personaChanged = previous?.persona != next.persona;
-        // if (personaChanged) {
-        //   notifier.updatePersona(next.persona);
-        // }
       });
 
       return notifier;
@@ -258,7 +235,6 @@ class LocationForecastNotifier extends StateNotifier<LocationForecastState> {
   final double latitude;
   final double longitude;
   bool _explicit;
-  final Persona _persona; // made final while persona switching is disabled
   _QuipKey? _lastQuipKey;
 
   LocationForecastNotifier({
@@ -268,9 +244,7 @@ class LocationForecastNotifier extends StateNotifier<LocationForecastState> {
     required this.latitude,
     required this.longitude,
     required bool explicit,
-    required Persona persona,
   }) : _explicit = explicit,
-       _persona = persona,
        super(const LocationForecastState.loading()) {
     load();
   }
@@ -280,18 +254,12 @@ class LocationForecastNotifier extends StateNotifier<LocationForecastState> {
     _swapLocalQuip();
   }
 
-  // void updatePersona(Persona persona) {
-  //   _persona = persona;
-  //   _swapLocalQuip();
-  // }
-
   void _swapLocalQuip() {
     state.whenOrNull(
       loaded: (forecast, _) {
         final quip = quipRepo.getLocalQuip(
           weather: forecast.current,
           explicit: _explicit,
-          persona: _persona,
         );
         _lastQuipKey = _quipKeyFor(forecast);
         state = LocationForecastState.loaded(forecast: forecast, quip: quip);
@@ -317,7 +285,6 @@ class LocationForecastNotifier extends StateNotifier<LocationForecastState> {
       final quip = quipRepo.getLocalQuip(
         weather: forecast.current,
         explicit: _explicit,
-        persona: _persona,
       );
       _lastQuipKey = _quipKeyFor(forecast);
       if (!mounted) return;
@@ -342,7 +309,6 @@ class LocationForecastNotifier extends StateNotifier<LocationForecastState> {
         quip = quipRepo.getLocalQuip(
           weather: forecast.current,
           explicit: _explicit,
-          persona: _persona,
         );
         _lastQuipKey = newKey;
       }

@@ -70,7 +70,7 @@ class HeatherGlanceWidget : GlanceAppWidget() {
                 || size.width < 250.dp // Small widget always uses diagonal
 
         // Match bitmap aspect ratio to widget size so the background
-        // doesn't stretch/distort the persona logo overlay.
+        // doesn't stretch/distort the logo overlay.
         val bitmapLong = 500
         val aspectRatio = size.width.value / size.height.value
         val bitmapW: Int
@@ -88,7 +88,6 @@ class HeatherGlanceWidget : GlanceAppWidget() {
             hexColors = data.gradientColors,
             conditionName = data.conditionName,
             isDay = data.isDay,
-            persona = data.persona,
             width = bitmapW,
             height = bitmapH,
             diagonalGradient = diagonalGradient,
@@ -461,7 +460,6 @@ class HeatherGlanceWidget : GlanceAppWidget() {
         hexColors: List<String>,
         conditionName: String,
         isDay: Boolean,
-        persona: String,
         width: Int,
         height: Int,
         diagonalGradient: Boolean,
@@ -488,8 +486,8 @@ class HeatherGlanceWidget : GlanceAppWidget() {
         // 2. Draw weather effects
         WeatherEffectRenderer.render(canvas, conditionName, isDay, w, h)
 
-        // 3. Draw persona logo overlay (bottom-right, 0.2 opacity)
-        drawPersonaLogo(context, canvas, persona, w, h)
+        // 3. Draw logo overlay (bottom-right, 0.2 opacity)
+        drawLogo(context, canvas, w, h)
 
         // 4. Draw text contrast scrim (simulates iOS drop shadows)
         WeatherEffectRenderer.drawTextScrim(canvas, w, h)
@@ -497,14 +495,13 @@ class HeatherGlanceWidget : GlanceAppWidget() {
         return bitmap
     }
 
-    private fun drawPersonaLogo(
+    private fun drawLogo(
         context: Context,
         canvas: Canvas,
-        persona: String,
         w: Float,
         h: Float,
     ) {
-        val logoRes = ConditionIcons.personaLogoRes(persona)
+        val logoRes = ConditionIcons.personaLogoRes()
         val drawable = androidx.core.content.ContextCompat.getDrawable(context, logoRes) ?: return
 
         val intrinsicW = drawable.intrinsicWidth.toFloat()

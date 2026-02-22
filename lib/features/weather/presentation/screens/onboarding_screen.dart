@@ -17,7 +17,7 @@ class OnboardingScreen extends ConsumerStatefulWidget {
 }
 
 class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
-  bool _keepItPG = true;
+  bool _keepItPG = false;
   bool _severeAlertsEnabled = false;
 
   @override

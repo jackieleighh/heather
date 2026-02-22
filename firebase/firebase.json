@@ -1,24 +1,2 @@
 {
-  "functions": [
-    {
-      "codebase": "default",
-      "ignore": [
-        "node_modules",
-        ".git",
-        "firebase-debug.log",
-        "firebase-debug.*.log",
-        "*.local"
-      ],
-      "predeploy": [
-        "npm --prefix \"$RESOURCE_DIR\" run build"
-      ],
-      "source": "functions"
-    }
-  ],
-  "firestore": {
-    "database": "(default)",
-    "location": "us-east5",
-    "rules": "firestore.rules",
-    "indexes": "firestore.indexes.json"
-  }
 }
