@@ -175,7 +175,6 @@ class _RadarPageState extends ConsumerState<RadarPage> {
             // Radar map
             Expanded(
               child: _MapCard(
-                label: 'Precipitation',
                 child: manifestAsync.when(
                   loading: () => const Center(
                     child: CircularProgressIndicator(
@@ -203,23 +202,26 @@ class _RadarPageState extends ConsumerState<RadarPage> {
                       children: [
                         ClipRRect(
                           borderRadius: BorderRadius.circular(16),
-                          child: Opacity(
-                            opacity: 0.75,
-                            child: FlutterMap(
-                              options: MapOptions(
-                                initialCenter: LatLng(
-                                  widget.latitude,
-                                  widget.longitude,
-                                ),
-                                initialZoom: 7.0,
-                                interactionOptions: const InteractionOptions(
-                                  flags:
-                                      InteractiveFlag.all &
-                                      ~InteractiveFlag.rotate,
-                                ),
+                          child: FlutterMap(
+                            options: MapOptions(
+                              initialCenter: LatLng(
+                                widget.latitude,
+                                widget.longitude,
                               ),
-                              children: [
-                                TileLayer(
+                              initialZoom: 7.0,
+                              minZoom: 3.0,
+                              maxZoom: 12.0,
+                              backgroundColor: Colors.transparent,
+                              interactionOptions: const InteractionOptions(
+                                flags:
+                                    InteractiveFlag.all &
+                                    ~InteractiveFlag.rotate,
+                              ),
+                            ),
+                            children: [
+                              Opacity(
+                                opacity: 0.45,
+                                child: TileLayer(
                                   urlTemplate:
                                       'https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png',
                                   subdomains: const ['a', 'b', 'c', 'd'],
@@ -227,20 +229,20 @@ class _RadarPageState extends ConsumerState<RadarPage> {
                                       MediaQuery.of(context).devicePixelRatio >
                                       1.0,
                                 ),
-                                Opacity(
-                                  opacity: 0.6,
-                                  child: TileLayer(
-                                    key: ValueKey(frame.path),
-                                    urlTemplate: radarTileUrl,
-                                    tileProvider: CachedRadarTileProvider(
-                                      cache: _tileCache,
-                                      httpClient: _tileHttpClient,
-                                    ),
+                              ),
+                              Opacity(
+                                opacity: 0.7,
+                                child: TileLayer(
+                                  key: ValueKey(frame.path),
+                                  urlTemplate: radarTileUrl,
+                                  tileProvider: CachedRadarTileProvider(
+                                    cache: _tileCache,
+                                    httpClient: _tileHttpClient,
                                   ),
                                 ),
-                                _locationMarker,
-                              ],
-                            ),
+                              ),
+                              _locationMarker,
+                            ],
                           ),
                         ),
                         Positioned(
@@ -395,10 +397,9 @@ class _ControlBar extends StatelessWidget {
 }
 
 class _MapCard extends StatelessWidget {
-  final String label;
   final Widget child;
 
-  const _MapCard({required this.label, required this.child});
+  const _MapCard({required this.child});
 
   @override
   Widget build(BuildContext context) {
@@ -433,25 +434,6 @@ class _MapCard extends StatelessWidget {
           Positioned.fill(
             child: IgnorePointer(
               child: CustomPaint(painter: _EdgeFadePainter()),
-            ),
-          ),
-          Positioned(
-            top: 10,
-            left: 12,
-            child: Container(
-              padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
-              decoration: BoxDecoration(
-                color: AppColors.midnightPurple.withValues(alpha: 0.4),
-                borderRadius: BorderRadius.circular(8),
-              ),
-              child: Text(
-                label,
-                style: GoogleFonts.quicksand(
-                  fontSize: 12,
-                  fontWeight: FontWeight.w700,
-                  color: AppColors.cream,
-                ),
-              ),
             ),
           ),
         ],

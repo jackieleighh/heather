@@ -11,7 +11,6 @@ import 'package:heather/features/weather/presentation/widgets/logo_overlay.dart'
 import '../../../../core/constants/app_colors.dart';
 import '../../../../core/services/background_alert_service.dart';
 import '../../../../core/services/widget_service.dart';
-import '../providers/alert_provider.dart';
 import '../providers/location_provider.dart';
 import '../providers/settings_provider.dart';
 import '../providers/weather_provider.dart';
@@ -152,7 +151,6 @@ class _WeatherScreenState extends ConsumerState<WeatherScreen>
   }
 
   Future<bool> _refreshAll() async {
-    ref.invalidate(alertsProvider);
     final savedLocations = ref.read(savedLocationsProvider);
     final results = await Future.wait([
       ref.read(weatherStateProvider.notifier).refresh(),
@@ -201,7 +199,7 @@ class _WeatherScreenState extends ConsumerState<WeatherScreen>
         message: message,
         onRetry: () => ref.read(weatherStateProvider.notifier).loadWeather(),
       ),
-      loaded: (forecast, location, quip) {
+      loaded: (forecast, location, quip, alerts) {
         // Register device with cloud function for push alerts (GPS + saved)
         if (!_initialRegistrationDone) {
           _initialRegistrationDone = true;
@@ -235,6 +233,7 @@ class _WeatherScreenState extends ConsumerState<WeatherScreen>
             quip: quip,
             latitude: location.latitude,
             longitude: location.longitude,
+            alerts: alerts,
             onRefresh: _refreshAll,
             onSettings: _showSettings,
           ),
@@ -253,7 +252,7 @@ class _WeatherScreenState extends ConsumerState<WeatherScreen>
           final locIndex = _currentHorizontalPage - 1;
           if (locIndex < locationStates.length) {
             locationStates[locIndex].whenOrNull(
-              loaded: (locForecast, _) {
+              loaded: (locForecast, quip, alerts) {
                 bgCondition = locForecast.current.condition;
                 bgIsDay = locForecast.isCurrentlyDay;
                 bgTemperature = locForecast.current.temperature;

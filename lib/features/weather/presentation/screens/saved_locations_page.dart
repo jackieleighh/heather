@@ -30,12 +30,13 @@ class SavedLocationsPage extends ConsumerWidget {
         onRetry: () =>
             ref.read(locationForecastProvider(params).notifier).load(),
       ),
-      loaded: (forecast, quip) => VerticalForecastPager(
+      loaded: (forecast, quip, alerts) => VerticalForecastPager(
         forecast: forecast,
         cityName: location.name,
         quip: quip,
         latitude: location.latitude,
         longitude: location.longitude,
+        alerts: alerts,
         onRefresh: () =>
             ref.read(locationForecastProvider(params).notifier).refresh(),
         onSettings: onSettings,

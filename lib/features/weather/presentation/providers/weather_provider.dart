@@ -10,7 +10,9 @@ import '../../data/sources/weather_remote_source.dart';
 import '../../domain/entities/forecast.dart';
 import '../../domain/entities/location_info.dart';
 import '../../domain/entities/temperature_tier.dart';
+import '../../domain/entities/weather_alert.dart';
 import '../../domain/entities/weather_condition.dart';
+import 'alert_provider.dart';
 import 'settings_provider.dart';
 
 part 'weather_provider.freezed.dart';
@@ -44,6 +46,7 @@ class WeatherState with _$WeatherState {
     required Forecast forecast,
     required LocationInfo location,
     required String quip,
+    @Default([]) List<WeatherAlert> alerts,
   }) = _Loaded;
   const factory WeatherState.error(String message) = _Error;
 }
@@ -90,7 +93,7 @@ class WeatherNotifier extends StateNotifier<WeatherState> {
   void _swapLocalQuip() {
     final current = state;
     current.whenOrNull(
-      loaded: (forecast, location, _) {
+      loaded: (forecast, location, _, alerts) {
         final quip = quipRepo.getLocalQuip(
           weather: forecast.current,
           explicit: _explicit,
@@ -100,6 +103,7 @@ class WeatherNotifier extends StateNotifier<WeatherState> {
           forecast: forecast,
           location: location,
           quip: quip,
+          alerts: alerts,
         );
         _pushToWidget();
       },
@@ -108,11 +112,12 @@ class WeatherNotifier extends StateNotifier<WeatherState> {
 
   void updateQuip(String quip) {
     state.whenOrNull(
-      loaded: (forecast, location, _) {
+      loaded: (forecast, location, _, alerts) {
         state = WeatherState.loaded(
           forecast: forecast,
           location: location,
           quip: quip,
+          alerts: alerts,
         );
         _pushToWidget();
       },
@@ -134,10 +139,15 @@ class WeatherNotifier extends StateNotifier<WeatherState> {
     state = const WeatherState.loading();
     try {
       final location = await weatherRepo.getCurrentLocation();
-      final forecast = await weatherRepo.getForecast(
-        latitude: location.latitude,
-        longitude: location.longitude,
-      );
+      final results = await Future.wait([
+        weatherRepo.getForecast(
+          latitude: location.latitude,
+          longitude: location.longitude,
+        ),
+        fetchAlerts(latitude: location.latitude, longitude: location.longitude),
+      ]);
+      final forecast = results[0] as Forecast;
+      final alerts = results[1] as List<WeatherAlert>;
       final quip = quipRepo.getLocalQuip(
         weather: forecast.current,
         explicit: _explicit,
@@ -148,6 +158,7 @@ class WeatherNotifier extends StateNotifier<WeatherState> {
         forecast: forecast,
         location: location,
         quip: quip,
+        alerts: alerts,
       );
       _pushToWidget();
     } catch (e) {
@@ -159,10 +170,15 @@ class WeatherNotifier extends StateNotifier<WeatherState> {
   Future<bool> refresh() async {
     try {
       final location = await weatherRepo.getCurrentLocation();
-      final forecast = await weatherRepo.getForecast(
-        latitude: location.latitude,
-        longitude: location.longitude,
-      );
+      final results = await Future.wait([
+        weatherRepo.getForecast(
+          latitude: location.latitude,
+          longitude: location.longitude,
+        ),
+        fetchAlerts(latitude: location.latitude, longitude: location.longitude),
+      ]);
+      final forecast = results[0] as Forecast;
+      final alerts = results[1] as List<WeatherAlert>;
       final newKey = _quipKeyFor(forecast);
       final String quip;
       if (newKey == _lastQuipKey && state is _Loaded) {
@@ -179,6 +195,7 @@ class WeatherNotifier extends StateNotifier<WeatherState> {
         forecast: forecast,
         location: location,
         quip: quip,
+        alerts: alerts,
       );
       _pushToWidget();
       return true;
@@ -199,6 +216,7 @@ class LocationForecastState with _$LocationForecastState {
   const factory LocationForecastState.loaded({
     required Forecast forecast,
     required String quip,
+    @Default([]) List<WeatherAlert> alerts,
   }) = _LocationLoaded;
   const factory LocationForecastState.error(String message) = _LocationError;
 }
@@ -256,21 +274,29 @@ class LocationForecastNotifier extends StateNotifier<LocationForecastState> {
 
   void _swapLocalQuip() {
     state.whenOrNull(
-      loaded: (forecast, _) {
+      loaded: (forecast, _, alerts) {
         final quip = quipRepo.getLocalQuip(
           weather: forecast.current,
           explicit: _explicit,
         );
         _lastQuipKey = _quipKeyFor(forecast);
-        state = LocationForecastState.loaded(forecast: forecast, quip: quip);
+        state = LocationForecastState.loaded(
+          forecast: forecast,
+          quip: quip,
+          alerts: alerts,
+        );
       },
     );
   }
 
   void updateQuip(String quip) {
     state.whenOrNull(
-      loaded: (forecast, _) {
-        state = LocationForecastState.loaded(forecast: forecast, quip: quip);
+      loaded: (forecast, _, alerts) {
+        state = LocationForecastState.loaded(
+          forecast: forecast,
+          quip: quip,
+          alerts: alerts,
+        );
       },
     );
   }
@@ -278,17 +304,23 @@ class LocationForecastNotifier extends StateNotifier<LocationForecastState> {
   Future<void> load() async {
     state = const LocationForecastState.loading();
     try {
-      final forecast = await weatherRepo.getForecast(
-        latitude: latitude,
-        longitude: longitude,
-      );
+      final results = await Future.wait([
+        weatherRepo.getForecast(latitude: latitude, longitude: longitude),
+        fetchAlerts(latitude: latitude, longitude: longitude),
+      ]);
+      final forecast = results[0] as Forecast;
+      final alerts = results[1] as List<WeatherAlert>;
       final quip = quipRepo.getLocalQuip(
         weather: forecast.current,
         explicit: _explicit,
       );
       _lastQuipKey = _quipKeyFor(forecast);
       if (!mounted) return;
-      state = LocationForecastState.loaded(forecast: forecast, quip: quip);
+      state = LocationForecastState.loaded(
+        forecast: forecast,
+        quip: quip,
+        alerts: alerts,
+      );
     } catch (e) {
       if (!mounted) return;
       state = LocationForecastState.error(e.toString());
@@ -297,10 +329,12 @@ class LocationForecastNotifier extends StateNotifier<LocationForecastState> {
 
   Future<bool> refresh() async {
     try {
-      final forecast = await weatherRepo.getForecast(
-        latitude: latitude,
-        longitude: longitude,
-      );
+      final results = await Future.wait([
+        weatherRepo.getForecast(latitude: latitude, longitude: longitude),
+        fetchAlerts(latitude: latitude, longitude: longitude),
+      ]);
+      final forecast = results[0] as Forecast;
+      final alerts = results[1] as List<WeatherAlert>;
       final newKey = _quipKeyFor(forecast);
       final String quip;
       if (newKey == _lastQuipKey && state is _LocationLoaded) {
@@ -313,7 +347,11 @@ class LocationForecastNotifier extends StateNotifier<LocationForecastState> {
         _lastQuipKey = newKey;
       }
       if (!mounted) return false;
-      state = LocationForecastState.loaded(forecast: forecast, quip: quip);
+      state = LocationForecastState.loaded(
+        forecast: forecast,
+        quip: quip,
+        alerts: alerts,
+      );
       return true;
     } catch (e) {
       if (!mounted) return false;

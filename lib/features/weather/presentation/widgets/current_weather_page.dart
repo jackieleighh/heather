@@ -1,25 +1,23 @@
 import 'dart:math' as math;
 
 import 'package:flutter/material.dart';
-import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:heather/features/weather/presentation/widgets/pulsing_dots.dart';
 import 'package:pull_to_refresh/pull_to_refresh.dart';
 
 import '../../../../core/constants/app_colors.dart';
 import '../../domain/entities/forecast.dart';
-import '../providers/alert_provider.dart';
+import '../../domain/entities/weather_alert.dart';
 import 'alert_card.dart';
 import 'location_header.dart';
+import 'pulsing_dots.dart';
 import 'sassy_quip.dart';
 import 'temperature_display.dart';
 import 'weather_details.dart';
 
-class CurrentWeatherPage extends ConsumerStatefulWidget {
+class CurrentWeatherPage extends StatefulWidget {
   final Forecast forecast;
   final String cityName;
   final String quip;
-  final double latitude;
-  final double longitude;
+  final List<WeatherAlert> alerts;
   final Future<bool> Function() onRefresh;
   final VoidCallback onSettings;
   final PageController parentPageController;
@@ -29,18 +27,17 @@ class CurrentWeatherPage extends ConsumerStatefulWidget {
     required this.forecast,
     required this.cityName,
     required this.quip,
-    required this.latitude,
-    required this.longitude,
+    this.alerts = const [],
     required this.onRefresh,
     required this.onSettings,
     required this.parentPageController,
   });
 
   @override
-  ConsumerState<CurrentWeatherPage> createState() => _CurrentWeatherPageState();
+  State<CurrentWeatherPage> createState() => _CurrentWeatherPageState();
 }
 
-class _CurrentWeatherPageState extends ConsumerState<CurrentWeatherPage> {
+class _CurrentWeatherPageState extends State<CurrentWeatherPage> {
   final _scrollController = ScrollController();
   final _refreshController = RefreshController();
   static const _overscrollThreshold = 60.0;
@@ -92,11 +89,6 @@ class _CurrentWeatherPageState extends ConsumerState<CurrentWeatherPage> {
       color: AppColors.cream.withValues(alpha: 0.85),
     );
 
-    final alertsAsync = ref.watch(
-      alertsProvider((lat: widget.latitude, lon: widget.longitude)),
-    );
-    final alerts = alertsAsync.valueOrNull ?? [];
-
     return SafeArea(
       child: NotificationListener<ScrollNotification>(
         onNotification: _handleScrollNotification,
@@ -136,10 +128,10 @@ class _CurrentWeatherPageState extends ConsumerState<CurrentWeatherPage> {
                         cityName: widget.cityName,
                         localTime: widget.forecast.locationNow,
                       ),
-                      if (alerts.isNotEmpty) ...[
+                      if (widget.alerts.isNotEmpty) ...[
                         const SizedBox(height: 10),
                         AlertCard(
-                          alerts: alerts,
+                          alerts: widget.alerts,
                           heroColor: AppColors.magenta,
                         ),
                       ],

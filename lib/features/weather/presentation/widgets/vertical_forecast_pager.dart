@@ -3,6 +3,7 @@ import 'package:heather/features/weather/presentation/screens/gradients_test.dar
 
 import '../../../../core/constants/app_colors.dart';
 import '../../domain/entities/forecast.dart';
+import '../../domain/entities/weather_alert.dart';
 import 'current_weather_page.dart';
 import 'details_page/details_page.dart';
 import 'radar_page.dart';
@@ -14,6 +15,7 @@ class VerticalForecastPager extends StatefulWidget {
   final String quip;
   final double latitude;
   final double longitude;
+  final List<WeatherAlert> alerts;
   final Future<bool> Function() onRefresh;
   final VoidCallback onSettings;
 
@@ -24,6 +26,7 @@ class VerticalForecastPager extends StatefulWidget {
     required this.quip,
     required this.latitude,
     required this.longitude,
+    this.alerts = const [],
     required this.onRefresh,
     required this.onSettings,
   });
@@ -65,8 +68,7 @@ class VerticalForecastPagerState extends State<VerticalForecastPager> {
               forecast: widget.forecast,
               cityName: widget.cityName,
               quip: widget.quip,
-              latitude: widget.latitude,
-              longitude: widget.longitude,
+              alerts: widget.alerts,
               onRefresh: widget.onRefresh,
               onSettings: widget.onSettings,
               parentPageController: _pageController,

@@ -1,16 +1,19 @@
 import 'package:dio/dio.dart';
-import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../../core/constants/api_endpoints.dart';
 import '../../domain/entities/weather_alert.dart';
 
-final alertsProvider = FutureProvider.family<List<WeatherAlert>,
-    ({double lat, double lon})>((ref, coords) async {
+/// Fetches active NWS alerts for the given coordinates.
+/// Returns an empty list on failure so it never blocks weather loading.
+Future<List<WeatherAlert>> fetchAlerts({
+  required double latitude,
+  required double longitude,
+}) async {
   try {
     final response = await Dio().get(
       ApiEndpoints.nwsAlerts(
-        latitude: coords.lat,
-        longitude: coords.lon,
+        latitude: latitude,
+        longitude: longitude,
       ),
       options: Options(
         headers: {
@@ -56,4 +59,4 @@ final alertsProvider = FutureProvider.family<List<WeatherAlert>,
   } catch (_) {
     return [];
   }
-});
+}
