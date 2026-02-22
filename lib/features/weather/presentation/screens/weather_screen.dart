@@ -298,15 +298,16 @@ class _WeatherScreenState extends ConsumerState<WeatherScreen>
               physics: const ClampingScrollPhysics(),
               children: pages,
             ),
-            Positioned(
-              bottom: MediaQuery.paddingOf(context).bottom,
-              left: 0,
-              right: 0,
-              child: _HorizontalPageIndicator(
-                controller: _horizontalController,
-                count: pages.length,
+            if (pages.length > 1)
+              Positioned(
+                bottom: MediaQuery.paddingOf(context).bottom,
+                left: 0,
+                right: 0,
+                child: _HorizontalPageIndicator(
+                  controller: _horizontalController,
+                  count: pages.length,
+                ),
               ),
-            ),
             Positioned(
               top: MediaQuery.paddingOf(context).top + 8,
               left: 12,
