@@ -443,7 +443,12 @@ class _ExpandedDayContentState extends State<_ExpandedDayContent> {
               children: [
                 SizedBox(
                   height: 96,
-                  child: ConditionsCard(hourly: dayHourly, compact: true),
+                  child: ConditionsCard(
+                    hourly: dayHourly,
+                    compact: true,
+                    sunrise: daily.sunrise,
+                    sunset: daily.sunset,
+                  ),
                 ),
                 const SizedBox(height: 5),
                 SizedBox(

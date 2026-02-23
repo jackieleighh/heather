@@ -80,7 +80,13 @@ class DetailsPage extends ConsumerWidget {
                 ),
               ),
             ),
-            Expanded(child: ConditionsCard(hourly: forecast.hourly)),
+            Expanded(
+              child: ConditionsCard(
+                hourly: forecast.hourly,
+                sunrise: sunrise,
+                sunset: sunset,
+              ),
+            ),
             const SizedBox(height: 6),
             Expanded(
               child: TemperatureCard(

@@ -10,8 +10,16 @@ import './card_container.dart';
 class ConditionsCard extends StatefulWidget {
   final List<HourlyWeather> hourly;
   final bool compact;
+  final DateTime? sunrise;
+  final DateTime? sunset;
 
-  const ConditionsCard({super.key, required this.hourly, this.compact = false});
+  const ConditionsCard({
+    super.key,
+    required this.hourly,
+    this.compact = false,
+    this.sunrise,
+    this.sunset,
+  });
 
   @override
   State<ConditionsCard> createState() => _ConditionsCardState();
@@ -33,6 +41,16 @@ class _ConditionsCardState extends State<ConditionsCard> {
     _scrollController.removeListener(_onScroll);
     _scrollController.dispose();
     super.dispose();
+  }
+
+  bool _isHourDay(DateTime time) {
+    final sunrise = widget.sunrise;
+    final sunset = widget.sunset;
+    if (sunrise == null || sunset == null) return true;
+    final minutes = time.hour * 60 + time.minute;
+    final sunriseMin = sunrise.hour * 60 + sunrise.minute;
+    final sunsetMin = sunset.hour * 60 + sunset.minute;
+    return minutes >= sunriseMin && minutes < sunsetMin;
   }
 
   void _onScroll() {
@@ -115,7 +133,10 @@ class _ConditionsCardState extends State<ConditionsCard> {
                         ),
                         const SizedBox(height: 2),
                         Icon(
-                          conditionIcon(h.weatherCode),
+                          conditionIcon(
+                            h.weatherCode,
+                            isDay: _isHourDay(h.time),
+                          ),
                           color: AppColors.cream,
                           size: widget.compact ? 18 : 20,
                         ),

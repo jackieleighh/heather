@@ -10,10 +10,13 @@ import 'package:heather/features/weather/presentation/screens/saved_locations_pa
 import 'package:heather/features/weather/presentation/widgets/logo_overlay.dart';
 import '../../../../core/constants/app_colors.dart';
 import '../../../../core/services/background_alert_service.dart';
+import '../../../../core/services/fcm_service.dart';
 import '../../../../core/services/widget_service.dart';
+import '../../domain/entities/weather_alert.dart';
 import '../providers/location_provider.dart';
 import '../providers/settings_provider.dart';
 import '../providers/weather_provider.dart';
+import '../screens/alert_detail_sheet.dart';
 import '../screens/location_search_screen.dart';
 import '../widgets/animated_background/weather_background.dart';
 import '../widgets/vertical_forecast_pager.dart';
@@ -30,6 +33,7 @@ class _WeatherScreenState extends ConsumerState<WeatherScreen>
   late PageController _horizontalController;
   final _verticalPagerKey = GlobalKey<VerticalForecastPagerState>();
   StreamSubscription<void>? _widgetTapSub;
+  StreamSubscription<void>? _alertTapSub;
   Timer? _pollTimer;
   bool _minTimeElapsed = false;
   bool _splashRemoved = false;
@@ -46,6 +50,9 @@ class _WeatherScreenState extends ConsumerState<WeatherScreen>
       if (!mounted) return;
       _resetToFirstAndRefresh();
     });
+    _alertTapSub = FcmService().alertTapped.listen((_) {
+      _showPendingAlert();
+    });
     _pollTimer = Timer.periodic(const Duration(minutes: 15), (_) {
       if (mounted) _refreshAll();
     });
@@ -59,6 +66,7 @@ class _WeatherScreenState extends ConsumerState<WeatherScreen>
     _pollTimer?.cancel();
     WidgetsBinding.instance.removeObserver(this);
     _widgetTapSub?.cancel();
+    _alertTapSub?.cancel();
     _horizontalController.removeListener(_onHorizontalPageChanged);
     _horizontalController.dispose();
     super.dispose();
@@ -123,6 +131,45 @@ class _WeatherScreenState extends ConsumerState<WeatherScreen>
 
   void _showSettings() {
     context.push('/settings');
+  }
+
+  void _showPendingAlert() {
+    if (!mounted) return;
+    final alerts = _collectAllAlerts();
+    if (alerts.isNotEmpty) {
+      FcmService().clearPendingAlertTap();
+      showAlertDetailSheet(context, alerts);
+    }
+  }
+
+  List<WeatherAlert> _collectAllAlerts() {
+    final alerts = <WeatherAlert>[];
+    final seenIds = <String>{};
+
+    final state = ref.read(weatherStateProvider);
+    state.whenOrNull(
+      loaded: (forecast, location, quip, gpsAlerts) {
+        for (final a in gpsAlerts) {
+          if (seenIds.add(a.id)) alerts.add(a);
+        }
+      },
+    );
+
+    final savedLocations = ref.read(savedLocationsProvider);
+    for (final loc in savedLocations) {
+      final params = (name: loc.name, lat: loc.latitude, lon: loc.longitude);
+      final locState = ref.read(locationForecastProvider(params));
+      locState.whenOrNull(
+        loaded: (forecast, quip, locAlerts) {
+          for (final a in locAlerts) {
+            if (seenIds.add(a.id)) alerts.add(a);
+          }
+        },
+      );
+    }
+
+    alerts.sort((a, b) => a.severity.sortOrder.compareTo(b.severity.sortOrder));
+    return alerts;
   }
 
   Future<void> _registerAllLocations({
@@ -200,6 +247,13 @@ class _WeatherScreenState extends ConsumerState<WeatherScreen>
         onRetry: () => ref.read(weatherStateProvider.notifier).loadWeather(),
       ),
       loaded: (forecast, location, quip, alerts) {
+        // Show alert sheet if app was opened via notification tap (cold start)
+        if (FcmService().pendingAlertTap) {
+          WidgetsBinding.instance.addPostFrameCallback((_) {
+            if (mounted) _showPendingAlert();
+          });
+        }
+
         // Register device with cloud function for push alerts (GPS + saved)
         if (!_initialRegistrationDone) {
           _initialRegistrationDone = true;

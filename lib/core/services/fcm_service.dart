@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'dart:io';
 
 import 'package:firebase_messaging/firebase_messaging.dart';
@@ -30,6 +31,15 @@ class FcmService {
   final _localNotifications = FlutterLocalNotificationsPlugin();
   bool _initialized = false;
 
+  /// Stream that emits when a weather alert notification is tapped.
+  final _alertTapController = StreamController<void>.broadcast();
+  Stream<void> get alertTapped => _alertTapController.stream;
+
+  /// True when a notification tap opened the app but the UI hasn't consumed it yet.
+  bool pendingAlertTap = false;
+
+  void clearPendingAlertTap() => pendingAlertTap = false;
+
   Future<void> init() async {
     if (_initialized) return;
 
@@ -49,7 +59,10 @@ class FcmService {
       android: androidSettings,
       iOS: iosSettings,
     );
-    await _localNotifications.initialize(initSettings);
+    await _localNotifications.initialize(
+      initSettings,
+      onDidReceiveNotificationResponse: _handleLocalNotificationTap,
+    );
 
     // Create Android notification channel for alerts
     if (Platform.isAndroid) {
@@ -81,6 +94,13 @@ class FcmService {
     final initialMessage = await _messaging.getInitialMessage();
     if (initialMessage != null) {
       _handleNotificationTap(initialMessage);
+    }
+
+    // Check if app was launched by tapping a local notification (cold start)
+    final launchDetails =
+        await _localNotifications.getNotificationAppLaunchDetails();
+    if (launchDetails?.didNotificationLaunchApp == true) {
+      pendingAlertTap = true;
     }
 
     _initialized = true;
@@ -129,12 +149,14 @@ class FcmService {
     );
   }
 
+  void _handleLocalNotificationTap(NotificationResponse response) {
+    pendingAlertTap = true;
+    _alertTapController.add(null);
+  }
+
   void _handleNotificationTap(RemoteMessage message) {
-    // When user taps the notification, the app opens to the weather screen
-    // which is already the default route. No navigation needed.
-    if (kDebugMode) {
-      print('FCM notification tapped: ${message.data}');
-    }
+    pendingAlertTap = true;
+    _alertTapController.add(null);
   }
 
   /// Requests notification permission from the OS. Call this from the

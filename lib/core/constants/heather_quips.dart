@@ -64,7 +64,7 @@ class HeatherQuips {
         "This heat is unhinged. I'm filing a complaint with the sky. Call her manager.",
         'Literally scorching. Like why. Who did this.',
         "I feel like I'm about to combust. Like why is it this hot. Stay hydrated babe.",
-        'The audacity of this heat. Drink water. Wear sunscreen. Have fun. Love you.',
+        'The audacity of this heat. Drink water. Wear sunscreen. Have fun babe.',
       ],
     },
     WeatherCondition.mostlySunny: {
@@ -559,7 +559,7 @@ class HeatherQuips {
         'Snowing and freezing. This is the winter content I subscribed for honestly.',
         'Snow and cold. The most classic combo and she never gets old.',
         "It's giving winter wonderland vibes. The snow's doing her thing babe.",
-        'Winter finally showed up looking correct. Keep it up babe. Love you.',
+        'Winter finally showed up looking correct. Keep it up babe.',
         "Snow angel o'clock. The snow is literally perfect. Heavy coat and go enjoy it babe.",
         "She's committed she's beautiful she's everything.",
         'Freezing and snowy. This is peak winter and we are thriving.',
@@ -799,16 +799,15 @@ class HeatherQuips {
     },
   };
 
-
   static const explicitQuips = <WeatherCondition, Map<TemperatureTier, List<String>>>{
     WeatherCondition.sunny: {
       TemperatureTier.singleDigits: [
         "Sun's out in single digits. She's brave af for even showing up. Every warm layer you own babe.",
-        "It's so cold it hurts but the sun is fucking trying. Uggs, puffer, scarf, all of it.",
-        "Sunny and single digits. That's some damn dedication from the sun. Triple layer minimum babe.",
-        'The sun showed up to the coldest day of the year. Respect. Thermal everything babe.',
+        "It's so cold it hurts but the sun's fucking trying. Uggs, puffer, scarf, all of it.",
+        "Sunny and cold as shit. Triple layer minimum babe.",
+        "The sun showed up but she's literally not even helping. Thermal everything babe.",
         "Babe it's brutal out there. The sun is shining but it's cold as shit. Heavy coat and hand warmers.",
-        'Sunny and freezing your ass off. She really said I will shine no matter what. Bundle up tight.',
+        'Sunny but so fucking cold. She really said I will shine no matter what. Bundle up babe.',
         'The sun came out in single digit weather and honestly that takes guts. Heaviest coat you got babe.',
         "Single digits with full sun. She's doing her best but tf is that gonna do. Layer up babe.",
       ],
@@ -817,7 +816,7 @@ class HeatherQuips {
         "Sunny and cold af. It's giving A for effort. Like it could be way worse.",
         "Layers. Every layer you own. But like go get some sun babe. She's trying.",
         "Okay it's cold af. Fuzzy jacket, boots with the fur. You got this babe.",
-        'The sun is out and barely warming anything but she showed up. That counts for something. Heavy coat on.',
+        'The sun is out and is barely helping but she showed up. That counts for something. Heavy coat on.',
         'Freezing but sunny. She really woke up early for this. Respect. Bundle up and cheer her on babe.',
         "Sunny and it's freezing. Puffer coat, scarf, the works. But at least she's shining damn it.",
         'The sun is giving her best today and her best is cold. Big coat and warm layers babe.',
