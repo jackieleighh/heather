@@ -30,6 +30,7 @@ class AppColors {
   static const mutedTeal = Color(0xFF96D9DB);
   static const cream = Color(0xFFFAFAFA);
   static const fogSilver = Color(0xFFE2E8F0);
+  static const snowLavender = Color(0xFFD8D0F0);
 
   // --- Cold tier palette (Stark & Icy) ---
   static const icyBlue = Color(0xFF68B2DB);
@@ -46,8 +47,40 @@ class AppColors {
   static const goldenAmber = Color(0xFFD4960A);
 
   // --- Overcast sky palette (muted, cloudy) ---
+  static const stormBlue = Color(0xFF405888);
   static const cloudySage = Color(0xFF6E8A5E);
   static const cloudyAmber = Color(0xFF9C8535);
+  static const overcastBlue = Color(0xFF7888BE);
+  static const overcastSlate = Color(0xFF92A2BE);
+  static const overcastTeal = Color(0xFF5C94AE);
+  static const overcastSage = Color(0xFF92B882);
+  static const overcastAmber = Color(0xFFC4AD58);
+  static const overcastOrange = Color(0xFFDC9450);
+  static const overcastRose = Color(0xFFC47090);
+
+  // --- Bright sunny day palette (vibrant, ~15% lighter) ---
+  static const brightSkyPeriwinkle = Color(0xFFA8B8E8);
+  static const brightFrostLavender = Color(0xFFDCD2FF);
+  static const brightRoyalBlue = Color(0xFF4D82F5);
+  static const brightSkyBlue = Color(0xFF72BCF0);
+  static const brightFrostBlue = Color(0xFFB5E0F5);
+  static const brightIcyBlue = Color(0xFF80CBE9);
+  static const brightWarmSkyBlue = Color(0xFF6AADD8);
+  static const brightCyan = Color(0xFF5ED4DA);
+  static const brightAqua = Color(0xFF35BFC5);
+  static const brightTeal = Color(0xFF18ACAF);
+  static const brightSunnyGreen = Color(0xFF7CC565);
+  static const brightLime = Color(0xFFA8CC38);
+  static const brightGoldenAmber = Color(0xFFEBB020);
+  static const brightOrange = Color(0xFFFFA833);
+  static const brightHotAmber = Color(0xFFFDD45A);
+  static const brightHeatPink = Color(0xFFF892C9);
+
+  // --- Sunny night bottom colors ---
+  static const nightPurple = Color(0xFF4C1D95);
+  static const nightBlue = Color(0xFF1A3A8C);
+  static const nightBlueTeal = Color(0xFF134A66);
+  static const nightGreenTeal = Color(0xFF0E4A3A);
 
   // --- Hot tier palette (Fire & Sunset vibes) ---
   static const burntOrange = Color(0xFFF97316);
