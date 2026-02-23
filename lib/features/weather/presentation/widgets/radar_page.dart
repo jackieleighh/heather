@@ -220,7 +220,7 @@ class _RadarPageState extends ConsumerState<RadarPage> {
                             ),
                             children: [
                               Opacity(
-                                opacity: 0.45,
+                                opacity: 0.4,
                                 child: TileLayer(
                                   urlTemplate:
                                       'https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png',
