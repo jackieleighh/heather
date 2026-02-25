@@ -309,9 +309,7 @@ class _ControlBar extends StatelessWidget {
     final timeLabel = formatRelativeTime(frame.time);
 
     return Container(
-      decoration: BoxDecoration(
-        color: AppColors.midnightPurple.withValues(alpha: 0.45),
-      ),
+      decoration: BoxDecoration(color: AppColors.cream.withValues(alpha: 0.25)),
       padding: const EdgeInsets.fromLTRB(12, 4, 6, 0),
       child: Row(
         children: [
@@ -409,23 +407,22 @@ class _MapCard extends StatelessWidget {
         color: AppColors.cream.withValues(alpha: 0.06),
         borderRadius: BorderRadius.circular(20),
         border: Border.all(color: AppColors.cream.withValues(alpha: 0.08)),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withValues(alpha: 0.12),
+            blurRadius: 12,
+          ),
+        ],
       ),
       child: Stack(
         children: [
           Positioned.fill(child: child),
-          // Subtle tint overlay to blend with app palette
+          // Subtle white tint overlay
           Positioned.fill(
             child: IgnorePointer(
               child: DecoratedBox(
                 decoration: BoxDecoration(
-                  gradient: LinearGradient(
-                    begin: Alignment.topLeft,
-                    end: Alignment.bottomRight,
-                    colors: [
-                      AppColors.teal.withValues(alpha: 0.04),
-                      AppColors.vibrantPurple.withValues(alpha: 0.03),
-                    ],
-                  ),
+                  color: AppColors.cream.withValues(alpha: 0.06),
                 ),
               ),
             ),
@@ -446,8 +443,8 @@ class _EdgeFadePainter extends CustomPainter {
   @override
   void paint(Canvas canvas, Size size) {
     const fade = 18.0;
-    const edgeColor = Color(0x18808895);
-    const clear = Color(0x00808895);
+    const edgeColor = Color(0x18FAFAFA);
+    const clear = Color(0x00FAFAFA);
 
     // Top
     canvas.drawRect(

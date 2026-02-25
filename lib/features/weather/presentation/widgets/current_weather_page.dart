@@ -89,7 +89,11 @@ class _CurrentWeatherPageState extends State<CurrentWeatherPage> {
       color: AppColors.cream.withValues(alpha: 0.85),
     );
 
-    return SafeArea(
+    return MediaQuery(
+      data: MediaQuery.of(context).copyWith(
+        textScaler: MediaQuery.textScalerOf(context).clamp(maxScaleFactor: 1.0),
+      ),
+      child: SafeArea(
       child: NotificationListener<ScrollNotification>(
         onNotification: _handleScrollNotification,
         child: SmartRefresher(
@@ -154,6 +158,7 @@ class _CurrentWeatherPageState extends State<CurrentWeatherPage> {
           ),
         ),
       ),
+    ),
     );
   }
 }

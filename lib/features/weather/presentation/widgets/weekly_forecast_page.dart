@@ -106,6 +106,12 @@ class _WeeklyForecastPageState extends State<WeeklyForecastPage> {
                           decoration: BoxDecoration(
                             color: AppColors.cream.withValues(alpha: 0.22),
                             borderRadius: BorderRadius.circular(20),
+                            boxShadow: [
+                              BoxShadow(
+                                color: Colors.black.withValues(alpha: 0.12),
+                                blurRadius: 12,
+                              ),
+                            ],
                           ),
                           child: Material(
                             color: Colors.transparent,

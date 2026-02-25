@@ -6,15 +6,7 @@ import '../../domain/entities/location_info.dart';
 
 class LocationSource {
   Future<LocationInfo> getCurrentLocation() async {
-    final hasPermission = await _checkPermission();
-    if (!hasPermission) {
-      throw const LocationException(
-        'Location permission denied',
-        sassyMessage:
-            "Babe, I can't tell you the weather if I don't know "
-            'where you are! Enable location, please?',
-      );
-    }
+    await _ensurePermission();
 
     try {
       // Try last known position first (instant, works well on emulators)
@@ -58,16 +50,40 @@ class LocationSource {
     return '???';
   }
 
-  Future<bool> _checkPermission() async {
+  Future<void> _ensurePermission() async {
     final serviceEnabled = await Geolocator.isLocationServiceEnabled();
-    if (!serviceEnabled) return false;
+    if (!serviceEnabled) {
+      throw const LocationPermissionException(
+        'Location services disabled',
+        sassyMessage:
+            'Babe, your location is turned off! '
+            'Go to Settings and turn it on so Heather can find you.',
+        isServiceDisabled: true,
+      );
+    }
 
     var permission = await Geolocator.checkPermission();
     if (permission == LocationPermission.denied) {
       permission = await Geolocator.requestPermission();
     }
 
-    return permission == LocationPermission.whileInUse ||
-        permission == LocationPermission.always;
+    if (permission == LocationPermission.deniedForever) {
+      throw const LocationPermissionException(
+        'Location permission permanently denied',
+        sassyMessage:
+            "Babe, I can't tell you the weather if I don't know "
+            'where you are! Go to Settings and enable location for Heather.',
+      );
+    }
+
+    if (permission != LocationPermission.whileInUse &&
+        permission != LocationPermission.always) {
+      throw const LocationPermissionException(
+        'Location permission denied',
+        sassyMessage:
+            "Babe, I can't tell you the weather if I don't know "
+            'where you are! Enable location, please?',
+      );
+    }
   }
 }

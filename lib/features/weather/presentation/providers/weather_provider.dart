@@ -1,6 +1,7 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:freezed_annotation/freezed_annotation.dart';
 
+import '../../../../core/errors/app_exception.dart';
 import '../../../../core/network/api_client.dart';
 import '../../../../core/services/widget_service.dart';
 import '../../data/repositories/quip_repository_impl.dart';
@@ -75,6 +76,8 @@ class WeatherNotifier extends StateNotifier<WeatherState> {
   final QuipRepositoryImpl quipRepo;
   bool _explicit;
   _QuipKey? _lastQuipKey;
+  bool isLocationPermissionError = false;
+  bool isLocationServiceDisabled = false;
 
   WeatherNotifier({
     required this.weatherRepo,
@@ -137,6 +140,8 @@ class WeatherNotifier extends StateNotifier<WeatherState> {
 
   Future<void> loadWeather() async {
     state = const WeatherState.loading();
+    isLocationPermissionError = false;
+    isLocationServiceDisabled = false;
     try {
       final location = await weatherRepo.getCurrentLocation();
       final results = await Future.wait([
@@ -163,7 +168,19 @@ class WeatherNotifier extends StateNotifier<WeatherState> {
       _pushToWidget();
     } catch (e) {
       if (!mounted) return;
+      if (e is LocationPermissionException) {
+        isLocationPermissionError = true;
+        isLocationServiceDisabled = e.isServiceDisabled;
+      }
       state = WeatherState.error(e.toString());
+    }
+  }
+
+  void forceTimeout() {
+    if (state == const WeatherState.loading()) {
+      state = const WeatherState.error(
+        "Heather's taking forever to load. Check your connection and try again, babe.",
+      );
     }
   }
 

@@ -7,6 +7,9 @@ class SassyQuip extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final length = quip.length;
+    final fontSize = length > 120 ? 22.0 : length > 80 ? 26.0 : 30.0;
+
     return Container(
       width: double.infinity,
       constraints: BoxConstraints(
@@ -18,9 +21,10 @@ class SassyQuip extends StatelessWidget {
           Text(
             quip,
             textAlign: TextAlign.right,
-            style: Theme.of(
-              context,
-            ).textTheme.labelLarge?.copyWith(height: 1.1),
+            style: Theme.of(context).textTheme.labelLarge?.copyWith(
+              height: 1.1,
+              fontSize: fontSize,
+            ),
           ),
         ],
       ),

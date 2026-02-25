@@ -63,7 +63,7 @@ class VerticalForecastPagerState extends State<VerticalForecastPager> {
           physics: const ClampingScrollPhysics(),
           onPageChanged: (page) => setState(() => _currentPage = page),
           children: [
-            const GradientPreviewGallery(),
+            // const GradientPreviewGallery(),
             CurrentWeatherPage(
               forecast: widget.forecast,
               cityName: widget.cityName,

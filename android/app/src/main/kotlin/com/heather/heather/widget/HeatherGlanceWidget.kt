@@ -125,7 +125,7 @@ class HeatherGlanceWidget : GlanceAppWidget() {
                     style = TextStyle(
                         color = ColorProvider(white),
                         fontSize = 12.sp,
-                        fontWeight = FontWeight.Medium,
+                        fontWeight = FontWeight.Bold,
                     ),
                     maxLines = 1,
                     modifier = GlanceModifier.defaultWeight(),
@@ -194,7 +194,7 @@ class HeatherGlanceWidget : GlanceAppWidget() {
                 style = TextStyle(
                     color = ColorProvider(white),
                     fontSize = 12.sp,
-                    fontWeight = FontWeight.Medium,
+                    fontWeight = FontWeight.Bold,
                 ),
                 maxLines = 1,
             )
@@ -299,7 +299,7 @@ class HeatherGlanceWidget : GlanceAppWidget() {
                         style = TextStyle(
                             color = ColorProvider(white),
                             fontSize = 15.sp,
-                            fontWeight = FontWeight.Medium,
+                            fontWeight = FontWeight.Bold,
                         ),
                         maxLines = 1,
                     )
@@ -486,8 +486,8 @@ class HeatherGlanceWidget : GlanceAppWidget() {
         // 2. Draw weather effects
         WeatherEffectRenderer.render(canvas, conditionName, isDay, w, h)
 
-        // 3. Draw logo overlay (bottom-right, 0.2 opacity)
-        drawLogo(context, canvas, w, h)
+        // 3. Draw logo overlay (more visible at night)
+        drawLogo(context, canvas, w, h, isDay)
 
         // 4. Draw text contrast scrim (simulates iOS drop shadows)
         WeatherEffectRenderer.drawTextScrim(canvas, w, h)
@@ -500,6 +500,7 @@ class HeatherGlanceWidget : GlanceAppWidget() {
         canvas: Canvas,
         w: Float,
         h: Float,
+        isDay: Boolean,
     ) {
         val logoRes = ConditionIcons.personaLogoRes()
         val drawable = androidx.core.content.ContextCompat.getDrawable(context, logoRes) ?: return
@@ -508,16 +509,18 @@ class HeatherGlanceWidget : GlanceAppWidget() {
         val intrinsicH = drawable.intrinsicHeight.toFloat()
         if (intrinsicW <= 0 || intrinsicH <= 0) return
 
-        // Scale logo to ~60% of bitmap height, preserving aspect ratio
-        val targetH = (h * 0.6f).toInt()
+        // Scale logo: ~70% for medium (wide) widgets, ~60% otherwise
+        val isWide = w / h > 1.4f
+        val scale = if (isWide) 0.7f else 0.6f
+        val targetH = (h * scale).toInt()
         val targetW = (targetH * (intrinsicW / intrinsicH)).toInt()
 
         // Position: bottom-right with slight offset
-        val left = (w - targetW + targetW * 0.1f).toInt()
+        val left = (w - targetW + targetW * 0.05f).toInt()
         val top = (h - targetH + targetH * 0.08f).toInt()
 
         drawable.setBounds(left, top, left + targetW, top + targetH)
-        drawable.alpha = 51 // 0.2 * 255 = 51
+        drawable.alpha = if (isDay) 51 else 102 // day: 0.2, night: 0.4
         drawable.draw(canvas)
     }
 

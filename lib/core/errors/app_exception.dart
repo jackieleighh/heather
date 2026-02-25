@@ -12,6 +12,15 @@ class LocationException extends AppException {
   const LocationException(super.message, {super.sassyMessage});
 }
 
+class LocationPermissionException extends LocationException {
+  final bool isServiceDisabled;
+  const LocationPermissionException(
+    super.message, {
+    super.sassyMessage,
+    this.isServiceDisabled = false,
+  });
+}
+
 class WeatherException extends AppException {
   const WeatherException(super.message, {super.sassyMessage});
 }

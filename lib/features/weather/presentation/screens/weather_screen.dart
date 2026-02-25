@@ -3,6 +3,7 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:flutter_native_splash/flutter_native_splash.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:geolocator/geolocator.dart';
 import 'package:go_router/go_router.dart';
 import 'package:heather/features/weather/presentation/screens/error_screen.dart';
 import 'package:heather/features/weather/domain/entities/saved_location.dart';
@@ -35,7 +36,8 @@ class _WeatherScreenState extends ConsumerState<WeatherScreen>
   StreamSubscription<void>? _widgetTapSub;
   StreamSubscription<void>? _alertTapSub;
   Timer? _pollTimer;
-  bool _minTimeElapsed = false;
+  Timer? _splashTimeout;
+  bool _minTimeElapsed = true;
   bool _splashRemoved = false;
   bool _initialRegistrationDone = false;
   int _currentHorizontalPage = 0;
@@ -56,13 +58,18 @@ class _WeatherScreenState extends ConsumerState<WeatherScreen>
     _pollTimer = Timer.periodic(const Duration(minutes: 15), (_) {
       if (mounted) _refreshAll();
     });
-    Future.delayed(const Duration(seconds: 3), () {
-      if (mounted) setState(() => _minTimeElapsed = true);
+    _splashTimeout = Timer(const Duration(seconds: 25), () {
+      if (!_splashRemoved && mounted) {
+        _splashRemoved = true;
+        FlutterNativeSplash.remove();
+        ref.read(weatherStateProvider.notifier).forceTimeout();
+      }
     });
   }
 
   @override
   void dispose() {
+    _splashTimeout?.cancel();
     _pollTimer?.cancel();
     WidgetsBinding.instance.removeObserver(this);
     _widgetTapSub?.cancel();
@@ -237,15 +244,24 @@ class _WeatherScreenState extends ConsumerState<WeatherScreen>
     // Remove native splash when min time elapsed + all data loaded
     if (_minTimeElapsed && gpsReady && locationsReady && !_splashRemoved) {
       _splashRemoved = true;
+      _splashTimeout?.cancel();
       FlutterNativeSplash.remove();
     }
 
     final content = state.when(
       loading: () => Container(color: Theme.of(context).colorScheme.secondary),
-      error: (message) => ErrorScreen(
-        message: message,
-        onRetry: () => ref.read(weatherStateProvider.notifier).loadWeather(),
-      ),
+      error: (message) {
+        final notifier = ref.read(weatherStateProvider.notifier);
+        return ErrorScreen(
+          message: message,
+          onRetry: () => notifier.loadWeather(),
+          onOpenSettings: notifier.isLocationPermissionError
+              ? () => notifier.isLocationServiceDisabled
+                    ? Geolocator.openLocationSettings()
+                    : Geolocator.openAppSettings()
+              : null,
+        );
+      },
       loaded: (forecast, location, quip, alerts) {
         // Show alert sheet if app was opened via notification tap (cold start)
         if (FcmService().pendingAlertTap) {
@@ -346,7 +362,7 @@ class _WeatherScreenState extends ConsumerState<WeatherScreen>
               ),
             ),
             // Logo behind all page content
-            const LogoOverlay(),
+            LogoOverlay(isDay: bgIsDay),
             PageView(
               controller: _horizontalController,
               physics: const ClampingScrollPhysics(),

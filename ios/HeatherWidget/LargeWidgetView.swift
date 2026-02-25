@@ -15,19 +15,20 @@ struct LargeWidgetView: View {
 
                 // Logo overlay
                 Image("heather_logo")
+                    .renderingMode(.template)
                     .resizable()
                     .scaledToFit()
                     .frame(height: 200)
-                    .opacity(0.2)
-                    .offset(x: 30, y: 20)
+                    .foregroundStyle(.black)
+                    .opacity(data.isDay ? 0.2 : 0.3)
+                    .offset(x: 15, y: 20)
 
                 VStack(alignment: .leading, spacing: 2) {
                     // Two-column layout
                     HStack(alignment: .top) {
                         VStack(alignment: .leading, spacing: 2) {
                             Text(data.cityName)
-                                .font(.subheadline)
-                                .fontWeight(.semibold)
+                                .font(.system(size: 15, weight: .bold, design: .rounded))
                                 .lineLimit(1)
 
                             Text("\(data.temperature)°")
@@ -35,16 +36,15 @@ struct LargeWidgetView: View {
                                 .minimumScaleFactor(0.7)
 
                             Text("\(data.high)°/\(data.low)°")
-                                .font(.caption)
-                                .fontWeight(.medium)
+                                .font(.system(size: 12, weight: .medium, design: .rounded))
                                 .opacity(0.9)
 
                             Text("Feels like \(data.feelsLike)°")
-                                .font(.caption2)
+                                .font(.system(size: 11))
                                 .opacity(0.7)
 
                             Text(data.description.capitalized)
-                                .font(.caption2)
+                                .font(.system(size: 11))
                                 .opacity(0.7)
                         }
 
@@ -88,8 +88,7 @@ struct LargeWidgetView: View {
 
                     // Quip
                     Text(data.quip)
-                        .font(.caption)
-                        .fontWeight(.medium)
+                        .font(.system(size: 12, weight: .medium, design: .rounded))
                         .lineLimit(3)
                         .opacity(0.95)
 
@@ -110,7 +109,7 @@ struct LargeWidgetView: View {
                                         size: 28
                                     ).frame(height: 30)
                                     Text("\(entry.temperature)°")
-                                        .font(.system(size: 12, weight: .semibold))
+                                        .font(.system(size: 12, weight: .semibold, design: .rounded))
                                 }
                                 if index < items.count - 1 {
                                     Spacer(minLength: 0)
@@ -122,17 +121,15 @@ struct LargeWidgetView: View {
                 }
                 .padding(16)
                 .foregroundStyle(.white)
-                .shadow(color: .black.opacity(0.5), radius: 1, x: 0, y: 1)
-                .shadow(color: .black.opacity(0.3), radius: 3, x: 0, y: 2)
-                .shadow(color: .black.opacity(0.15), radius: 6, x: 0, y: 3)
+                .shadow(color: .black.opacity(0.35), radius: 0.5, x: 0, y: 0.5)
+                .shadow(color: .black.opacity(0.2), radius: 2, x: 0, y: 1)
+                .shadow(color: .black.opacity(0.1), radius: 4, x: 0, y: 2)
             }
         }
         .containerBackground(for: .widget) {
             ZStack {
                 LinearGradient(
-                    colors: data.gradientColors.count >= 2
-                        ? [Color(hex: data.gradientColors.first!), Color(hex: data.gradientColors.last!)]
-                        : data.gradientColors.map { Color(hex: $0) },
+                    colors: data.gradientColors.map { Color(hex: $0) },
                     startPoint: (data.conditionName == "sunny" || data.conditionName == "mostlySunny") ? .topTrailing : .top,
                     endPoint: (data.conditionName == "sunny" || data.conditionName == "mostlySunny") ? .bottomLeading : .bottom
                 )
@@ -151,7 +148,7 @@ private struct DetailLabel: View {
                 .font(.system(size: 10))
                 .opacity(0.7)
             Text(value)
-                .font(.system(size: 11, weight: .semibold))
+                .font(.system(size: 11, weight: .semibold, design: .rounded))
                 .opacity(0.8)
         }
     }

@@ -74,7 +74,7 @@ class AppColors {
   static const brightGoldenAmber = Color(0xFFEBB020);
   static const brightOrange = Color(0xFFFFA833);
   static const brightHotAmber = Color(0xFFFDD45A);
-  static const brightHeatPink = Color(0xFFF892C9);
+  static const brightHeatPink = Color(0xFFE05A9C);
 
   // --- Sunny night bottom colors ---
   static const nightPurple = Color(0xFF4C1D95);
@@ -85,7 +85,7 @@ class AppColors {
   // --- Hot tier palette (Fire & Sunset vibes) ---
   static const burntOrange = Color(0xFFF97316);
   static const hotAmber = Color(0xFFFBBF24);
-  static const heatPink = Color(0xFFF472B6);
+  static const heatPink = Color(0xFFE05A9C);
   static const warmCoral = Color(0xFFEF4444);
   static const goldenYellow = Color(0xFFFDE047);
   static const orangeRed = Color(0xFFB91C1C);

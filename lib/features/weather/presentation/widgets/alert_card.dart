@@ -30,6 +30,12 @@ class AlertCard extends StatelessWidget {
             color: primary.severity.color.withValues(alpha: 0.4),
             width: 1,
           ),
+          boxShadow: [
+            BoxShadow(
+              color: Colors.black.withValues(alpha: 0.12),
+              blurRadius: 12,
+            ),
+          ],
         ),
         child: Row(
           children: [

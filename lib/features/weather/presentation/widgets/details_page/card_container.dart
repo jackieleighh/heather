@@ -18,6 +18,12 @@ class CardContainer extends StatelessWidget {
       decoration: BoxDecoration(
         color: AppColors.cream.withValues(alpha: 0.22),
         borderRadius: BorderRadius.circular(20),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withValues(alpha: 0.12),
+            blurRadius: 12,
+          ),
+        ],
       ),
       child: Stack(
         children: [

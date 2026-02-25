@@ -21,6 +21,12 @@ class WeatherDetails extends StatelessWidget {
       decoration: BoxDecoration(
         color: AppColors.cream.withValues(alpha: 0.22),
         borderRadius: BorderRadius.circular(16),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withValues(alpha: 0.12),
+            blurRadius: 12,
+          ),
+        ],
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.end,
@@ -34,40 +40,44 @@ class WeatherDetails extends StatelessWidget {
             ),
           ),
           const SizedBox(height: 10),
-          Row(
-            mainAxisAlignment: MainAxisAlignment.end,
-            children: [
-              _DetailChip(
-                icon: WeatherIcons.thermometer,
-                label: 'Feels ${weather.feelsLike.round()}°',
-                style: style,
-              ),
-              const SizedBox(width: 16),
-              _DetailChip(
-                icon: WeatherIcons.humidity,
-                label: '${weather.humidity}%',
-                style: style,
-              ),
-              const SizedBox(width: 16),
-              _DetailChip(
-                icon: WeatherIcons.windy,
-                label: '${weather.windSpeed.round()} mph',
-                style: style,
-              ),
-              const SizedBox(width: 16),
-              if (weather.isDay)
+          FittedBox(
+            fit: BoxFit.scaleDown,
+            alignment: Alignment.centerRight,
+            child: Row(
+              mainAxisSize: MainAxisSize.min,
+              children: [
                 _DetailChip(
-                  icon: WeatherIcons.day_sunny,
-                  label: 'UV ${weather.uvIndex.round()}',
-                  style: style,
-                )
-              else
-                _DetailChip(
-                  icon: moonPhaseIcon(DateTime.now()),
-                  label: '${moonIllumination(DateTime.now()).round()}%',
+                  icon: WeatherIcons.thermometer,
+                  label: 'Feels ${weather.feelsLike.round()}°',
                   style: style,
                 ),
-            ],
+                const SizedBox(width: 16),
+                _DetailChip(
+                  icon: WeatherIcons.humidity,
+                  label: '${weather.humidity}%',
+                  style: style,
+                ),
+                const SizedBox(width: 16),
+                _DetailChip(
+                  icon: WeatherIcons.windy,
+                  label: '${weather.windSpeed.round()} mph',
+                  style: style,
+                ),
+                const SizedBox(width: 16),
+                if (weather.isDay)
+                  _DetailChip(
+                    icon: WeatherIcons.day_sunny,
+                    label: 'UV ${weather.uvIndex.round()}',
+                    style: style,
+                  )
+                else
+                  _DetailChip(
+                    icon: moonPhaseIcon(DateTime.now()),
+                    label: '${moonIllumination(DateTime.now()).round()}%',
+                    style: style,
+                  ),
+              ],
+            ),
           ),
         ],
       ),

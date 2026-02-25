@@ -81,7 +81,7 @@ class BackgroundGradients {
     TemperatureTier.scorcher: [
       AppColors.brightSkyBlue,
       AppColors.brightOrange,
-      AppColors.brightHeatPink,
+      AppColors.heatPink,
     ],
   };
 
@@ -198,7 +198,7 @@ class BackgroundGradients {
     TemperatureTier.singleDigits: [
       AppColors.cream,
       AppColors.frostLavender,
-      AppColors.brightIcyBlue,
+      AppColors.brightSkyPeriwinkle,
     ],
     TemperatureTier.freezing: [
       AppColors.cream,
