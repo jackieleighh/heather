@@ -204,13 +204,15 @@ class _WeatherScreenState extends ConsumerState<WeatherScreen>
     await BackgroundAlertService.registerPeriodicCheck();
   }
 
-  Future<bool> _refreshAll() async {
+  Future<bool> _refreshAll({bool force = false}) async {
     final savedLocations = ref.read(savedLocationsProvider);
     final results = await Future.wait([
-      ref.read(weatherStateProvider.notifier).refresh(),
+      ref.read(weatherStateProvider.notifier).refresh(forceRefresh: force),
       ...savedLocations.map((loc) {
         final params = (name: loc.name, lat: loc.latitude, lon: loc.longitude);
-        return ref.read(locationForecastProvider(params).notifier).refresh();
+        return ref
+            .read(locationForecastProvider(params).notifier)
+            .refresh(forceRefresh: force);
       }),
     ]);
     return results.every((success) => success);
@@ -304,7 +306,7 @@ class _WeatherScreenState extends ConsumerState<WeatherScreen>
             latitude: location.latitude,
             longitude: location.longitude,
             alerts: alerts,
-            onRefresh: _refreshAll,
+            onRefresh: () => _refreshAll(force: true),
             onSettings: _showSettings,
           ),
           ...savedLocations.map(

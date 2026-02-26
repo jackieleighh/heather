@@ -37,8 +37,9 @@ class SavedLocationsPage extends ConsumerWidget {
         latitude: location.latitude,
         longitude: location.longitude,
         alerts: alerts,
-        onRefresh: () =>
-            ref.read(locationForecastProvider(params).notifier).refresh(),
+        onRefresh: () => ref
+            .read(locationForecastProvider(params).notifier)
+            .refresh(forceRefresh: true),
         onSettings: onSettings,
       ),
     );

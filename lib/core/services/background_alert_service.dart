@@ -159,7 +159,7 @@ class BackgroundAlertService {
 
   static Future<void> init() async {
     try {
-      await Workmanager().initialize(callbackDispatcher, isInDebugMode: kDebugMode);
+      await Workmanager().initialize(callbackDispatcher);
     } catch (e) {
       if (kDebugMode) {
         print('WorkManager init failed: $e');
@@ -175,7 +175,7 @@ class BackgroundAlertService {
           _taskName,
           frequency: const Duration(minutes: 15),
           constraints: Constraints(networkType: NetworkType.connected),
-          existingWorkPolicy: ExistingWorkPolicy.replace,
+          existingWorkPolicy: ExistingPeriodicWorkPolicy.replace,
         );
       } else {
         await Workmanager().registerOneOffTask(

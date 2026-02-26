@@ -184,13 +184,14 @@ class WeatherNotifier extends StateNotifier<WeatherState> {
     }
   }
 
-  Future<bool> refresh() async {
+  Future<bool> refresh({bool forceRefresh = false}) async {
     try {
       final location = await weatherRepo.getCurrentLocation();
       final results = await Future.wait([
         weatherRepo.getForecast(
           latitude: location.latitude,
           longitude: location.longitude,
+          forceRefresh: forceRefresh,
         ),
         fetchAlerts(latitude: location.latitude, longitude: location.longitude),
       ]);
@@ -344,10 +345,14 @@ class LocationForecastNotifier extends StateNotifier<LocationForecastState> {
     }
   }
 
-  Future<bool> refresh() async {
+  Future<bool> refresh({bool forceRefresh = false}) async {
     try {
       final results = await Future.wait([
-        weatherRepo.getForecast(latitude: latitude, longitude: longitude),
+        weatherRepo.getForecast(
+          latitude: latitude,
+          longitude: longitude,
+          forceRefresh: forceRefresh,
+        ),
         fetchAlerts(latitude: latitude, longitude: longitude),
       ]);
       final forecast = results[0] as Forecast;

@@ -22,9 +22,16 @@ class WeatherRepositoryImpl implements WeatherRepository {
   Future<Forecast> getForecast({
     required double latitude,
     required double longitude,
+    bool forceRefresh = false,
   }) async {
     final cacheKey = 'cached_forecast_${latitude}_$longitude';
     final cacheTsKey = 'cached_forecast_ts_${latitude}_$longitude';
+
+    // Return fresh cache for automatic refreshes (timer/resume)
+    if (!forceRefresh) {
+      final fresh = await _getFreshCachedForecast(cacheKey, cacheTsKey);
+      if (fresh != null) return fresh;
+    }
 
     try {
       final response = await remoteSource.fetchForecast(
@@ -53,6 +60,23 @@ class WeatherRepositoryImpl implements WeatherRepository {
     final prefs = await SharedPreferences.getInstance();
     await prefs.setString(cacheKey, jsonEncode(model.toJson()));
     await prefs.setInt(cacheTsKey, DateTime.now().millisecondsSinceEpoch);
+  }
+
+  Future<Forecast?> _getFreshCachedForecast(
+    String cacheKey,
+    String cacheTsKey,
+  ) async {
+    final prefs = await SharedPreferences.getInstance();
+    final cached = prefs.getString(cacheKey);
+    final ts = prefs.getInt(cacheTsKey);
+
+    if (cached == null || ts == null) return null;
+
+    final age = DateTime.now().millisecondsSinceEpoch - ts;
+    if (age > const Duration(minutes: 10).inMilliseconds) return null;
+
+    final json = jsonDecode(cached) as Map<String, dynamic>;
+    return ForecastResponseModel.fromJson(json).toEntity();
   }
 
   Future<Forecast?> _getCachedForecast(
