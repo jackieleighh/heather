@@ -81,7 +81,7 @@ PODS:
     - FlutterMacOS
   - url_launcher_ios (0.0.1):
     - Flutter
-  - workmanager (0.0.1):
+  - workmanager_apple (0.0.1):
     - Flutter
 
 DEPENDENCIES:
@@ -95,7 +95,7 @@ DEPENDENCIES:
   - home_widget (from `.symlinks/plugins/home_widget/ios`)
   - shared_preferences_foundation (from `.symlinks/plugins/shared_preferences_foundation/darwin`)
   - url_launcher_ios (from `.symlinks/plugins/url_launcher_ios/ios`)
-  - workmanager (from `.symlinks/plugins/workmanager/ios`)
+  - workmanager_apple (from `.symlinks/plugins/workmanager_apple/ios`)
 
 SPEC REPOS:
   trunk:
@@ -130,8 +130,8 @@ EXTERNAL SOURCES:
     :path: ".symlinks/plugins/shared_preferences_foundation/darwin"
   url_launcher_ios:
     :path: ".symlinks/plugins/url_launcher_ios/ios"
-  workmanager:
-    :path: ".symlinks/plugins/workmanager/ios"
+  workmanager_apple:
+    :path: ".symlinks/plugins/workmanager_apple/ios"
 
 SPEC CHECKSUMS:
   Firebase: d99ac19b909cd2c548339c2241ecd0d1599ab02e
@@ -153,8 +153,8 @@ SPEC CHECKSUMS:
   PromisesObjC: f5707f49cb48b9636751c5b2e7d227e43fba9f47
   shared_preferences_foundation: 7036424c3d8ec98dfe75ff1667cb0cd531ec82bb
   url_launcher_ios: 7a95fa5b60cc718a708b8f2966718e93db0cef1b
-  workmanager: 01be2de7f184bd15de93a1812936a2b7f42ef07e
+  workmanager_apple: 904529ae31e97fc5be632cf628507652294a0778
 
-PODFILE CHECKSUM: bebb25d9887c07a3e0f894e9202ddb454ce93446
+PODFILE CHECKSUM: 85c55308971e1c73621de3cfb891a9603d46d2e9
 
 COCOAPODS: 1.16.2

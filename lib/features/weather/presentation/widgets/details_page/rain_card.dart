@@ -49,6 +49,7 @@ class RainCard extends StatelessWidget {
                 'Rain',
                 style: theme.textTheme.bodySmall?.copyWith(
                   fontWeight: FontWeight.w600,
+                  fontSize: 16,
                 ),
               ),
               const Spacer(),
@@ -71,7 +72,7 @@ class RainCard extends StatelessWidget {
               ),
             ],
           ),
-          SizedBox(height: compact ? 2 : 6),
+          SizedBox(height: compact ? 4 : 6),
           Expanded(
             child: CustomPaint(
               size: Size.infinite,

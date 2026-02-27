@@ -87,6 +87,7 @@ class _ConditionsCardState extends State<ConditionsCard> {
                 'Conditions',
                 style: theme.textTheme.bodySmall?.copyWith(
                   fontWeight: FontWeight.w600,
+                  fontSize: 16,
                 ),
               ),
             ],

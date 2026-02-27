@@ -1,13 +1,20 @@
 import 'dart:convert';
 import 'dart:io';
+import 'dart:math';
+import 'dart:ui';
 
 import 'package:dio/dio.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
+import 'package:home_widget/home_widget.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:workmanager/workmanager.dart';
 
+import '../../features/weather/data/models/forecast_response_model.dart';
+import '../../features/weather/domain/entities/temperature_tier.dart';
 import '../constants/api_endpoints.dart';
+import '../constants/background_gradients.dart';
+import '../constants/persona.dart';
 
 const _taskName = 'com.totms.heather.alertCheck';
 const _locationsKey = 'bg_alert_locations';
@@ -23,6 +30,7 @@ void callbackDispatcher() {
   Workmanager().executeTask((task, inputData) async {
     if (task == _taskName || task == Workmanager.iOSBackgroundTask) {
       await _checkAlerts();
+      await _refreshWidgetData();
       // iOS doesn't support periodic tasks — re-schedule a one-off
       if (!Platform.isAndroid) {
         await Workmanager().registerOneOffTask(
@@ -152,6 +160,115 @@ Future<void> _checkAlerts() async {
   }
 
   dio.close();
+}
+
+const _appGroupId = 'group.com.totms.heather';
+const _iOSWidgetName = 'HeatherWeatherWidget';
+const _androidWidgetName = 'HeatherWidgetReceiver';
+const _widgetDataKey = 'widget_data';
+
+Future<void> _refreshWidgetData() async {
+  try {
+    await HomeWidget.setAppGroupId(_appGroupId);
+
+    // Read existing widget data to get location
+    final existingJson =
+        await HomeWidget.getWidgetData<String>(_widgetDataKey);
+    if (existingJson == null) return;
+
+    final existing = jsonDecode(existingJson) as Map<String, dynamic>;
+    final lat = existing['latitude'] as double?;
+    final lon = existing['longitude'] as double?;
+    final cityName = existing['cityName'] as String?;
+    if (lat == null || lon == null || cityName == null) return;
+
+    // Read explicit language preference
+    final prefs = await SharedPreferences.getInstance();
+    final explicit = prefs.getBool('explicit_language') ?? true;
+
+    // Fetch fresh weather data
+    final dio = Dio();
+    final response = await dio.get(
+      ApiEndpoints.forecast(latitude: lat, longitude: lon),
+      options: Options(
+        receiveTimeout: const Duration(seconds: 15),
+        sendTimeout: const Duration(seconds: 15),
+      ),
+    );
+    dio.close();
+
+    final forecast =
+        ForecastResponseModel.fromJson(response.data as Map<String, dynamic>)
+            .toEntity();
+
+    final current = forecast.current;
+    final today = forecast.daily.first;
+    final isDay = forecast.isCurrentlyDay;
+    final tier = TemperatureTier.fromTemperature(current.temperature);
+    final gradientColors = BackgroundGradients.forCondition(
+      current.condition,
+      tier,
+      isDay: isDay,
+    );
+
+    // Pick a random quip
+    final quipMap = heatherQuipMap(altTone: explicit, isDay: isDay);
+    final quips = quipMap[current.condition]?[tier] ?? ['Stay cozy.'];
+    final quip = quips[Random().nextInt(quips.length)];
+
+    final payload = jsonEncode({
+      'temperature': current.temperature.round(),
+      'feelsLike': current.feelsLike.round(),
+      'high': today.temperatureMax.round(),
+      'low': today.temperatureMin.round(),
+      'conditionName': current.condition.name,
+      'description': current.description,
+      'isDay': isDay,
+      'humidity': current.humidity,
+      'windSpeed': current.windSpeed.round(),
+      'uvIndex': current.uvIndex.round(),
+      'quip': quip,
+      'persona': 'heather',
+      'cityName': cityName,
+      'latitude': lat,
+      'longitude': lon,
+      'lastUpdated': DateTime.now().toIso8601String(),
+      'gradientColors':
+          gradientColors.map(_colorToHex).toList(),
+      'hourly': forecast.hourly.take(6).map((h) => {
+            'time': h.time.toIso8601String(),
+            'temperature': h.temperature.round(),
+            'weatherCode': h.weatherCode,
+          }).toList(),
+      'sunrise': today.sunrise.toIso8601String(),
+      'sunset': today.sunset.toIso8601String(),
+      'uvIndexMax': today.uvIndexMax.round(),
+    });
+
+    await HomeWidget.saveWidgetData<String>(_widgetDataKey, payload);
+
+    // Write quip map for native widget random selection
+    final map = heatherQuipMap(altTone: explicit, isDay: isDay);
+    final quipJson = map.map(
+      (condition, tiers) => MapEntry(
+        condition.name,
+        tiers.map((tier, quips) => MapEntry(tier.name, quips)),
+      ),
+    );
+    await HomeWidget.saveWidgetData<String>(
+        'widget_quips', jsonEncode(quipJson));
+
+    await HomeWidget.updateWidget(
+      iOSName: _iOSWidgetName,
+      androidName: _androidWidgetName,
+    );
+  } catch (_) {
+    // Silently fail — widget keeps stale data
+  }
+}
+
+String _colorToHex(Color color) {
+  return '#${color.toARGB32().toRadixString(16).padLeft(8, '0').toUpperCase()}';
 }
 
 class BackgroundAlertService {

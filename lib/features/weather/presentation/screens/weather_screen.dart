@@ -184,22 +184,22 @@ class _WeatherScreenState extends ConsumerState<WeatherScreen>
     required double gpsLongitude,
   }) async {
     final alertsEnabled = ref.read(settingsProvider).severeAlertsEnabled;
-    if (!alertsEnabled) {
-      await BackgroundAlertService.cancelPeriodicCheck();
-      return;
-    }
 
+    // When alerts are disabled, pass empty locations so _checkAlerts() no-ops,
+    // but still register the periodic task so _refreshWidgetData() keeps running.
     final savedLocations = ref.read(savedLocationsProvider);
-    final locations = <Map<String, dynamic>>[
-      {'latitude': gpsLatitude, 'longitude': gpsLongitude, 'name': 'GPS'},
-      ...savedLocations.map(
-        (loc) => {
-          'latitude': loc.latitude,
-          'longitude': loc.longitude,
-          'name': loc.name,
-        },
-      ),
-    ];
+    final locations = alertsEnabled
+        ? <Map<String, dynamic>>[
+            {'latitude': gpsLatitude, 'longitude': gpsLongitude, 'name': 'GPS'},
+            ...savedLocations.map(
+              (loc) => {
+                'latitude': loc.latitude,
+                'longitude': loc.longitude,
+                'name': loc.name,
+              },
+            ),
+          ]
+        : <Map<String, dynamic>>[];
     await BackgroundAlertService.updateLocations(locations);
     await BackgroundAlertService.registerPeriodicCheck();
   }

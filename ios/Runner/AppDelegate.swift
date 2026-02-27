@@ -2,7 +2,7 @@ import Flutter
 import UIKit
 import FirebaseCore
 import FirebaseMessaging
-import workmanager
+import workmanager_apple
 
 @main
 @objc class AppDelegate: FlutterAppDelegate {
@@ -26,7 +26,7 @@ import workmanager
     GeneratedPluginRegistrant.register(with: self)
 
     // WorkManager: register BGTask identifier
-    WorkmanagerPlugin.registerTask(withIdentifier: "com.totms.heather.alertCheck")
+    WorkmanagerPlugin.registerPeriodicTask(withIdentifier: "com.totms.heather.alertCheck", frequency: nil)
 
     return super.application(application, didFinishLaunchingWithOptions: launchOptions)
   }

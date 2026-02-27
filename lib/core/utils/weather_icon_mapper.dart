@@ -3,8 +3,26 @@ import 'package:weather_icons/weather_icons.dart';
 
 import '../constants/weather_codes.dart';
 
-IconData conditionIcon(int code, {bool isDay = true}) {
+IconData conditionIcon(int code, {bool? isDay = true}) {
   final condition = WeatherCodes.fromWmo(code);
+  if (isDay == null) {
+    return switch (condition.name) {
+      'sunny' => WeatherIcons.day_sunny,
+      'mostlySunny' => WeatherIcons.day_cloudy,
+      'partlyCloudy' => WeatherIcons.cloudy,
+      'overcast' => WeatherIcons.cloud,
+      'foggy' => WeatherIcons.fog,
+      'drizzle' => WeatherIcons.sprinkle,
+      'rain' => WeatherIcons.rain,
+      'heavyRain' => WeatherIcons.rain,
+      'freezingRain' => WeatherIcons.sleet,
+      'snow' => WeatherIcons.snow,
+      'blizzard' => WeatherIcons.snow_wind,
+      'thunderstorm' => WeatherIcons.thunderstorm,
+      'hail' => WeatherIcons.hail,
+      _ => WeatherIcons.na,
+    };
+  }
   return switch (condition.name) {
     'sunny' => isDay ? WeatherIcons.day_sunny : WeatherIcons.night_clear,
     'mostlySunny' =>

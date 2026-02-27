@@ -197,7 +197,7 @@ class _CollapsedDayContent extends StatelessWidget {
             ),
             const SizedBox(width: 10),
             Icon(
-              conditionIcon(daily.weatherCode),
+              conditionIcon(daily.weatherCode, isDay: null),
               color: AppColors.cream.withValues(alpha: 0.95),
               size: 22,
             ),
@@ -236,7 +236,7 @@ class _CollapsedDayContent extends StatelessWidget {
           right: 0,
           top: 0,
           child: Icon(
-            conditionIcon(daily.weatherCode),
+            conditionIcon(daily.weatherCode, isDay: null),
             color: AppColors.cream.withValues(alpha: 0.95),
             size: 80,
           ),
@@ -419,7 +419,7 @@ class _ExpandedDayContentState extends State<_ExpandedDayContent> {
               ),
               const SizedBox(width: 6),
               Icon(
-                conditionIcon(daily.weatherCode),
+                conditionIcon(daily.weatherCode, isDay: null),
                 color: AppColors.cream.withValues(alpha: 0.9),
                 size: 24,
               ),
@@ -445,7 +445,7 @@ class _ExpandedDayContentState extends State<_ExpandedDayContent> {
             blendMode: BlendMode.dstIn,
             child: ListView(
               controller: _scrollController,
-              padding: const EdgeInsets.fromLTRB(8, 0, 8, 8),
+              padding: const EdgeInsets.fromLTRB(10, 0, 10, 10),
               children: [
                 SizedBox(
                   height: 96,
@@ -456,7 +456,7 @@ class _ExpandedDayContentState extends State<_ExpandedDayContent> {
                     sunset: daily.sunset,
                   ),
                 ),
-                const SizedBox(height: 5),
+                const SizedBox(height: 8),
                 SizedBox(
                   height: 92,
                   child: TemperatureCard(
@@ -465,7 +465,7 @@ class _ExpandedDayContentState extends State<_ExpandedDayContent> {
                     compact: true,
                   ),
                 ),
-                const SizedBox(height: 5),
+                const SizedBox(height: 8),
                 SizedBox(
                   height: 92,
                   child: RainCard(
@@ -478,7 +478,7 @@ class _ExpandedDayContentState extends State<_ExpandedDayContent> {
                     compact: true,
                   ),
                 ),
-                const SizedBox(height: 5),
+                const SizedBox(height: 8),
                 SizedBox(
                   height: 90,
                   child: _SunMoonCard(
@@ -537,6 +537,7 @@ class _SunMoonCard extends StatelessWidget {
                 'Sun & Moon',
                 style: theme.textTheme.bodySmall?.copyWith(
                   fontWeight: FontWeight.w600,
+                  fontSize: 16,
                 ),
               ),
             ],
@@ -547,43 +548,45 @@ class _SunMoonCard extends StatelessWidget {
             children: [
               Icon(
                 WeatherIcons.sunrise,
-                size: 12,
-                color: AppColors.cream.withValues(alpha: 0.95),
+                size: 13,
+                color: AppColors.cream.withValues(alpha: 0.9),
               ),
-              const SizedBox(width: 4),
+              const SizedBox(width: 5),
               Text(
                 timeFmt.format(sunrise),
-                style: theme.textTheme.bodyMedium?.copyWith(
-                  fontWeight: FontWeight.w700,
+                style: GoogleFonts.poppins(
                   fontSize: 13,
+                  fontWeight: FontWeight.w700,
+                  color: AppColors.cream,
                 ),
               ),
               const SizedBox(width: 14),
               Icon(
                 WeatherIcons.sunset,
-                size: 12,
-                color: AppColors.cream.withValues(alpha: 0.95),
+                size: 13,
+                color: AppColors.cream.withValues(alpha: 0.9),
               ),
-              const SizedBox(width: 4),
+              const SizedBox(width: 5),
               Text(
                 timeFmt.format(sunset),
-                style: theme.textTheme.bodyMedium?.copyWith(
-                  fontWeight: FontWeight.w700,
+                style: GoogleFonts.poppins(
                   fontSize: 13,
+                  fontWeight: FontWeight.w700,
+                  color: AppColors.cream,
                 ),
               ),
             ],
           ),
-          const SizedBox(height: 3),
+          const SizedBox(height: 4),
           // Moon phase row
           Row(
             children: [
               Icon(
                 moonIcon,
-                size: 14,
+                size: 13,
                 color: AppColors.cream.withValues(alpha: 0.9),
               ),
-              const SizedBox(width: 6),
+              const SizedBox(width: 5),
               Text(
                 moonPhaseLabel,
                 style: GoogleFonts.poppins(

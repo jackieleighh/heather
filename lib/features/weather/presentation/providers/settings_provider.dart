@@ -17,7 +17,7 @@ class SettingsState {
   final bool severeAlertsEnabled;
 
   const SettingsState({
-    this.explicitLanguage = false,
+    this.explicitLanguage = true,
     this.onboardingCompleted = false,
     this.severeAlertsEnabled = true,
   });
@@ -42,7 +42,7 @@ class SettingsNotifier extends StateNotifier<SettingsState> {
 
   Future<void> _load() async {
     final prefs = await SharedPreferences.getInstance();
-    final explicit = prefs.getBool(_explicitLanguageKey) ?? false;
+    final explicit = prefs.getBool(_explicitLanguageKey) ?? true;
     final onboardingCompleted =
         prefs.getBool(_onboardingCompletedKey) ?? false;
     final severeAlertsEnabled =

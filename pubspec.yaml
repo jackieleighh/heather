@@ -1,7 +1,7 @@
 name: heather
 description: "Heather - Your sassy weather babe"
 publish_to: "none"
-version: 1.2.33+4
+version: 1.2.35+4
 
 environment:
   sdk: ^3.10.8
