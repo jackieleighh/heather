@@ -148,7 +148,7 @@ class HeatherGlanceWidget : GlanceAppWidget() {
                 context = context,
                 text = "${data.temperature}°",
                 fontRes = R.font.poppins_semibold,
-                sizeSp = 44f,
+                sizeSp = 50f,
                 color = 0xFFFFFFFF.toInt(),
                 contentDescription = "${data.temperature} degrees",
             )
@@ -158,7 +158,7 @@ class HeatherGlanceWidget : GlanceAppWidget() {
                 context = context,
                 text = "${data.high}°/${data.low}°",
                 fontRes = R.font.poppins_medium,
-                sizeSp = 11f,
+                sizeSp = 12f,
                 color = 0xCCFFFFFF.toInt(),
                 contentDescription = "High ${data.high}, Low ${data.low}",
             )
@@ -168,7 +168,7 @@ class HeatherGlanceWidget : GlanceAppWidget() {
                 context = context,
                 text = "Feels like ${data.feelsLike}°",
                 fontRes = R.font.poppins_regular,
-                sizeSp = 9f,
+                sizeSp = 10f,
                 color = 0xB3FFFFFF.toInt(),
                 contentDescription = "Feels like ${data.feelsLike} degrees",
             )
@@ -178,7 +178,7 @@ class HeatherGlanceWidget : GlanceAppWidget() {
                 context = context,
                 text = data.description.replaceFirstChar { it.uppercase() },
                 fontRes = R.font.poppins_regular,
-                sizeSp = 9f,
+                sizeSp = 10f,
                 color = 0xB3FFFFFF.toInt(),
                 contentDescription = data.description,
             )
@@ -214,7 +214,7 @@ class HeatherGlanceWidget : GlanceAppWidget() {
                     context = context,
                     text = "${data.temperature}°",
                     fontRes = R.font.poppins_semibold,
-                    sizeSp = 40f,
+                    sizeSp = 42f,
                     color = 0xFFFFFFFF.toInt(),
                     contentDescription = "${data.temperature} degrees",
                 )
@@ -227,7 +227,7 @@ class HeatherGlanceWidget : GlanceAppWidget() {
                         context = context,
                         text = "${data.high}°/${data.low}°",
                         fontRes = R.font.poppins_medium,
-                        sizeSp = 11f,
+                        sizeSp = 12f,
                         color = 0xCCFFFFFF.toInt(),
                         contentDescription = "High ${data.high}, Low ${data.low}",
                     )
@@ -235,7 +235,7 @@ class HeatherGlanceWidget : GlanceAppWidget() {
                         context = context,
                         text = "Feels like ${data.feelsLike}°",
                         fontRes = R.font.poppins_regular,
-                        sizeSp = 9f,
+                        sizeSp = 10f,
                         color = 0xB3FFFFFF.toInt(),
                         contentDescription = "Feels like ${data.feelsLike} degrees",
                     )
@@ -243,7 +243,7 @@ class HeatherGlanceWidget : GlanceAppWidget() {
                         context = context,
                         text = data.description.replaceFirstChar { it.uppercase() },
                         fontRes = R.font.poppins_regular,
-                        sizeSp = 9f,
+                        sizeSp = 10f,
                         color = 0xB3FFFFFF.toInt(),
                         contentDescription = data.description,
                     )
@@ -316,7 +316,7 @@ class HeatherGlanceWidget : GlanceAppWidget() {
                         context = context,
                         text = "${data.temperature}°",
                         fontRes = R.font.poppins_semibold,
-                        sizeSp = 56f,
+                        sizeSp = 58f,
                         color = 0xFFFFFFFF.toInt(),
                         contentDescription = "${data.temperature} degrees",
                     )
@@ -325,7 +325,7 @@ class HeatherGlanceWidget : GlanceAppWidget() {
                         context = context,
                         text = "${data.high}°/${data.low}°",
                         fontRes = R.font.poppins_medium,
-                        sizeSp = 12f,
+                        sizeSp = 13f,
                         color = 0xE6FFFFFF.toInt(),
                         contentDescription = "High ${data.high}, Low ${data.low}",
                     )
@@ -334,7 +334,7 @@ class HeatherGlanceWidget : GlanceAppWidget() {
                         context = context,
                         text = "Feels like ${data.feelsLike}°",
                         fontRes = R.font.poppins_regular,
-                        sizeSp = 11f,
+                        sizeSp = 12f,
                         color = 0xB3FFFFFF.toInt(),
                         contentDescription = "Feels like ${data.feelsLike} degrees",
                     )
@@ -343,7 +343,7 @@ class HeatherGlanceWidget : GlanceAppWidget() {
                         context = context,
                         text = data.description.replaceFirstChar { it.uppercase() },
                         fontRes = R.font.poppins_regular,
-                        sizeSp = 11f,
+                        sizeSp = 12f,
                         color = 0xB3FFFFFF.toInt(),
                         contentDescription = data.description,
                     )
@@ -384,7 +384,7 @@ class HeatherGlanceWidget : GlanceAppWidget() {
                 context = context,
                 text = data.quip,
                 fontRes = R.font.poppins_medium,
-                sizeSp = 12f,
+                sizeSp = 14f,
                 color = 0xF2FFFFFF.toInt(),
                 contentDescription = data.quip,
                 maxLines = 3,
@@ -407,7 +407,7 @@ class HeatherGlanceWidget : GlanceAppWidget() {
             Image(
                 provider = ImageProvider(iconRes),
                 contentDescription = null,
-                modifier = GlanceModifier.size(10.dp),
+                modifier = GlanceModifier.size(11.dp),
                 colorFilter = ColorFilter.tint(ColorProvider(white70)),
             )
             Spacer(modifier = GlanceModifier.width(3.dp))
@@ -415,7 +415,7 @@ class HeatherGlanceWidget : GlanceAppWidget() {
                 context = context,
                 text = value,
                 fontRes = R.font.poppins_semibold,
-                sizeSp = 10f,
+                sizeSp = 11f,
                 color = 0xCCFFFFFF.toInt(),
                 contentDescription = value,
             )
@@ -426,8 +426,8 @@ class HeatherGlanceWidget : GlanceAppWidget() {
     private fun HourlyRow(hours: List<HourlyEntry>, isDay: Boolean, compact: Boolean) {
         val context = LocalContext.current
         val iconSize = if (compact) 24.dp else 28.dp
-        val timeFontSize = if (compact) 8f else 10f
-        val tempFontSize = if (compact) 9f else 12f
+        val timeFontSize = if (compact) 9f else 11f
+        val tempFontSize = if (compact) 10f else 13f
 
         Row(modifier = GlanceModifier.fillMaxWidth()) {
             hours.forEach { entry ->

@@ -39,19 +39,19 @@ struct SmallWidgetView: View {
                     Spacer()
 
                     Text("\(data.temperature)°")
-                        .font(.custom("Poppins-SemiBold", size: 44))
+                        .font(.custom("Poppins-SemiBold", size: 60))
                         .minimumScaleFactor(0.7)
 
                     Text("\(data.high)°/\(data.low)°")
-                        .font(.custom("Poppins-Medium", size: 11))
+                        .font(.custom("Poppins-Medium", size: 12))
                         .opacity(0.8)
 
                     Text("Feels like \(data.feelsLike)°")
-                        .font(.custom("Poppins-Regular", size: 9))
+                        .font(.custom("Poppins-Regular", size: 10))
                         .opacity(0.7)
 
                     Text(data.description.capitalized)
-                        .font(.custom("Poppins-Regular", size: 9))
+                        .font(.custom("Poppins-Regular", size: 10))
                         .opacity(0.7)
                 }
                 .padding(16)

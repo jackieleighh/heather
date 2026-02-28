@@ -32,19 +32,19 @@ struct LargeWidgetView: View {
                                 .lineLimit(1)
 
                             Text("\(data.temperature)°")
-                                .font(.custom("Poppins-SemiBold", size: 56))
+                                .font(.custom("Poppins-SemiBold", size: 58))
                                 .minimumScaleFactor(0.7)
 
                             Text("\(data.high)°/\(data.low)°")
-                                .font(.custom("Poppins-Medium", size: 12))
+                                .font(.custom("Poppins-Medium", size: 13))
                                 .opacity(0.9)
 
                             Text("Feels like \(data.feelsLike)°")
-                                .font(.custom("Poppins-Regular", size: 11))
+                                .font(.custom("Poppins-Regular", size: 12))
                                 .opacity(0.7)
 
                             Text(data.description.capitalized)
-                                .font(.custom("Poppins-Regular", size: 11))
+                                .font(.custom("Poppins-Regular", size: 12))
                                 .opacity(0.7)
                         }
 
@@ -88,7 +88,7 @@ struct LargeWidgetView: View {
 
                     // Quip
                     Text(data.quip)
-                        .font(.custom("Poppins-Medium", size: 12))
+                        .font(.custom("Poppins-Medium", size: 14))
                         .lineLimit(3)
                         .opacity(0.95)
 
@@ -101,7 +101,7 @@ struct LargeWidgetView: View {
                             ForEach(Array(items.enumerated()), id: \.offset) { index, entry in
                                 VStack(spacing: 3) {
                                     Text(entry.hourLabel)
-                                        .font(.custom("Poppins-Regular", size: 10))
+                                        .font(.custom("Poppins-Regular", size: 11))
                                         .opacity(0.7)
                                     WidgetConditionIcon(
                                         conditionName: entry.conditionName,
@@ -109,7 +109,7 @@ struct LargeWidgetView: View {
                                         size: 28
                                     ).frame(height: 30)
                                     Text("\(entry.temperature)°")
-                                        .font(.custom("Poppins-SemiBold", size: 12))
+                                        .font(.custom("Poppins-SemiBold", size: 13))
                                 }
                                 if index < items.count - 1 {
                                     Spacer(minLength: 0)
@@ -145,10 +145,10 @@ private struct DetailLabel: View {
     var body: some View {
         HStack(spacing: 4) {
             Image(systemName: icon)
-                .font(.system(size: 10))
+                .font(.system(size: 11))
                 .opacity(0.7)
             Text(value)
-                .font(.custom("Poppins-SemiBold", size: 11))
+                .font(.custom("Poppins-SemiBold", size: 12))
                 .opacity(0.8)
         }
     }

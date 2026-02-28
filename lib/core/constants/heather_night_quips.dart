@@ -838,7 +838,7 @@ class HeatherNightQuips {
         "Cool clear night. The kind that makes you believe in astrology and long walks. Jacket on girl.",
         "She said free planetarium show. Temp said yes. Layers and look up babe.",
         "She's channeling Florence Welch tonight. Dramatic gorgeous atmospheric. Jacket on girl.",
-        "The sky looks like somebody spilled glitter on black velvet and honestly she's doing it on purpose babe.",
+        "The sky looks like somebody spilled glitter on black velvet and honestly it's everything babe.",
         "She's got Rihanna Diamonds on repeat. Hell yes girl. Look up.",
       ],
       TemperatureTier.flannelWeather: [
