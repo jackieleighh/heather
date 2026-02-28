@@ -9,6 +9,8 @@ import '../../../../core/services/fcm_service.dart';
 import '../providers/location_provider.dart';
 import '../providers/settings_provider.dart';
 
+const _kSuggestionPhone = '8564123991';
+
 class SettingsScreen extends ConsumerWidget {
   const SettingsScreen({super.key});
 
@@ -293,6 +295,50 @@ class SettingsScreen extends ConsumerWidget {
                                 },
                               ),
                             ],
+                          ),
+                        ),
+
+                        const SizedBox(height: 24),
+
+                        // ── Suggestions Box ──
+                        const _SectionHeader(title: 'Suggestions box'),
+                        const SizedBox(height: 4),
+                        GestureDetector(
+                          onTap: () {
+                            final uri = Uri(
+                              scheme: 'sms',
+                              path: _kSuggestionPhone,
+                            );
+                            launchUrl(uri);
+                          },
+                          child: Container(
+                            decoration: BoxDecoration(
+                              color: AppColors.cream.withValues(alpha: 0.15),
+                              borderRadius: BorderRadius.circular(12),
+                            ),
+                            padding: const EdgeInsets.symmetric(
+                              horizontal: 16,
+                              vertical: 14,
+                            ),
+                            child: Row(
+                              children: [
+                                Expanded(
+                                  child: Text(
+                                    "Got a quip? Text Heather. She's bad with her phone but maybe she'll see it.",
+                                    style: GoogleFonts.poppins(
+                                      fontSize: 13,
+                                      color: AppColors.cream,
+                                    ),
+                                  ),
+                                ),
+                                const SizedBox(width: 12),
+                                const Icon(
+                                  Icons.sms,
+                                  size: 24,
+                                  color: AppColors.cream,
+                                ),
+                              ],
+                            ),
                           ),
                         ),
 

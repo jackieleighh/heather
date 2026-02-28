@@ -78,5 +78,9 @@
 		</array>
 		<key>FirebaseMessagingAutoInitEnabled</key>
 		<true/>
+		<key>LSApplicationQueriesSchemes</key>
+		<array>
+			<string>sms</string>
+		</array>
 	</dict>
 </plist>

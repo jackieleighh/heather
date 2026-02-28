@@ -43,10 +43,8 @@ class SettingsNotifier extends StateNotifier<SettingsState> {
   Future<void> _load() async {
     final prefs = await SharedPreferences.getInstance();
     final explicit = prefs.getBool(_explicitLanguageKey) ?? true;
-    final onboardingCompleted =
-        prefs.getBool(_onboardingCompletedKey) ?? false;
-    final severeAlertsEnabled =
-        prefs.getBool(_severeAlertsEnabledKey) ?? true;
+    final onboardingCompleted = prefs.getBool(_onboardingCompletedKey) ?? false;
+    final severeAlertsEnabled = prefs.getBool(_severeAlertsEnabledKey) ?? true;
     state = SettingsState(
       explicitLanguage: explicit,
       onboardingCompleted: onboardingCompleted,

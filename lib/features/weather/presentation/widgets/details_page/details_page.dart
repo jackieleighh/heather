@@ -107,6 +107,9 @@ class DetailsPage extends ConsumerWidget {
                     .toList(),
                 hours: next24.map((h) => h.time).toList(),
                 now: now,
+                precipType: precipTypeFromConditions(
+                  next24.map((h) => h.condition).toList(),
+                ),
               ),
             ),
             const SizedBox(height: 6),

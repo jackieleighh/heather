@@ -26,7 +26,7 @@ struct SmallWidgetView: View {
                 VStack(alignment: .leading, spacing: 2) {
                     HStack(alignment: .top) {
                         Text(data.cityName)
-                            .font(.system(size: 12, weight: .bold, design: .rounded))
+                            .font(.custom("Poppins-Medium", size: 12))
                             .lineLimit(1)
                         Spacer()
                         WidgetConditionIcon(
@@ -39,19 +39,19 @@ struct SmallWidgetView: View {
                     Spacer()
 
                     Text("\(data.temperature)°")
-                        .font(.system(size: 40, weight: .semibold, design: .rounded))
+                        .font(.custom("Poppins-SemiBold", size: 44))
                         .minimumScaleFactor(0.7)
 
                     Text("\(data.high)°/\(data.low)°")
-                        .font(.system(size: 11, weight: .medium, design: .rounded))
+                        .font(.custom("Poppins-Medium", size: 11))
                         .opacity(0.8)
 
                     Text("Feels like \(data.feelsLike)°")
-                        .font(.system(size: 9))
+                        .font(.custom("Poppins-Regular", size: 9))
                         .opacity(0.7)
 
                     Text(data.description.capitalized)
-                        .font(.system(size: 9))
+                        .font(.custom("Poppins-Regular", size: 9))
                         .opacity(0.7)
                 }
                 .padding(16)

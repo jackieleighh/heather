@@ -475,6 +475,9 @@ class _ExpandedDayContentState extends State<_ExpandedDayContent> {
                         .map((h) => h.precipitationProbability)
                         .toList(),
                     hours: dayHourly.map((h) => h.time).toList(),
+                    precipType: precipTypeFromConditions(
+                      dayHourly.map((h) => h.condition).toList(),
+                    ),
                     compact: true,
                   ),
                 ),

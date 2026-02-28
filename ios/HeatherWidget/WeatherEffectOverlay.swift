@@ -13,11 +13,8 @@ struct WeatherEffectOverlay: View {
     }
 
     var body: some View {
-        TimelineView(.periodic(from: .now, by: 0.2)) { context in
-            let timeOffset = context.date.timeIntervalSince1970
-            Canvas { ctx, size in
-                drawEffect(ctx: ctx, size: size, time: timeOffset)
-            }
+        Canvas { ctx, size in
+            drawEffect(ctx: ctx, size: size, time: 0)
         }
         .allowsHitTesting(false)
     }

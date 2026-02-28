@@ -26,27 +26,27 @@ struct MediumWidgetView: View {
                 VStack(alignment: .leading, spacing: 0) {
 
                     Text(data.cityName)
-                        .font(.system(size: 12, weight: .bold, design: .rounded))
+                        .font(.custom("Poppins-Medium", size: 12))
                         .lineLimit(1)
 
                     // Details row: H/L + feels like on left, labels + icon on right
                     HStack(alignment: .bottom, spacing: 6) {
 
                         Text("\(data.temperature)°")
-                            .font(.system(size: 36, weight: .semibold, design: .rounded))
+                            .font(.custom("Poppins-SemiBold", size: 40))
                             .minimumScaleFactor(0.7)
 
                         VStack(alignment: .leading, spacing: 1) {
                             Text("\(data.high)°/\(data.low)°")
-                                .font(.system(size: 11, weight: .medium, design: .rounded))
+                                .font(.custom("Poppins-Medium", size: 11))
                                 .opacity(0.8)
 
                             Text("Feels like \(data.feelsLike)°")
-                                .font(.system(size: 9))
+                                .font(.custom("Poppins-Regular", size: 9))
                                 .opacity(0.7)
 
                             Text(data.description.capitalized)
-                                .font(.system(size: 9))
+                                .font(.custom("Poppins-Regular", size: 9))
                                 .opacity(0.7)
                         }
 
@@ -106,7 +106,7 @@ struct MediumWidgetView: View {
                             ForEach(Array(items.enumerated()), id: \.offset) { index, entry in
                                 VStack(spacing: 1) {
                                     Text(entry.hourLabel)
-                                        .font(.system(size: 8))
+                                        .font(.custom("Poppins-Regular", size: 8))
                                         .opacity(0.7)
                                     WidgetConditionIcon(
                                         conditionName: entry.conditionName,
@@ -114,7 +114,7 @@ struct MediumWidgetView: View {
                                         size: 24
                                     ).frame(height: 26)
                                     Text("\(entry.temperature)°")
-                                        .font(.system(size: 9, weight: .semibold, design: .rounded))
+                                        .font(.custom("Poppins-SemiBold", size: 9))
                                 }
                                 if index < items.count - 1 {
                                     Spacer(minLength: 0)
@@ -154,7 +154,7 @@ private struct MediumDetailLabel: View {
                 .font(.system(size: 8))
                 .opacity(0.7)
             Text(value)
-                .font(.system(size: 9, weight: .semibold, design: .rounded))
+                .font(.custom("Poppins-SemiBold", size: 9))
                 .opacity(0.8)
         }
         .fixedSize()

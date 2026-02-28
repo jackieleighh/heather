@@ -3,9 +3,36 @@ import 'dart:math' as math;
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:heather/core/constants/app_colors.dart';
+import 'package:heather/features/weather/domain/entities/weather_condition.dart';
 import 'package:intl/intl.dart' hide TextDirection;
 import 'package:weather_icons/weather_icons.dart';
 import './card_container.dart';
+
+enum PrecipType { rain, snow, mixed }
+
+PrecipType precipTypeFromConditions(List<WeatherCondition> conditions) {
+  var hasRain = false;
+  var hasSnow = false;
+  for (final c in conditions) {
+    switch (c) {
+      case WeatherCondition.snow:
+      case WeatherCondition.blizzard:
+        hasSnow = true;
+      case WeatherCondition.drizzle:
+      case WeatherCondition.rain:
+      case WeatherCondition.heavyRain:
+      case WeatherCondition.freezingRain:
+      case WeatherCondition.thunderstorm:
+      case WeatherCondition.hail:
+        hasRain = true;
+      default:
+        break;
+    }
+    if (hasRain && hasSnow) return PrecipType.mixed;
+  }
+  if (hasSnow) return PrecipType.snow;
+  return PrecipType.rain;
+}
 
 class RainCard extends StatelessWidget {
   final double precipitationIn;
@@ -14,6 +41,7 @@ class RainCard extends StatelessWidget {
   final List<DateTime> hours;
   final DateTime? now;
   final bool compact;
+  final PrecipType precipType;
 
   const RainCard({
     super.key,
@@ -23,6 +51,7 @@ class RainCard extends StatelessWidget {
     required this.hours,
     this.now,
     this.compact = false,
+    this.precipType = PrecipType.rain,
   });
 
   @override
@@ -32,21 +61,27 @@ class RainCard extends StatelessWidget {
         ? '0"'
         : '${precipitationIn.toStringAsFixed(2)}"';
 
+    final (label, icon, bgIcon) = switch (precipType) {
+      PrecipType.snow => ('Snow', WeatherIcons.snowflake_cold, WeatherIcons.snow),
+      PrecipType.mixed => ('Slush', WeatherIcons.rain_mix, WeatherIcons.rain_mix),
+      PrecipType.rain => ('Rain', WeatherIcons.raindrop, WeatherIcons.rain),
+    };
+
     return CardContainer(
-      backgroundIcon: WeatherIcons.rain,
+      backgroundIcon: bgIcon,
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Row(
             children: [
               Icon(
-                WeatherIcons.raindrop,
+                icon,
                 size: compact ? 12 : 18,
                 color: AppColors.cream.withValues(alpha: 0.9),
               ),
               SizedBox(width: compact ? 5 : 8),
               Text(
-                'Rain',
+                label,
                 style: theme.textTheme.bodySmall?.copyWith(
                   fontWeight: FontWeight.w600,
                   fontSize: 16,
