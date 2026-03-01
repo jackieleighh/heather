@@ -8,7 +8,7 @@ IconData conditionIcon(int code, {bool? isDay = true}) {
   if (isDay == null) {
     return switch (condition.name) {
       'sunny' => WeatherIcons.day_sunny,
-      'mostlySunny' => WeatherIcons.day_cloudy,
+      'mostlySunny' => WeatherIcons.cloud,
       'partlyCloudy' => WeatherIcons.cloudy,
       'overcast' => WeatherIcons.cloud,
       'foggy' => WeatherIcons.fog,

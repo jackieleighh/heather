@@ -20,7 +20,7 @@ class ApiEndpoints {
       '&temperature_unit=fahrenheit'
       '&wind_speed_unit=mph'
       '&timezone=auto'
-      '&forecast_days=7';
+      '&forecast_days=10';
 
   static const airQualityBase =
       'https://air-quality-api.open-meteo.com/v1/air-quality';

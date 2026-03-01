@@ -15,15 +15,8 @@ import 'details_page/temp_card.dart';
 
 class WeeklyForecastPage extends StatefulWidget {
   final Forecast forecast;
-  final double latitude;
-  final double longitude;
 
-  const WeeklyForecastPage({
-    super.key,
-    required this.forecast,
-    required this.latitude,
-    required this.longitude,
-  });
+  const WeeklyForecastPage({super.key, required this.forecast});
 
   @override
   State<WeeklyForecastPage> createState() => _WeeklyForecastPageState();
@@ -35,7 +28,7 @@ class _WeeklyForecastPageState extends State<WeeklyForecastPage> {
   @override
   Widget build(BuildContext context) {
     final forecast = widget.forecast;
-    final daily = forecast.daily;
+    final daily = forecast.daily.take(7).toList();
     final now = forecast.locationNow;
     final today = DateTime(now.year, now.month, now.day);
 

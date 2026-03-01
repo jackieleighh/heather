@@ -72,9 +72,9 @@ class AppColors {
   static const brightSunnyGreen = Color(0xFF7CC565);
   static const brightLime = Color(0xFFA8CC38);
   static const brightGoldenAmber = Color(0xFFEBB020);
-  static const brightOrange = Color(0xFFFFA833);
+  static const brightOrange = Color(0xFFff9d0a);
   static const brightHotAmber = Color(0xFFFDD45A);
-  static const brightHeatPink = Color(0xFFE05A9C);
+  static const brightHeatPink = Color(0xFFDC9450);
 
   // --- Sunny night bottom colors ---
   static const nightPurple = Color(0xFF4C1D95);

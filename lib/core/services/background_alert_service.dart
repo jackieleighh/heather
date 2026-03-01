@@ -6,6 +6,8 @@ import 'dart:ui';
 import 'package:dio/dio.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
+import 'package:geocoding/geocoding.dart' as geocoding;
+import 'package:geolocator/geolocator.dart';
 import 'package:home_widget/home_widget.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:workmanager/workmanager.dart';
@@ -171,16 +173,44 @@ Future<void> _refreshWidgetData() async {
   try {
     await HomeWidget.setAppGroupId(_appGroupId);
 
-    // Read existing widget data to get location
+    // Read existing widget data to get stored location as fallback
     final existingJson =
         await HomeWidget.getWidgetData<String>(_widgetDataKey);
     if (existingJson == null) return;
 
     final existing = jsonDecode(existingJson) as Map<String, dynamic>;
-    final lat = existing['latitude'] as double?;
-    final lon = existing['longitude'] as double?;
-    final cityName = existing['cityName'] as String?;
-    if (lat == null || lon == null || cityName == null) return;
+    final storedLat = existing['latitude'] as double?;
+    final storedLon = existing['longitude'] as double?;
+    final storedCity = existing['cityName'] as String?;
+    if (storedLat == null || storedLon == null || storedCity == null) return;
+
+    var lat = storedLat;
+    var lon = storedLon;
+    var cityName = storedCity;
+
+    // Try to refresh location from system cache (no GPS activation)
+    try {
+      final position = await Geolocator.getLastKnownPosition();
+      if (position != null) {
+        lat = position.latitude;
+        lon = position.longitude;
+        try {
+          final placemarks = await geocoding.placemarkFromCoordinates(lat, lon);
+          if (placemarks.isNotEmpty) {
+            final place = placemarks.first;
+            cityName = place.locality?.isNotEmpty == true
+                ? place.locality!
+                : place.subAdministrativeArea ??
+                    place.administrativeArea ??
+                    cityName;
+          }
+        } catch (_) {
+          // Keep existing cityName if reverse geocoding fails
+        }
+      }
+    } catch (_) {
+      // Keep stored location on any failure (permission denied, etc.)
+    }
 
     // Read explicit language preference
     final prefs = await SharedPreferences.getInstance();

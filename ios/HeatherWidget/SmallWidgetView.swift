@@ -23,7 +23,7 @@ struct SmallWidgetView: View {
                     .opacity(data.isDay ? 0.2 : 0.3)
                     .offset(x: 10, y: 16)
 
-                VStack(alignment: .leading, spacing: 2) {
+                VStack(alignment: .leading, spacing: 0) {
                     HStack(alignment: .top) {
                         Text(data.cityName)
                             .font(.custom("Poppins-Medium", size: 12))
@@ -36,11 +36,13 @@ struct SmallWidgetView: View {
                         )
                     }
 
-                    Spacer()
+                    Spacer(minLength: 0)
 
                     Text("\(data.temperature)°")
-                        .font(.custom("Poppins-SemiBold", size: 60))
+                        .font(.custom("Poppins-SemiBold", size: 48))
                         .minimumScaleFactor(0.7)
+
+                    Spacer(minLength: 0)
 
                     Text("\(data.high)°/\(data.low)°")
                         .font(.custom("Poppins-Medium", size: 12))
@@ -49,12 +51,14 @@ struct SmallWidgetView: View {
                     Text("Feels like \(data.feelsLike)°")
                         .font(.custom("Poppins-Regular", size: 10))
                         .opacity(0.7)
+                        .padding(.top, 1)
 
                     Text(data.description.capitalized)
                         .font(.custom("Poppins-Regular", size: 10))
                         .opacity(0.7)
+                        .padding(.top, 1)
                 }
-                .padding(16)
+                .padding(12)
                 .foregroundStyle(.white)
                 .shadow(color: .black.opacity(0.35), radius: 0.5, x: 0, y: 0.5)
                 .shadow(color: .black.opacity(0.2), radius: 2, x: 0, y: 1)

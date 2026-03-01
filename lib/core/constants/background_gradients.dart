@@ -71,15 +71,18 @@ class BackgroundGradients {
     TemperatureTier.flannelWeather: [
       AppColors.brightSkyBlue,
       AppColors.brightLime,
-      AppColors.brightGoldenAmber,
+      AppColors.brightHotAmber,
     ],
     TemperatureTier.shortsWeather: [
       AppColors.brightSkyBlue,
+      AppColors.brightLime,
       AppColors.brightGoldenAmber,
       AppColors.brightOrange,
     ],
     TemperatureTier.scorcher: [
       AppColors.brightSkyBlue,
+      AppColors.brightLime,
+      AppColors.brightGoldenAmber,
       AppColors.brightOrange,
       AppColors.heatPink,
     ],

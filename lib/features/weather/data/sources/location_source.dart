@@ -85,5 +85,11 @@ class LocationSource {
             'where you are! Enable location, please?',
       );
     }
+
+    // Try to upgrade to "always" for background widget updates
+    if (permission == LocationPermission.whileInUse) {
+      await Geolocator.requestPermission();
+      // If denied, whileInUse still works for foreground — no error needed
+    }
   }
 }
