@@ -11,9 +11,29 @@ class ApiEndpoints {
       '$weatherBase?latitude=$latitude&longitude=$longitude'
       '&current=temperature_2m,relative_humidity_2m,apparent_temperature,'
       'is_day,precipitation,rain,snowfall,weather_code,cloud_cover,'
-      'wind_speed_10m,uv_index'
+      'wind_speed_10m,uv_index,dew_point_2m,visibility,pressure_msl,'
+      'wind_gusts_10m,wind_direction_10m'
       '&hourly=temperature_2m,precipitation_probability,weather_code,'
-      'wind_speed_10m,uv_index'
+      'wind_speed_10m,uv_index,apparent_temperature,wind_gusts_10m'
+      '&daily=weather_code,temperature_2m_max,temperature_2m_min,'
+      'precipitation_sum,precipitation_probability_max,sunrise,sunset,'
+      'uv_index_max'
+      '&temperature_unit=fahrenheit'
+      '&wind_speed_unit=mph'
+      '&timezone=auto'
+      '&forecast_days=10';
+
+  static String forecastBatch({
+    required List<double> latitudes,
+    required List<double> longitudes,
+  }) =>
+      '$weatherBase?latitude=${latitudes.join(",")}&longitude=${longitudes.join(",")}'
+      '&current=temperature_2m,relative_humidity_2m,apparent_temperature,'
+      'is_day,precipitation,rain,snowfall,weather_code,cloud_cover,'
+      'wind_speed_10m,uv_index,dew_point_2m,visibility,pressure_msl,'
+      'wind_gusts_10m,wind_direction_10m'
+      '&hourly=temperature_2m,precipitation_probability,weather_code,'
+      'wind_speed_10m,uv_index,apparent_temperature,wind_gusts_10m'
       '&daily=weather_code,temperature_2m_max,temperature_2m_min,'
       'precipitation_sum,precipitation_probability_max,sunrise,sunset,'
       'uv_index_max'

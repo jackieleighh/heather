@@ -88,6 +88,15 @@ class SunCard extends StatelessWidget {
             children: [
               const Spacer(),
               Text(
+                _daylightDuration(sunrise, sunset),
+                style: GoogleFonts.poppins(
+                  fontSize: 12,
+                  fontWeight: FontWeight.w500,
+                  color: AppColors.cream.withValues(alpha: 0.8),
+                ),
+              ),
+              const SizedBox(width: 12),
+              Text(
                 'UV ${uvIndex.round()}',
                 style: GoogleFonts.poppins(
                   fontSize: 12,
@@ -122,6 +131,13 @@ class SunCard extends StatelessWidget {
         ],
       ),
     );
+  }
+
+  static String _daylightDuration(DateTime sunrise, DateTime sunset) {
+    final duration = sunset.difference(sunrise);
+    final hours = duration.inHours;
+    final minutes = duration.inMinutes % 60;
+    return '${hours}h ${minutes}m daylight';
   }
 
   static String _uvLabel(double uv) {

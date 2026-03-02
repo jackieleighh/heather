@@ -6,6 +6,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:go_router/go_router.dart';
 import 'package:heather/features/weather/presentation/screens/error_screen.dart';
+import 'package:heather/features/weather/presentation/screens/loading_screen.dart';
 import 'package:heather/features/weather/domain/entities/saved_location.dart';
 import 'package:heather/features/weather/presentation/screens/saved_locations_page.dart';
 import 'package:heather/features/weather/presentation/widgets/logo_overlay.dart';
@@ -36,10 +37,15 @@ class _WeatherScreenState extends ConsumerState<WeatherScreen>
   StreamSubscription<void>? _widgetTapSub;
   StreamSubscription<void>? _alertTapSub;
   Timer? _pollTimer;
-  Timer? _splashTimeout;
-  bool _minTimeElapsed = true;
+  Timer? _gracePeriodTimer;
+  Timer? _forceTimeoutTimer;
+  DateTime? _lastRefreshTime;
+  DateTime? _lastForceRefreshTime;
   bool _splashRemoved = false;
+  bool _gracePeriodElapsed = false;
+  bool _minimumDisplayElapsed = false;
   bool _initialRegistrationDone = false;
+  bool _savedLocationsLoaded = false;
   int _currentHorizontalPage = 0;
 
   @override
@@ -58,10 +64,25 @@ class _WeatherScreenState extends ConsumerState<WeatherScreen>
     _pollTimer = Timer.periodic(const Duration(minutes: 15), (_) {
       if (mounted) _refreshAll();
     });
-    _splashTimeout = Timer(const Duration(seconds: 25), () {
-      if (!_splashRemoved && mounted) {
+    // Remove native splash on the very first frame so our in-app
+    // LoadingScreen (same magenta bg + splash image) takes over seamlessly.
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (!_splashRemoved) {
         _splashRemoved = true;
         FlutterNativeSplash.remove();
+      }
+    });
+    // Minimum display: show loading screen for at least 3s for visual polish
+    Timer(const Duration(seconds: 3), () {
+      if (mounted) setState(() => _minimumDisplayElapsed = true);
+    });
+    // Grace period: show loading screen for at least 10s before showing errors
+    _gracePeriodTimer = Timer(const Duration(seconds: 10), () {
+      if (mounted) setState(() => _gracePeriodElapsed = true);
+    });
+    // Hard timeout: force error if still loading after 25s
+    _forceTimeoutTimer = Timer(const Duration(seconds: 25), () {
+      if (mounted) {
         ref.read(weatherStateProvider.notifier).forceTimeout();
       }
     });
@@ -69,7 +90,8 @@ class _WeatherScreenState extends ConsumerState<WeatherScreen>
 
   @override
   void dispose() {
-    _splashTimeout?.cancel();
+    _gracePeriodTimer?.cancel();
+    _forceTimeoutTimer?.cancel();
     _pollTimer?.cancel();
     WidgetsBinding.instance.removeObserver(this);
     _widgetTapSub?.cancel();
@@ -82,6 +104,11 @@ class _WeatherScreenState extends ConsumerState<WeatherScreen>
   @override
   void didChangeAppLifecycleState(AppLifecycleState state) {
     if (state == AppLifecycleState.resumed) {
+      final now = DateTime.now();
+      if (_lastRefreshTime != null &&
+          now.difference(_lastRefreshTime!).inMinutes < 5) {
+        return; // Data is <5 min old, skip refresh
+      }
       _refreshAll();
     }
   }
@@ -162,18 +189,16 @@ class _WeatherScreenState extends ConsumerState<WeatherScreen>
       },
     );
 
-    final savedLocations = ref.read(savedLocationsProvider);
-    for (final loc in savedLocations) {
-      final params = (name: loc.name, lat: loc.latitude, lon: loc.longitude);
-      final locState = ref.read(locationForecastProvider(params));
-      locState.whenOrNull(
-        loaded: (forecast, quip, locAlerts) {
-          for (final a in locAlerts) {
+    final savedState = ref.read(savedLocationsForecastProvider);
+    savedState.whenOrNull(
+      loaded: (forecasts) {
+        for (final entry in forecasts.values) {
+          for (final a in entry.alerts) {
             if (seenIds.add(a.id)) alerts.add(a);
           }
-        },
-      );
-    }
+        }
+      },
+    );
 
     alerts.sort((a, b) => a.severity.sortOrder.compareTo(b.severity.sortOrder));
     return alerts;
@@ -204,55 +229,53 @@ class _WeatherScreenState extends ConsumerState<WeatherScreen>
     await BackgroundAlertService.registerPeriodicCheck();
   }
 
+  void _resetPollTimer() {
+    _pollTimer?.cancel();
+    _pollTimer = Timer.periodic(const Duration(minutes: 15), (_) {
+      if (mounted) _refreshAll();
+    });
+  }
+
   Future<bool> _refreshAll({bool force = false}) async {
+    // Debounce force refreshes: 30-second cooldown
+    if (force) {
+      final now = DateTime.now();
+      if (_lastForceRefreshTime != null &&
+          now.difference(_lastForceRefreshTime!).inSeconds < 30) {
+        return false;
+      }
+      _lastForceRefreshTime = now;
+    }
+
     final savedLocations = ref.read(savedLocationsProvider);
     final results = await Future.wait([
       ref.read(weatherStateProvider.notifier).refresh(forceRefresh: force),
-      ...savedLocations.map((loc) {
-        final params = (name: loc.name, lat: loc.latitude, lon: loc.longitude);
-        return ref
-            .read(locationForecastProvider(params).notifier)
-            .refresh(forceRefresh: force);
-      }),
+      ref
+          .read(savedLocationsForecastProvider.notifier)
+          .refresh(savedLocations, forceRefresh: force),
     ]);
-    return results.every((success) => success);
+
+    final success = results[0];
+    if (success) {
+      _lastRefreshTime = DateTime.now();
+      _resetPollTimer();
+    }
+    return success;
   }
 
   @override
   Widget build(BuildContext context) {
     final state = ref.watch(weatherStateProvider);
     final savedLocations = ref.watch(savedLocationsProvider);
-
-    // Eagerly warm up all saved location providers so data loads during splash
-    final locationStates = <LocationForecastState>[];
-    for (final loc in savedLocations) {
-      locationStates.add(
-        ref.watch(
-          locationForecastProvider((
-            name: loc.name,
-            lat: loc.latitude,
-            lon: loc.longitude,
-          )),
-        ),
-      );
-    }
-
-    // Check if all weather data is loaded
-    final gpsReady = state != const WeatherState.loading();
-    final locationsReady = locationStates.every(
-      (s) => s != const LocationForecastState.loading(),
-    );
-
-    // Remove native splash when min time elapsed + all data loaded
-    if (_minTimeElapsed && gpsReady && locationsReady && !_splashRemoved) {
-      _splashRemoved = true;
-      _splashTimeout?.cancel();
-      FlutterNativeSplash.remove();
-    }
+    final savedForecastState = ref.watch(savedLocationsForecastProvider);
 
     final content = state.when(
-      loading: () => Container(color: Theme.of(context).colorScheme.secondary),
+      loading: () => const LoadingScreen(),
       error: (message) {
+        // During grace period, keep showing loading screen instead of error
+        if (!_gracePeriodElapsed) {
+          return const LoadingScreen();
+        }
         final notifier = ref.read(weatherStateProvider.notifier);
         return ErrorScreen(
           message: message,
@@ -265,6 +288,32 @@ class _WeatherScreenState extends ConsumerState<WeatherScreen>
         );
       },
       loaded: (forecast, location, quip, alerts) {
+        // First successful load — cancel grace period and timeout timers
+        if (!_gracePeriodElapsed) {
+          _gracePeriodElapsed = true;
+          _gracePeriodTimer?.cancel();
+          _forceTimeoutTimer?.cancel();
+        }
+
+        // Trigger batch load for saved locations once GPS is loaded
+        if (!_savedLocationsLoaded) {
+          _savedLocationsLoaded = true;
+          if (savedLocations.isNotEmpty) {
+            WidgetsBinding.instance.addPostFrameCallback((_) {
+              if (mounted) {
+                ref
+                    .read(savedLocationsForecastProvider.notifier)
+                    .load(savedLocations);
+              }
+            });
+          }
+        }
+
+        // Keep showing loading screen until minimum display time passes
+        if (!_minimumDisplayElapsed) {
+          return const LoadingScreen();
+        }
+
         // Show alert sheet if app was opened via notification tap (cold start)
         if (FcmService().pendingAlertTap) {
           WidgetsBinding.instance.addPostFrameCallback((_) {
@@ -279,12 +328,13 @@ class _WeatherScreenState extends ConsumerState<WeatherScreen>
             gpsLatitude: location.latitude,
             gpsLongitude: location.longitude,
           );
-          // Re-register whenever saved locations change (add/remove)
+          // Re-register and re-fetch whenever saved locations change (add/remove)
           ref.listen<List<SavedLocation>>(savedLocationsProvider, (prev, next) {
             _registerAllLocations(
               gpsLatitude: location.latitude,
               gpsLongitude: location.longitude,
             );
+            ref.read(savedLocationsForecastProvider.notifier).load(next);
           });
           // Re-register or unregister when alert setting is toggled
           ref.listen<SettingsState>(settingsProvider, (prev, next) {
@@ -322,12 +372,16 @@ class _WeatherScreenState extends ConsumerState<WeatherScreen>
 
         if (_currentHorizontalPage > 0) {
           final locIndex = _currentHorizontalPage - 1;
-          if (locIndex < locationStates.length) {
-            locationStates[locIndex].whenOrNull(
-              loaded: (locForecast, quip, alerts) {
-                bgCondition = locForecast.current.condition;
-                bgIsDay = locForecast.isCurrentlyDay;
-                bgTemperature = locForecast.current.temperature;
+          if (locIndex < savedLocations.length) {
+            final locId = savedLocations[locIndex].id;
+            savedForecastState.whenOrNull(
+              loaded: (forecasts) {
+                final data = forecasts[locId];
+                if (data != null) {
+                  bgCondition = data.forecast.current.condition;
+                  bgIsDay = data.forecast.isCurrentlyDay;
+                  bgTemperature = data.forecast.current.temperature;
+                }
               },
             );
           }

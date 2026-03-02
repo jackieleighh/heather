@@ -216,20 +216,41 @@ Future<void> _refreshWidgetData() async {
     final prefs = await SharedPreferences.getInstance();
     final explicit = prefs.getBool('explicit_language') ?? true;
 
-    // Fetch fresh weather data
-    final dio = Dio();
-    final response = await dio.get(
-      ApiEndpoints.forecast(latitude: lat, longitude: lon),
-      options: Options(
-        receiveTimeout: const Duration(seconds: 15),
-        sendTimeout: const Duration(seconds: 15),
-      ),
-    );
-    dio.close();
+    // Try foreground cache first (shared via SharedPreferences)
+    final cacheKey = 'cached_forecast_${lat}_$lon';
+    final cacheTsKey = 'cached_forecast_ts_${lat}_$lon';
+    final cachedJson = prefs.getString(cacheKey);
+    final cachedTs = prefs.getInt(cacheTsKey);
 
-    final forecast =
-        ForecastResponseModel.fromJson(response.data as Map<String, dynamic>)
-            .toEntity();
+    ForecastResponseModel forecastModel;
+    if (cachedJson != null &&
+        cachedTs != null &&
+        DateTime.now().millisecondsSinceEpoch - cachedTs <
+            const Duration(minutes: 20).inMilliseconds) {
+      // Cache is <20 min old — reuse foreground data
+      forecastModel = ForecastResponseModel.fromJson(
+          jsonDecode(cachedJson) as Map<String, dynamic>);
+    } else {
+      // Cache is stale or missing — fetch from API
+      final dio = Dio();
+      final response = await dio.get(
+        ApiEndpoints.forecast(latitude: lat, longitude: lon),
+        options: Options(
+          receiveTimeout: const Duration(seconds: 15),
+          sendTimeout: const Duration(seconds: 15),
+        ),
+      );
+      dio.close();
+      forecastModel =
+          ForecastResponseModel.fromJson(response.data as Map<String, dynamic>);
+
+      // Write back to shared cache so foreground benefits too
+      await prefs.setString(cacheKey, jsonEncode(forecastModel.toJson()));
+      await prefs.setInt(
+          cacheTsKey, DateTime.now().millisecondsSinceEpoch);
+    }
+
+    final forecast = forecastModel.toEntity();
 
     final current = forecast.current;
     final today = forecast.daily.first;

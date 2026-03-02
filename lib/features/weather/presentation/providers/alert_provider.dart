@@ -10,7 +10,11 @@ Future<List<WeatherAlert>> fetchAlerts({
   required double longitude,
 }) async {
   try {
-    final response = await Dio().get(
+    final dio = Dio(BaseOptions(
+      connectTimeout: const Duration(seconds: 10),
+      receiveTimeout: const Duration(seconds: 10),
+    ));
+    final response = await dio.get(
       ApiEndpoints.nwsAlerts(
         latitude: latitude,
         longitude: longitude,

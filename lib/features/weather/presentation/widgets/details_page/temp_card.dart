@@ -72,7 +72,11 @@ class TemperatureCard extends StatelessWidget {
           Expanded(
             child: CustomPaint(
               size: Size.infinite,
-              painter: _TempLinePainter(temps: temps, hours: hours, now: now),
+              painter: _TempLinePainter(
+                temps: temps,
+                hours: hours,
+                now: now,
+              ),
             ),
           ),
         ],
@@ -86,7 +90,11 @@ class _TempLinePainter extends CustomPainter {
   final List<DateTime> hours;
   final DateTime? now;
 
-  _TempLinePainter({required this.temps, required this.hours, this.now});
+  _TempLinePainter({
+    required this.temps,
+    required this.hours,
+    this.now,
+  });
 
   @override
   void paint(Canvas canvas, Size size) {

@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../../core/constants/app_colors.dart';
 import '../../domain/entities/saved_location.dart';
+import '../providers/location_provider.dart';
 import '../providers/weather_provider.dart';
 import '../widgets/vertical_forecast_pager.dart';
 
@@ -17,31 +18,37 @@ class SavedLocationsPage extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final params = (
-      name: location.name,
-      lat: location.latitude,
-      lon: location.longitude,
-    );
-    final state = ref.watch(locationForecastProvider(params));
+    final state = ref.watch(savedLocationsForecastProvider);
 
     return state.when(
       loading: () => const _MiniLoadingView(),
       error: (_) => _MiniErrorView(
-        onRetry: () =>
-            ref.read(locationForecastProvider(params).notifier).load(),
+        onRetry: () {
+          final savedLocations = ref.read(savedLocationsProvider);
+          ref
+              .read(savedLocationsForecastProvider.notifier)
+              .load(savedLocations);
+        },
       ),
-      loaded: (forecast, quip, alerts) => VerticalForecastPager(
-        forecast: forecast,
-        cityName: location.name,
-        quip: quip,
-        latitude: location.latitude,
-        longitude: location.longitude,
-        alerts: alerts,
-        onRefresh: () => ref
-            .read(locationForecastProvider(params).notifier)
-            .refresh(forceRefresh: true),
-        onSettings: onSettings,
-      ),
+      loaded: (forecasts) {
+        final data = forecasts[location.id];
+        if (data == null) return const _MiniLoadingView();
+        return VerticalForecastPager(
+          forecast: data.forecast,
+          cityName: location.name,
+          quip: data.quip,
+          latitude: location.latitude,
+          longitude: location.longitude,
+          alerts: data.alerts,
+          onRefresh: () {
+            final savedLocations = ref.read(savedLocationsProvider);
+            return ref
+                .read(savedLocationsForecastProvider.notifier)
+                .refresh(savedLocations, forceRefresh: true);
+          },
+          onSettings: onSettings,
+        );
+      },
     );
   }
 }

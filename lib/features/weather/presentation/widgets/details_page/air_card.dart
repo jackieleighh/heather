@@ -11,6 +11,7 @@ class AirCard extends StatelessWidget {
   final bool isLoading;
   final double windSpeed;
   final List<double> hourlyWind;
+  final double pressure;
 
   const AirCard({
     super.key,
@@ -18,6 +19,7 @@ class AirCard extends StatelessWidget {
     required this.isLoading,
     required this.windSpeed,
     required this.hourlyWind,
+    this.pressure = 0.0,
   });
 
   @override
@@ -73,6 +75,29 @@ class AirCard extends StatelessWidget {
               ),
             ],
           ),
+          if (pressure > 0)
+            Padding(
+              padding: const EdgeInsets.only(top: 2),
+              child: Row(
+                children: [
+                  const Spacer(),
+                  Icon(
+                    WeatherIcons.barometer,
+                    size: 14,
+                    color: AppColors.cream.withValues(alpha: 0.8),
+                  ),
+                  const SizedBox(width: 4),
+                  Text(
+                    '${pressure.round()} mb',
+                    style: GoogleFonts.poppins(
+                      fontSize: 11,
+                      fontWeight: FontWeight.w600,
+                      color: AppColors.cream.withValues(alpha: 0.8),
+                    ),
+                  ),
+                ],
+              ),
+            ),
           Expanded(
             child: Column(
               mainAxisAlignment: MainAxisAlignment.center,

@@ -18,5 +18,10 @@ class Weather with _$Weather {
     required double precipitation,
     required int cloudCover,
     required double uvIndex,
+    @Default(0.0) double dewPoint,
+    @Default(0.0) double visibility,
+    @Default(0.0) double pressure,
+    @Default(0.0) double windGusts,
+    @Default(0) int windDirection,
   }) = _Weather;
 }

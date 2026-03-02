@@ -79,6 +79,36 @@ class WeatherDetails extends StatelessWidget {
               ],
             ),
           ),
+          const SizedBox(height: 6),
+          FittedBox(
+            fit: BoxFit.scaleDown,
+            alignment: Alignment.centerRight,
+            child: Row(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                _DetailChip(
+                  icon: WeatherIcons.raindrops,
+                  label: 'Dew ${weather.dewPoint.round()}°',
+                  style: style,
+                  dimmed: true,
+                ),
+                const SizedBox(width: 16),
+                _DetailChip(
+                  icon: Icons.visibility_outlined,
+                  label: '${weather.visibility.toStringAsFixed(1)} mi',
+                  style: style,
+                  dimmed: true,
+                ),
+                const SizedBox(width: 16),
+                _DetailChip(
+                  icon: WeatherIcons.barometer,
+                  label: '${weather.pressure.round()} mb',
+                  style: style,
+                  dimmed: true,
+                ),
+              ],
+            ),
+          ),
         ],
       ),
     );
@@ -89,17 +119,32 @@ class _DetailChip extends StatelessWidget {
   final IconData icon;
   final String label;
   final TextStyle? style;
+  final bool dimmed;
 
-  const _DetailChip({required this.icon, required this.label, this.style});
+  const _DetailChip({
+    required this.icon,
+    required this.label,
+    this.style,
+    this.dimmed = false,
+  });
 
   @override
   Widget build(BuildContext context) {
+    final alpha = dimmed ? 0.7 : 0.95;
     return Row(
       mainAxisSize: MainAxisSize.min,
       children: [
-        Icon(icon, size: 14, color: AppColors.cream.withValues(alpha: 0.95)),
+        Icon(icon, size: dimmed ? 12 : 14, color: AppColors.cream.withValues(alpha: alpha)),
         const SizedBox(width: 6),
-        Text(label, style: style),
+        Text(
+          label,
+          style: dimmed
+              ? style?.copyWith(
+                  fontSize: 12,
+                  color: AppColors.cream.withValues(alpha: alpha),
+                )
+              : style,
+        ),
       ],
     );
   }

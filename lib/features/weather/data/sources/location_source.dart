@@ -86,10 +86,8 @@ class LocationSource {
       );
     }
 
-    // Try to upgrade to "always" for background widget updates
-    if (permission == LocationPermission.whileInUse) {
-      await Geolocator.requestPermission();
-      // If denied, whileInUse still works for foreground — no error needed
-    }
+    // "whileInUse" is sufficient for foreground weather loading.
+    // "always" upgrades for background widgets should be prompted contextually,
+    // not on every launch (requestPermission blocks on a system dialog).
   }
 }

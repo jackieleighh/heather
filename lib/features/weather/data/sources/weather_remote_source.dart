@@ -29,4 +29,44 @@ class WeatherRemoteSource {
       );
     }
   }
+
+  Future<Map<String, ForecastResponseModel>> fetchForecastBatch({
+    required List<({String id, double latitude, double longitude})> locations,
+  }) async {
+    if (locations.isEmpty) return {};
+    try {
+      final response = await dio.get(
+        ApiEndpoints.forecastBatch(
+          latitudes: locations.map((l) => l.latitude).toList(),
+          longitudes: locations.map((l) => l.longitude).toList(),
+        ),
+      );
+
+      final results = <String, ForecastResponseModel>{};
+
+      if (locations.length == 1) {
+        // Single location: API returns a plain object
+        results[locations.first.id] = ForecastResponseModel.fromJson(
+          response.data as Map<String, dynamic>,
+        );
+      } else {
+        // Multiple locations: API returns an array
+        final list = response.data as List<dynamic>;
+        for (var i = 0; i < list.length; i++) {
+          results[locations[i].id] = ForecastResponseModel.fromJson(
+            list[i] as Map<String, dynamic>,
+          );
+        }
+      }
+
+      return results;
+    } on DioException catch (e) {
+      throw WeatherException(
+        e.message ?? 'Failed to fetch forecasts',
+        sassyMessage:
+            'Ugh, the weather gods are ghosting me right now. '
+            'Try again in a sec, babe!',
+      );
+    }
+  }
 }

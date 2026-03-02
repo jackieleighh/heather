@@ -8,5 +8,10 @@ abstract class WeatherRepository {
     bool forceRefresh = false,
   });
 
+  Future<Map<String, Forecast>> getForecastBatch({
+    required List<({String id, double latitude, double longitude})> locations,
+    bool forceRefresh = false,
+  });
+
   Future<LocationInfo> getCurrentLocation();
 }

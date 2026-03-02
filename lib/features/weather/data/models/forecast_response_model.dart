@@ -49,6 +49,12 @@ class ForecastResponseModel {
         condition: WeatherCodes.fromWmo(hourly.weatherCode[i]),
         windSpeed: hourly.windSpeed10m[i],
         uvIndex: i < hourly.uvIndex.length ? hourly.uvIndex[i] : 0.0,
+        feelsLike: i < hourly.apparentTemperature.length
+            ? hourly.apparentTemperature[i]
+            : 0.0,
+        windGusts: i < hourly.windGusts10m.length
+            ? hourly.windGusts10m[i]
+            : 0.0,
       );
       hourlyAllEntities.add(entity);
       // All hours of today (midnight to midnight)
@@ -91,6 +97,11 @@ class ForecastResponseModel {
         precipitation: current.precipitation,
         cloudCover: current.cloudCover,
         uvIndex: current.uvIndex,
+        dewPoint: current.dewPoint2m,
+        visibility: current.visibility / 1609.34,
+        pressure: current.pressureMsl,
+        windGusts: current.windGusts10m,
+        windDirection: current.windDirection10m,
       ),
       hourly: hourlyEntities,
       hourlyToday: hourlyTodayEntities,
@@ -125,6 +136,16 @@ class CurrentWeatherModel {
   final double windSpeed10m;
   @JsonKey(name: 'uv_index', defaultValue: 0.0)
   final double uvIndex;
+  @JsonKey(name: 'dew_point_2m', defaultValue: 0.0)
+  final double dewPoint2m;
+  @JsonKey(name: 'visibility', defaultValue: 0.0)
+  final double visibility;
+  @JsonKey(name: 'pressure_msl', defaultValue: 0.0)
+  final double pressureMsl;
+  @JsonKey(name: 'wind_gusts_10m', defaultValue: 0.0)
+  final double windGusts10m;
+  @JsonKey(name: 'wind_direction_10m', defaultValue: 0)
+  final int windDirection10m;
 
   const CurrentWeatherModel({
     required this.temperature2m,
@@ -138,6 +159,11 @@ class CurrentWeatherModel {
     required this.cloudCover,
     required this.windSpeed10m,
     required this.uvIndex,
+    required this.dewPoint2m,
+    required this.visibility,
+    required this.pressureMsl,
+    required this.windGusts10m,
+    required this.windDirection10m,
   });
 
   factory CurrentWeatherModel.fromJson(Map<String, dynamic> json) =>
@@ -160,6 +186,10 @@ class HourlyResponseModel {
   final List<double> windSpeed10m;
   @JsonKey(name: 'uv_index', defaultValue: [])
   final List<double> uvIndex;
+  @JsonKey(name: 'apparent_temperature', defaultValue: [])
+  final List<double> apparentTemperature;
+  @JsonKey(name: 'wind_gusts_10m', defaultValue: [])
+  final List<double> windGusts10m;
 
   const HourlyResponseModel({
     required this.time,
@@ -168,6 +198,8 @@ class HourlyResponseModel {
     required this.weatherCode,
     required this.windSpeed10m,
     required this.uvIndex,
+    required this.apparentTemperature,
+    required this.windGusts10m,
   });
 
   factory HourlyResponseModel.fromJson(Map<String, dynamic> json) =>

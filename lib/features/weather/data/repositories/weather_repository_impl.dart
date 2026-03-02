@@ -48,6 +48,68 @@ class WeatherRepositoryImpl implements WeatherRepository {
   }
 
   @override
+  Future<Map<String, Forecast>> getForecastBatch({
+    required List<({String id, double latitude, double longitude})> locations,
+    bool forceRefresh = false,
+  }) async {
+    if (locations.isEmpty) return {};
+
+    final results = <String, Forecast>{};
+    final uncached = <({String id, double latitude, double longitude})>[];
+
+    // Check fresh cache for each location individually
+    if (!forceRefresh) {
+      for (final loc in locations) {
+        final cacheKey = 'cached_forecast_${loc.latitude}_${loc.longitude}';
+        final cacheTsKey =
+            'cached_forecast_ts_${loc.latitude}_${loc.longitude}';
+        final fresh = await _getFreshCachedForecast(cacheKey, cacheTsKey);
+        if (fresh != null) {
+          results[loc.id] = fresh;
+        } else {
+          uncached.add(loc);
+        }
+      }
+    } else {
+      uncached.addAll(locations);
+    }
+
+    if (uncached.isEmpty) return results;
+
+    try {
+      final responses = await remoteSource.fetchForecastBatch(
+        locations: uncached,
+      );
+
+      for (final loc in uncached) {
+        final model = responses[loc.id];
+        if (model != null) {
+          final cacheKey = 'cached_forecast_${loc.latitude}_${loc.longitude}';
+          final cacheTsKey =
+              'cached_forecast_ts_${loc.latitude}_${loc.longitude}';
+          await _cacheForecast(model, cacheKey, cacheTsKey);
+          results[loc.id] = model.toEntity();
+        }
+      }
+    } catch (_) {
+      // Fall back to stale cache for any locations that failed
+      for (final loc in uncached) {
+        if (results.containsKey(loc.id)) continue;
+        final cacheKey = 'cached_forecast_${loc.latitude}_${loc.longitude}';
+        final cacheTsKey =
+            'cached_forecast_ts_${loc.latitude}_${loc.longitude}';
+        final cached = await _getCachedForecast(cacheKey, cacheTsKey);
+        if (cached != null) {
+          results[loc.id] = cached;
+        }
+      }
+      if (results.length < locations.length) rethrow;
+    }
+
+    return results;
+  }
+
+  @override
   Future<LocationInfo> getCurrentLocation() {
     return locationSource.getCurrentLocation();
   }
@@ -73,7 +135,7 @@ class WeatherRepositoryImpl implements WeatherRepository {
     if (cached == null || ts == null) return null;
 
     final age = DateTime.now().millisecondsSinceEpoch - ts;
-    if (age > const Duration(minutes: 10).inMilliseconds) return null;
+    if (age > const Duration(minutes: 16).inMilliseconds) return null;
 
     final json = jsonDecode(cached) as Map<String, dynamic>;
     return ForecastResponseModel.fromJson(json).toEntity();

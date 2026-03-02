@@ -119,6 +119,7 @@ class DetailsPage extends ConsumerWidget {
                 isLoading: aqi.isLoading,
                 windSpeed: forecast.current.windSpeed,
                 hourlyWind: next24.map((h) => h.windSpeed).toList(),
+                pressure: forecast.current.pressure,
               ),
             ),
             const SizedBox(height: 6),
