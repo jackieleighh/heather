@@ -1,0 +1,1 @@
+const maxSavedLocations = 10;

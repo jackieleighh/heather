@@ -13,6 +13,7 @@ import '../../../../core/network/cached_tile_provider.dart';
 import '../../data/sources/nexrad_radar_source.dart';
 import '../providers/basemap_style_provider.dart';
 import '../providers/radar_provider.dart';
+import 'pulsing_dots.dart';
 
 class RadarPage extends ConsumerStatefulWidget {
   final double latitude;
@@ -190,9 +191,8 @@ class _RadarPageState extends ConsumerState<RadarPage> {
               child: _MapCard(
                 child: (styleAsync.isLoading || manifestAsync.isLoading)
                   ? const Center(
-                      child: CircularProgressIndicator(
+                      child: PulsingDots(
                         color: AppColors.cream,
-                        strokeWidth: 3,
                       ),
                     )
                   : (styleAsync.hasError || manifestAsync.hasError)

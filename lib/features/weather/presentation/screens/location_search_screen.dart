@@ -6,8 +6,10 @@ import 'package:google_fonts/google_fonts.dart';
 import 'package:heather/features/weather/presentation/widgets/logo_overlay.dart';
 
 import '../../../../core/constants/app_colors.dart';
+import '../../../../core/constants/app_limits.dart';
 import '../../domain/entities/saved_location.dart';
 import '../providers/location_provider.dart';
+import '../widgets/pulsing_dots.dart';
 
 class LocationSearchScreen extends ConsumerStatefulWidget {
   const LocationSearchScreen({super.key});
@@ -186,12 +188,7 @@ class _SearchResultsState extends ConsumerState<_SearchResults> {
         if (_lastResults.isNotEmpty) {
           return _buildList(_lastResults, loading: true);
         }
-        return const Center(
-          child: CircularProgressIndicator(
-            color: AppColors.cream,
-            strokeWidth: 3,
-          ),
-        );
+        return const Center(child: PulsingDots(color: AppColors.cream));
       },
       error: (e, _) => Center(
         child: Text(
@@ -208,8 +205,7 @@ class _SearchResultsState extends ConsumerState<_SearchResults> {
               key: const ValueKey('empty'),
               child: Text(
                 'No results found. Try a different search?',
-                style:
-                    TextStyle(color: AppColors.cream.withValues(alpha: 0.7)),
+                style: TextStyle(color: AppColors.cream.withValues(alpha: 0.7)),
               ),
             ),
           );
@@ -223,12 +219,11 @@ class _SearchResultsState extends ConsumerState<_SearchResults> {
     return Column(
       children: [
         if (loading)
-          ClipRRect(
-            borderRadius: BorderRadius.circular(2),
-            child: const LinearProgressIndicator(
+          const Center(
+            child: PulsingDots(
+              dotSize: 6,
+              bounceHeight: 8,
               color: AppColors.cream,
-              backgroundColor: Colors.transparent,
-              minHeight: 2,
             ),
           ),
         Expanded(
@@ -278,6 +273,20 @@ class _LocationTile extends ConsumerWidget {
             )
           : null,
       onTap: () async {
+        final saved = ref.read(savedLocationsProvider);
+        if (saved.length >= maxSavedLocations) {
+          if (context.mounted) {
+            ScaffoldMessenger.of(context).showSnackBar(
+              const SnackBar(
+                content: Text(
+                  'Max $maxSavedLocations locations reached. Remove one to add another babe.',
+                ),
+                behavior: SnackBarBehavior.floating,
+              ),
+            );
+          }
+          return;
+        }
         await ref.read(savedLocationsProvider.notifier).addLocation(location);
         if (context.mounted) Navigator.of(context).maybePop(true);
       },

@@ -2,6 +2,7 @@ import 'dart:convert';
 
 import 'package:shared_preferences/shared_preferences.dart';
 
+import '../../../../core/constants/app_limits.dart';
 import '../../domain/entities/saved_location.dart';
 
 class SavedLocationsLocalSource {
@@ -24,11 +25,15 @@ class SavedLocationsLocalSource {
     await prefs.setString(_key, json);
   }
 
-  Future<void> addLocation(SavedLocation location) async {
+  /// Returns `true` if the location was added, `false` if the limit was reached
+  /// or the location already exists.
+  Future<bool> addLocation(SavedLocation location) async {
     final locations = await getLocations();
-    if (locations.any((l) => l.id == location.id)) return;
+    if (locations.any((l) => l.id == location.id)) return false;
+    if (locations.length >= maxSavedLocations) return false;
     locations.add(location);
     await saveLocations(locations);
+    return true;
   }
 
   Future<void> removeLocation(String id) async {

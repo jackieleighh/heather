@@ -18,7 +18,7 @@ class LocationRepositoryImpl implements LocationRepository {
   }
 
   @override
-  Future<void> saveLocation(SavedLocation location) {
+  Future<bool> saveLocation(SavedLocation location) {
     return localSource.addLocation(location);
   }
 

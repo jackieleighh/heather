@@ -139,7 +139,7 @@ class _ConditionsCardState extends State<ConditionsCard> {
                             isDay: _isHourDay(h.time),
                           ),
                           color: AppColors.cream,
-                          size: widget.compact ? 18 : 20,
+                          size: widget.compact ? 14 : 20,
                         ),
                         const SizedBox(height: 2),
                         Text(

@@ -32,9 +32,13 @@ class SavedLocationsNotifier extends StateNotifier<List<SavedLocation>> {
     state = await repository.getSavedLocations();
   }
 
-  Future<void> addLocation(SavedLocation location) async {
-    await repository.saveLocation(location);
-    state = await repository.getSavedLocations();
+  /// Returns `true` if added, `false` if the limit was reached.
+  Future<bool> addLocation(SavedLocation location) async {
+    final added = await repository.saveLocation(location);
+    if (added) {
+      state = await repository.getSavedLocations();
+    }
+    return added;
   }
 
   Future<void> removeLocation(String id) async {

@@ -5,6 +5,7 @@ import 'package:heather/features/weather/presentation/widgets/logo_overlay.dart'
 import 'package:url_launcher/url_launcher.dart';
 
 import '../../../../core/constants/app_colors.dart';
+import '../../../../core/constants/app_limits.dart';
 import '../../../../core/services/fcm_service.dart';
 import '../providers/location_provider.dart';
 import '../providers/settings_provider.dart';
@@ -71,7 +72,10 @@ class SettingsScreen extends ConsumerWidget {
                       ),
                       children: [
                         // ── Saved Locations ──
-                        const _SectionHeader(title: 'Saved locations'),
+                        _SectionHeader(
+                          title:
+                              'Saved locations (${savedLocations.length}/$maxSavedLocations)',
+                        ),
                         const SizedBox(height: 4),
                         if (savedLocations.isEmpty)
                           Padding(

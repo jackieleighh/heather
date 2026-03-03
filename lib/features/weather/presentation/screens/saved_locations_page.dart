@@ -4,6 +4,7 @@ import '../../../../core/constants/app_colors.dart';
 import '../../domain/entities/saved_location.dart';
 import '../providers/location_provider.dart';
 import '../providers/weather_provider.dart';
+import '../widgets/pulsing_dots.dart';
 import '../widgets/vertical_forecast_pager.dart';
 
 class SavedLocationsPage extends ConsumerWidget {
@@ -61,9 +62,8 @@ class _MiniLoadingView extends StatelessWidget {
     return Container(
       color: Theme.of(context).colorScheme.secondary,
       child: const Center(
-        child: CircularProgressIndicator(
+        child: PulsingDots(
           color: AppColors.cream,
-          strokeWidth: 3,
         ),
       ),
     );
