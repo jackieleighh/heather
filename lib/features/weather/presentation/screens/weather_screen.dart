@@ -279,7 +279,15 @@ class _WeatherScreenState extends ConsumerState<WeatherScreen>
         final notifier = ref.read(weatherStateProvider.notifier);
         return ErrorScreen(
           message: message,
-          onRetry: () => notifier.loadWeather(),
+          onRetry: () {
+            _forceTimeoutTimer?.cancel();
+            _forceTimeoutTimer = Timer(const Duration(seconds: 30), () {
+              if (mounted) {
+                ref.read(weatherStateProvider.notifier).forceTimeout();
+              }
+            });
+            notifier.loadWeather();
+          },
           onOpenSettings: notifier.isLocationPermissionError
               ? () => notifier.isLocationServiceDisabled
                     ? Geolocator.openLocationSettings()

@@ -79,6 +79,7 @@ class WeatherNotifier extends StateNotifier<WeatherState> {
   _QuipKey? _lastQuipKey;
   bool isLocationPermissionError = false;
   bool isLocationServiceDisabled = false;
+  int _loadGeneration = 0;
 
   WeatherNotifier({
     required this.weatherRepo,
@@ -140,40 +141,67 @@ class WeatherNotifier extends StateNotifier<WeatherState> {
   }
 
   Future<void> loadWeather() async {
+    final gen = ++_loadGeneration;
     state = const WeatherState.loading();
     isLocationPermissionError = false;
     isLocationServiceDisabled = false;
-    try {
-      final location = await weatherRepo.getCurrentLocation();
-      final results = await Future.wait([
-        weatherRepo.getForecast(
-          latitude: location.latitude,
-          longitude: location.longitude,
-        ),
-        fetchAlerts(latitude: location.latitude, longitude: location.longitude),
-      ]);
-      final forecast = results[0] as Forecast;
-      final alerts = results[1] as List<WeatherAlert>;
-      final quip = quipRepo.getLocalQuip(
-        weather: forecast.current,
-        explicit: _explicit,
-      );
-      _lastQuipKey = _quipKeyFor(forecast);
-      if (!mounted) return;
-      state = WeatherState.loaded(
-        forecast: forecast,
-        location: location,
-        quip: quip,
-        alerts: alerts,
-      );
-      _pushToWidget();
-    } catch (e) {
-      if (!mounted) return;
-      if (e is LocationPermissionException) {
-        isLocationPermissionError = true;
-        isLocationServiceDisabled = e.isServiceDisabled;
+
+    const maxAttempts = 4;
+    const backoffDurations = [
+      Duration(seconds: 1),
+      Duration(seconds: 2),
+      Duration(seconds: 4),
+    ];
+
+    for (var attempt = 0; attempt < maxAttempts; attempt++) {
+      if (_loadGeneration != gen) return;
+      try {
+        final location = await weatherRepo.getCurrentLocation();
+        if (_loadGeneration != gen) return;
+        final results = await Future.wait([
+          weatherRepo.getForecast(
+            latitude: location.latitude,
+            longitude: location.longitude,
+          ),
+          fetchAlerts(
+            latitude: location.latitude,
+            longitude: location.longitude,
+          ),
+        ]);
+        if (_loadGeneration != gen) return;
+        final forecast = results[0] as Forecast;
+        final alerts = results[1] as List<WeatherAlert>;
+        final quip = quipRepo.getLocalQuip(
+          weather: forecast.current,
+          explicit: _explicit,
+        );
+        _lastQuipKey = _quipKeyFor(forecast);
+        if (!mounted) return;
+        state = WeatherState.loaded(
+          forecast: forecast,
+          location: location,
+          quip: quip,
+          alerts: alerts,
+        );
+        _pushToWidget();
+        return;
+      } catch (e) {
+        if (_loadGeneration != gen) return;
+        if (!mounted) return;
+        if (e is LocationPermissionException) {
+          isLocationPermissionError = true;
+          isLocationServiceDisabled = e.isServiceDisabled;
+          state = WeatherState.error(e.toString());
+          return;
+        }
+        if (attempt < maxAttempts - 1) {
+          await Future.delayed(backoffDurations[attempt]);
+          if (_loadGeneration != gen) return;
+          if (!mounted) return;
+        } else {
+          state = WeatherState.error(e.toString());
+        }
       }
-      state = WeatherState.error(e.toString());
     }
   }
 

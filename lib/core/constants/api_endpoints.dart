@@ -65,4 +65,14 @@ class ApiEndpoints {
     int count = 10,
   }) =>
       '$geocodingBase?name=$query&count=$count&language=en&format=json';
+
+  static const nexradBase =
+      'https://radar-cache.heatherwiththeweather.workers.dev/cache/tile.py/1.0.0';
+
+  static String nexradCurrent() => '$nexradBase/nexrad-n0q/{z}/{x}/{y}.png';
+
+  static String nexradPast(int minutesAgo) {
+    final padded = minutesAgo.toString().padLeft(2, '0');
+    return '$nexradBase/nexrad-n0q-m${padded}m/{z}/{x}/{y}.png';
+  }
 }

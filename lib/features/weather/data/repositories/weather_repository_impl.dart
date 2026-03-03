@@ -152,7 +152,7 @@ class WeatherRepositoryImpl implements WeatherRepository {
     if (cached == null || ts == null) return null;
 
     final age = DateTime.now().millisecondsSinceEpoch - ts;
-    if (age > const Duration(hours: 2).inMilliseconds) return null;
+    if (age > const Duration(hours: 12).inMilliseconds) return null;
 
     final json = jsonDecode(cached) as Map<String, dynamic>;
     return ForecastResponseModel.fromJson(json).toEntity();

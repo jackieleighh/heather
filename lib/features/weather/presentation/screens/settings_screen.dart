@@ -342,6 +342,56 @@ class SettingsScreen extends ConsumerWidget {
                           ),
                         ),
 
+                        const SizedBox(height: 24),
+
+                        // ── Data Sources ──
+                        const _SectionHeader(title: 'Data sources'),
+                        const SizedBox(height: 4),
+                        Container(
+                          decoration: BoxDecoration(
+                            color: AppColors.cream.withValues(alpha: 0.15),
+                            borderRadius: BorderRadius.circular(12),
+                          ),
+                          child: Column(
+                            children: [
+                              const _DataSourceTile(
+                                name: 'Open-Meteo',
+                                description: 'Weather data by Open-Meteo.com',
+                                url: 'https://open-meteo.com/',
+                              ),
+                              Divider(
+                                height: 1,
+                                color: AppColors.cream.withValues(alpha: 0.15),
+                              ),
+                              const _DataSourceTile(
+                                name: 'OpenFreeMap',
+                                description:
+                                    'Maps by OpenFreeMap & OpenStreetMap',
+                                url: 'https://openfreemap.org/',
+                              ),
+                              Divider(
+                                height: 1,
+                                color: AppColors.cream.withValues(alpha: 0.15),
+                              ),
+                              const _DataSourceTile(
+                                name: 'National Weather Service',
+                                description: 'Weather alerts by NWS',
+                                url: 'https://www.weather.gov/',
+                              ),
+                              Divider(
+                                height: 1,
+                                color: AppColors.cream.withValues(alpha: 0.15),
+                              ),
+                              const _DataSourceTile(
+                                name: 'Iowa Mesonet',
+                                description:
+                                    'Radar data by Iowa Environmental Mesonet',
+                                url: 'https://mesonet.agron.iastate.edu/',
+                              ),
+                            ],
+                          ),
+                        ),
+
                         const SizedBox(height: 32),
 
                         Center(
@@ -404,6 +454,63 @@ class _SectionHeader extends StatelessWidget {
           fontWeight: FontWeight.w600,
           letterSpacing: 0.5,
           color: AppColors.cream,
+        ),
+      ),
+    );
+  }
+}
+
+class _DataSourceTile extends StatelessWidget {
+  final String name;
+  final String description;
+  final String url;
+
+  const _DataSourceTile({
+    required this.name,
+    required this.description,
+    required this.url,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return GestureDetector(
+      onTap: () => launchUrl(
+        Uri.parse(url),
+        mode: LaunchMode.externalApplication,
+      ),
+      child: Padding(
+        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+        child: Row(
+          children: [
+            Expanded(
+              child: Text.rich(
+                TextSpan(
+                  text: '$name  ',
+                  style: GoogleFonts.poppins(
+                    fontSize: 13,
+                    fontWeight: FontWeight.w600,
+                    color: AppColors.cream,
+                  ),
+                  children: [
+                    TextSpan(
+                      text: description,
+                      style: GoogleFonts.poppins(
+                        fontSize: 13,
+                        fontWeight: FontWeight.w400,
+                        color: AppColors.cream,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ),
+            const SizedBox(width: 8),
+            Icon(
+              Icons.open_in_new,
+              size: 16,
+              color: AppColors.cream.withValues(alpha: 0.6),
+            ),
+          ],
         ),
       ),
     );

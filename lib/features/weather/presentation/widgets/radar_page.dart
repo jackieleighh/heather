@@ -1,15 +1,17 @@
 import 'dart:async';
 import 'dart:io';
 import 'dart:typed_data';
-import 'package:flutter/material.dart';
+import 'package:flutter/material.dart' hide Theme;
 import 'package:flutter_map/flutter_map.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:latlong2/latlong.dart';
+import 'package:vector_map_tiles/vector_map_tiles.dart';
 
 import '../../../../core/constants/app_colors.dart';
 import '../../../../core/network/cached_tile_provider.dart';
-import '../../data/sources/rainviewer_remote_source.dart';
+import '../../data/sources/nexrad_radar_source.dart';
+import '../providers/basemap_style_provider.dart';
 import '../providers/radar_provider.dart';
 
 class RadarPage extends ConsumerStatefulWidget {
@@ -26,11 +28,20 @@ class _RadarPageState extends ConsumerState<RadarPage> {
   int _currentFrameIndex = 0;
   bool _isPlaying = false;
   Timer? _playbackTimer;
+  Timer? _refreshTimer;
   bool _initialized = false;
   bool _holdingOnLast = false;
 
   final Map<String, Uint8List> _tileCache = {};
   final HttpClient _tileHttpClient = HttpClient();
+
+  @override
+  void initState() {
+    super.initState();
+    _refreshTimer = Timer.periodic(const Duration(minutes: 5), (_) {
+      ref.invalidate(radarManifestProvider);
+    });
+  }
   MarkerLayer get _locationMarker => MarkerLayer(
     markers: [
       Marker(
@@ -57,6 +68,7 @@ class _RadarPageState extends ConsumerState<RadarPage> {
   @override
   void dispose() {
     _playbackTimer?.cancel();
+    _refreshTimer?.cancel();
     _tileCache.clear();
     _tileHttpClient.close();
     super.dispose();
@@ -146,7 +158,8 @@ class _RadarPageState extends ConsumerState<RadarPage> {
 
   @override
   Widget build(BuildContext context) {
-    final manifestAsync = ref.watch(rainViewerManifestProvider);
+    final styleAsync = ref.watch(basemapStyleProvider);
+    final manifestAsync = ref.watch(radarManifestProvider);
 
     return SafeArea(
       child: Padding(
@@ -175,105 +188,108 @@ class _RadarPageState extends ConsumerState<RadarPage> {
             // Radar map
             Expanded(
               child: _MapCard(
-                child: manifestAsync.when(
-                  loading: () => const Center(
-                    child: CircularProgressIndicator(
-                      color: AppColors.cream,
-                      strokeWidth: 3,
-                    ),
-                  ),
-                  error: (_, _) => Center(
-                    child: Text(
-                      'Radar unavailable',
-                      style: GoogleFonts.quicksand(
-                        fontSize: 16,
-                        fontWeight: FontWeight.w600,
-                        color: AppColors.cream.withValues(alpha: 0.7),
+                child: (styleAsync.isLoading || manifestAsync.isLoading)
+                  ? const Center(
+                      child: CircularProgressIndicator(
+                        color: AppColors.cream,
+                        strokeWidth: 3,
                       ),
-                    ),
-                  ),
-                  data: (manifest) {
-                    _initializePlayback(manifest.frames.length);
-                    final frame = manifest.frames[_currentFrameIndex];
-                    final radarTileUrl =
-                        '${manifest.host}${frame.path}/256/{z}/{x}/{y}/1/0_0.png';
-
-                    return Stack(
-                      children: [
-                        ClipRRect(
-                          borderRadius: BorderRadius.circular(16),
-                          child: FlutterMap(
-                            options: MapOptions(
-                              initialCenter: LatLng(
-                                widget.latitude,
-                                widget.longitude,
-                              ),
-                              initialZoom: 7.0,
-                              minZoom: 3.0,
-                              maxZoom: 12.0,
-                              backgroundColor: Colors.transparent,
-                              interactionOptions: const InteractionOptions(
-                                flags:
-                                    InteractiveFlag.all &
-                                    ~InteractiveFlag.rotate,
-                              ),
+                    )
+                  : (styleAsync.hasError || manifestAsync.hasError)
+                      ? Center(
+                          child: Text(
+                            'Radar unavailable',
+                            style: GoogleFonts.quicksand(
+                              fontSize: 16,
+                              fontWeight: FontWeight.w600,
+                              color: AppColors.cream.withValues(alpha: 0.7),
                             ),
+                          ),
+                        )
+                      : Builder(builder: (context) {
+                          final style = styleAsync.value!;
+                          final manifest = manifestAsync.value!;
+                          _initializePlayback(manifest.frames.length);
+                          final frame = manifest.frames[_currentFrameIndex];
+
+                          return Stack(
                             children: [
-                              Opacity(
-                                opacity: 0.4,
-                                child: TileLayer(
-                                  urlTemplate:
-                                      'https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png',
-                                  subdomains: const ['a', 'b', 'c', 'd'],
-                                  retinaMode:
-                                      MediaQuery.of(context).devicePixelRatio >
-                                      1.0,
+                              ClipRRect(
+                                borderRadius: BorderRadius.circular(16),
+                                child: FlutterMap(
+                                  options: MapOptions(
+                                    initialCenter: LatLng(
+                                      widget.latitude,
+                                      widget.longitude,
+                                    ),
+                                    initialZoom: 7.0,
+                                    minZoom: 3.0,
+                                    maxZoom: 10.0,
+                                    backgroundColor: Colors.transparent,
+                                    interactionOptions:
+                                        const InteractionOptions(
+                                      flags: InteractiveFlag.all &
+                                          ~InteractiveFlag.rotate,
+                                    ),
+                                  ),
+                                  children: [
+                                    Opacity(
+                                      opacity: 0.4,
+                                      child: VectorTileLayer(
+                                        tileProviders: style.providers,
+                                        theme: style.theme,
+                                        sprites: style.sprites,
+                                        maximumZoom: 14,
+                                        layerMode: VectorTileLayerMode.vector,
+                                      ),
+                                    ),
+                                    Opacity(
+                                      opacity: 0.7,
+                                      child: TileLayer(
+                                        key: ValueKey(
+                                          frame.tileUrlTemplate,
+                                        ),
+                                        urlTemplate: frame.tileUrlTemplate,
+                                        tileProvider: CachedRadarTileProvider(
+                                          cache: _tileCache,
+                                          httpClient: _tileHttpClient,
+                                        ),
+                                      ),
+                                    ),
+                                    _locationMarker,
+                                  ],
                                 ),
                               ),
-                              Opacity(
-                                opacity: 0.7,
-                                child: TileLayer(
-                                  key: ValueKey(frame.path),
-                                  urlTemplate: radarTileUrl,
-                                  tileProvider: CachedRadarTileProvider(
-                                    cache: _tileCache,
-                                    httpClient: _tileHttpClient,
+                              Positioned(
+                                left: 0,
+                                right: 0,
+                                bottom: 0,
+                                child: ClipRRect(
+                                  borderRadius: const BorderRadius.only(
+                                    bottomLeft: Radius.circular(16),
+                                    bottomRight: Radius.circular(16),
+                                  ),
+                                  child: _ControlBar(
+                                    frame: frame,
+                                    frameCount: manifest.frames.length,
+                                    currentIndex: _currentFrameIndex,
+                                    nowIndex: manifest.nowIndex,
+                                    isPlaying: _isPlaying,
+                                    formatRelativeTime: _formatRelativeTime,
+                                    onSliderChanged: (value) =>
+                                        _onSliderChanged(
+                                      value,
+                                      manifest.frames.length,
+                                    ),
+                                    onPlayPause: () => _togglePlayback(
+                                      manifest.frames.length,
+                                    ),
                                   ),
                                 ),
                               ),
-                              _locationMarker,
                             ],
-                          ),
-                        ),
-                        Positioned(
-                          left: 0,
-                          right: 0,
-                          bottom: 0,
-                          child: ClipRRect(
-                            borderRadius: const BorderRadius.only(
-                              bottomLeft: Radius.circular(16),
-                              bottomRight: Radius.circular(16),
-                            ),
-                            child: _ControlBar(
-                              frame: frame,
-                              frameCount: manifest.frames.length,
-                              currentIndex: _currentFrameIndex,
-                              nowIndex: manifest.nowIndex,
-                              isPlaying: _isPlaying,
-                              formatRelativeTime: _formatRelativeTime,
-                              onSliderChanged: (value) => _onSliderChanged(
-                                value,
-                                manifest.frames.length,
-                              ),
-                              onPlayPause: () =>
-                                  _togglePlayback(manifest.frames.length),
-                            ),
-                          ),
-                        ),
-                      ],
-                    );
-                  },
-                ),
+                          );
+                        }),
               ),
             ),
           ],
