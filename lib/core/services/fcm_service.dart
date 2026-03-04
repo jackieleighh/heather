@@ -48,7 +48,7 @@ class FcmService {
 
     // Initialize local notifications plugin (needed for foreground .show())
     const androidSettings = AndroidInitializationSettings(
-      '@mipmap/ic_launcher',
+      '@mipmap/launcher_icon',
     );
     const iosSettings = DarwinInitializationSettings(
       requestAlertPermission: false,
@@ -68,14 +68,6 @@ class FcmService {
     if (Platform.isAndroid) {
       await _createAndroidAlertChannel();
     }
-
-    // Fetch FCM token without blocking startup (on iOS this hangs until
-    // notification permission is granted, which happens later in onboarding).
-    _messaging.getToken().then((token) {
-      if (kDebugMode) {
-        print('FCM token: $token');
-      }
-    });
 
     // Tell iOS to show banners/badges/sound even when the app is in foreground
     await _messaging.setForegroundNotificationPresentationOptions(
@@ -138,7 +130,7 @@ class FcmService {
           channelDescription: _alertChannelDescription,
           importance: Importance.high,
           priority: Priority.high,
-          icon: '@mipmap/ic_launcher',
+          icon: '@mipmap/launcher_icon',
         ),
         iOS: DarwinNotificationDetails(
           presentAlert: true,

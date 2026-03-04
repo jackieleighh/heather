@@ -50,13 +50,34 @@ class DetailsPage extends ConsumerWidget {
               ? forecast.daily.indexOf(todayDaily) + 1
               : 0]
         : todayDaily;
-    // If current time is past today's sunset, show tomorrow's sunrise/sunset
-    final sunrise = now.isAfter(todayDaily.sunset)
-        ? tomorrowDaily.sunrise
-        : todayDaily.sunrise;
-    final sunset = now.isAfter(todayDaily.sunset)
-        ? tomorrowDaily.sunset
-        : todayDaily.sunset;
+    // Pick the next upcoming sunrise and sunset independently
+    final nextSunrise = now.isBefore(todayDaily.sunrise)
+        ? todayDaily.sunrise
+        : tomorrowDaily.sunrise;
+    final nextSunset = now.isBefore(todayDaily.sunset)
+        ? todayDaily.sunset
+        : tomorrowDaily.sunset;
+
+    // Show daylight duration when sun is up, darkness duration when down
+    final isSunUp =
+        now.isAfter(todayDaily.sunrise) && now.isBefore(todayDaily.sunset);
+    final Duration sunDuration;
+    if (isSunUp) {
+      sunDuration = todayDaily.sunset.difference(todayDaily.sunrise);
+    } else if (now.isAfter(todayDaily.sunset)) {
+      sunDuration = tomorrowDaily.sunrise.difference(todayDaily.sunset);
+    } else {
+      // Before sunrise — try to get yesterday's sunset for accurate darkness
+      final todayIdx = forecast.daily.indexOf(todayDaily);
+      if (todayIdx > 0) {
+        sunDuration = todayDaily.sunrise
+            .difference(forecast.daily[todayIdx - 1].sunset);
+      } else {
+        // Approximate: 24h minus today's daylight
+        sunDuration = const Duration(hours: 24) -
+            todayDaily.sunset.difference(todayDaily.sunrise);
+      }
+    }
 
     return SafeArea(
       child: Padding(
@@ -83,8 +104,8 @@ class DetailsPage extends ConsumerWidget {
             Expanded(
               child: ConditionsCard(
                 hourly: forecast.hourly,
-                sunrise: sunrise,
-                sunset: sunset,
+                sunrise: nextSunrise,
+                sunset: nextSunset,
               ),
             ),
             const SizedBox(height: 6),
@@ -125,9 +146,11 @@ class DetailsPage extends ConsumerWidget {
             const SizedBox(height: 6),
             Expanded(
               child: SunCard(
-                sunrise: sunrise,
-                sunset: sunset,
-                uvIndex: forecast.current.uvIndex,
+                sunrise: nextSunrise,
+                sunset: nextSunset,
+                sunDuration: sunDuration,
+                isSunUp: isSunUp,
+                uvIndex: next24.map((h) => h.uvIndex).reduce((a, b) => a > b ? a : b),
                 hourlyUv: next24.map((h) => h.uvIndex).toList(),
                 hours: next24.map((h) => h.time).toList(),
                 now: now,

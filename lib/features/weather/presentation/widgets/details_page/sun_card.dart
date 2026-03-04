@@ -10,6 +10,8 @@ import './card_container.dart';
 class SunCard extends StatelessWidget {
   final DateTime sunrise;
   final DateTime sunset;
+  final Duration? sunDuration;
+  final bool isSunUp;
   final double uvIndex;
   final List<double> hourlyUv;
   final List<DateTime> hours;
@@ -19,6 +21,8 @@ class SunCard extends StatelessWidget {
     super.key,
     required this.sunrise,
     required this.sunset,
+    this.sunDuration,
+    this.isSunUp = true,
     required this.uvIndex,
     required this.hourlyUv,
     required this.hours,
@@ -53,13 +57,13 @@ class SunCard extends StatelessWidget {
               Row(
                 children: [
                   Icon(
-                    WeatherIcons.sunrise,
+                    isSunUp ? WeatherIcons.sunset : WeatherIcons.sunrise,
                     size: 13,
                     color: AppColors.cream.withValues(alpha: 0.95),
                   ),
                   const SizedBox(width: 4),
                   Text(
-                    timeFmt.format(sunrise),
+                    timeFmt.format(isSunUp ? sunset : sunrise),
                     style: theme.textTheme.bodyMedium?.copyWith(
                       fontWeight: FontWeight.w800,
                       fontSize: 15,
@@ -67,13 +71,13 @@ class SunCard extends StatelessWidget {
                   ),
                   const SizedBox(width: 14),
                   Icon(
-                    WeatherIcons.sunset,
+                    isSunUp ? WeatherIcons.sunrise : WeatherIcons.sunset,
                     size: 13,
                     color: AppColors.cream.withValues(alpha: 0.95),
                   ),
                   const SizedBox(width: 4),
                   Text(
-                    timeFmt.format(sunset),
+                    timeFmt.format(isSunUp ? sunrise : sunset),
                     style: theme.textTheme.bodyMedium?.copyWith(
                       fontWeight: FontWeight.w800,
                       fontSize: 15,
@@ -88,7 +92,10 @@ class SunCard extends StatelessWidget {
             children: [
               const Spacer(),
               Text(
-                _daylightDuration(sunrise, sunset),
+                _formatDuration(
+                  sunDuration ?? sunset.difference(sunrise),
+                  isSunUp,
+                ),
                 style: GoogleFonts.poppins(
                   fontSize: 12,
                   fontWeight: FontWeight.w500,
@@ -133,11 +140,11 @@ class SunCard extends StatelessWidget {
     );
   }
 
-  static String _daylightDuration(DateTime sunrise, DateTime sunset) {
-    final duration = sunset.difference(sunrise);
+  static String _formatDuration(Duration duration, bool isDaylight) {
     final hours = duration.inHours;
     final minutes = duration.inMinutes % 60;
-    return '${hours}h ${minutes}m daylight';
+    final label = isDaylight ? 'daylight' : 'darkness';
+    return '${hours}h ${minutes}m $label';
   }
 
   static String _uvLabel(double uv) {

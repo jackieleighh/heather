@@ -32,7 +32,7 @@ class _MostlySunnyBackgroundState extends State<MostlySunnyBackground>
       duration: const Duration(seconds: 1),
     )..repeat();
     _controller.addListener(() {
-      _time += 0.008;
+      _time += 0.007;
     });
   }
 

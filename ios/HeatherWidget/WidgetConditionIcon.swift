@@ -16,9 +16,7 @@ struct WidgetConditionIcon: View {
         switch conditionName {
         case "sunny":
             return isDay ? "sun.max.fill" : "moon.stars.fill"
-        case "mostlySunny":
-            return isDay ? "sun.min.fill" : "moon.fill"
-        case "partlyCloudy":
+        case "mostlySunny", "partlyCloudy":
             return isDay ? "cloud.sun.fill" : "cloud.moon.fill"
         case "overcast":
             return "cloud.fill"

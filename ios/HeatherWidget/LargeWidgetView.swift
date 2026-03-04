@@ -105,7 +105,7 @@ struct LargeWidgetView: View {
                                         .opacity(0.7)
                                     WidgetConditionIcon(
                                         conditionName: entry.conditionName,
-                                        isDay: data.isDay,
+                                        isDay: entry.isDay ?? data.isDay,
                                         size: 28
                                     ).frame(height: 30)
                                     Text("\(entry.temperature)°")

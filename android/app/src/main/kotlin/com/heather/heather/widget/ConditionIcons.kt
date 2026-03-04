@@ -5,8 +5,7 @@ import com.totms.heather.R
 object ConditionIcons {
     fun iconRes(conditionName: String, isDay: Boolean): Int = when (conditionName) {
         "sunny" -> if (isDay) R.drawable.ic_weather_sunny_day else R.drawable.ic_weather_sunny_night
-        "mostlySunny" -> if (isDay) R.drawable.ic_weather_mostly_sunny_day else R.drawable.ic_weather_mostly_sunny_night
-        "partlyCloudy" -> if (isDay) R.drawable.ic_weather_partly_cloudy_day else R.drawable.ic_weather_partly_cloudy_night
+        "mostlySunny", "partlyCloudy" -> if (isDay) R.drawable.ic_weather_partly_cloudy_day else R.drawable.ic_weather_partly_cloudy_night
         "overcast" -> R.drawable.ic_weather_overcast
         "foggy" -> R.drawable.ic_weather_foggy
         "drizzle" -> if (isDay) R.drawable.ic_weather_drizzle_day else R.drawable.ic_weather_drizzle_night

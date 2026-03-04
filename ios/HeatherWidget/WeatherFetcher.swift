@@ -4,6 +4,7 @@ struct OpenMeteoResponse: Codable {
     let current: CurrentWeather
     let daily: DailyWeather
     let hourly: HourlyWeather?
+    let utc_offset_seconds: Int
 
     struct CurrentWeather: Codable {
         let temperature_2m: Double

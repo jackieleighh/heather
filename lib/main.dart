@@ -7,6 +7,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 import 'app/app.dart';
 import 'app/router.dart';
 import 'core/services/background_alert_service.dart';
+import 'core/services/device_registration_service.dart';
 import 'core/services/fcm_service.dart';
 import 'core/services/widget_service.dart';
 
@@ -16,6 +17,7 @@ Future<void> main() async {
   await Firebase.initializeApp();
   await BackgroundAlertService.init();
   await FcmService().init();
+  await DeviceRegistrationService().init();
   await WidgetService.init();
 
   final prefs = await SharedPreferences.getInstance();

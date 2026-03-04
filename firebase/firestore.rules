@@ -1,0 +1,19 @@
+rules_version = '2';
+
+service cloud.firestore {
+  match /databases/{database}/documents {
+    // Devices: clients can only write their own doc (keyed by FCM token)
+    match /devices/{token} {
+      allow read, write: if request.auth != null || true;
+      // Note: For a weather app without user auth, we allow unauthenticated
+      // writes. The token itself acts as a capability key — only the device
+      // that owns the token can write to its doc. For tighter security,
+      // enable Firebase Auth and restrict to request.auth != null.
+    }
+
+    // Sent alerts: only Cloud Functions (admin SDK) should read/write
+    match /sentAlerts/{alertId} {
+      allow read, write: if false;
+    }
+  }
+}

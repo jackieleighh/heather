@@ -33,7 +33,7 @@ class _PartlyCloudyBackgroundState extends State<PartlyCloudyBackground>
       duration: const Duration(seconds: 1),
     )..repeat();
     _controller.addListener(() {
-      _time += 0.005;
+      _time += 0.007;
     });
   }
 

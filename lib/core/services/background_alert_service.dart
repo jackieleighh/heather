@@ -13,6 +13,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 import 'package:workmanager/workmanager.dart';
 
 import '../../features/weather/data/models/forecast_response_model.dart';
+import '../../features/weather/domain/entities/daily_weather.dart';
 import '../../features/weather/domain/entities/temperature_tier.dart';
 import '../constants/api_endpoints.dart';
 import '../constants/background_gradients.dart';
@@ -38,7 +39,7 @@ void callbackDispatcher() {
         await Workmanager().registerOneOffTask(
           _taskName,
           _taskName,
-          initialDelay: const Duration(minutes: 15),
+          initialDelay: const Duration(minutes: 5),
           constraints: Constraints(networkType: NetworkType.connected),
           existingWorkPolicy: ExistingWorkPolicy.replace,
         );
@@ -46,6 +47,21 @@ void callbackDispatcher() {
     }
     return true;
   });
+}
+
+/// Rough bounding box for US territories (CONUS, Alaska, Hawaii, PR/USVI, Guam).
+bool _isInUSBounds(double lat, double lon) {
+  // Continental US
+  if (lat >= 24.0 && lat <= 50.0 && lon >= -125.0 && lon <= -66.0) return true;
+  // Alaska
+  if (lat >= 51.0 && lat <= 72.0 && lon >= -180.0 && lon <= -129.0) return true;
+  // Hawaii
+  if (lat >= 18.5 && lat <= 22.5 && lon >= -161.0 && lon <= -154.0) return true;
+  // Puerto Rico / US Virgin Islands
+  if (lat >= 17.5 && lat <= 18.6 && lon >= -67.5 && lon <= -64.5) return true;
+  // Guam / Northern Mariana Islands
+  if (lat >= 13.0 && lat <= 21.0 && lon >= 144.0 && lon <= 146.5) return true;
+  return false;
 }
 
 Future<void> _checkAlerts() async {
@@ -80,6 +96,9 @@ Future<void> _checkAlerts() async {
   for (final loc in locations) {
     final lat = loc['latitude'] as double;
     final lon = loc['longitude'] as double;
+
+    // NWS alerts only cover US territories — skip non-US coordinates
+    if (!_isInUSBounds(lat, lon)) continue;
 
     try {
       final response = await dio.get(
@@ -118,8 +137,10 @@ Future<void> _checkAlerts() async {
           mostSevereNew = props;
         }
       }
-    } catch (_) {
-      // Skip location on error, try next
+    } catch (e) {
+      if (kDebugMode) {
+        print('Alert check failed for ($lat, $lon): $e');
+      }
     }
   }
 
@@ -131,7 +152,7 @@ Future<void> _checkAlerts() async {
     final localNotifications = FlutterLocalNotificationsPlugin();
     await localNotifications.initialize(
       const InitializationSettings(
-        android: AndroidInitializationSettings('@mipmap/ic_launcher'),
+        android: AndroidInitializationSettings('@mipmap/launcher_icon'),
         iOS: DarwinInitializationSettings(),
       ),
     );
@@ -147,7 +168,7 @@ Future<void> _checkAlerts() async {
           channelDescription: _alertChannelDescription,
           importance: Importance.high,
           priority: Priority.high,
-          icon: '@mipmap/ic_launcher',
+          icon: '@mipmap/launcher_icon',
         ),
         iOS: DarwinNotificationDetails(
           presentAlert: true,
@@ -226,8 +247,8 @@ Future<void> _refreshWidgetData() async {
     if (cachedJson != null &&
         cachedTs != null &&
         DateTime.now().millisecondsSinceEpoch - cachedTs <
-            const Duration(minutes: 20).inMilliseconds) {
-      // Cache is <20 min old — reuse foreground data
+            const Duration(minutes: 14).inMilliseconds) {
+      // Cache is <14 min old — reuse foreground data
       forecastModel = ForecastResponseModel.fromJson(
           jsonDecode(cachedJson) as Map<String, dynamic>);
     } else {
@@ -286,14 +307,27 @@ Future<void> _refreshWidgetData() async {
       'lastUpdated': DateTime.now().toIso8601String(),
       'gradientColors':
           gradientColors.map(_colorToHex).toList(),
-      'hourly': forecast.hourly.take(6).map((h) => {
+      'hourly': forecast.hourly.take(24).map((h) {
+        final tzCorrection =
+            h.time.timeZoneOffset.inSeconds - forecast.utcOffsetSeconds;
+        return {
             'time': h.time.toIso8601String(),
+            'epoch': (h.time.millisecondsSinceEpoch ~/ 1000) + tzCorrection,
             'temperature': h.temperature.round(),
             'weatherCode': h.weatherCode,
-          }).toList(),
+            'isDay': _isHourDay(h.time, forecast.daily),
+          };
+      }).toList(),
       'sunrise': today.sunrise.toIso8601String(),
       'sunset': today.sunset.toIso8601String(),
+      'sunriseEpoch': (today.sunrise.millisecondsSinceEpoch ~/ 1000) +
+          today.sunrise.timeZoneOffset.inSeconds -
+          forecast.utcOffsetSeconds,
+      'sunsetEpoch': (today.sunset.millisecondsSinceEpoch ~/ 1000) +
+          today.sunset.timeZoneOffset.inSeconds -
+          forecast.utcOffsetSeconds,
       'uvIndexMax': today.uvIndexMax.round(),
+      'utcOffsetSeconds': forecast.utcOffsetSeconds,
     });
 
     await HomeWidget.saveWidgetData<String>(_widgetDataKey, payload);
@@ -316,6 +350,33 @@ Future<void> _refreshWidgetData() async {
   } catch (_) {
     // Silently fail — widget keeps stale data
   }
+}
+
+bool _isHourDay(DateTime time, List<DailyWeather> daily) {
+  DateTime? sunrise;
+  DateTime? sunset;
+  for (final day in daily) {
+    if (day.date.year == time.year &&
+        day.date.month == time.month &&
+        day.date.day == time.day) {
+      sunrise = day.sunrise;
+      sunset = day.sunset;
+      break;
+    }
+  }
+  if (sunrise == null || sunset == null) return true;
+
+  if (time.hour == sunrise.hour) {
+    return (60 - sunrise.minute) > 30;
+  }
+  if (time.hour == sunset.hour) {
+    return sunset.minute > 30;
+  }
+
+  final minutes = time.hour * 60 + time.minute;
+  final sunriseMin = sunrise.hour * 60 + sunrise.minute;
+  final sunsetMin = sunset.hour * 60 + sunset.minute;
+  return minutes >= sunriseMin && minutes < sunsetMin;
 }
 
 String _colorToHex(Color color) {
@@ -349,7 +410,7 @@ class BackgroundAlertService {
         await Workmanager().registerOneOffTask(
           _taskName,
           _taskName,
-          initialDelay: const Duration(minutes: 15),
+          initialDelay: const Duration(minutes: 5),
           constraints: Constraints(networkType: NetworkType.connected),
           existingWorkPolicy: ExistingWorkPolicy.replace,
         );

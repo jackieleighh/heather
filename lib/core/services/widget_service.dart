@@ -4,6 +4,7 @@ import 'dart:ui';
 
 import 'package:home_widget/home_widget.dart';
 
+import '../../features/weather/domain/entities/daily_weather.dart';
 import '../../features/weather/domain/entities/forecast.dart';
 import '../../features/weather/domain/entities/location_info.dart';
 import '../../features/weather/domain/entities/temperature_tier.dart';
@@ -70,14 +71,29 @@ class WidgetService {
       'longitude': location.longitude,
       'lastUpdated': DateTime.now().toIso8601String(),
       'gradientColors': gradientColors.map(_colorToHex).toList(),
-      'hourly': forecast.hourly.take(6).map((h) => {
-        'time': h.time.toIso8601String(),
-        'temperature': h.temperature.round(),
-        'weatherCode': h.weatherCode,
+      'hourly': forecast.hourly.take(24).map((h) {
+        // h.time was parsed as device-local but represents location-local time.
+        // Compute correct UTC epoch by adjusting for the timezone mismatch.
+        final tzCorrection =
+            h.time.timeZoneOffset.inSeconds - forecast.utcOffsetSeconds;
+        return {
+          'time': h.time.toIso8601String(),
+          'epoch': (h.time.millisecondsSinceEpoch ~/ 1000) + tzCorrection,
+          'temperature': h.temperature.round(),
+          'weatherCode': h.weatherCode,
+          'isDay': _isHourDay(h.time, forecast.daily),
+        };
       }).toList(),
       'sunrise': today.sunrise.toIso8601String(),
       'sunset': today.sunset.toIso8601String(),
+      'sunriseEpoch': (today.sunrise.millisecondsSinceEpoch ~/ 1000) +
+          today.sunrise.timeZoneOffset.inSeconds -
+          forecast.utcOffsetSeconds,
+      'sunsetEpoch': (today.sunset.millisecondsSinceEpoch ~/ 1000) +
+          today.sunset.timeZoneOffset.inSeconds -
+          forecast.utcOffsetSeconds,
       'uvIndexMax': today.uvIndexMax.round(),
+      'utcOffsetSeconds': forecast.utcOffsetSeconds,
     });
 
     await HomeWidget.saveWidgetData<String>(_dataKey, payload);
@@ -98,6 +114,36 @@ class WidgetService {
     );
     final payload = jsonEncode(json);
     await HomeWidget.saveWidgetData<String>('widget_quips', payload);
+  }
+
+  static bool _isHourDay(DateTime time, List<DailyWeather> daily) {
+    // Find the matching day's sunrise/sunset
+    DateTime? sunrise;
+    DateTime? sunset;
+    for (final day in daily) {
+      if (day.date.year == time.year &&
+          day.date.month == time.month &&
+          day.date.day == time.day) {
+        sunrise = day.sunrise;
+        sunset = day.sunset;
+        break;
+      }
+    }
+    if (sunrise == null || sunset == null) return true;
+
+    // Transition-hour logic: if sunrise/sunset falls within this hour,
+    // use day icon only if the hour has >30 min of daylight.
+    if (time.hour == sunrise.hour) {
+      return (60 - sunrise.minute) > 30;
+    }
+    if (time.hour == sunset.hour) {
+      return sunset.minute > 30;
+    }
+
+    final minutes = time.hour * 60 + time.minute;
+    final sunriseMin = sunrise.hour * 60 + sunrise.minute;
+    final sunsetMin = sunset.hour * 60 + sunset.minute;
+    return minutes >= sunriseMin && minutes < sunsetMin;
   }
 
   static String _colorToHex(Color color) {

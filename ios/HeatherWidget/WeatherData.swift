@@ -2,39 +2,57 @@ import Foundation
 
 struct HourlyEntry: Codable {
     let time: String
+    let epoch: Int?
     let temperature: Int
     let weatherCode: Int
+    let isDay: Bool?
 
     var conditionName: String {
         WeatherFetcher.conditionName(from: weatherCode)
     }
 
+    /// Absolute Date from epoch (timezone-independent). Falls back to string parsing.
+    func absoluteDate(locationTZ: TimeZone) -> Date {
+        if let epoch {
+            return Date(timeIntervalSince1970: TimeInterval(epoch))
+        }
+        // Fallback: parse the ISO string using the location timezone
+        return Self.parseTime(time, timeZone: locationTZ) ?? .distantPast
+    }
+
+    /// Hour label extracted directly from the ISO time string (no DateFormatter).
+    /// The ISO string contains the location's local time, so we just read the hour.
     var hourLabel: String {
+        // "2026-03-03T15:00:00.000" → extract hour = 15
+        guard let tIndex = time.firstIndex(of: "T"),
+              time.index(after: tIndex) < time.endIndex else { return "" }
+        let afterT = time[time.index(after: tIndex)...]
+        guard let colonIndex = afterT.firstIndex(of: ":") else { return "" }
+        let hourStr = String(afterT[afterT.startIndex..<colonIndex])
+        guard let hour = Int(hourStr) else { return "" }
+        let displayHour = hour % 12 == 0 ? 12 : hour % 12
+        let ampm = hour < 12 ? "am" : "pm"
+        return "\(displayHour)\(ampm)"
+    }
+
+    /// Parse a time string with a specific timezone.
+    static func parseTime(_ str: String, timeZone tz: TimeZone) -> Date? {
         let formats = [
             "yyyy-MM-dd'T'HH:mm:ss.SSSSSS",
             "yyyy-MM-dd'T'HH:mm:ss.SSS",
             "yyyy-MM-dd'T'HH:mm:ss",
             "yyyy-MM-dd'T'HH:mm",
         ]
-        var parsed: Date?
         for format in formats {
             let fmt = DateFormatter()
             fmt.dateFormat = format
             fmt.locale = Locale(identifier: "en_US_POSIX")
-            if let d = fmt.date(from: time) {
-                parsed = d
-                break
-            }
+            fmt.timeZone = tz
+            if let d = fmt.date(from: str) { return d }
         }
-        if parsed == nil {
-            let iso = ISO8601DateFormatter()
-            iso.formatOptions = [.withInternetDateTime, .withFractionalSeconds]
-            parsed = iso.date(from: time)
-        }
-        guard let date = parsed else { return "" }
-        let hFmt = DateFormatter()
-        hFmt.dateFormat = "ha"
-        return hFmt.string(from: date).lowercased()
+        let iso = ISO8601DateFormatter()
+        iso.formatOptions = [.withInternetDateTime, .withFractionalSeconds]
+        return iso.date(from: str)
     }
 }
 
@@ -60,6 +78,28 @@ struct WeatherData: Codable {
     let sunrise: String?
     let sunset: String?
     let uvIndexMax: Int?
+    let utcOffsetSeconds: Int?
+    let sunriseEpoch: Int?
+    let sunsetEpoch: Int?
+
+    /// TimeZone derived from the API's utcOffsetSeconds for the weather location.
+    var locationTimeZone: TimeZone {
+        TimeZone(secondsFromGMT: utcOffsetSeconds ?? TimeZone.current.secondsFromGMT()) ?? .current
+    }
+
+    /// Sunrise as absolute Date (prefers epoch, falls back to string parsing).
+    var sunriseDate: Date? {
+        if let sunriseEpoch { return Date(timeIntervalSince1970: TimeInterval(sunriseEpoch)) }
+        guard let sunrise else { return nil }
+        return HourlyEntry.parseTime(sunrise, timeZone: locationTimeZone)
+    }
+
+    /// Sunset as absolute Date (prefers epoch, falls back to string parsing).
+    var sunsetDate: Date? {
+        if let sunsetEpoch { return Date(timeIntervalSince1970: TimeInterval(sunsetEpoch)) }
+        guard let sunset else { return nil }
+        return HourlyEntry.parseTime(sunset, timeZone: locationTimeZone)
+    }
 
     static let placeholder = WeatherData(
         temperature: 72,
@@ -82,29 +122,35 @@ struct WeatherData: Codable {
         hourly: nil,
         sunrise: nil,
         sunset: nil,
-        uvIndexMax: nil
+        uvIndexMax: nil,
+        utcOffsetSeconds: nil,
+        sunriseEpoch: nil,
+        sunsetEpoch: nil
     )
 
     var sunriseLabel: String? {
         guard let sunrise else { return nil }
-        return Self.formatTimeLabel(sunrise)
+        return Self.formatTimeLabel(sunrise, timeZone: locationTimeZone)
     }
 
     var sunsetLabel: String? {
         guard let sunset else { return nil }
-        return Self.formatTimeLabel(sunset)
+        return Self.formatTimeLabel(sunset, timeZone: locationTimeZone)
     }
 
-    private static func formatTimeLabel(_ isoString: String) -> String? {
+    private static func formatTimeLabel(_ isoString: String, timeZone tz: TimeZone) -> String? {
         let formats = [
             "yyyy-MM-dd'T'HH:mm",
             "yyyy-MM-dd'T'HH:mm:ss",
+            "yyyy-MM-dd'T'HH:mm:ss.SSS",
+            "yyyy-MM-dd'T'HH:mm:ss.SSSSSS",
         ]
         var parsed: Date?
         for format in formats {
             let fmt = DateFormatter()
             fmt.dateFormat = format
             fmt.locale = Locale(identifier: "en_US_POSIX")
+            fmt.timeZone = tz
             if let d = fmt.date(from: isoString) {
                 parsed = d
                 break
@@ -113,6 +159,7 @@ struct WeatherData: Codable {
         guard let date = parsed else { return nil }
         let display = DateFormatter()
         display.dateFormat = "h:mm a"
+        display.timeZone = tz
         return display.string(from: date)
     }
 

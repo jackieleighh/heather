@@ -12,6 +12,7 @@ import 'package:heather/features/weather/presentation/screens/saved_locations_pa
 import 'package:heather/features/weather/presentation/widgets/logo_overlay.dart';
 import '../../../../core/constants/app_colors.dart';
 import '../../../../core/services/background_alert_service.dart';
+import '../../../../core/services/device_registration_service.dart';
 import '../../../../core/services/fcm_service.dart';
 import '../../../../core/services/widget_service.dart';
 import '../../domain/entities/weather_alert.dart';
@@ -227,6 +228,10 @@ class _WeatherScreenState extends ConsumerState<WeatherScreen>
         : <Map<String, dynamic>>[];
     await BackgroundAlertService.updateLocations(locations);
     await BackgroundAlertService.registerPeriodicCheck();
+    await DeviceRegistrationService().registerLocations(
+      locations: locations,
+      alertsEnabled: alertsEnabled,
+    );
   }
 
   void _resetPollTimer() {

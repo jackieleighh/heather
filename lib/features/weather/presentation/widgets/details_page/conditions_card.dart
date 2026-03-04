@@ -47,6 +47,16 @@ class _ConditionsCardState extends State<ConditionsCard> {
     final sunrise = widget.sunrise;
     final sunset = widget.sunset;
     if (sunrise == null || sunset == null) return true;
+
+    // Transition-hour logic: if sunrise/sunset falls within this hour,
+    // use day icon only if the hour has >30 min of daylight.
+    if (time.hour == sunrise.hour) {
+      return (60 - sunrise.minute) > 30;
+    }
+    if (time.hour == sunset.hour) {
+      return sunset.minute > 30;
+    }
+
     final minutes = time.hour * 60 + time.minute;
     final sunriseMin = sunrise.hour * 60 + sunrise.minute;
     final sunsetMin = sunset.hour * 60 + sunset.minute;

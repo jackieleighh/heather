@@ -110,7 +110,7 @@ struct MediumWidgetView: View {
                                         .opacity(0.7)
                                     WidgetConditionIcon(
                                         conditionName: entry.conditionName,
-                                        isDay: data.isDay,
+                                        isDay: entry.isDay ?? data.isDay,
                                         size: 24
                                     ).frame(height: 26)
                                     Text("\(entry.temperature)°")

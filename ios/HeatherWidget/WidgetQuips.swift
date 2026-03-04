@@ -1,7 +1,9 @@
 import Foundation
 
 struct WidgetQuips {
-    /// Picks a random quip from the quip map stored in shared UserDefaults.
+    /// Picks a quip from the quip map stored in shared UserDefaults.
+    /// Uses a time-based seed so the same quip is returned for a 3-hour window,
+    /// preventing rapid switching when getTimeline() is called frequently.
     /// Returns nil if no quip data is available.
     static func pickQuip(condition: String, tempF: Double) -> String? {
         guard let userDefaults = UserDefaults(suiteName: "group.com.totms.heather"),
@@ -22,7 +24,11 @@ struct WidgetQuips {
             ?? tiers.values.first
 
         guard let quips, !quips.isEmpty else { return nil }
-        return quips.randomElement()
+
+        // Stable index: changes every 3 hours based on wall-clock time
+        let hoursSinceEpoch = Int(Date().timeIntervalSince1970) / (3 * 3600)
+        let index = abs(hoursSinceEpoch) % quips.count
+        return quips[index]
     }
 
     private static func temperatureTier(from tempF: Double) -> String {

@@ -76,9 +76,7 @@ class AirCard extends StatelessWidget {
             ],
           ),
           if (pressure > 0)
-            Padding(
-              padding: const EdgeInsets.only(top: 2),
-              child: Row(
+            Row(
                 children: [
                   const Spacer(),
                   Icon(
@@ -97,7 +95,6 @@ class AirCard extends StatelessWidget {
                   ),
                 ],
               ),
-            ),
           Expanded(
             child: Column(
               mainAxisAlignment: MainAxisAlignment.center,
@@ -147,7 +144,7 @@ class AirCard extends StatelessWidget {
                   ],
                 ),
                 SizedBox(
-                  height: 16,
+                  height: 12,
                   child: CustomPaint(
                     size: Size.infinite,
                     painter: _AqiScalePainter(aqi: aqi),

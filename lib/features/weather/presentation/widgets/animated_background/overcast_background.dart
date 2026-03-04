@@ -55,7 +55,7 @@ class _OvercastBackgroundState extends State<OvercastBackground>
       duration: const Duration(seconds: 1),
     )..repeat();
     _controller.addListener(() {
-      _time += 0.004;
+      _time += 0.003;
     });
   }
 

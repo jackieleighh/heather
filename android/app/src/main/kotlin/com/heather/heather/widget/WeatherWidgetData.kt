@@ -4,33 +4,28 @@ import android.content.SharedPreferences
 import org.json.JSONObject
 import java.text.SimpleDateFormat
 import java.util.Locale
+import java.util.TimeZone
 
 data class HourlyEntry(
     val time: String,
     val temperature: Int,
     val weatherCode: Int,
+    val isDay: Boolean,
 ) {
     val conditionName: String get() = WmoCodeMapper.conditionName(weatherCode)
 
+    /// Hour label extracted directly from the ISO time string (no timezone parsing).
     val hourLabel: String
         get() {
-            val formats = listOf(
-                "yyyy-MM-dd'T'HH:mm:ss.SSSSSS",
-                "yyyy-MM-dd'T'HH:mm:ss.SSS",
-                "yyyy-MM-dd'T'HH:mm:ss",
-                "yyyy-MM-dd'T'HH:mm",
-            )
-            var parsed: java.util.Date? = null
-            for (format in formats) {
-                try {
-                    val sdf = SimpleDateFormat(format, Locale.US)
-                    parsed = sdf.parse(time)
-                    if (parsed != null) break
-                } catch (_: Exception) {}
-            }
-            if (parsed == null) return ""
-            val hFmt = SimpleDateFormat("ha", Locale.US)
-            return hFmt.format(parsed).lowercase()
+            val tIndex = time.indexOf('T')
+            if (tIndex < 0 || tIndex + 1 >= time.length) return ""
+            val afterT = time.substring(tIndex + 1)
+            val colonIndex = afterT.indexOf(':')
+            if (colonIndex < 0) return ""
+            val hour = afterT.substring(0, colonIndex).toIntOrNull() ?: return ""
+            val displayHour = if (hour % 12 == 0) 12 else hour % 12
+            val ampm = if (hour < 12) "am" else "pm"
+            return "$displayHour$ampm"
         }
 }
 
@@ -53,9 +48,15 @@ data class WeatherWidgetData(
     val sunrise: String?,
     val sunset: String?,
     val uvIndexMax: Int?,
+    val utcOffsetSeconds: Int?,
 ) {
-    val sunriseLabel: String? get() = sunrise?.let { formatTimeLabel(it) }
-    val sunsetLabel: String? get() = sunset?.let { formatTimeLabel(it) }
+    val locationTimeZone: TimeZone
+        get() = utcOffsetSeconds?.let {
+            TimeZone.getTimeZone("GMT${if (it >= 0) "+" else ""}${it / 3600}:${"%02d".format((Math.abs(it) % 3600) / 60)}")
+        } ?: TimeZone.getDefault()
+
+    val sunriseLabel: String? get() = sunrise?.let { formatTimeLabel(it, locationTimeZone) }
+    val sunsetLabel: String? get() = sunset?.let { formatTimeLabel(it, locationTimeZone) }
 
     companion object {
         val placeholder = WeatherWidgetData(
@@ -77,6 +78,7 @@ data class WeatherWidgetData(
             sunrise = null,
             sunset = null,
             uvIndexMax = null,
+            utcOffsetSeconds = null,
         )
 
         fun fromPreferences(prefs: SharedPreferences): WeatherWidgetData {
@@ -93,6 +95,7 @@ data class WeatherWidgetData(
                                 time = h.getString("time"),
                                 temperature = h.getInt("temperature"),
                                 weatherCode = h.getInt("weatherCode"),
+                                isDay = h.optBoolean("isDay", true),
                             )
                         )
                     }
@@ -123,27 +126,32 @@ data class WeatherWidgetData(
                     sunrise = json.optString("sunrise", "").ifEmpty { null },
                     sunset = json.optString("sunset", "").ifEmpty { null },
                     uvIndexMax = if (json.has("uvIndexMax")) json.optInt("uvIndexMax") else null,
+                    utcOffsetSeconds = if (json.has("utcOffsetSeconds")) json.optInt("utcOffsetSeconds") else null,
                 )
             } catch (_: Exception) {
                 placeholder
             }
         }
 
-        private fun formatTimeLabel(isoString: String): String? {
+        private fun formatTimeLabel(isoString: String, tz: TimeZone): String? {
             val formats = listOf(
                 "yyyy-MM-dd'T'HH:mm",
                 "yyyy-MM-dd'T'HH:mm:ss",
+                "yyyy-MM-dd'T'HH:mm:ss.SSS",
+                "yyyy-MM-dd'T'HH:mm:ss.SSSSSS",
             )
             var parsed: java.util.Date? = null
             for (format in formats) {
                 try {
                     val sdf = SimpleDateFormat(format, Locale.US)
+                    sdf.timeZone = tz
                     parsed = sdf.parse(isoString)
                     if (parsed != null) break
                 } catch (_: Exception) {}
             }
             if (parsed == null) return null
             val display = SimpleDateFormat("h:mm a", Locale.US)
+            display.timeZone = tz
             return display.format(parsed)
         }
     }

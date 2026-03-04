@@ -283,7 +283,7 @@ class HeatherGlanceWidget : GlanceAppWidget() {
 
             // Hourly forecast (6 items, matching iOS)
             if (data.hourly.isNotEmpty()) {
-                HourlyRow(data.hourly.take(6), data.isDay, compact = true)
+                HourlyRow(data.hourly.take(6), compact = true)
             }
         }
     }
@@ -394,7 +394,7 @@ class HeatherGlanceWidget : GlanceAppWidget() {
 
             // Hourly forecast (6 items, matching iOS)
             if (data.hourly.isNotEmpty()) {
-                HourlyRow(data.hourly.take(6), data.isDay, compact = false)
+                HourlyRow(data.hourly.take(6), compact = false)
             }
         }
     }
@@ -423,7 +423,7 @@ class HeatherGlanceWidget : GlanceAppWidget() {
     }
 
     @Composable
-    private fun HourlyRow(hours: List<HourlyEntry>, isDay: Boolean, compact: Boolean) {
+    private fun HourlyRow(hours: List<HourlyEntry>, compact: Boolean) {
         val context = LocalContext.current
         val iconSize = if (compact) 24.dp else 28.dp
         val timeFontSize = if (compact) 9f else 11f
@@ -445,7 +445,7 @@ class HeatherGlanceWidget : GlanceAppWidget() {
                     )
                     Spacer(modifier = GlanceModifier.height(if (compact) 1.dp else 3.dp))
                     Image(
-                        provider = ImageProvider(ConditionIcons.iconRes(entry.conditionName, isDay)),
+                        provider = ImageProvider(ConditionIcons.iconRes(entry.conditionName, entry.isDay)),
                         contentDescription = null,
                         modifier = GlanceModifier.size(iconSize),
                         colorFilter = ColorFilter.tint(ColorProvider(white80)),
