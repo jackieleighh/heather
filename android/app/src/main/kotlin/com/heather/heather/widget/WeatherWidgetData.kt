@@ -30,6 +30,13 @@ data class HourlyEntry(
         }
 }
 
+data class TimelineSegment(
+    val minuteOffset: Int,
+    val precipitation: Double,
+    val precipProbability: Int,
+    val temperature: Int,
+)
+
 data class WeatherWidgetData(
     val temperature: Int,
     val feelsLike: Int,
@@ -53,6 +60,12 @@ data class WeatherWidgetData(
     val precipLabel: String?,
     val alertLabel: String?,
     val alertSeverity: String?,
+    val widgetSummary: String?,
+    val summaryIsDay: Boolean?,
+    val moonPhase: String?,
+    val moonIllumination: Int?,
+    val timelineSegments: List<TimelineSegment>,
+    val hasPrecipInTimeline: Boolean?,
 ) {
     val alertColor: Int
         get() = when (alertSeverity?.lowercase()) {
@@ -99,6 +112,12 @@ data class WeatherWidgetData(
             precipLabel = null,
             alertLabel = null,
             alertSeverity = null,
+            widgetSummary = null,
+            summaryIsDay = null,
+            moonPhase = null,
+            moonIllumination = null,
+            timelineSegments = emptyList(),
+            hasPrecipInTimeline = null,
         )
 
         fun fromPreferences(prefs: SharedPreferences): WeatherWidgetData {
@@ -127,6 +146,19 @@ data class WeatherWidgetData(
                         gradientList.add(gradientArray.getString(i))
                     }
                 }
+                val segArray = json.optJSONArray("timelineSegments")
+                val segList = mutableListOf<TimelineSegment>()
+                if (segArray != null) {
+                    for (i in 0 until segArray.length()) {
+                        val s = segArray.getJSONObject(i)
+                        segList.add(TimelineSegment(
+                            minuteOffset = s.getInt("minuteOffset"),
+                            precipitation = s.getDouble("precipitation"),
+                            precipProbability = s.optInt("precipProbability", 0),
+                            temperature = s.getInt("temperature"),
+                        ))
+                    }
+                }
                 WeatherWidgetData(
                     temperature = json.optInt("temperature", 0),
                     feelsLike = json.optInt("feelsLike", 0),
@@ -150,6 +182,12 @@ data class WeatherWidgetData(
                     precipLabel = json.optString("precipLabel", "").ifEmpty { null },
                     alertLabel = json.optString("alertLabel", "").ifEmpty { null },
                     alertSeverity = json.optString("alertSeverity", "").ifEmpty { null },
+                    widgetSummary = json.optString("widgetSummary", "").ifEmpty { null },
+                    summaryIsDay = if (json.has("summaryIsDay")) json.getBoolean("summaryIsDay") else null,
+                    moonPhase = json.optString("moonPhase", "").ifEmpty { null },
+                    moonIllumination = if (json.has("moonIllumination")) json.optInt("moonIllumination") else null,
+                    timelineSegments = segList,
+                    hasPrecipInTimeline = if (json.has("hasPrecipInTimeline")) json.getBoolean("hasPrecipInTimeline") else null,
                 )
             } catch (_: Exception) {
                 placeholder

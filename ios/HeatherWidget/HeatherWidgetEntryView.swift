@@ -11,9 +11,9 @@ struct HeatherWidgetEntryView: View {
             case .systemSmall:
                 SmallWidgetView(data: entry.data)
             case .systemMedium:
-                MediumWidgetView(data: entry.data)
+                MediumWidgetView(data: entry.data, entryDate: entry.date)
             case .systemLarge:
-                LargeWidgetView(data: entry.data)
+                LargeWidgetView(data: entry.data, entryDate: entry.date)
             default:
                 SmallWidgetView(data: entry.data)
             }

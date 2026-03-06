@@ -57,6 +57,13 @@ struct HourlyEntry: Codable {
     }
 }
 
+struct TimelineSegment: Codable {
+    let minuteOffset: Int
+    let precipitation: Double
+    let precipProbability: Int?
+    let temperature: Int
+}
+
 struct WeatherData: Codable {
     let temperature: Int
     let feelsLike: Int
@@ -85,6 +92,18 @@ struct WeatherData: Codable {
     let precipLabel: String?
     let alertLabel: String?
     let alertSeverity: String?
+    let widgetSummary: String?
+    let summaryIsDay: Bool?
+    let moonPhase: String?
+    let moonIllumination: Int?
+    let timelineSegments: [TimelineSegment]?
+    let hasPrecipInTimeline: Bool?
+
+    /// SF Symbol for the moon phase display.
+    var moonPhaseSFSymbol: String? {
+        guard moonPhase != nil else { return nil }
+        return "moon.fill"
+    }
 
     /// Alert color based on severity: extreme=red, severe=orange, default=yellow.
     var alertColor: Color {
@@ -149,7 +168,13 @@ struct WeatherData: Codable {
         sunsetEpoch: nil,
         precipLabel: nil,
         alertLabel: nil,
-        alertSeverity: nil
+        alertSeverity: nil,
+        widgetSummary: nil,
+        summaryIsDay: nil,
+        moonPhase: nil,
+        moonIllumination: nil,
+        timelineSegments: nil,
+        hasPrecipInTimeline: nil
     )
 
     var sunriseLabel: String? {

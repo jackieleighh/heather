@@ -86,10 +86,6 @@ class HeatherGlanceWidget : GlanceAppWidget() {
         val size = LocalSize.current
         val context = LocalContext.current
 
-        // Gradient direction: diagonal for sunny/mostlySunny, vertical for others (matching iOS)
-        val diagonalGradient = data.conditionName == "sunny" || data.conditionName == "mostlySunny"
-                || size.width < 250.dp // Small widget always uses diagonal
-
         // Match bitmap aspect ratio to widget size so the background
         // doesn't stretch/distort the logo overlay.
         val bitmapLong = 500
@@ -111,7 +107,6 @@ class HeatherGlanceWidget : GlanceAppWidget() {
             isDay = data.isDay,
             width = bitmapW,
             height = bitmapH,
-            diagonalGradient = diagonalGradient,
         )
 
         Box(
@@ -219,9 +214,10 @@ class HeatherGlanceWidget : GlanceAppWidget() {
     @Composable
     private fun MediumContent(data: WeatherWidgetData) {
         val context = LocalContext.current
+        val hasTimeline = data.widgetSummary != null
         Column(
             modifier = GlanceModifier.fillMaxSize()
-                .padding(horizontal = 16.dp, vertical = 14.dp),
+                .padding(vertical = 14.dp),
         ) {
             // City name
             WidgetText(
@@ -231,12 +227,13 @@ class HeatherGlanceWidget : GlanceAppWidget() {
                 sizeSp = 12f,
                 color = 0xFFFFFFFF.toInt(),
                 contentDescription = data.cityName,
+                modifier = GlanceModifier.padding(horizontal = 16.dp),
             )
 
             // Details row: temp+info on left, labels+icon on right
             Row(
-                modifier = GlanceModifier.fillMaxWidth(),
-                verticalAlignment = Alignment.Bottom,
+                modifier = GlanceModifier.fillMaxWidth().padding(horizontal = 16.dp),
+                verticalAlignment = Alignment.Top,
             ) {
                 // Left: temp
                 WidgetText(
@@ -250,7 +247,7 @@ class HeatherGlanceWidget : GlanceAppWidget() {
 
                 Spacer(modifier = GlanceModifier.width(6.dp))
 
-                // Left: H/L, feels like, description
+                // Left: H/L, feels like, description/alert
                 Column(modifier = GlanceModifier.defaultWeight().padding(bottom = 6.dp)) {
                     WidgetText(
                         context = context,
@@ -268,14 +265,24 @@ class HeatherGlanceWidget : GlanceAppWidget() {
                         color = 0xE6FFFFFF.toInt(),
                         contentDescription = "Feels like ${data.feelsLike} degrees",
                     )
-                    WidgetText(
-                        context = context,
-                        text = data.description.replaceFirstChar { it.uppercase() },
-                        fontRes = R.font.quicksand_medium,
-                        sizeSp = 11f,
-                        color = 0xE6FFFFFF.toInt(),
-                        contentDescription = data.description,
-                    )
+                    if (hasTimeline && data.alertLabel != null) {
+                        DetailRow(
+                            context,
+                            iconRes = data.alertIconRes,
+                            value = data.alertLabel,
+                            tintColor = data.alertColor,
+                            iconSize = 9, fontSize = 10f, spacing = 2,
+                        )
+                    } else {
+                        WidgetText(
+                            context = context,
+                            text = data.description.replaceFirstChar { it.uppercase() },
+                            fontRes = R.font.quicksand_medium,
+                            sizeSp = 11f,
+                            color = 0xE6FFFFFF.toInt(),
+                            contentDescription = data.description,
+                        )
+                    }
                 }
 
                 // Right: details + icon
@@ -296,8 +303,9 @@ class HeatherGlanceWidget : GlanceAppWidget() {
                                 data.sunriseLabel?.let { label ->
                                     DetailRow(context, iconRes = R.drawable.ic_weather_sunrise, value = label, iconSize = 9, fontSize = 11f, spacing = 3)
                                 }
-                                val phase = getMoonPhase()
-                                DetailRow(context, iconRes = phase.iconRes, value = "${moonIllumination()}%", iconSize = 9, fontSize = 11f, spacing = 3)
+                                val moonIcon = R.drawable.ic_moon_waxing_crescent
+                                val moonIllum = data.moonIllumination ?: moonIllumination()
+                                DetailRow(context, iconRes = moonIcon, value = "${moonIllum}%", iconSize = 9, fontSize = 11f, spacing = 3)
                             }
                         }
                         Spacer(modifier = GlanceModifier.width(4.dp))
@@ -308,31 +316,53 @@ class HeatherGlanceWidget : GlanceAppWidget() {
                             colorFilter = ColorFilter.tint(ColorProvider(white90)),
                         )
                     }
-                    if (data.alertLabel != null) {
-                        DetailRow(
-                            context,
-                            iconRes = data.alertIconRes,
-                            value = data.alertLabel,
-                            tintColor = data.alertColor,
-                            iconSize = 9, fontSize = 11f, spacing = 3,
-                        )
-                    } else if (data.precipLabel != null) {
-                        DetailRow(
-                            context,
-                            iconRes = precipIconRes(data.precipLabel, data.isDay),
-                            value = data.precipLabel,
-                            iconSize = 9, fontSize = 11f, spacing = 3,
-                        )
-                    } else {
-                        Spacer(modifier = GlanceModifier.height(14.dp))
+                    if (!hasTimeline) {
+                        if (data.alertLabel != null) {
+                            DetailRow(
+                                context,
+                                iconRes = data.alertIconRes,
+                                value = data.alertLabel,
+                                tintColor = data.alertColor,
+                                iconSize = 9, fontSize = 11f, spacing = 3,
+                            )
+                        } else if (data.precipLabel != null) {
+                            DetailRow(
+                                context,
+                                iconRes = precipIconRes(data.precipLabel, data.isDay),
+                                value = data.precipLabel,
+                                iconSize = 9, fontSize = 11f, spacing = 3,
+                            )
+                        } else {
+                            Spacer(modifier = GlanceModifier.height(14.dp))
+                        }
                     }
                 }
             }
 
-            Spacer(modifier = GlanceModifier.defaultWeight())
+            Spacer(modifier = GlanceModifier.height(6.dp))
 
-            // Hourly forecast (6 items, matching iOS)
-            if (data.hourly.isNotEmpty()) {
+            // Summary tagline (full width, between info and timeline)
+            if (hasTimeline) {
+                val summary = data.widgetSummary
+                if (summary != null && (data.summaryIsDay == null || data.summaryIsDay == data.isDay)) {
+                    WidgetText(
+                        context = context,
+                        text = summary,
+                        fontRes = R.font.quicksand_medium,
+                        sizeSp = 12f,
+                        color = 0xF2FFFFFF.toInt(),
+                        contentDescription = summary,
+                        maxLines = 2,
+                        modifier = GlanceModifier.padding(horizontal = 16.dp),
+                    )
+                    Spacer(modifier = GlanceModifier.defaultWeight())
+                }
+            }
+
+            // Bottom: timeline or hourly forecast
+            if (hasTimeline && data.timelineSegments.isNotEmpty()) {
+                TimelineBar(context, data)
+            } else if (data.hourly.isNotEmpty()) {
                 HourlyRow(data.hourly.take(6), compact = true)
             }
         }
@@ -399,8 +429,11 @@ class HeatherGlanceWidget : GlanceAppWidget() {
                     )
                 }
 
-                // Right column: icon + details
-                Column(horizontalAlignment = Alignment.End) {
+                // Right column: icon + details + summary
+                Column(
+                    horizontalAlignment = Alignment.End,
+                    modifier = GlanceModifier.padding(start = 12.dp),
+                ) {
                     Image(
                         provider = ImageProvider(ConditionIcons.iconRes(data.conditionName, data.isDay)),
                         contentDescription = data.conditionName,
@@ -421,8 +454,9 @@ class HeatherGlanceWidget : GlanceAppWidget() {
                         data.sunriseLabel?.let { label ->
                             DetailRow(context, iconRes = R.drawable.ic_weather_sunrise, value = label)
                         }
-                        val phase = getMoonPhase()
-                        DetailRow(context, iconRes = phase.iconRes, value = "${moonIllumination()}%")
+                        val moonIcon = R.drawable.ic_moon_waxing_crescent
+                        val moonIllum = data.moonIllumination ?: moonIllumination()
+                        DetailRow(context, iconRes = moonIcon, value = "${moonIllum}%")
                     }
                     if (data.alertLabel != null) {
                         DetailRow(
@@ -440,17 +474,33 @@ class HeatherGlanceWidget : GlanceAppWidget() {
                     } else {
                         Spacer(modifier = GlanceModifier.height(16.dp))
                     }
+                    // Summary tagline under detail rows
+                    val summary = data.widgetSummary
+                    if (summary != null && (data.summaryIsDay == null || data.summaryIsDay == data.isDay)) {
+                        Spacer(modifier = GlanceModifier.height(4.dp))
+                        WidgetText(
+                            context = context,
+                            text = summary,
+                            fontRes = R.font.quicksand_medium,
+                            sizeSp = 11f,
+                            color = 0xF2FFFFFF.toInt(),
+                            contentDescription = summary,
+                            maxLines = 3,
+                            textAlign = Paint.Align.RIGHT,
+                            maxWidthDp = 170,
+                        )
+                    }
                 }
             }
 
             Spacer(modifier = GlanceModifier.defaultWeight())
 
-            // Quip (between info and hourly, matching iOS)
+            // Quip
             WidgetText(
                 context = context,
                 text = data.quip,
-                fontRes = R.font.poppins_bold,
-                sizeSp = 14f,
+                fontRes = R.font.poppins_regular,
+                sizeSp = 16f,
                 color = 0xF2FFFFFF.toInt(),
                 contentDescription = data.quip,
                 maxLines = 3,
@@ -458,8 +508,10 @@ class HeatherGlanceWidget : GlanceAppWidget() {
 
             Spacer(modifier = GlanceModifier.defaultWeight())
 
-            // Hourly forecast (6 items, matching iOS)
-            if (data.hourly.isNotEmpty()) {
+            // Timeline (replaces hourly forecast)
+            if (data.timelineSegments.isNotEmpty()) {
+                TimelineBar(context, data)
+            } else if (data.hourly.isNotEmpty()) {
                 HourlyRow(data.hourly.take(6), compact = false)
             }
         }
@@ -555,8 +607,10 @@ class HeatherGlanceWidget : GlanceAppWidget() {
         contentDescription: String,
         modifier: GlanceModifier = GlanceModifier,
         maxLines: Int = 1,
+        textAlign: Paint.Align = Paint.Align.LEFT,
+        maxWidthDp: Int = 300,
     ) {
-        val bitmap = renderTextBitmap(context, text, fontRes, sizeSp, color, maxLines)
+        val bitmap = renderTextBitmap(context, text, fontRes, sizeSp, color, maxLines, textAlign, maxWidthDp)
         Image(
             provider = BitmapImageProvider(bitmap),
             contentDescription = contentDescription,
@@ -572,6 +626,8 @@ class HeatherGlanceWidget : GlanceAppWidget() {
         sizeSp: Float,
         color: Int,
         maxLines: Int,
+        textAlign: Paint.Align = Paint.Align.LEFT,
+        maxWidthDp: Int = 300,
     ): Bitmap {
         val scaledDensity = context.resources.displayMetrics.scaledDensity
         val typeface = ResourcesCompat.getFont(context, fontRes) ?: Typeface.DEFAULT
@@ -592,7 +648,7 @@ class HeatherGlanceWidget : GlanceAppWidget() {
         }
 
         // Multi-line: wrap text manually
-        val maxWidth = (300 * context.resources.displayMetrics.density).toInt()
+        val maxWidth = (maxWidthDp * context.resources.displayMetrics.density).toInt()
         val words = text.split(" ")
         val lines = mutableListOf<String>()
         var currentLine = ""
@@ -619,13 +675,236 @@ class HeatherGlanceWidget : GlanceAppWidget() {
         val bitmap = Bitmap.createBitmap(totalWidth, totalHeight, Bitmap.Config.ARGB_8888)
         val canvas = Canvas(bitmap)
         lines.forEachIndexed { i, line ->
-            canvas.drawText(line, 0f, -metrics.ascent + lineHeight * i, paint)
+            val x = when (textAlign) {
+                Paint.Align.RIGHT -> totalWidth - paint.measureText(line) - 1
+                Paint.Align.CENTER -> (totalWidth - paint.measureText(line)) / 2
+                else -> 0f
+            }
+            canvas.drawText(line, x, -metrics.ascent + lineHeight * i, paint)
         }
         return bitmap
     }
 
     private fun Int.pxToDp(context: Context): Int {
         return (this / context.resources.displayMetrics.density).toInt()
+    }
+
+    // ── Timeline bar (bitmap-rendered graph) ─────────────────────
+
+    @Composable
+    private fun TimelineBar(context: Context, data: WeatherWidgetData) {
+        val widgetWidthPx = (LocalSize.current.width.value * context.resources.displayMetrics.density).toInt()
+        val bitmap = renderTimelineBitmap(
+            context = context,
+            segments = data.timelineSegments,
+            hasPrecip = data.hasPrecipInTimeline ?: false,
+            utcOffsetSeconds = data.utcOffsetSeconds,
+            widthPx = widgetWidthPx,
+        )
+        Image(
+            provider = BitmapImageProvider(bitmap),
+            contentDescription = "12 hour forecast",
+            modifier = GlanceModifier.fillMaxWidth().height(bitmap.height.pxToDp(context).dp),
+            contentScale = ContentScale.FillBounds,
+        )
+    }
+
+    private fun renderTimelineBitmap(
+        context: Context,
+        segments: List<TimelineSegment>,
+        hasPrecip: Boolean,
+        utcOffsetSeconds: Int?,
+        widthPx: Int = 0,
+    ): Bitmap {
+        val density = context.resources.displayMetrics.density
+        val sd = context.resources.displayMetrics.scaledDensity
+        val bitmapW = if (widthPx > 0) widthPx else (300 * density).toInt().coerceAtLeast(1)
+        val graphH = 32 * density
+        val labelH = 12 * density
+        val gap = 3 * density
+        val totalH = (graphH + gap + labelH).toInt().coerceAtLeast(1)
+
+        val bitmap = Bitmap.createBitmap(bitmapW, totalH, Bitmap.Config.ARGB_8888)
+        val canvas = Canvas(bitmap)
+        val wf = bitmapW.toFloat()
+
+        if (hasPrecip) {
+            drawPrecipBars(context, canvas, segments, density, sd, wf, graphH)
+        } else {
+            drawTempCurve(context, canvas, segments, density, sd, wf, graphH)
+        }
+
+        // Time labels
+        val timePaint = Paint(Paint.ANTI_ALIAS_FLAG).apply {
+            typeface = ResourcesCompat.getFont(context, R.font.quicksand_medium) ?: Typeface.DEFAULT
+            textSize = 9 * sd
+            color = 0x99FFFFFF.toInt()
+        }
+        val labels = buildTimeLabels(utcOffsetSeconds)
+        val labelY = graphH + gap + (-timePaint.fontMetrics.ascent)
+        val tempPadX = 18 * density
+        val precipPadRight = 8 * density
+        val labelStartX = if (hasPrecip) 24 * density else tempPadX
+        val labelAreaW = if (hasPrecip) wf - labelStartX - precipPadRight else wf - 2 * tempPadX
+
+        labels.forEachIndexed { i, label ->
+            val frac = if (labels.size <= 1) 0f else i.toFloat() / (labels.size - 1)
+            val x = labelStartX + labelAreaW * frac
+            timePaint.textAlign = when (i) {
+                0 -> Paint.Align.LEFT
+                labels.size - 1 -> Paint.Align.RIGHT
+                else -> Paint.Align.CENTER
+            }
+            canvas.drawText(label, x, labelY, timePaint)
+        }
+
+        return bitmap
+    }
+
+    private fun drawPrecipBars(
+        context: Context,
+        canvas: Canvas,
+        segments: List<TimelineSegment>,
+        density: Float,
+        sd: Float,
+        width: Float,
+        graphH: Float,
+    ) {
+        val labelW = 24 * density
+        val padRight = 8 * density
+        val graphW = width - labelW - padRight
+
+        // Y-axis labels
+        val labelPaint = Paint(Paint.ANTI_ALIAS_FLAG).apply {
+            typeface = ResourcesCompat.getFont(context, R.font.poppins_semibold) ?: Typeface.DEFAULT
+            textSize = 8 * sd
+            color = 0xB3FFFFFF.toInt()
+            textAlign = Paint.Align.RIGHT
+        }
+        val fm = labelPaint.fontMetrics
+        val textH = -fm.ascent + fm.descent
+        canvas.drawText("100%", labelW - 2 * density, -fm.ascent, labelPaint)
+        canvas.drawText("50%", labelW - 2 * density, graphH / 2 - textH / 2 - fm.ascent, labelPaint)
+        canvas.drawText("0%", labelW - 2 * density, graphH + fm.descent, labelPaint)
+
+        // Sample at hourly intervals
+        val targetMinutes = (0..720 step 60).toList()
+        val probs = targetMinutes.map { target ->
+            segments.minByOrNull { Math.abs(it.minuteOffset - target) }?.precipProbability ?: 0
+        }
+
+        val slotW = graphW / probs.size
+        val barGap = 1.5f * density
+        val barW = (slotW - barGap).coerceAtLeast(1f)
+
+        // Grid line at 50%
+        val gridPaint = Paint().apply {
+            color = 0x26FFFFFF.toInt()
+            strokeWidth = 0.5f * density
+        }
+        canvas.drawLine(labelW, graphH * 0.5f, labelW + graphW, graphH * 0.5f, gridPaint)
+
+        // Bars
+        val barPaint = Paint(Paint.ANTI_ALIAS_FLAG)
+        probs.forEachIndexed { i, prob ->
+            val pct = prob / 100f
+            val barH = (graphH * pct).coerceAtLeast(if (pct > 0) 2 * density else 0f)
+            val alpha = ((0.45f + 0.45f * pct) * 255).toInt().coerceIn(0, 255)
+            barPaint.color = (alpha shl 24) or 0x00FFFFFF
+
+            val x = labelW + i * slotW + (slotW - barW) / 2
+            canvas.drawRoundRect(x, graphH - barH, x + barW, graphH, 1.5f * density, 1.5f * density, barPaint)
+        }
+
+        // "Now" indicator line
+        val nowPaint = Paint().apply {
+            color = 0x80FFFFFF.toInt()
+            strokeWidth = 1f * density
+        }
+        canvas.drawLine(labelW + slotW / 2, 0f, labelW + slotW / 2, graphH, nowPaint)
+    }
+
+    private fun drawTempCurve(
+        context: Context,
+        canvas: Canvas,
+        segments: List<TimelineSegment>,
+        density: Float,
+        sd: Float,
+        width: Float,
+        graphH: Float,
+    ) {
+        val targetMinutes = listOf(0, 180, 360, 540, 720)
+        val temps = targetMinutes.mapNotNull { target ->
+            segments.minByOrNull { Math.abs(it.minuteOffset - target) }?.temperature
+        }
+        if (temps.size < 2) return
+
+        val minTemp = temps.min().toFloat()
+        val maxTemp = temps.max().toFloat()
+        val range = (maxTemp - minTemp).coerceAtLeast(1f)
+
+        // Horizontal padding so edge labels don't clip
+        val padX = 18 * density
+        val drawW = width - 2 * padX
+
+        val points = temps.mapIndexed { i, temp ->
+            val x = padX + drawW * i / (temps.size - 1)
+            val y = graphH - ((temp - minTemp) / range) * graphH * 0.7f - graphH * 0.15f
+            android.graphics.PointF(x, y)
+        }
+
+        // Smooth cubic Bezier curve
+        val curvePaint = Paint(Paint.ANTI_ALIAS_FLAG).apply {
+            color = 0x99FFFFFF.toInt()
+            strokeWidth = 1.5f * density
+            style = Paint.Style.STROKE
+        }
+        val path = android.graphics.Path()
+        path.moveTo(points[0].x, points[0].y)
+        for (i in 1 until points.size) {
+            val cpx = (points[i - 1].x + points[i].x) / 2
+            path.cubicTo(cpx, points[i - 1].y, cpx, points[i].y, points[i].x, points[i].y)
+        }
+        canvas.drawPath(path, curvePaint)
+
+        // "Now" dot
+        val dotPaint = Paint(Paint.ANTI_ALIAS_FLAG).apply {
+            color = 0xFFFFFFFF.toInt()
+            style = Paint.Style.FILL
+        }
+        canvas.drawCircle(points[0].x, points[0].y, 2.5f * density, dotPaint)
+
+        // Temp labels at each point
+        val tempPaint = Paint(Paint.ANTI_ALIAS_FLAG).apply {
+            typeface = ResourcesCompat.getFont(context, R.font.poppins_semibold) ?: Typeface.DEFAULT
+            textSize = 9 * sd
+            color = 0xE6FFFFFF.toInt()
+            textAlign = Paint.Align.CENTER
+        }
+        temps.forEachIndexed { i, temp ->
+            canvas.drawText("${temp}°", points[i].x, points[i].y - 8 * density, tempPaint)
+        }
+    }
+
+    private fun buildTimeLabels(utcOffsetSeconds: Int?): List<String> {
+        val labels = mutableListOf("now")
+        val tz = utcOffsetSeconds?.let {
+            java.util.TimeZone.getTimeZone(
+                "GMT${if (it >= 0) "+" else ""}${it / 3600}:${"%02d".format((Math.abs(it) % 3600) / 60)}"
+            )
+        } ?: java.util.TimeZone.getDefault()
+        val cal = java.util.Calendar.getInstance(tz)
+        for (offset in listOf(3, 6, 9, 12)) {
+            val future = java.util.Calendar.getInstance(tz).apply {
+                timeInMillis = cal.timeInMillis
+                add(java.util.Calendar.HOUR_OF_DAY, offset)
+            }
+            val hour = future.get(java.util.Calendar.HOUR_OF_DAY)
+            val h12 = if (hour % 12 == 0) 12 else hour % 12
+            val ampm = if (hour >= 12) "pm" else "am"
+            labels.add("$h12$ampm")
+        }
+        return labels
     }
 
     // ── Bitmap creation (gradient + weather effects + scrim) ─────
@@ -637,7 +916,6 @@ class HeatherGlanceWidget : GlanceAppWidget() {
         isDay: Boolean,
         width: Int,
         height: Int,
-        diagonalGradient: Boolean,
     ): Bitmap {
         val bitmap = Bitmap.createBitmap(width, height, Bitmap.Config.ARGB_8888)
         val canvas = Canvas(bitmap)
@@ -650,11 +928,7 @@ class HeatherGlanceWidget : GlanceAppWidget() {
             canvas.drawColor(colors.firstOrNull() ?: android.graphics.Color.parseColor("#5B86E5"))
         } else {
             val paint = Paint()
-            paint.shader = if (diagonalGradient) {
-                LinearGradient(w, 0f, 0f, h, colors, null, Shader.TileMode.CLAMP)
-            } else {
-                LinearGradient(0f, 0f, 0f, h, colors, null, Shader.TileMode.CLAMP)
-            }
+            paint.shader = LinearGradient(w, 0f, 0f, h, colors, null, Shader.TileMode.CLAMP)
             canvas.drawRect(0f, 0f, w, h, paint)
         }
 

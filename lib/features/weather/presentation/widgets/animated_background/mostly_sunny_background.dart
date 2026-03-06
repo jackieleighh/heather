@@ -56,8 +56,8 @@ class _MostlySunnyBackgroundState extends State<MostlySunnyBackground>
           child: Container(
             decoration: BoxDecoration(
               gradient: LinearGradient(
-                begin: Alignment.topRight,
-                end: Alignment.bottomLeft,
+                begin: Alignment.topCenter,
+                end: Alignment.bottomCenter,
                 colors: widget.gradientColors,
                 stops: BackgroundGradients.sunnyStops(widget.gradientColors.length),
               ),

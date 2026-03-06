@@ -55,29 +55,29 @@ class _OvercastBackgroundState extends State<OvercastBackground>
       duration: const Duration(seconds: 1),
     )..repeat();
     _controller.addListener(() {
-      _time += 0.003;
+      _time += 0.005;
     });
   }
 
   List<_CloudMass> _generateMasses() {
     const params = [
       // (yFraction, scale, speed, alpha)
-      (0.08, 0.55, 0.14, 0.18),
-      (0.22, 0.50, 0.18, 0.16),
-      (0.38, 0.48, 0.26, 0.14),
-      (0.52, 0.52, 0.16, 0.13),
-      (0.66, 0.45, 0.28, 0.12),
-      (0.80, 0.42, 0.20, 0.10),
+      (0.08, 0.58, 0.24, 0.18),
+      (0.22, 0.54, 0.28, 0.16),
+      (0.38, 0.52, 0.36, 0.15),
+      (0.52, 0.56, 0.26, 0.14),
+      (0.66, 0.50, 0.38, 0.13),
+      (0.80, 0.48, 0.30, 0.12),
     ];
 
     return params.map((p) {
       final (yFrac, scale, speed, alpha) = p;
-      final blobCount = 7 + _random.nextInt(6);
+      final blobCount = 10 + _random.nextInt(6);
       final blobs = List.generate(blobCount, (_) {
         return _Blob(
-          dx: (_random.nextDouble() - 0.5) * 1.4,
-          dy: (_random.nextDouble() - 0.5) * 0.6,
-          radius: 0.14 + _random.nextDouble() * 0.20,
+          dx: (_random.nextDouble() - 0.5) * 1.8,
+          dy: (_random.nextDouble() - 0.5) * 0.8,
+          radius: 0.16 + _random.nextDouble() * 0.22,
         );
       });
       return _CloudMass(

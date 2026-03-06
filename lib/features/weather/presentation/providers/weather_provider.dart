@@ -1,5 +1,8 @@
+import 'dart:convert';
+
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:freezed_annotation/freezed_annotation.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 import '../../../../core/errors/app_exception.dart';
 import '../../../../core/network/api_client.dart';
@@ -53,14 +56,22 @@ class WeatherState with _$WeatherState {
   const factory WeatherState.error(String message) = _Error;
 }
 
+// Seed provider: holds pre-read cached weather for synchronous constructor use
+final cachedWeatherSeedProvider =
+    StateProvider<(LocationInfo, Forecast)?>((_) => null);
+
 // Main provider
 final weatherStateProvider =
     StateNotifierProvider<WeatherNotifier, WeatherState>((ref) {
       final settings = ref.read(settingsProvider);
+      final seed = ref.read(cachedWeatherSeedProvider);
+      ref.read(cachedWeatherSeedProvider.notifier).state = null; // consume once
+
       final notifier = WeatherNotifier(
         weatherRepo: ref.watch(weatherRepositoryProvider),
         quipRepo: ref.watch(quipRepositoryProvider),
         explicit: settings.explicitLanguage,
+        cachedSeed: seed,
       );
 
       ref.listen<SettingsState>(settingsProvider, (previous, next) {
@@ -85,33 +96,25 @@ class WeatherNotifier extends StateNotifier<WeatherState> {
     required this.weatherRepo,
     required this.quipRepo,
     required bool explicit,
+    (LocationInfo, Forecast)? cachedSeed,
   }) : _explicit = explicit,
        super(const WeatherState.loading()) {
-    _init();
-  }
-
-  Future<void> _init() async {
-    if (WidgetService.coldLaunchedFromWidget) {
-      WidgetService.coldLaunchedFromWidget = false;
-      final cached = await weatherRepo.getCachedWeather();
-      if (cached != null) {
-        final (location, forecast) = cached;
-        final quip = quipRepo.getLocalQuip(
-          weather: forecast.current,
-          explicit: _explicit,
-        );
-        _lastQuipKey = _quipKeyFor(forecast);
-        if (!mounted) return;
-        state = WeatherState.loaded(
-          forecast: forecast,
-          location: location,
-          quip: quip,
-        );
-        refresh();
-        return;
-      }
+    if (cachedSeed != null) {
+      final (location, forecast) = cachedSeed;
+      final quip = quipRepo.getLocalQuip(
+        weather: forecast.current,
+        explicit: _explicit,
+      );
+      _lastQuipKey = _quipKeyFor(forecast);
+      state = WeatherState.loaded(
+        forecast: forecast,
+        location: location,
+        quip: quip,
+      );
+      refresh();
+    } else {
+      loadWeather();
     }
-    loadWeather();
   }
 
   void updateExplicit(bool value) {
@@ -153,15 +156,29 @@ class WeatherNotifier extends StateNotifier<WeatherState> {
     );
   }
 
-  void _pushToWidget() {
+  Future<void> _pushToWidget() async {
     final current = state;
     if (current is! _Loaded) return;
+
+    // Read cached visible planets from SharedPreferences
+    List<String> planets = const [];
+    try {
+      final prefs = await SharedPreferences.getInstance();
+      final lat = current.location.latitude;
+      final lon = current.location.longitude;
+      final cachedJson = prefs.getString('cached_planets_${lat}_$lon');
+      if (cachedJson != null) {
+        planets = (jsonDecode(cachedJson) as List).cast<String>();
+      }
+    } catch (_) {}
+
     WidgetService.updateWidget(
       forecast: current.forecast,
       location: current.location,
       quip: current.quip,
       explicit: _explicit,
       alerts: current.alerts,
+      visiblePlanets: planets,
     );
   }
 

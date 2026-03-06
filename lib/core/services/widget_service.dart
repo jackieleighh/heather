@@ -2,6 +2,7 @@ import 'dart:async';
 import 'dart:convert';
 
 import 'package:home_widget/home_widget.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 import '../../features/weather/domain/entities/forecast.dart';
 import '../../features/weather/domain/entities/location_info.dart';
@@ -46,6 +47,7 @@ class WidgetService {
     required String quip,
     required bool explicit,
     List<WeatherAlert> alerts = const [],
+    List<String> visiblePlanets = const [],
   }) async {
     // Compute alert label and severity from the most severe extreme/severe alert
     String? alertLabel;
@@ -59,6 +61,25 @@ class WidgetService {
       }
     }
 
+    // Read cached USNO moon data
+    String? moonPhase;
+    int? moonIllum;
+    try {
+      final prefs = await SharedPreferences.getInstance();
+      final cacheKey =
+          'cached_moon_${location.latitude}_${location.longitude}';
+      final cachedJson = prefs.getString(cacheKey);
+      if (cachedJson != null) {
+        final moonData =
+            jsonDecode(cachedJson) as Map<String, dynamic>;
+        moonPhase = moonData['curPhase'] as String?;
+        final fracStr = moonData['fracIllum'];
+        if (fracStr is num) {
+          moonIllum = fracStr.round();
+        }
+      }
+    } catch (_) {}
+
     final payload = buildWidgetPayload(
       forecast: forecast,
       cityName: location.cityName,
@@ -67,6 +88,9 @@ class WidgetService {
       quip: quip,
       alertLabel: alertLabel,
       alertSeverity: alertSeverity,
+      visiblePlanets: visiblePlanets,
+      moonPhase: moonPhase,
+      moonIllumination: moonIllum,
     );
 
     await HomeWidget.saveWidgetData<String>(_dataKey, payload);

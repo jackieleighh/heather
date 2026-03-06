@@ -30,7 +30,13 @@ class WeatherRepositoryImpl implements WeatherRepository {
     // Return fresh cache for automatic refreshes (timer/resume)
     if (!forceRefresh) {
       final fresh = await _getFreshCachedForecast(cacheKey, cacheTsKey);
-      if (fresh != null) return fresh;
+      if (fresh != null) {
+        // Track the key so readCachedWeather always points at the right entry
+        final prefs = await SharedPreferences.getInstance();
+        await prefs.setString('last_forecast_cache_key', cacheKey);
+        await prefs.setString('last_forecast_cache_ts_key', cacheTsKey);
+        return fresh;
+      }
     }
 
     try {
@@ -39,6 +45,11 @@ class WeatherRepositoryImpl implements WeatherRepository {
         longitude: longitude,
       );
       await _cacheForecast(response, cacheKey, cacheTsKey);
+      // Track the exact key so readCachedWeather can find it
+      // regardless of GPS coordinate drift between refreshes.
+      final prefs = await SharedPreferences.getInstance();
+      await prefs.setString('last_forecast_cache_key', cacheKey);
+      await prefs.setString('last_forecast_cache_ts_key', cacheTsKey);
       return response.toEntity();
     } catch (_) {
       final cached = await _getCachedForecast(cacheKey, cacheTsKey);
@@ -141,23 +152,30 @@ class WeatherRepositoryImpl implements WeatherRepository {
     return ForecastResponseModel.fromJson(json).toEntity();
   }
 
-  /// Returns cached [LocationInfo] + [Forecast] from SharedPreferences,
-  /// or null if either is missing or the forecast is older than 12 hours.
-  Future<(LocationInfo, Forecast)?> getCachedWeather() async {
-    final prefs = await SharedPreferences.getInstance();
-
+  /// Synchronously reads cached [LocationInfo] + [Forecast] from an
+  /// already-resolved [SharedPreferences] instance.
+  /// Returns null if either is missing or the forecast is older than 12 hours.
+  static (LocationInfo, Forecast)? readCachedWeather(SharedPreferences prefs) {
     final cityName = prefs.getString('last_city_name');
     final lat = prefs.getDouble('last_city_lat');
     final lon = prefs.getDouble('last_city_lon');
     if (cityName == null || lat == null || lon == null) return null;
 
+    // Use stored key (immune to GPS coordinate drift between refreshes)
+    final cacheKey = prefs.getString('last_forecast_cache_key');
+    final cacheTsKey = prefs.getString('last_forecast_cache_ts_key');
+    if (cacheKey == null || cacheTsKey == null) return null;
+
+    final cached = prefs.getString(cacheKey);
+    final ts = prefs.getInt(cacheTsKey);
+    if (cached == null || ts == null) return null;
+
+    final age = DateTime.now().millisecondsSinceEpoch - ts;
+    if (age > const Duration(hours: 12).inMilliseconds) return null;
+
+    final json = jsonDecode(cached) as Map<String, dynamic>;
+    final forecast = ForecastResponseModel.fromJson(json).toEntity();
     final countryCode = prefs.getString('last_country_code');
-    final cacheKey = 'cached_forecast_${lat}_$lon';
-    final cacheTsKey = 'cached_forecast_ts_${lat}_$lon';
-
-    final forecast = await _getCachedForecast(cacheKey, cacheTsKey);
-    if (forecast == null) return null;
-
     final location = LocationInfo(
       latitude: lat,
       longitude: lon,

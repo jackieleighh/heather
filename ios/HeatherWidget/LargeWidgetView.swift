@@ -3,6 +3,7 @@ import WidgetKit
 
 struct LargeWidgetView: View {
     let data: WeatherData
+    var entryDate: Date = Date()
 
     var body: some View {
         WidgetView() {
@@ -24,7 +25,6 @@ struct LargeWidgetView: View {
                     .offset(x: 15, y: 20)
 
                 VStack(alignment: .leading, spacing: 2) {
-                    // Two-column layout
                     HStack(alignment: .top) {
                         VStack(alignment: .leading, spacing: 2) {
                             Text(data.cityName)
@@ -48,7 +48,7 @@ struct LargeWidgetView: View {
                                 .opacity(0.9)
                         }
 
-                        Spacer()
+                        Spacer(minLength: 4)
 
                         VStack(alignment: .trailing, spacing: 4) {
                             WidgetConditionIcon(
@@ -75,11 +75,13 @@ struct LargeWidgetView: View {
                                         value: sunriseLabel
                                     )
                                 }
-                                let phase = getMoonPhase()
-                                DetailLabel(
-                                    icon: phase.sfSymbol,
-                                    value: "\(moonIllumination())%"
-                                )
+                                if let sfSymbol = data.moonPhaseSFSymbol,
+                                   let illum = data.moonIllumination {
+                                    DetailLabel(
+                                        icon: sfSymbol,
+                                        value: "\(illum)%"
+                                    )
+                                }
                             }
                             if let alertLabel = data.alertLabel {
                                 DetailLabel(
@@ -95,6 +97,16 @@ struct LargeWidgetView: View {
                             } else {
                                 Spacer().frame(height: 16)
                             }
+                            if let summary = data.widgetSummary,
+                               data.summaryIsDay == nil || data.summaryIsDay == data.isDay {
+                                Text(summary)
+                                    .font(.custom("Quicksand-Medium", size: 12))
+                                    .lineLimit(3)
+                                    .minimumScaleFactor(0.8)
+                                    .opacity(0.95)
+                                    .multilineTextAlignment(.trailing)
+                                    .frame(maxWidth: .infinity, alignment: .trailing)
+                            }
                         }
                     }
 
@@ -102,35 +114,21 @@ struct LargeWidgetView: View {
 
                     // Quip
                     Text(data.quip)
-                        .font(.custom("Poppins-Bold", size: 14))
+                        .font(.custom("Poppins", size: 16))
                         .lineLimit(3)
                         .opacity(0.95)
 
                     Spacer()
 
-                    // Hourly forecast
-                    if let hours = data.hourly, !hours.isEmpty {
-                        let items = Array(hours.prefix(6))
-                        HStack(spacing: 0) {
-                            ForEach(Array(items.enumerated()), id: \.offset) { index, entry in
-                                VStack(spacing: 3) {
-                                    Text(entry.hourLabel)
-                                        .font(.custom("Quicksand-Medium", size: 11))
-                                        .opacity(0.9)
-                                    WidgetConditionIcon(
-                                        conditionName: entry.conditionName,
-                                        isDay: entry.isDay ?? data.isDay,
-                                        size: 28
-                                    ).frame(height: 30)
-                                    Text("\(entry.temperature)°")
-                                        .font(.custom("Poppins-SemiBold", size: 13))
-                                }
-                                if index < items.count - 1 {
-                                    Spacer(minLength: 0)
-                                }
-                            }
-                        }
-                        .frame(maxWidth: .infinity)
+                    // Timeline graph
+                    if let segments = data.timelineSegments, !segments.isEmpty {
+                        TimelineBarView(
+                            segments: segments,
+                            hasPrecip: data.hasPrecipInTimeline ?? false,
+                            isDay: data.isDay,
+                            entryDate: entryDate,
+                            utcOffsetSeconds: data.utcOffsetSeconds
+                        )
                     }
                 }
                 .padding(16)
@@ -143,8 +141,8 @@ struct LargeWidgetView: View {
             ZStack {
                 LinearGradient(
                     stops: WidgetGradients.gradientStops(from: data.gradientColors),
-                    startPoint: (data.conditionName == "sunny" || data.conditionName == "mostlySunny") ? .topTrailing : .top,
-                    endPoint: (data.conditionName == "sunny" || data.conditionName == "mostlySunny") ? .bottomLeading : .bottom
+                    startPoint: .topTrailing,
+                    endPoint: .bottomLeading
                 )
             }
         }

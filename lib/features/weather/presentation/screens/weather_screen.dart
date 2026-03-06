@@ -475,6 +475,14 @@ class _WeatherScreenState extends ConsumerState<WeatherScreen>
                     ),
                   ),
                   IconButton(
+                    onPressed: () => context.push('/gallery'),
+                    icon: Icon(
+                      Icons.grid_view_rounded,
+                      color: AppColors.cream.withValues(alpha: 0.6),
+                      size: 24,
+                    ),
+                  ),
+                  IconButton(
                     onPressed: _showSettings,
                     icon: Icon(
                       Icons.settings_outlined,

@@ -171,7 +171,7 @@ String? formatPrecipLabel(PrecipForecast? forecast) {
 
   if (forecast.isCurrentlyRaining) {
     final mins = forecast.onsetMinutes;
-    if (mins == null) return type;
+    if (mins == null) return null; // no stop time — let hourly/daily provide context
     return '$type stopping in ~${formatDuration(mins)}';
   }
 

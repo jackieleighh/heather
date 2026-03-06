@@ -2,6 +2,7 @@ import 'package:go_router/go_router.dart';
 
 import '../features/weather/presentation/screens/onboarding_screen.dart';
 import '../features/weather/presentation/screens/settings_screen.dart';
+import '../features/weather/presentation/screens/weather_gallery_screen.dart';
 import '../features/weather/presentation/screens/weather_screen.dart';
 
 GoRouter buildRouter({required bool onboardingCompleted}) {
@@ -24,6 +25,10 @@ GoRouter buildRouter({required bool onboardingCompleted}) {
       GoRoute(
         path: '/settings',
         builder: (context, state) => const SettingsScreen(),
+      ),
+      GoRoute(
+        path: '/gallery',
+        builder: (context, state) => const WeatherGalleryScreen(),
       ),
     ],
   );

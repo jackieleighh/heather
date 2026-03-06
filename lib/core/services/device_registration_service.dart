@@ -16,8 +16,8 @@ class DeviceRegistrationService {
   factory DeviceRegistrationService() => _instance;
   DeviceRegistrationService._();
 
-  final _messaging = FirebaseMessaging.instance;
-  final _firestore = FirebaseFirestore.instance;
+  late final _messaging = FirebaseMessaging.instance;
+  late final _firestore = FirebaseFirestore.instance;
 
   String? _currentToken;
   StreamSubscription<String>? _tokenRefreshSub;

@@ -27,7 +27,7 @@ class FcmService {
   static const _alertChannelDescription =
       'Critical weather alerts like tornado warnings and severe thunderstorms';
 
-  final _messaging = FirebaseMessaging.instance;
+  late final _messaging = FirebaseMessaging.instance;
   final _localNotifications = FlutterLocalNotificationsPlugin();
   bool _initialized = false;
 

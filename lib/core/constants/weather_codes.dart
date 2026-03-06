@@ -70,7 +70,8 @@ class WeatherCodes {
   };
 
   static WeatherCondition dominantDaytimeCondition(
-      List<WeatherCondition> conditions) {
+    List<WeatherCondition> conditions,
+  ) {
     if (conditions.isEmpty) return WeatherCondition.unknown;
 
     // Tier 1: precipitation wins by severity
@@ -82,9 +83,7 @@ class WeatherCodes {
     }
 
     // Tier 2: sky condition — ignore fog hours
-    final sky = conditions
-        .where((c) => c != WeatherCondition.foggy)
-        .toList();
+    final sky = conditions.where((c) => c != WeatherCondition.foggy).toList();
 
     if (sky.isEmpty) return WeatherCondition.foggy;
 
@@ -136,8 +135,8 @@ class WeatherCodes {
       77 => 'Snow grains',
       80 => 'Slight rain showers',
       81 => 'Moderate rain showers',
-      82 => 'Violent rain showers',
-      85 => 'Slight snow showers',
+      82 => 'Heavy rain showers',
+      85 => 'Light snow showers',
       86 => 'Heavy snow showers',
       95 => 'Thunderstorm',
       96 => 'Thunderstorm with slight hail',

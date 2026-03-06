@@ -184,6 +184,23 @@ Future<void> _refreshWidgetData() async {
       }
     }
 
+    // Read cached USNO moon data
+    String? moonPhase;
+    int? moonIllum;
+    try {
+      final moonCacheKey = 'cached_moon_${lat}_$lon';
+      final cachedMoonJson = prefs.getString(moonCacheKey);
+      if (cachedMoonJson != null) {
+        final moonData =
+            jsonDecode(cachedMoonJson) as Map<String, dynamic>;
+        moonPhase = moonData['curPhase'] as String?;
+        final fracVal = moonData['fracIllum'];
+        if (fracVal is num) {
+          moonIllum = fracVal.round();
+        }
+      }
+    } catch (_) {}
+
     final payload = buildWidgetPayload(
       forecast: forecast,
       cityName: cityName,
@@ -192,6 +209,8 @@ Future<void> _refreshWidgetData() async {
       quip: quip,
       alertLabel: alertLabel,
       alertSeverity: alertSeverity,
+      moonPhase: moonPhase,
+      moonIllumination: moonIllum,
     );
 
     await HomeWidget.saveWidgetData<String>(_widgetDataKey, payload);

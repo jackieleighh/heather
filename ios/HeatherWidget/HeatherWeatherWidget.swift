@@ -176,7 +176,13 @@ struct HeatherWeatherProvider: TimelineProvider {
                         sunsetEpoch: cached.sunsetEpoch,
                         precipLabel: cached.precipLabel,
                         alertLabel: cached.alertLabel,
-                        alertSeverity: cached.alertSeverity
+                        alertSeverity: cached.alertSeverity,
+                        widgetSummary: cached.widgetSummary,
+                        summaryIsDay: cached.summaryIsDay,
+                        moonPhase: cached.moonPhase,
+                        moonIllumination: cached.moonIllumination,
+                        timelineSegments: cached.timelineSegments,
+                        hasPrecipInTimeline: cached.hasPrecipInTimeline
                     )
 
                     entries.append(WeatherEntry(date: entryDate, data: data, isPlaceholder: false))
@@ -306,7 +312,13 @@ struct HeatherWeatherProvider: TimelineProvider {
                     sunsetEpoch: nil,
                     precipLabel: cached.precipLabel,
                     alertLabel: cached.alertLabel,
-                    alertSeverity: cached.alertSeverity
+                    alertSeverity: cached.alertSeverity,
+                    widgetSummary: cached.widgetSummary,
+                    summaryIsDay: cached.summaryIsDay,
+                    moonPhase: cached.moonPhase,
+                    moonIllumination: cached.moonIllumination,
+                    timelineSegments: cached.timelineSegments,
+                    hasPrecipInTimeline: cached.hasPrecipInTimeline
                 )
 
                 entries.append(WeatherEntry(date: entryDate, data: data, isPlaceholder: false))
