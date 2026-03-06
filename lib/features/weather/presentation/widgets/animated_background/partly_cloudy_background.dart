@@ -2,6 +2,7 @@ import 'dart:math';
 import 'dart:ui' as ui;
 
 import 'package:flutter/material.dart';
+import 'package:heather/core/constants/background_gradients.dart';
 
 class PartlyCloudyBackground extends StatefulWidget {
   final List<Color> gradientColors;
@@ -59,6 +60,7 @@ class _PartlyCloudyBackgroundState extends State<PartlyCloudyBackground>
                 begin: Alignment.topCenter,
                 end: Alignment.bottomCenter,
                 colors: widget.gradientColors,
+                stops: BackgroundGradients.sunnyStops(widget.gradientColors.length),
               ),
             ),
           ),

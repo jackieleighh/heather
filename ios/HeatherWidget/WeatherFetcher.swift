@@ -44,7 +44,11 @@ struct WeatherFetcher {
         guard let url = URL(string: urlString) else { return nil }
 
         do {
-            let (data, response) = try await URLSession.shared.data(from: url)
+            let config = URLSessionConfiguration.default
+            config.timeoutIntervalForRequest = 15
+            config.timeoutIntervalForResource = 15
+            let session = URLSession(configuration: config)
+            let (data, response) = try await session.data(from: url)
             guard let httpResponse = response as? HTTPURLResponse,
                   httpResponse.statusCode == 200 else { return nil }
             return try JSONDecoder().decode(OpenMeteoResponse.self, from: data)

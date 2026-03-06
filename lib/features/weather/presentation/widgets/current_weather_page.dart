@@ -17,6 +17,8 @@ class CurrentWeatherPage extends StatefulWidget {
   final Forecast forecast;
   final String cityName;
   final String quip;
+  final double latitude;
+  final double longitude;
   final List<WeatherAlert> alerts;
   final Future<bool> Function() onRefresh;
   final VoidCallback onSettings;
@@ -27,6 +29,8 @@ class CurrentWeatherPage extends StatefulWidget {
     required this.forecast,
     required this.cityName,
     required this.quip,
+    required this.latitude,
+    required this.longitude,
     this.alerts = const [],
     required this.onRefresh,
     required this.onSettings,
@@ -148,7 +152,16 @@ class _CurrentWeatherPageState extends State<CurrentWeatherPage> {
                       const Spacer(flex: 1),
                       SassyQuip(quip: widget.quip),
                       const Spacer(flex: 1),
-                      WeatherDetails(weather: weather),
+                      WeatherDetails(
+                        weather: weather,
+                        hourly: widget.forecast.hourly,
+                        minutely15: widget.forecast.minutely15,
+                        daily: widget.forecast.daily,
+                        locationNow: widget.forecast.locationNow,
+                        latitude: widget.latitude,
+                        longitude: widget.longitude,
+                        utcOffsetSeconds: widget.forecast.utcOffsetSeconds,
+                      ),
                       const Spacer(flex: 4),
                     ],
                   ),

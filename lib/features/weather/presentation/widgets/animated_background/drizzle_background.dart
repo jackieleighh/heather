@@ -66,14 +66,14 @@ class _DrizzlePainter extends CustomPainter {
   @override
   void paint(Canvas canvas, Size size) {
     if (drops.isEmpty) {
-      for (var i = 0; i < 80; i++) {
+      for (var i = 0; i < 55; i++) {
         drops.add(
           Particle(
             x: random.nextDouble() * size.width,
             y: random.nextDouble() * size.height,
-            speed: 2.0 + random.nextDouble() * 4.0,
-            size: 0.8 + random.nextDouble() * 1.2,
-            opacity: 0.1 + random.nextDouble() * 0.3,
+            speed: 3.0 + random.nextDouble() * 5.0,
+            size: 0.6 + random.nextDouble() * 1.0,
+            opacity: 0.08 + random.nextDouble() * 0.22,
           ),
         );
       }
@@ -85,7 +85,7 @@ class _DrizzlePainter extends CustomPainter {
 
     for (final drop in drops) {
       drop.y += drop.speed;
-      drop.x += 0.3;
+      drop.x += 0.5;
 
       if (drop.y > size.height) {
         drop.y = -10;
@@ -99,7 +99,7 @@ class _DrizzlePainter extends CustomPainter {
 
       canvas.drawLine(
         Offset(drop.x, drop.y),
-        Offset(drop.x + 0.3, drop.y + 8 + drop.speed),
+        Offset(drop.x + 0.5, drop.y + 10 + drop.speed),
         paint,
       );
     }

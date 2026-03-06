@@ -331,7 +331,7 @@ class _ControlBar extends StatelessWidget {
         children: [
           Text(
             timeLabel,
-            style: GoogleFonts.inter(
+            style: GoogleFonts.quicksand(
               fontSize: 11,
               fontWeight: FontWeight.w700,
               color: AppColors.cream,

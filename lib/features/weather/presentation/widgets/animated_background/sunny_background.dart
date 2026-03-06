@@ -2,6 +2,7 @@ import 'dart:math';
 import 'dart:ui' as ui;
 
 import 'package:flutter/material.dart';
+import 'package:heather/core/constants/background_gradients.dart';
 
 class SunnyBackground extends StatefulWidget {
   final List<Color> gradientColors;
@@ -49,6 +50,7 @@ class _SunnyBackgroundState extends State<SunnyBackground>
                 begin: Alignment.topRight,
                 end: Alignment.bottomLeft,
                 colors: widget.gradientColors,
+                stops: BackgroundGradients.sunnyStops(widget.gradientColors.length),
               ),
             ),
           ),

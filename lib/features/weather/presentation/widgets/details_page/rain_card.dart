@@ -42,6 +42,7 @@ class RainCard extends StatelessWidget {
   final DateTime? now;
   final bool compact;
   final PrecipType precipType;
+  final int humidity;
 
   const RainCard({
     super.key,
@@ -52,6 +53,7 @@ class RainCard extends StatelessWidget {
     this.now,
     this.compact = false,
     this.precipType = PrecipType.rain,
+    this.humidity = 0,
   });
 
   @override
@@ -62,8 +64,16 @@ class RainCard extends StatelessWidget {
         : '${precipitationIn.toStringAsFixed(2)}"';
 
     final (label, icon, bgIcon) = switch (precipType) {
-      PrecipType.snow => ('Snow', WeatherIcons.snowflake_cold, WeatherIcons.snow),
-      PrecipType.mixed => ('Slush', WeatherIcons.rain_mix, WeatherIcons.rain_mix),
+      PrecipType.snow => (
+        'Snow',
+        WeatherIcons.snowflake_cold,
+        WeatherIcons.snow,
+      ),
+      PrecipType.mixed => (
+        'Slush',
+        WeatherIcons.rain_mix,
+        WeatherIcons.rain_mix,
+      ),
       PrecipType.rain => ('Rain', WeatherIcons.raindrop, WeatherIcons.rain),
     };
 
@@ -73,18 +83,24 @@ class RainCard extends StatelessWidget {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Row(
+            crossAxisAlignment: CrossAxisAlignment.baseline,
+            textBaseline: TextBaseline.alphabetic,
             children: [
               Icon(
                 icon,
-                size: compact ? 12 : 18,
+                size: compact ? 10 : 15,
                 color: AppColors.cream.withValues(alpha: 0.9),
               ),
-              SizedBox(width: compact ? 5 : 8),
+              SizedBox(width: compact ? 3 : 4),
               Text(
                 label,
-                style: theme.textTheme.bodySmall?.copyWith(
-                  fontWeight: FontWeight.w600,
-                  fontSize: 16,
+                style: GoogleFonts.figtree(
+                  fontSize: compact ? 14 : 18,
+                  fontWeight: FontWeight.w400,
+                  color: AppColors.cream,
+                  shadows: [
+                    const Shadow(color: Color(0x28000000), blurRadius: 6),
+                  ],
                 ),
               ),
               const Spacer(),
@@ -107,6 +123,20 @@ class RainCard extends StatelessWidget {
               ),
             ],
           ),
+          if (humidity > 0 && !compact)
+            Row(
+              children: [
+                const Spacer(),
+                Text(
+                  '$humidity% humidity',
+                  style: GoogleFonts.poppins(
+                    fontSize: 11,
+                    fontWeight: FontWeight.w600,
+                    color: AppColors.cream.withValues(alpha: 0.8),
+                  ),
+                ),
+              ],
+            ),
           SizedBox(height: compact ? 4 : 6),
           Expanded(
             child: CustomPaint(

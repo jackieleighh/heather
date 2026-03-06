@@ -12,6 +12,8 @@ class TemperatureCard extends StatelessWidget {
   final List<DateTime> hours;
   final DateTime? now;
   final bool compact;
+  final double? averageHigh;
+  final double? todayHigh;
 
   const TemperatureCard({
     super.key,
@@ -19,6 +21,8 @@ class TemperatureCard extends StatelessWidget {
     required this.hours,
     this.now,
     this.compact = false,
+    this.averageHigh,
+    this.todayHigh,
   });
 
   @override
@@ -35,18 +39,24 @@ class TemperatureCard extends StatelessWidget {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Row(
+            crossAxisAlignment: CrossAxisAlignment.baseline,
+            textBaseline: TextBaseline.alphabetic,
             children: [
               Icon(
                 WeatherIcons.thermometer,
-                size: compact ? 12 : 18,
+                size: compact ? 10 : 15,
                 color: AppColors.cream.withValues(alpha: 0.9),
               ),
-              SizedBox(width: compact ? 5 : 8),
+              SizedBox(width: compact ? 3 : 4),
               Text(
                 'Temp',
-                style: theme.textTheme.bodySmall?.copyWith(
-                  fontWeight: FontWeight.w600,
-                  fontSize: 16,
+                style: GoogleFonts.figtree(
+                  fontSize: compact ? 14 : 18,
+                  fontWeight: FontWeight.w400,
+                  color: AppColors.cream,
+                  shadows: [
+                    const Shadow(color: Color(0x28000000), blurRadius: 6),
+                  ],
                 ),
               ),
               const Spacer(),
@@ -68,6 +78,15 @@ class TemperatureCard extends StatelessWidget {
               ),
             ],
           ),
+          if (averageHigh != null &&
+              todayHigh != null &&
+              !compact)
+            Row(
+              children: [
+                const Spacer(),
+                _buildAvgIndicator(todayHigh!, averageHigh!),
+              ],
+            ),
           SizedBox(height: compact ? 4 : 6),
           Expanded(
             child: CustomPaint(
@@ -81,6 +100,31 @@ class TemperatureCard extends StatelessWidget {
           ),
         ],
       ),
+    );
+  }
+
+  Widget _buildAvgIndicator(double todayHigh, double averageHigh) {
+    final diff = (todayHigh - averageHigh).round();
+    if (diff == 0) return const SizedBox.shrink();
+    final isAbove = diff > 0;
+    return Row(
+      mainAxisSize: MainAxisSize.min,
+      children: [
+        Icon(
+          isAbove ? Icons.arrow_upward : Icons.arrow_downward,
+          size: 12,
+          color: AppColors.cream.withValues(alpha: 0.8),
+        ),
+        const SizedBox(width: 2),
+        Text(
+          '${diff.abs()}° ${isAbove ? 'above' : 'below'} avg',
+          style: GoogleFonts.poppins(
+            fontSize: 11,
+            fontWeight: FontWeight.w600,
+            color: AppColors.cream.withValues(alpha: 0.8),
+          ),
+        ),
+      ],
     );
   }
 }
@@ -146,7 +190,7 @@ class _TempLinePainter extends CustomPainter {
     canvas.drawPath(
       linePath,
       Paint()
-        ..color = AppColors.cream.withValues(alpha: 0.9)
+        ..color = AppColors.cream.withValues(alpha: 0.5)
         ..strokeWidth = 2
         ..style = PaintingStyle.stroke
         ..strokeCap = StrokeCap.round,

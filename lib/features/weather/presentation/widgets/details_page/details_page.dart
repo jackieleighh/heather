@@ -11,6 +11,7 @@ import './temp_card.dart';
 import '../../../../../core/constants/app_colors.dart';
 import '../../../domain/entities/forecast.dart';
 import '../../providers/air_quality_provider.dart';
+import '../../providers/historical_avg_provider.dart';
 
 class DetailsPage extends ConsumerWidget {
   final Forecast forecast;
@@ -29,6 +30,8 @@ class DetailsPage extends ConsumerWidget {
     final now = forecast.locationNow;
     final next24 = forecast.hourly.take(24).toList();
     final aqi = ref.watch(airQualityProvider((lat: latitude, lon: longitude)));
+    final historicalAvg =
+        ref.watch(historicalAvgProvider((lat: latitude, lon: longitude)));
 
     // Aggregate precipitation across the days the next 24 hours span
     final next24Start = next24.first.time;
@@ -58,26 +61,8 @@ class DetailsPage extends ConsumerWidget {
         ? todayDaily.sunset
         : tomorrowDaily.sunset;
 
-    // Show daylight duration when sun is up, darkness duration when down
     final isSunUp =
         now.isAfter(todayDaily.sunrise) && now.isBefore(todayDaily.sunset);
-    final Duration sunDuration;
-    if (isSunUp) {
-      sunDuration = todayDaily.sunset.difference(todayDaily.sunrise);
-    } else if (now.isAfter(todayDaily.sunset)) {
-      sunDuration = tomorrowDaily.sunrise.difference(todayDaily.sunset);
-    } else {
-      // Before sunrise — try to get yesterday's sunset for accurate darkness
-      final todayIdx = forecast.daily.indexOf(todayDaily);
-      if (todayIdx > 0) {
-        sunDuration = todayDaily.sunrise
-            .difference(forecast.daily[todayIdx - 1].sunset);
-      } else {
-        // Approximate: 24h minus today's daylight
-        sunDuration = const Duration(hours: 24) -
-            todayDaily.sunset.difference(todayDaily.sunrise);
-      }
-    }
 
     return SafeArea(
       child: Padding(
@@ -92,7 +77,7 @@ class DetailsPage extends ConsumerWidget {
                   alignment: Alignment.centerRight,
                   child: Text(
                     'Next 24 hours',
-                    style: GoogleFonts.quicksand(
+                    style: GoogleFonts.figtree(
                       fontSize: 22,
                       fontWeight: FontWeight.w700,
                       color: AppColors.cream,
@@ -114,6 +99,9 @@ class DetailsPage extends ConsumerWidget {
                 temps: next24.map((h) => h.temperature).toList(),
                 hours: next24.map((h) => h.time).toList(),
                 now: now,
+                averageHigh:
+                    historicalAvg.whenOrNull(data: (v) => v),
+                todayHigh: forecast.todayDaily.temperatureMax,
               ),
             ),
             const SizedBox(height: 6),
@@ -131,6 +119,7 @@ class DetailsPage extends ConsumerWidget {
                 precipType: precipTypeFromConditions(
                   next24.map((h) => h.condition).toList(),
                 ),
+                humidity: next24.isNotEmpty ? next24.first.humidity : 0,
               ),
             ),
             const SizedBox(height: 6),
@@ -139,8 +128,11 @@ class DetailsPage extends ConsumerWidget {
                 aqi: aqi.whenOrNull(data: (v) => v),
                 isLoading: aqi.isLoading,
                 windSpeed: forecast.current.windSpeed,
-                hourlyWind: next24.map((h) => h.windSpeed).toList(),
                 pressure: forecast.current.pressure,
+                windGusts: forecast.current.windGusts,
+                windDirection: forecast.current.windDirection,
+                hourlyPressure:
+                    next24.map((h) => h.pressure).toList(),
               ),
             ),
             const SizedBox(height: 6),
@@ -148,7 +140,6 @@ class DetailsPage extends ConsumerWidget {
               child: SunCard(
                 sunrise: nextSunrise,
                 sunset: nextSunset,
-                sunDuration: sunDuration,
                 isSunUp: isSunUp,
                 uvIndex: next24.map((h) => h.uvIndex).reduce((a, b) => a > b ? a : b),
                 hourlyUv: next24.map((h) => h.uvIndex).toList(),
@@ -157,7 +148,14 @@ class DetailsPage extends ConsumerWidget {
               ),
             ),
             const SizedBox(height: 6),
-            Expanded(child: MoonCard(now: now)),
+            Expanded(
+              child: MoonCard(
+                now: now,
+                latitude: latitude,
+                longitude: longitude,
+                utcOffsetSeconds: forecast.utcOffsetSeconds,
+              ),
+            ),
           ],
         ),
       ),

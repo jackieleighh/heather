@@ -26,6 +26,10 @@ struct HeatherWidgetBundle: WidgetBundle {
             "Poppins-Medium",
             "Poppins-SemiBold",
             "Poppins-Bold",
+            "Quicksand-Regular",
+            "Quicksand-Medium",
+            "Quicksand-SemiBold",
+            "Quicksand-Bold",
         ]
         for name in fontNames {
             guard let url = Bundle.main.url(forResource: name, withExtension: "ttf") else {

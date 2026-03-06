@@ -7,6 +7,17 @@ import 'app_colors.dart';
 class BackgroundGradients {
   BackgroundGradients._();
 
+  /// Compute gradient stops that push the first color (blue) to be dominant.
+  /// Matches the iOS widget stop distribution from WidgetGradients.swift.
+  static List<double> sunnyStops(int colorCount) {
+    return switch (colorCount) {
+      3 => [0.0, 0.8, 1.0],
+      4 => [0.0, 0.65, 0.85, 1.0],
+      5 => [0.0, 0.4, 0.65, 0.85, 1.0],
+      _ => List.generate(colorCount, (i) => i / (colorCount - 1)),
+    };
+  }
+
   static List<Color> forCondition(
     WeatherCondition condition,
     TemperatureTier tier, {
@@ -65,24 +76,24 @@ class BackgroundGradients {
     ],
     TemperatureTier.jacketWeather: [
       AppColors.brightSkyBlue,
-      AppColors.brightAqua,
-      AppColors.brightTeal,
+      AppColors.mutedTeal,
+      AppColors.lightChartreuse,
     ],
     TemperatureTier.flannelWeather: [
       AppColors.brightSkyBlue,
-      AppColors.brightLime,
-      AppColors.brightHotAmber,
+      AppColors.lightChartreuse,
+      AppColors.goldenYellow,
     ],
     TemperatureTier.shortsWeather: [
       AppColors.brightSkyBlue,
-      AppColors.brightLime,
-      AppColors.brightGoldenAmber,
-      AppColors.brightOrange,
+      AppColors.lightChartreuse,
+      AppColors.goldenYellow,
+      AppColors.burntOrange,
     ],
     TemperatureTier.scorcher: [
       AppColors.brightSkyBlue,
-      AppColors.brightLime,
-      AppColors.brightGoldenAmber,
+      AppColors.lightChartreuse,
+      AppColors.goldenYellow,
       AppColors.brightOrange,
       AppColors.heatPink,
     ],

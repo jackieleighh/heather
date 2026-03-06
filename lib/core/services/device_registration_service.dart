@@ -1,9 +1,14 @@
 import 'dart:async';
+import 'dart:convert';
 import 'dart:io';
 
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter/foundation.dart';
+import 'package:shared_preferences/shared_preferences.dart';
+
+const _prefsLocationsKey = 'device_reg_locations';
+const _prefsAlertsEnabledKey = 'device_reg_alerts_enabled';
 
 class DeviceRegistrationService {
   static final DeviceRegistrationService _instance =
@@ -19,16 +24,31 @@ class DeviceRegistrationService {
   List<Map<String, dynamic>> _lastLocations = [];
   bool _lastAlertsEnabled = true;
 
-  Future<void> init() async {
-    // Get initial token (non-blocking — on iOS this may wait for permission)
-    _messaging.getToken().then((token) {
-      if (token != null) {
-        _handleNewToken(token);
-      }
-    });
+  Future<void> _restoreFromPrefs() async {
+    final prefs = await SharedPreferences.getInstance();
+    final locationsJson = prefs.getString(_prefsLocationsKey);
+    if (locationsJson != null) {
+      _lastLocations =
+          (jsonDecode(locationsJson) as List<dynamic>).cast<Map<String, dynamic>>();
+    }
+    _lastAlertsEnabled = prefs.getBool(_prefsAlertsEnabledKey) ?? true;
+  }
 
-    // Listen for token refresh
+  Future<void> init() async {
+    // Restore persisted locations so _handleNewToken writes real data
+    // to Firestore immediately on cold start.
+    await _restoreFromPrefs();
+
+    // Listen for token refresh before fetching — so we don't miss a refresh
     _tokenRefreshSub = _messaging.onTokenRefresh.listen(_handleNewToken);
+
+    // Await the initial token so _currentToken is set before callers proceed.
+    // On iOS without permission this returns null immediately; onTokenRefresh
+    // fires after permission is granted in onboarding.
+    final token = await _messaging.getToken();
+    if (token != null) {
+      _handleNewToken(token);
+    }
   }
 
   void _handleNewToken(String newToken) {
@@ -44,10 +64,10 @@ class DeviceRegistrationService {
       _migrateToken(oldToken, newToken);
     }
 
-    // Re-register with current locations if we have them
-    if (_lastLocations.isNotEmpty) {
-      _writeDeviceDoc(newToken, _lastLocations, _lastAlertsEnabled);
-    }
+    // Write device doc so it exists even before locations are loaded.
+    // Cloud Function filters by alertsEnabled and the locations loop is a
+    // no-op on empty arrays, so this is safe.
+    _writeDeviceDoc(newToken, _lastLocations, _lastAlertsEnabled);
   }
 
   Future<void> _migrateToken(String oldToken, String newToken) async {
@@ -74,6 +94,11 @@ class DeviceRegistrationService {
   }) async {
     _lastLocations = locations;
     _lastAlertsEnabled = alertsEnabled;
+
+    // Persist so next cold start has real locations immediately
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setString(_prefsLocationsKey, jsonEncode(locations));
+    await prefs.setBool(_prefsAlertsEnabledKey, alertsEnabled);
 
     final token = _currentToken;
     if (token == null) return;

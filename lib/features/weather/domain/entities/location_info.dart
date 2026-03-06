@@ -8,5 +8,6 @@ class LocationInfo with _$LocationInfo {
     required double latitude,
     required double longitude,
     required String cityName,
+    String? countryCode,
   }) = _LocationInfo;
 }

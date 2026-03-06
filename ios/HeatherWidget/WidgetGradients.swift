@@ -1,6 +1,25 @@
 import Foundation
+import SwiftUI
 
 struct WidgetGradients {
+
+    static func gradientStops(from hexColors: [String]) -> [Gradient.Stop] {
+        let colors = hexColors.map { Color(hex: $0) }
+        switch colors.count {
+        case 1:
+            return [.init(color: colors[0], location: 0)]
+        case 2:
+            return [.init(color: colors[0], location: 0), .init(color: colors[1], location: 1)]
+        case 3:
+            return zip(colors, [0.0, 0.8, 1.0]).map { .init(color: $0, location: $1) }
+        case 4:
+            return zip(colors, [0.0, 0.65, 0.85, 1.0]).map { .init(color: $0, location: $1) }
+        case 5:
+            return zip(colors, [0.0, 0.4, 0.65, 0.85, 1.0]).map { .init(color: $0, location: $1) }
+        default:
+            return colors.enumerated().map { .init(color: $1, location: Double($0) / Double(colors.count - 1)) }
+        }
+    }
 
     static func colors(for condition: String, tempF: Double, isDay: Bool) -> [String] {
         let tier = tierIndex(from: tempF)
@@ -58,10 +77,10 @@ struct WidgetGradients {
         "sunny": [
             ["#FFA8B8E8", "#FFDCD2FF", "#FF4D82F5"],
             ["#FFB5E0F5", "#FF80CBE9", "#FF6AADD8"],
-            ["#FF72BCF0", "#FF35BFC5", "#FF18ACAF"],
-            ["#FF72BCF0", "#FFA8CC38", "#FFFDD45A"],
-            ["#FF72BCF0", "#FFA8CC38", "#FFEBB020", "#FFFF9D0A"],
-            ["#FF72BCF0", "#FFA8CC38", "#FFEBB020", "#FFFF9D0A", "#FFE05A9C"],
+            ["#FF72BCF0", "#FF96D9DB", "#FFB8E8A0"],
+            ["#FF72BCF0", "#FFB8E8A0", "#FFFDE047"],
+            ["#FF72BCF0", "#FFB8E8A0", "#FFFDE047", "#FFF97316"],
+            ["#FF72BCF0", "#FFB8E8A0", "#FFFDE047", "#FFFF9D0A", "#FFE05A9C"],
         ],
         "overcast": [
             ["#FF94A3B8", "#FF8B9DD4", "#FF7888BE"],

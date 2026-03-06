@@ -75,7 +75,7 @@ class AlertDetailSheet extends ConsumerWidget {
                       ),
                       child: Text(
                         '${alerts.length}',
-                        style: GoogleFonts.inter(
+                        style: GoogleFonts.quicksand(
                           fontSize: 13,
                           fontWeight: FontWeight.w600,
                           color: AppColors.cream.withValues(alpha: 0.8),
@@ -149,7 +149,7 @@ class _AlertDetailCard extends StatelessWidget {
                     const SizedBox(width: 4),
                     Text(
                       alert.severity.name.toUpperCase(),
-                      style: GoogleFonts.inter(
+                      style: GoogleFonts.quicksand(
                         fontSize: 11,
                         fontWeight: FontWeight.w700,
                         color: alert.severity.color,
@@ -174,9 +174,9 @@ class _AlertDetailCard extends StatelessWidget {
             const SizedBox(height: 4),
             Text(
               alert.headline,
-              style: GoogleFonts.inter(
+              style: GoogleFonts.quicksand(
                 fontSize: 13,
-                color: AppColors.cream.withValues(alpha: 0.7),
+                color: AppColors.cream.withValues(alpha: 0.85),
               ),
             ),
           ],
@@ -187,15 +187,15 @@ class _AlertDetailCard extends StatelessWidget {
               Icon(
                 Icons.schedule,
                 size: 14,
-                color: AppColors.cream.withValues(alpha: 0.5),
+                color: AppColors.cream.withValues(alpha: 0.7),
               ),
               const SizedBox(width: 4),
               Expanded(
                 child: Text(
                   '${timeFormat.format(alert.effective.toLocal())} - ${timeFormat.format(alert.expires.toLocal())}',
-                  style: GoogleFonts.inter(
+                  style: GoogleFonts.quicksand(
                     fontSize: 12,
-                    color: AppColors.cream.withValues(alpha: 0.5),
+                    color: AppColors.cream.withValues(alpha: 0.7),
                   ),
                 ),
               ),
@@ -205,9 +205,9 @@ class _AlertDetailCard extends StatelessWidget {
             const SizedBox(height: 4),
             Text(
               alert.senderName,
-              style: GoogleFonts.inter(
+              style: GoogleFonts.quicksand(
                 fontSize: 12,
-                color: AppColors.cream.withValues(alpha: 0.4),
+                color: AppColors.cream.withValues(alpha: 0.6),
               ),
             ),
           ],
@@ -215,7 +215,7 @@ class _AlertDetailCard extends StatelessWidget {
             const SizedBox(height: 12),
             Text(
               alert.description,
-              style: GoogleFonts.inter(
+              style: GoogleFonts.quicksand(
                 fontSize: 13,
                 height: 1.5,
                 color: AppColors.cream.withValues(alpha: 0.8),
@@ -239,13 +239,13 @@ class _AlertDetailCard extends StatelessWidget {
                     style: GoogleFonts.poppins(
                       fontSize: 12,
                       fontWeight: FontWeight.w600,
-                      color: AppColors.cream.withValues(alpha: 0.6),
+                      color: AppColors.cream.withValues(alpha: 0.7),
                     ),
                   ),
                   const SizedBox(height: 4),
                   Text(
                     alert.instruction,
-                    style: GoogleFonts.inter(
+                    style: GoogleFonts.quicksand(
                       fontSize: 13,
                       height: 1.5,
                       color: AppColors.cream.withValues(alpha: 0.8),
@@ -259,9 +259,9 @@ class _AlertDetailCard extends StatelessWidget {
             const SizedBox(height: 8),
             Text(
               'Areas: ${alert.areaDesc}',
-              style: GoogleFonts.inter(
+              style: GoogleFonts.quicksand(
                 fontSize: 11,
-                color: AppColors.cream.withValues(alpha: 0.4),
+                color: AppColors.cream.withValues(alpha: 0.6),
               ),
             ),
           ],

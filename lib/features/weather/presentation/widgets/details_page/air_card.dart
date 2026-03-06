@@ -1,8 +1,7 @@
-import 'dart:math' as math;
-
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:heather/core/constants/app_colors.dart';
+import 'package:heather/core/utils/wind_direction.dart';
 import 'package:weather_icons/weather_icons.dart';
 import './card_container.dart';
 
@@ -10,24 +9,35 @@ class AirCard extends StatelessWidget {
   final int? aqi;
   final bool isLoading;
   final double windSpeed;
-  final List<double> hourlyWind;
   final double pressure;
+  final double windGusts;
+  final int windDirection;
+  final List<double> hourlyPressure;
 
   const AirCard({
     super.key,
     required this.aqi,
     required this.isLoading,
     required this.windSpeed,
-    required this.hourlyWind,
     this.pressure = 0.0,
+    this.windGusts = 0.0,
+    this.windDirection = 0,
+    this.hourlyPressure = const [],
   });
 
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
-    final maxWind = hourlyWind.isEmpty
-        ? windSpeed
-        : hourlyWind.reduce(math.max);
+
+    // Compute pressure trend from hourly data
+    final hasPressureData =
+        hourlyPressure.length >= 2 && hourlyPressure.any((p) => p > 0);
+    final double? pressureDelta;
+    if (hasPressureData) {
+      pressureDelta = hourlyPressure.last - hourlyPressure.first;
+    } else {
+      pressureDelta = null;
+    }
 
     return CardContainer(
       backgroundIcon: WeatherIcons.smoke,
@@ -39,14 +49,19 @@ class AirCard extends StatelessWidget {
             children: [
               Icon(
                 WeatherIcons.smoke,
-                size: 18,
+                size: 15,
                 color: AppColors.cream.withValues(alpha: 0.9),
               ),
-              const SizedBox(width: 8),
+              const SizedBox(width: 4),
               Text(
                 'Air',
-                style: theme.textTheme.bodySmall?.copyWith(
-                  fontWeight: FontWeight.w600,
+                style: GoogleFonts.figtree(
+                  fontSize: 18,
+                  fontWeight: FontWeight.w400,
+                  color: AppColors.cream,
+                  shadows: [
+                    const Shadow(color: Color(0x28000000), blurRadius: 6),
+                  ],
                 ),
               ),
               const Spacer(),
@@ -57,36 +72,68 @@ class AirCard extends StatelessWidget {
               ),
               const SizedBox(width: 6),
               Text(
-                '${windSpeed.round()} mph now',
+                '${windDirectionLabel(windDirection)} ($windDirection\u00B0)',
                 style: GoogleFonts.poppins(
-                  fontSize: 12,
-                  fontWeight: FontWeight.w700,
+                  fontSize: 13,
+                  fontWeight: FontWeight.w600,
                   color: AppColors.cream.withValues(alpha: 0.95),
                 ),
               ),
               const SizedBox(width: 8),
               Text(
-                'up to ${maxWind.round()} mph',
+                '${windSpeed.round()} mph',
                 style: GoogleFonts.poppins(
-                  fontSize: 12,
-                  fontWeight: FontWeight.w500,
+                  fontSize: 13,
+                  fontWeight: FontWeight.w700,
                   color: AppColors.cream.withValues(alpha: 0.95),
                 ),
               ),
+              if (windGusts > windSpeed) ...[
+                const SizedBox(width: 4),
+                Text(
+                  'up to ${windGusts.round()} mph',
+                  style: GoogleFonts.poppins(
+                    fontSize: 11,
+                    fontWeight: FontWeight.w400,
+                    color: AppColors.cream.withValues(alpha: 0.8),
+                  ),
+                ),
+              ],
             ],
           ),
           if (pressure > 0)
             Row(
-                children: [
-                  const Spacer(),
-                  Icon(
-                    WeatherIcons.barometer,
-                    size: 14,
+              children: [
+                const Spacer(),
+                Icon(
+                  WeatherIcons.barometer,
+                  size: 14,
+                  color: AppColors.cream.withValues(alpha: 0.8),
+                ),
+                const SizedBox(width: 4),
+                Text(
+                  '${pressure.round()} mb',
+                  style: GoogleFonts.poppins(
+                    fontSize: 11,
+                    fontWeight: FontWeight.w600,
                     color: AppColors.cream.withValues(alpha: 0.8),
                   ),
-                  const SizedBox(width: 4),
+                ),
+                if (pressureDelta != null) ...[
+                  Icon(
+                    pressureDelta > 0.5
+                        ? Icons.arrow_upward
+                        : pressureDelta < -0.5
+                        ? Icons.arrow_downward
+                        : Icons.arrow_forward,
+                    size: 12,
+                    color: AppColors.cream.withValues(alpha: 0.8),
+                  ),
+                  const SizedBox(width: 2),
                   Text(
-                    '${pressure.round()} mb',
+                    pressureDelta.abs() < 0.5
+                        ? 'steady'
+                        : '${pressureDelta > 0 ? '+' : ''}${pressureDelta.toStringAsFixed(1)} mb',
                     style: GoogleFonts.poppins(
                       fontSize: 11,
                       fontWeight: FontWeight.w600,
@@ -94,65 +141,60 @@ class AirCard extends StatelessWidget {
                     ),
                   ),
                 ],
-              ),
-          Expanded(
-            child: Column(
-              mainAxisAlignment: MainAxisAlignment.center,
-              crossAxisAlignment: CrossAxisAlignment.center,
-              children: [
-                Row(
-                  children: [
-                    const Spacer(),
-                    if (isLoading)
-                      Text(
-                        '...',
-                        style: theme.textTheme.bodyLarge?.copyWith(
-                          fontWeight: FontWeight.w800,
-                          fontSize: 20,
-                        ),
-                      )
-                    else if (aqi != null)
-                      Row(
-                        mainAxisSize: MainAxisSize.min,
-                        children: [
-                          Text(
-                            aqi.toString(),
-                            style: theme.textTheme.bodyLarge?.copyWith(
-                              fontWeight: FontWeight.w800,
-                              fontSize: 20,
-                            ),
-                          ),
-                          const SizedBox(width: 6),
-                          Text(
-                            _aqiLabel(aqi!),
-                            style: GoogleFonts.poppins(
-                              fontSize: 13,
-                              fontWeight: FontWeight.w600,
-                              color: AppColors.cream.withValues(alpha: 0.9),
-                            ),
-                          ),
-                        ],
-                      )
-                    else
-                      Text(
-                        '--',
-                        style: theme.textTheme.bodyLarge?.copyWith(
-                          fontWeight: FontWeight.w800,
-                          fontSize: 20,
-                        ),
-                      ),
-                  ],
-                ),
-                SizedBox(
-                  height: 12,
-                  child: CustomPaint(
-                    size: Size.infinite,
-                    painter: _AqiScalePainter(aqi: aqi),
-                  ),
-                ),
               ],
             ),
+          const Spacer(),
+          Row(
+            children: [
+              const Spacer(),
+              if (isLoading)
+                Text(
+                  '...',
+                  style: theme.textTheme.bodyLarge?.copyWith(
+                    fontWeight: FontWeight.w800,
+                    fontSize: 20,
+                  ),
+                )
+              else if (aqi != null)
+                Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Text(
+                      aqi.toString(),
+                      style: theme.textTheme.bodyLarge?.copyWith(
+                        fontWeight: FontWeight.w800,
+                        fontSize: 20,
+                      ),
+                    ),
+                    const SizedBox(width: 6),
+                    Text(
+                      _aqiLabel(aqi!),
+                      style: GoogleFonts.poppins(
+                        fontSize: 13,
+                        fontWeight: FontWeight.w600,
+                        color: AppColors.cream.withValues(alpha: 0.9),
+                      ),
+                    ),
+                  ],
+                )
+              else
+                Text(
+                  '--',
+                  style: theme.textTheme.bodyLarge?.copyWith(
+                    fontWeight: FontWeight.w800,
+                    fontSize: 20,
+                  ),
+                ),
+            ],
           ),
+          SizedBox(
+            height: 12,
+            child: CustomPaint(
+              size: Size.infinite,
+              painter: _AqiScalePainter(aqi: aqi),
+            ),
+          ),
+          const SizedBox(height: 4),
         ],
       ),
     );

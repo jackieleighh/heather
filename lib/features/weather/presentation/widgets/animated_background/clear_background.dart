@@ -1,6 +1,7 @@
 import 'dart:math';
 
 import 'package:flutter/material.dart';
+import 'package:heather/core/constants/background_gradients.dart';
 
 class ClearBackground extends StatefulWidget {
   final bool isDay;
@@ -57,6 +58,7 @@ class _ClearBackgroundState extends State<ClearBackground>
                 begin: Alignment.topCenter,
                 end: Alignment.bottomCenter,
                 colors: widget.gradientColors,
+                stops: BackgroundGradients.sunnyStops(widget.gradientColors.length),
               ),
             ),
           ),

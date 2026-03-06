@@ -10,7 +10,6 @@ import './card_container.dart';
 class SunCard extends StatelessWidget {
   final DateTime sunrise;
   final DateTime sunset;
-  final Duration? sunDuration;
   final bool isSunUp;
   final double uvIndex;
   final List<double> hourlyUv;
@@ -21,7 +20,6 @@ class SunCard extends StatelessWidget {
     super.key,
     required this.sunrise,
     required this.sunset,
-    this.sunDuration,
     this.isSunUp = true,
     required this.uvIndex,
     required this.hourlyUv,
@@ -43,14 +41,19 @@ class SunCard extends StatelessWidget {
             children: [
               Icon(
                 WeatherIcons.day_sunny,
-                size: 18,
+                size: 15,
                 color: AppColors.cream.withValues(alpha: 0.9),
               ),
-              const SizedBox(width: 8),
+              const SizedBox(width: 4),
               Text(
                 'Sun',
-                style: theme.textTheme.bodySmall?.copyWith(
-                  fontWeight: FontWeight.w600,
+                style: GoogleFonts.figtree(
+                  fontSize: 18,
+                  fontWeight: FontWeight.w400,
+                  color: AppColors.cream,
+                  shadows: [
+                    const Shadow(color: Color(0x28000000), blurRadius: 6),
+                  ],
                 ),
               ),
               const Spacer(),
@@ -66,7 +69,7 @@ class SunCard extends StatelessWidget {
                     timeFmt.format(isSunUp ? sunset : sunrise),
                     style: theme.textTheme.bodyMedium?.copyWith(
                       fontWeight: FontWeight.w800,
-                      fontSize: 15,
+                      fontSize: 14,
                     ),
                   ),
                   const SizedBox(width: 14),
@@ -80,7 +83,7 @@ class SunCard extends StatelessWidget {
                     timeFmt.format(isSunUp ? sunrise : sunset),
                     style: theme.textTheme.bodyMedium?.copyWith(
                       fontWeight: FontWeight.w800,
-                      fontSize: 15,
+                      fontSize: 14,
                     ),
                   ),
                 ],
@@ -92,12 +95,9 @@ class SunCard extends StatelessWidget {
             children: [
               const Spacer(),
               Text(
-                _formatDuration(
-                  sunDuration ?? sunset.difference(sunrise),
-                  isSunUp,
-                ),
+                _formatRemaining(now, isSunUp, sunrise, sunset),
                 style: GoogleFonts.poppins(
-                  fontSize: 12,
+                  fontSize: 11,
                   fontWeight: FontWeight.w500,
                   color: AppColors.cream.withValues(alpha: 0.8),
                 ),
@@ -106,7 +106,7 @@ class SunCard extends StatelessWidget {
               Text(
                 'UV ${uvIndex.round()}',
                 style: GoogleFonts.poppins(
-                  fontSize: 12,
+                  fontSize: 11,
                   fontWeight: FontWeight.w700,
                   color: AppColors.cream,
                 ),
@@ -115,7 +115,7 @@ class SunCard extends StatelessWidget {
               Text(
                 _uvLabel(uvIndex),
                 style: GoogleFonts.poppins(
-                  fontSize: 12,
+                  fontSize: 11,
                   fontWeight: FontWeight.w600,
                   color: AppColors.cream.withValues(alpha: 0.9),
                 ),
@@ -140,11 +140,22 @@ class SunCard extends StatelessWidget {
     );
   }
 
-  static String _formatDuration(Duration duration, bool isDaylight) {
-    final hours = duration.inHours;
-    final minutes = duration.inMinutes % 60;
-    final label = isDaylight ? 'daylight' : 'darkness';
-    return '${hours}h ${minutes}m $label';
+  static String _formatRemaining(
+    DateTime? now,
+    bool isSunUp,
+    DateTime sunrise,
+    DateTime sunset,
+  ) {
+    if (now == null) return '';
+    final remaining = isSunUp
+        ? sunset.difference(now)
+        : sunrise.difference(now);
+    if (remaining.isNegative) return '';
+    final h = remaining.inHours;
+    final m = remaining.inMinutes % 60;
+    final label = isSunUp ? 'light left' : 'darkness left';
+    if (h > 0) return '${h}h ${m}m $label';
+    return '${m}m $label';
   }
 
   static String _uvLabel(double uv) {
@@ -214,7 +225,7 @@ class _UvLinePainter extends CustomPainter {
     canvas.drawPath(
       linePath,
       Paint()
-        ..color = AppColors.cream.withValues(alpha: 0.9)
+        ..color = AppColors.cream.withValues(alpha: 0.5)
         ..strokeWidth = 2
         ..style = PaintingStyle.stroke
         ..strokeCap = StrokeCap.round,

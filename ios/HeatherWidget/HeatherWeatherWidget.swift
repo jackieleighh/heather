@@ -83,7 +83,7 @@ struct HeatherWeatherProvider: TimelineProvider {
             if cachedIsFresh {
                 // Build timeline entries from cached Dart-pushed data
                 var entries: [WeatherEntry] = []
-                let entryCount = 6
+                let entryCount = 24
                 let intervalMinutes = 15
 
                 // Use the weather location's timezone for parsing time strings.
@@ -173,7 +173,10 @@ struct HeatherWeatherProvider: TimelineProvider {
                         uvIndexMax: cached.uvIndexMax,
                         utcOffsetSeconds: cached.utcOffsetSeconds,
                         sunriseEpoch: cached.sunriseEpoch,
-                        sunsetEpoch: cached.sunsetEpoch
+                        sunsetEpoch: cached.sunsetEpoch,
+                        precipLabel: cached.precipLabel,
+                        alertLabel: cached.alertLabel,
+                        alertSeverity: cached.alertSeverity
                     )
 
                     entries.append(WeatherEntry(date: entryDate, data: data, isPlaceholder: false))
@@ -207,16 +210,16 @@ struct HeatherWeatherProvider: TimelineProvider {
                 }
             }
 
-            // Generate timeline entries every 15 minutes for the next 1.5 hours.
+            // Generate timeline entries every 15 minutes for the next 6 hours.
             // Each entry slides the hourly window forward and picks a fresh quip,
             // so the widget stays visually current even if WidgetKit delays the
             // next getTimeline call.
             var entries: [WeatherEntry] = []
-            let entryCount = 6
+            let entryCount = 24
             let intervalMinutes = 15
 
             // Pick one quip for the entire timeline batch so it stays
-            // stable across entries (changes only every ~1.5 hours).
+            // stable across entries (changes only every ~6 hours).
             let batchQuip = WidgetQuips.pickQuip(condition: condition, tempF: temp) ?? cached.quip
 
             for i in 0..<entryCount {
@@ -300,7 +303,10 @@ struct HeatherWeatherProvider: TimelineProvider {
                     uvIndexMax: fetched.daily.uv_index_max?.first.map { Int($0.rounded()) },
                     utcOffsetSeconds: fetched.utc_offset_seconds,
                     sunriseEpoch: nil,
-                    sunsetEpoch: nil
+                    sunsetEpoch: nil,
+                    precipLabel: cached.precipLabel,
+                    alertLabel: cached.alertLabel,
+                    alertSeverity: cached.alertSeverity
                 )
 
                 entries.append(WeatherEntry(date: entryDate, data: data, isPlaceholder: false))

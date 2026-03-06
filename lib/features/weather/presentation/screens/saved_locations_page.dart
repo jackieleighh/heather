@@ -40,6 +40,7 @@ class SavedLocationsPage extends ConsumerWidget {
           quip: data.quip,
           latitude: location.latitude,
           longitude: location.longitude,
+          isUs: location.country == 'United States',
           alerts: data.alerts,
           onRefresh: () {
             final savedLocations = ref.read(savedLocationsProvider);

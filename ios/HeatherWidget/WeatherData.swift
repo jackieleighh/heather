@@ -1,4 +1,5 @@
 import Foundation
+import SwiftUI
 
 struct HourlyEntry: Codable {
     let time: String
@@ -81,6 +82,26 @@ struct WeatherData: Codable {
     let utcOffsetSeconds: Int?
     let sunriseEpoch: Int?
     let sunsetEpoch: Int?
+    let precipLabel: String?
+    let alertLabel: String?
+    let alertSeverity: String?
+
+    /// Alert color based on severity: extreme=red, severe=orange, default=yellow.
+    var alertColor: Color {
+        switch alertSeverity?.lowercased() {
+        case "extreme": return Color(red: 0xEF/255.0, green: 0x44/255.0, blue: 0x44/255.0)
+        case "severe": return Color(red: 0xF9/255.0, green: 0x73/255.0, blue: 0x16/255.0)
+        default: return .yellow
+        }
+    }
+
+    /// Alert icon based on severity: extreme=circle exclamation, severe/default=triangle.
+    var alertIcon: String {
+        switch alertSeverity?.lowercased() {
+        case "extreme": return "exclamationmark.circle.fill"
+        default: return "exclamationmark.triangle.fill"
+        }
+    }
 
     /// TimeZone derived from the API's utcOffsetSeconds for the weather location.
     var locationTimeZone: TimeZone {
@@ -125,7 +146,10 @@ struct WeatherData: Codable {
         uvIndexMax: nil,
         utcOffsetSeconds: nil,
         sunriseEpoch: nil,
-        sunsetEpoch: nil
+        sunsetEpoch: nil,
+        precipLabel: nil,
+        alertLabel: nil,
+        alertSeverity: nil
     )
 
     var sunriseLabel: String? {

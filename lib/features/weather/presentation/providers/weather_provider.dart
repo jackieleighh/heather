@@ -87,6 +87,30 @@ class WeatherNotifier extends StateNotifier<WeatherState> {
     required bool explicit,
   }) : _explicit = explicit,
        super(const WeatherState.loading()) {
+    _init();
+  }
+
+  Future<void> _init() async {
+    if (WidgetService.coldLaunchedFromWidget) {
+      WidgetService.coldLaunchedFromWidget = false;
+      final cached = await weatherRepo.getCachedWeather();
+      if (cached != null) {
+        final (location, forecast) = cached;
+        final quip = quipRepo.getLocalQuip(
+          weather: forecast.current,
+          explicit: _explicit,
+        );
+        _lastQuipKey = _quipKeyFor(forecast);
+        if (!mounted) return;
+        state = WeatherState.loaded(
+          forecast: forecast,
+          location: location,
+          quip: quip,
+        );
+        refresh();
+        return;
+      }
+    }
     loadWeather();
   }
 
@@ -137,6 +161,7 @@ class WeatherNotifier extends StateNotifier<WeatherState> {
       location: current.location,
       quip: current.quip,
       explicit: _explicit,
+      alerts: current.alerts,
     );
   }
 
@@ -329,6 +354,41 @@ class SavedLocationsForecastNotifier
     state = SavedLocationsForecastState.loaded(forecasts: updated);
   }
 
+  Map<String, LocationForecastData> _buildForecasts(
+    List<SavedLocation> locations,
+    Map<String, Forecast> forecastResults,
+    List<List<WeatherAlert>> alertResults,
+  ) {
+    final forecasts = <String, LocationForecastData>{};
+    for (var i = 0; i < locations.length; i++) {
+      final loc = locations[i];
+      final forecast = forecastResults[loc.id];
+      if (forecast == null) continue;
+      final alerts = alertResults[i];
+
+      final newKey = _quipKeyFor(forecast);
+      final String quip;
+      if (newKey == _lastQuipKeys[loc.id] &&
+          state is _SavedLoaded &&
+          (state as _SavedLoaded).forecasts.containsKey(loc.id)) {
+        quip = (state as _SavedLoaded).forecasts[loc.id]!.quip;
+      } else {
+        quip = quipRepo.getLocalQuip(
+          weather: forecast.current,
+          explicit: _explicit,
+        );
+        _lastQuipKeys[loc.id] = newKey;
+      }
+
+      forecasts[loc.id] = (
+        forecast: forecast,
+        quip: quip,
+        alerts: alerts,
+      );
+    }
+    return forecasts;
+  }
+
   Future<void> load(List<SavedLocation> locations) async {
     if (locations.isEmpty) {
       state = const SavedLocationsForecastState.loaded(forecasts: {});
@@ -350,45 +410,19 @@ class SavedLocationsForecastNotifier
         locations: batchLocations,
       );
 
-      // Fetch alerts in parallel for each location
-      final alertFutures = locations.map(
-        (loc) => fetchAlerts(
-          latitude: loc.latitude,
-          longitude: loc.longitude,
+      final alertResults = await Future.wait(
+        locations.map(
+          (loc) => fetchAlerts(
+            latitude: loc.latitude,
+            longitude: loc.longitude,
+          ),
         ),
       );
-      final alertResults = await Future.wait(alertFutures);
-
-      final forecasts = <String, LocationForecastData>{};
-      for (var i = 0; i < locations.length; i++) {
-        final loc = locations[i];
-        final forecast = forecastResults[loc.id];
-        if (forecast == null) continue;
-        final alerts = alertResults[i];
-
-        final newKey = _quipKeyFor(forecast);
-        final String quip;
-        if (newKey == _lastQuipKeys[loc.id] &&
-            state is _SavedLoaded &&
-            (state as _SavedLoaded).forecasts.containsKey(loc.id)) {
-          quip = (state as _SavedLoaded).forecasts[loc.id]!.quip;
-        } else {
-          quip = quipRepo.getLocalQuip(
-            weather: forecast.current,
-            explicit: _explicit,
-          );
-          _lastQuipKeys[loc.id] = newKey;
-        }
-
-        forecasts[loc.id] = (
-          forecast: forecast,
-          quip: quip,
-          alerts: alerts,
-        );
-      }
 
       if (!mounted) return;
-      state = SavedLocationsForecastState.loaded(forecasts: forecasts);
+      state = SavedLocationsForecastState.loaded(
+        forecasts: _buildForecasts(locations, forecastResults, alertResults),
+      );
     } catch (e) {
       if (!mounted) return;
       state = SavedLocationsForecastState.error(e.toString());
@@ -419,44 +453,19 @@ class SavedLocationsForecastNotifier
         forceRefresh: forceRefresh,
       );
 
-      final alertFutures = locations.map(
-        (loc) => fetchAlerts(
-          latitude: loc.latitude,
-          longitude: loc.longitude,
+      final alertResults = await Future.wait(
+        locations.map(
+          (loc) => fetchAlerts(
+            latitude: loc.latitude,
+            longitude: loc.longitude,
+          ),
         ),
       );
-      final alertResults = await Future.wait(alertFutures);
-
-      final forecasts = <String, LocationForecastData>{};
-      for (var i = 0; i < locations.length; i++) {
-        final loc = locations[i];
-        final forecast = forecastResults[loc.id];
-        if (forecast == null) continue;
-        final alerts = alertResults[i];
-
-        final newKey = _quipKeyFor(forecast);
-        final String quip;
-        if (newKey == _lastQuipKeys[loc.id] &&
-            state is _SavedLoaded &&
-            (state as _SavedLoaded).forecasts.containsKey(loc.id)) {
-          quip = (state as _SavedLoaded).forecasts[loc.id]!.quip;
-        } else {
-          quip = quipRepo.getLocalQuip(
-            weather: forecast.current,
-            explicit: _explicit,
-          );
-          _lastQuipKeys[loc.id] = newKey;
-        }
-
-        forecasts[loc.id] = (
-          forecast: forecast,
-          quip: quip,
-          alerts: alerts,
-        );
-      }
 
       if (!mounted) return false;
-      state = SavedLocationsForecastState.loaded(forecasts: forecasts);
+      state = SavedLocationsForecastState.loaded(
+        forecasts: _buildForecasts(locations, forecastResults, alertResults),
+      );
       return true;
     } catch (e) {
       if (!mounted) return false;

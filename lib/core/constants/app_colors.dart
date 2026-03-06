@@ -66,11 +66,11 @@ class AppColors {
   static const brightFrostBlue = Color(0xFFB5E0F5);
   static const brightIcyBlue = Color(0xFF80CBE9);
   static const brightWarmSkyBlue = Color(0xFF6AADD8);
-  static const brightCyan = Color(0xFF5ED4DA);
-  static const brightAqua = Color(0xFF35BFC5);
-  static const brightTeal = Color(0xFF18ACAF);
-  static const brightSunnyGreen = Color(0xFF7CC565);
-  static const brightLime = Color(0xFFA8CC38);
+  static const brightAzure = Color(0xFF3CB8E8);
+  static const brightDeepAzure = Color(0xFF2EA0D8);
+  static const brightSunGold = Color(0xFFE8C040);
+  static const brightHotMagenta = Color(0xFFD03888);
+  static const brightDesertGold = Color(0xFFC09840);
   static const brightGoldenAmber = Color(0xFFEBB020);
   static const brightOrange = Color(0xFFff9d0a);
   static const brightHotAmber = Color(0xFFFDD45A);
@@ -87,6 +87,7 @@ class AppColors {
   static const hotAmber = Color(0xFFFBBF24);
   static const heatPink = Color(0xFFE05A9C);
   static const warmCoral = Color(0xFFEF4444);
+  static const lightChartreuse = Color(0xFFB8E8A0);
   static const goldenYellow = Color(0xFFFDE047);
   static const orangeRed = Color(0xFFB91C1C);
   static const dullOrange = Color(0xFFC2410C);

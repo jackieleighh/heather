@@ -274,6 +274,15 @@ class _LocationTile extends ConsumerWidget {
           : null,
       onTap: () async {
         final saved = ref.read(savedLocationsProvider);
+
+        // If location already exists, navigate to it instead of adding
+        final existingIndex =
+            saved.indexWhere((l) => l.id == location.id);
+        if (existingIndex >= 0) {
+          if (context.mounted) Navigator.of(context).maybePop(location.id);
+          return;
+        }
+
         if (saved.length >= maxSavedLocations) {
           if (context.mounted) {
             ScaffoldMessenger.of(context).showSnackBar(
@@ -288,7 +297,7 @@ class _LocationTile extends ConsumerWidget {
           return;
         }
         await ref.read(savedLocationsProvider.notifier).addLocation(location);
-        if (context.mounted) Navigator.of(context).maybePop(true);
+        if (context.mounted) Navigator.of(context).maybePop(location.id);
       },
     );
   }

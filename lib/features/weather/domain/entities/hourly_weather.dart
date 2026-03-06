@@ -16,5 +16,8 @@ class HourlyWeather with _$HourlyWeather {
     @Default(0.0) double uvIndex,
     @Default(0.0) double feelsLike,
     @Default(0.0) double windGusts,
+    @Default(0) int windDirection,
+    @Default(0) int humidity,
+    @Default(0.0) double pressure,
   }) = _HourlyWeather;
 }

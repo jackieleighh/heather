@@ -1,16 +1,18 @@
 import 'package:dio/dio.dart';
 
 import '../../../../core/constants/api_endpoints.dart';
+import '../../../../core/utils/geo_utils.dart';
 import '../../domain/entities/weather_alert.dart';
 
-/// Rough bounding box for US territories (CONUS, Alaska, Hawaii, PR/USVI, Guam).
-bool _isInUSBounds(double lat, double lon) {
-  if (lat >= 24.0 && lat <= 50.0 && lon >= -125.0 && lon <= -66.0) return true;
-  if (lat >= 51.0 && lat <= 72.0 && lon >= -180.0 && lon <= -129.0) return true;
-  if (lat >= 18.5 && lat <= 22.5 && lon >= -161.0 && lon <= -154.0) return true;
-  if (lat >= 17.5 && lat <= 18.6 && lon >= -67.5 && lon <= -64.5) return true;
-  if (lat >= 13.0 && lat <= 21.0 && lon >= 144.0 && lon <= 146.5) return true;
-  return false;
+/// Cleans NWS alert text by replacing hard-wrapped single newlines with spaces
+/// while preserving paragraph breaks (double newlines).
+String _cleanAlertText(String text) {
+  return text
+      .replaceAll('\r\n', '\n')
+      .replaceAll(RegExp(r'\n\n+'), '\u0000')
+      .replaceAll('\n', ' ')
+      .replaceAll('\u0000', '\n\n')
+      .trim();
 }
 
 /// Fetches active NWS alerts for the given coordinates.
@@ -20,7 +22,7 @@ Future<List<WeatherAlert>> fetchAlerts({
   required double longitude,
 }) async {
   // NWS alerts only cover US territories
-  if (!_isInUSBounds(latitude, longitude)) return [];
+  if (!isInUSBounds(latitude, longitude)) return [];
 
   try {
     final dio = Dio(BaseOptions(
@@ -58,8 +60,8 @@ Future<List<WeatherAlert>> fetchAlerts({
             severity:
                 AlertSeverity.fromString(props['severity'] as String?),
             headline: props['headline'] as String? ?? '',
-            description: props['description'] as String? ?? '',
-            instruction: props['instruction'] as String? ?? '',
+            description: _cleanAlertText(props['description'] as String? ?? ''),
+            instruction: _cleanAlertText(props['instruction'] as String? ?? ''),
             effective:
                 DateTime.tryParse(props['effective'] as String? ?? '') ??
                     now,

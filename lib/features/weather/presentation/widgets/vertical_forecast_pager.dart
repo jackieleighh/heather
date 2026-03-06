@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:heather/features/weather/presentation/screens/gradients_test.dart';
 
 import '../../../../core/constants/app_colors.dart';
 import '../../domain/entities/forecast.dart';
@@ -15,6 +14,7 @@ class VerticalForecastPager extends StatefulWidget {
   final String quip;
   final double latitude;
   final double longitude;
+  final bool isUs;
   final List<WeatherAlert> alerts;
   final Future<bool> Function() onRefresh;
   final VoidCallback onSettings;
@@ -26,6 +26,7 @@ class VerticalForecastPager extends StatefulWidget {
     required this.quip,
     required this.latitude,
     required this.longitude,
+    this.isUs = true,
     this.alerts = const [],
     required this.onRefresh,
     required this.onSettings,
@@ -53,6 +54,32 @@ class VerticalForecastPagerState extends State<VerticalForecastPager> {
 
   @override
   Widget build(BuildContext context) {
+    final pages = <Widget>[
+      CurrentWeatherPage(
+        forecast: widget.forecast,
+        cityName: widget.cityName,
+        quip: widget.quip,
+        latitude: widget.latitude,
+        longitude: widget.longitude,
+        alerts: widget.alerts,
+        onRefresh: widget.onRefresh,
+        onSettings: widget.onSettings,
+        parentPageController: _pageController,
+      ),
+      DetailsPage(
+        forecast: widget.forecast,
+        latitude: widget.latitude,
+        longitude: widget.longitude,
+      ),
+      WeeklyForecastPage(
+        forecast: widget.forecast,
+        latitude: widget.latitude,
+        longitude: widget.longitude,
+      ),
+      if (widget.isUs)
+        RadarPage(latitude: widget.latitude, longitude: widget.longitude),
+    ];
+
     return Stack(
       fit: StackFit.expand,
       children: [
@@ -62,25 +89,7 @@ class VerticalForecastPagerState extends State<VerticalForecastPager> {
           scrollDirection: Axis.vertical,
           physics: const ClampingScrollPhysics(),
           onPageChanged: (page) => setState(() => _currentPage = page),
-          children: [
-            // const GradientPreviewGallery(),
-            CurrentWeatherPage(
-              forecast: widget.forecast,
-              cityName: widget.cityName,
-              quip: widget.quip,
-              alerts: widget.alerts,
-              onRefresh: widget.onRefresh,
-              onSettings: widget.onSettings,
-              parentPageController: _pageController,
-            ),
-            DetailsPage(
-              forecast: widget.forecast,
-              latitude: widget.latitude,
-              longitude: widget.longitude,
-            ),
-            WeeklyForecastPage(forecast: widget.forecast),
-            RadarPage(latitude: widget.latitude, longitude: widget.longitude),
-          ],
+          children: pages,
         ),
 
         // Page indicator dots
@@ -93,7 +102,7 @@ class VerticalForecastPagerState extends State<VerticalForecastPager> {
               padding: const EdgeInsets.only(left: 10),
               child: Column(
                 mainAxisSize: MainAxisSize.min,
-                children: List.generate(4, (index) {
+                children: List.generate(pages.length, (index) {
                   final isActive = index == _currentPage;
                   return Padding(
                     padding: const EdgeInsets.symmetric(vertical: 3),

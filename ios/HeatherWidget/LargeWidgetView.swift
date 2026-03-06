@@ -28,24 +28,24 @@ struct LargeWidgetView: View {
                     HStack(alignment: .top) {
                         VStack(alignment: .leading, spacing: 2) {
                             Text(data.cityName)
-                                .font(.custom("Poppins-Medium", size: 15))
+                                .font(.custom("Quicksand-Bold", size: 15))
                                 .lineLimit(1)
 
                             Text("\(data.temperature)°")
-                                .font(.custom("Poppins-SemiBold", size: 58))
+                                .font(.custom("Poppins-Bold", size: 58))
                                 .minimumScaleFactor(0.7)
 
                             Text("\(data.high)°/\(data.low)°")
-                                .font(.custom("Poppins-Medium", size: 13))
+                                .font(.custom("Quicksand-SemiBold", size: 13))
                                 .opacity(0.9)
 
                             Text("Feels like \(data.feelsLike)°")
-                                .font(.custom("Poppins-Regular", size: 12))
-                                .opacity(0.7)
+                                .font(.custom("Quicksand-Medium", size: 12))
+                                .opacity(0.9)
 
                             Text(data.description.capitalized)
-                                .font(.custom("Poppins-Regular", size: 12))
-                                .opacity(0.7)
+                                .font(.custom("Quicksand-Medium", size: 12))
+                                .opacity(0.9)
                         }
 
                         Spacer()
@@ -81,6 +81,20 @@ struct LargeWidgetView: View {
                                     value: "\(moonIllumination())%"
                                 )
                             }
+                            if let alertLabel = data.alertLabel {
+                                DetailLabel(
+                                    icon: data.alertIcon,
+                                    value: alertLabel,
+                                    iconTint: data.alertColor
+                                )
+                            } else if let precipLabel = data.precipLabel {
+                                DetailLabel(
+                                    icon: precipIcon(precipLabel),
+                                    value: precipLabel
+                                )
+                            } else {
+                                Spacer().frame(height: 16)
+                            }
                         }
                     }
 
@@ -88,7 +102,7 @@ struct LargeWidgetView: View {
 
                     // Quip
                     Text(data.quip)
-                        .font(.custom("Poppins-Medium", size: 14))
+                        .font(.custom("Poppins-Bold", size: 14))
                         .lineLimit(3)
                         .opacity(0.95)
 
@@ -101,8 +115,8 @@ struct LargeWidgetView: View {
                             ForEach(Array(items.enumerated()), id: \.offset) { index, entry in
                                 VStack(spacing: 3) {
                                     Text(entry.hourLabel)
-                                        .font(.custom("Poppins-Regular", size: 11))
-                                        .opacity(0.7)
+                                        .font(.custom("Quicksand-Medium", size: 11))
+                                        .opacity(0.9)
                                     WidgetConditionIcon(
                                         conditionName: entry.conditionName,
                                         isDay: entry.isDay ?? data.isDay,
@@ -121,15 +135,14 @@ struct LargeWidgetView: View {
                 }
                 .padding(16)
                 .foregroundStyle(.white)
-                .shadow(color: .black.opacity(0.35), radius: 0.5, x: 0, y: 0.5)
-                .shadow(color: .black.opacity(0.2), radius: 2, x: 0, y: 1)
-                .shadow(color: .black.opacity(0.1), radius: 4, x: 0, y: 2)
+                .shadow(color: .black.opacity(0.3), radius: 0.5, x: 0, y: 0.5)
+                .shadow(color: .black.opacity(0.15), radius: 2, x: 0, y: 1)
             }
         }
         .containerBackground(for: .widget) {
             ZStack {
                 LinearGradient(
-                    colors: data.gradientColors.map { Color(hex: $0) },
+                    stops: WidgetGradients.gradientStops(from: data.gradientColors),
                     startPoint: (data.conditionName == "sunny" || data.conditionName == "mostlySunny") ? .topTrailing : .top,
                     endPoint: (data.conditionName == "sunny" || data.conditionName == "mostlySunny") ? .bottomLeading : .bottom
                 )
@@ -141,15 +154,19 @@ struct LargeWidgetView: View {
 private struct DetailLabel: View {
     let icon: String
     let value: String
+    var iconTint: Color? = nil
 
     var body: some View {
         HStack(spacing: 4) {
             Image(systemName: icon)
                 .font(.system(size: 11))
-                .opacity(0.7)
+                .opacity(iconTint != nil ? 1.0 : 0.9)
+                .foregroundStyle(iconTint ?? .white)
             Text(value)
                 .font(.custom("Poppins-SemiBold", size: 12))
-                .opacity(0.8)
+                .lineLimit(1)
+                .opacity(iconTint != nil ? 1.0 : 0.9)
         }
+        .foregroundStyle(iconTint ?? .white)
     }
 }

@@ -17,5 +17,7 @@ class DailyWeather with _$DailyWeather {
     required DateTime sunrise,
     required DateTime sunset,
     required double uvIndexMax,
+    @Default(0) int humidityAvg,
+    @Default(false) bool hasSunnyPeriods,
   }) = _DailyWeather;
 }

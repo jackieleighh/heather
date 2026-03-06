@@ -5,6 +5,7 @@ import 'package:flutter_native_splash/flutter_native_splash.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:go_router/go_router.dart';
+import 'package:heather/features/weather/domain/entities/weather_condition.dart';
 import 'package:heather/features/weather/presentation/screens/error_screen.dart';
 import 'package:heather/features/weather/presentation/screens/loading_screen.dart';
 import 'package:heather/features/weather/domain/entities/saved_location.dart';
@@ -73,10 +74,15 @@ class _WeatherScreenState extends ConsumerState<WeatherScreen>
         FlutterNativeSplash.remove();
       }
     });
-    // Minimum display: show loading screen for at least 3s for visual polish
-    Timer(const Duration(seconds: 3), () {
-      if (mounted) setState(() => _minimumDisplayElapsed = true);
-    });
+    // Skip the 3-second loading screen when cold-launched from widget (cache
+    // will render instantly). For normal launches, keep the visual polish timer.
+    if (WidgetService.coldLaunchedFromWidget) {
+      _minimumDisplayElapsed = true;
+    } else {
+      Timer(const Duration(seconds: 3), () {
+        if (mounted) setState(() => _minimumDisplayElapsed = true);
+      });
+    }
     // Grace period: show loading screen for at least 10s before showing errors
     _gracePeriodTimer = Timer(const Duration(seconds: 10), () {
       if (mounted) setState(() => _gracePeriodElapsed = true);
@@ -130,7 +136,7 @@ class _WeatherScreenState extends ConsumerState<WeatherScreen>
   }
 
   Future<void> _openLocationSearch() async {
-    final added = await Navigator.of(context).push<bool>(
+    final locationId = await Navigator.of(context).push<String>(
       PageRouteBuilder(
         pageBuilder: (context, animation, secondaryAnimation) =>
             const LocationSearchScreen(),
@@ -147,12 +153,14 @@ class _WeatherScreenState extends ConsumerState<WeatherScreen>
       ),
     );
 
-    if (added == true && mounted) {
+    if (locationId != null && mounted) {
       WidgetsBinding.instance.addPostFrameCallback((_) {
         if (!mounted) return;
         final savedLocations = ref.read(savedLocationsProvider);
-        final targetPage = savedLocations
-            .length; // GPS is page 0, last saved location is at this index
+        final index = savedLocations.indexWhere((l) => l.id == locationId);
+        if (index < 0) return;
+        // GPS is page 0, saved locations start at page 1
+        final targetPage = index + 1;
         if (_horizontalController.hasClients) {
           _horizontalController.animateToPage(
             targetPage,
@@ -341,24 +349,27 @@ class _WeatherScreenState extends ConsumerState<WeatherScreen>
             gpsLatitude: location.latitude,
             gpsLongitude: location.longitude,
           );
-          // Re-register and re-fetch whenever saved locations change (add/remove)
-          ref.listen<List<SavedLocation>>(savedLocationsProvider, (prev, next) {
+        }
+
+        // Re-register and re-fetch whenever saved locations change (add/remove).
+        // Must be outside the guard — ref.listen in build() is cleaned up on
+        // every rebuild, so it needs to be re-registered each time.
+        ref.listen<List<SavedLocation>>(savedLocationsProvider, (prev, next) {
+          _registerAllLocations(
+            gpsLatitude: location.latitude,
+            gpsLongitude: location.longitude,
+          );
+          ref.read(savedLocationsForecastProvider.notifier).load(next);
+        });
+        // Re-register or unregister when alert setting is toggled
+        ref.listen<SettingsState>(settingsProvider, (prev, next) {
+          if (prev?.severeAlertsEnabled != next.severeAlertsEnabled) {
             _registerAllLocations(
               gpsLatitude: location.latitude,
               gpsLongitude: location.longitude,
             );
-            ref.read(savedLocationsForecastProvider.notifier).load(next);
-          });
-          // Re-register or unregister when alert setting is toggled
-          ref.listen<SettingsState>(settingsProvider, (prev, next) {
-            if (prev?.severeAlertsEnabled != next.severeAlertsEnabled) {
-              _registerAllLocations(
-                gpsLatitude: location.latitude,
-                gpsLongitude: location.longitude,
-              );
-            }
-          });
-        }
+          }
+        });
 
         final pages = <Widget>[
           VerticalForecastPager(
@@ -368,6 +379,7 @@ class _WeatherScreenState extends ConsumerState<WeatherScreen>
             quip: quip,
             latitude: location.latitude,
             longitude: location.longitude,
+            isUs: location.countryCode == 'US',
             alerts: alerts,
             onRefresh: () => _refreshAll(force: true),
             onSettings: _showSettings,

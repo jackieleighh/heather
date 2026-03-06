@@ -26,7 +26,7 @@ struct SmallWidgetView: View {
                 VStack(alignment: .leading, spacing: 0) {
                     HStack(alignment: .top) {
                         Text(data.cityName)
-                            .font(.custom("Poppins-Medium", size: 12))
+                            .font(.custom("Quicksand-Bold", size: 12))
                             .lineLimit(1)
                         Spacer()
                         WidgetConditionIcon(
@@ -39,36 +39,47 @@ struct SmallWidgetView: View {
                     Spacer(minLength: 0)
 
                     Text("\(data.temperature)°")
-                        .font(.custom("Poppins-SemiBold", size: 48))
+                        .font(.custom("Poppins-Bold", size: 48))
                         .minimumScaleFactor(0.7)
 
                     Spacer(minLength: 0)
 
                     Text("\(data.high)°/\(data.low)°")
-                        .font(.custom("Poppins-Medium", size: 12))
-                        .opacity(0.8)
+                        .font(.custom("Quicksand-SemiBold", size: 13))
+                        .opacity(0.9)
 
                     Text("Feels like \(data.feelsLike)°")
-                        .font(.custom("Poppins-Regular", size: 10))
-                        .opacity(0.7)
+                        .font(.custom("Quicksand-Medium", size: 11))
+                        .opacity(0.9)
                         .padding(.top, 1)
 
-                    Text(data.description.capitalized)
-                        .font(.custom("Poppins-Regular", size: 10))
-                        .opacity(0.7)
+                    if let alertLabel = data.alertLabel {
+                        HStack(spacing: 2) {
+                            Image(systemName: data.alertIcon)
+                                .font(.system(size: 9))
+                            Text(alertLabel)
+                                .font(.custom("Quicksand-SemiBold", size: 10))
+                                .lineLimit(1)
+                        }
+                        .foregroundStyle(data.alertColor)
                         .padding(.top, 1)
+                    } else {
+                        Text(data.description.capitalized)
+                            .font(.custom("Quicksand-Medium", size: 11))
+                            .opacity(0.9)
+                            .padding(.top, 1)
+                    }
                 }
                 .padding(12)
                 .foregroundStyle(.white)
-                .shadow(color: .black.opacity(0.35), radius: 0.5, x: 0, y: 0.5)
-                .shadow(color: .black.opacity(0.2), radius: 2, x: 0, y: 1)
-                .shadow(color: .black.opacity(0.1), radius: 4, x: 0, y: 2)
+                .shadow(color: .black.opacity(0.3), radius: 0.5, x: 0, y: 0.5)
+                .shadow(color: .black.opacity(0.15), radius: 2, x: 0, y: 1)
             }
         }
         .containerBackground(for: .widget) {
             ZStack {
                 LinearGradient(
-                    colors: data.gradientColors.map { Color(hex: $0) },
+                    stops: WidgetGradients.gradientStops(from: data.gradientColors),
                     startPoint: .topTrailing,
                     endPoint: .bottomLeading
                 )

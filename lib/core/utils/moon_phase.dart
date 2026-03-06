@@ -1,5 +1,3 @@
-import 'dart:math' as math;
-
 import 'package:weather_icons/weather_icons.dart';
 import 'package:flutter/widgets.dart';
 
@@ -14,48 +12,6 @@ enum MoonPhase {
   waningCrescent,
 }
 
-/// Length of one synodic month (new moon to new moon) in days.
-const _synodicMonth = 29.53058770576;
-
-/// A known new moon: Jan 18, 2026 19:51 UTC.
-final _referenceNewMoon = DateTime.utc(2026, 1, 18, 19, 51);
-
-/// Returns the number of days into the current lunar cycle (0 – ~29.53).
-double moonAge(DateTime date) {
-  final days = date.toUtc().difference(_referenceNewMoon).inSeconds / 86400;
-  return days % _synodicMonth;
-}
-
-/// Returns the approximate illumination percentage (0–100) for a given [date].
-///
-/// Uses the cosine model: 0% at new moon (fraction 0), 100% at full moon
-/// (fraction 0.5).
-double moonIllumination(DateTime date) {
-  final age = moonAge(date);
-  final fraction = age / _synodicMonth;
-  return (1 - math.cos(2 * math.pi * fraction)) / 2 * 100;
-}
-
-/// Returns the [MoonPhase] for a given [date].
-///
-/// Principal phases (new, quarters, full) get a narrow ±0.04 window
-/// (~2.4 days) centred on their astronomical moment, with intermediate
-/// phases (crescents, gibbous) filling the rest (~5 days each).
-MoonPhase getMoonPhase(DateTime date) {
-  final age = moonAge(date);
-  final fraction = age / _synodicMonth; // 0.0 – 1.0
-
-  if (fraction < 0.04) return MoonPhase.newMoon;
-  if (fraction < 0.21) return MoonPhase.waxingCrescent;
-  if (fraction < 0.29) return MoonPhase.firstQuarter;
-  if (fraction < 0.46) return MoonPhase.waxingGibbous;
-  if (fraction < 0.54) return MoonPhase.fullMoon;
-  if (fraction < 0.71) return MoonPhase.waningGibbous;
-  if (fraction < 0.79) return MoonPhase.thirdQuarter;
-  if (fraction < 0.96) return MoonPhase.waningCrescent;
-  return MoonPhase.newMoon;
-}
-
 /// Returns a display label for the given [phase].
 String moonPhaseLabel(MoonPhase phase) => switch (phase) {
   MoonPhase.newMoon => 'New Moon',
@@ -68,38 +24,62 @@ String moonPhaseLabel(MoonPhase phase) => switch (phase) {
   MoonPhase.waningCrescent => 'Waning Crescent',
 };
 
-/// Returns the appropriate [WeatherIcons] moon icon for a given [date].
-///
-/// Uses the finer-grained `_1`–`_6` variants for crescent/gibbous phases
-/// based on position within that phase window.
-IconData moonPhaseIcon(DateTime date) {
-  final age = moonAge(date);
-  final fraction = age / _synodicMonth;
+/// Maps a USNO API phase name string to a [MoonPhase] enum value.
+MoonPhase? usnoPhaseToEnum(String usnoPhase) => switch (usnoPhase) {
+  'New Moon' => MoonPhase.newMoon,
+  'Waxing Crescent' => MoonPhase.waxingCrescent,
+  'First Quarter' => MoonPhase.firstQuarter,
+  'Waxing Gibbous' => MoonPhase.waxingGibbous,
+  'Full Moon' => MoonPhase.fullMoon,
+  'Waning Gibbous' => MoonPhase.waningGibbous,
+  'Last Quarter' => MoonPhase.thirdQuarter,
+  'Third Quarter' => MoonPhase.thirdQuarter,
+  'Waning Crescent' => MoonPhase.waningCrescent,
+  _ => null,
+};
 
-  if (fraction < 0.04) return WeatherIcons.moon_new;
-  if (fraction < 0.21) {
-    final sub = _subIndex(fraction, 0.04, 0.21);
+/// Returns the [MoonPhase] for a given cycle [fraction] (0.0–1.0).
+MoonPhase phaseFromFraction(double fraction) {
+  final f = fraction % 1.0;
+  if (f < 0.04) return MoonPhase.newMoon;
+  if (f < 0.21) return MoonPhase.waxingCrescent;
+  if (f < 0.29) return MoonPhase.firstQuarter;
+  if (f < 0.46) return MoonPhase.waxingGibbous;
+  if (f < 0.54) return MoonPhase.fullMoon;
+  if (f < 0.71) return MoonPhase.waningGibbous;
+  if (f < 0.79) return MoonPhase.thirdQuarter;
+  if (f < 0.96) return MoonPhase.waningCrescent;
+  return MoonPhase.newMoon;
+}
+
+/// Returns the appropriate [WeatherIcons] moon icon for a given cycle
+/// [fraction] (0.0–1.0, where 0 = new moon, 0.5 = full moon).
+IconData moonPhaseIcon(double fraction) {
+  final f = fraction % 1.0;
+
+  if (f < 0.04) return WeatherIcons.moon_new;
+  if (f < 0.21) {
+    final sub = _subIndex(f, 0.04, 0.21);
     return _waxingCrescentIcons[sub];
   }
-  if (fraction < 0.29) return WeatherIcons.moon_first_quarter;
-  if (fraction < 0.46) {
-    final sub = _subIndex(fraction, 0.29, 0.46);
+  if (f < 0.29) return WeatherIcons.moon_first_quarter;
+  if (f < 0.46) {
+    final sub = _subIndex(f, 0.29, 0.46);
     return _waxingGibbousIcons[sub];
   }
-  if (fraction < 0.54) return WeatherIcons.moon_full;
-  if (fraction < 0.71) {
-    final sub = _subIndex(fraction, 0.54, 0.71);
+  if (f < 0.54) return WeatherIcons.moon_full;
+  if (f < 0.71) {
+    final sub = _subIndex(f, 0.54, 0.71);
     return _waningGibbousIcons[sub];
   }
-  if (fraction < 0.79) return WeatherIcons.moon_third_quarter;
-  if (fraction < 0.96) {
-    final sub = _subIndex(fraction, 0.79, 0.96);
+  if (f < 0.79) return WeatherIcons.moon_third_quarter;
+  if (f < 0.96) {
+    final sub = _subIndex(f, 0.79, 0.96);
     return _waningCrescentIcons[sub];
   }
   return WeatherIcons.moon_new;
 }
 
-/// Maps [fraction] within [start]–[end] to an index 0–5.
 int _subIndex(double fraction, double start, double end) =>
     ((fraction - start) / (end - start) * 6).floor().clamp(0, 5);
 
@@ -139,25 +119,19 @@ const _waningCrescentIcons = [
   WeatherIcons.moon_waning_crescent_6,
 ];
 
-/// Returns the approximate date of the next new moon after [from].
-/// Computes the exact moment from the lunar cycle rather than scanning days.
-DateTime nextNewMoon([DateTime? from]) {
-  final date = from ?? DateTime.now();
-  final age = moonAge(date);
-  var daysUntil = _synodicMonth - age;
-  if (daysUntil < 1.0) daysUntil += _synodicMonth;
-  final moment = date.add(Duration(minutes: (daysUntil * 1440).round()));
-  return DateTime(moment.year, moment.month, moment.day);
-}
-
-/// Returns the approximate date of the next full moon after [from].
-/// Computes the exact moment from the lunar cycle rather than scanning days.
-DateTime nextFullMoon([DateTime? from]) {
-  final date = from ?? DateTime.now();
-  final age = moonAge(date);
-  var daysUntil = _synodicMonth / 2 - age;
-  if (daysUntil <= 0) daysUntil += _synodicMonth;
-  if (daysUntil < 1.0) daysUntil += _synodicMonth;
-  final moment = date.add(Duration(minutes: (daysUntil * 1440).round()));
-  return DateTime(moment.year, moment.month, moment.day);
-}
+/// Returns the traditional name for a full moon based on its month.
+String fullMoonName(DateTime fullMoonDate) => switch (fullMoonDate.month) {
+  1 => 'Wolf Moon',
+  2 => 'Snow Moon',
+  3 => 'Worm Moon',
+  4 => 'Pink Moon',
+  5 => 'Flower Moon',
+  6 => 'Strawberry Moon',
+  7 => 'Buck Moon',
+  8 => 'Sturgeon Moon',
+  9 => 'Harvest Moon',
+  10 => "Hunter's Moon",
+  11 => 'Beaver Moon',
+  12 => 'Cold Moon',
+  _ => 'Full Moon',
+};

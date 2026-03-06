@@ -2,6 +2,7 @@ import 'package:freezed_annotation/freezed_annotation.dart';
 
 import 'daily_weather.dart';
 import 'hourly_weather.dart';
+import 'minutely_weather.dart';
 import 'weather.dart';
 
 part 'forecast.freezed.dart';
@@ -13,8 +14,8 @@ class Forecast with _$Forecast {
   const factory Forecast({
     required Weather current,
     required List<HourlyWeather> hourly,
-    @Default([]) List<HourlyWeather> hourlyToday,
     @Default([]) List<HourlyWeather> hourlyAll,
+    @Default([]) List<MinutelyWeather> minutely15,
     required List<DailyWeather> daily,
     required int utcOffsetSeconds,
   }) = _Forecast;

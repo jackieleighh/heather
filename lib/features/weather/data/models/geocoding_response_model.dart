@@ -17,16 +17,7 @@ class GeocodingResponseModel {
   Map<String, dynamic> toJson() => _$GeocodingResponseModelToJson(this);
 
   List<SavedLocation> toEntities() {
-    return results
-        .map((r) => SavedLocation(
-              id: '${r.latitude}_${r.longitude}',
-              name: r.name,
-              country: r.country ?? '',
-              latitude: r.latitude,
-              longitude: r.longitude,
-              admin1: r.admin1,
-            ))
-        .toList();
+    return results.map((r) => r.toEntity()).toList();
   }
 }
 
@@ -42,6 +33,8 @@ class GeocodingResultModel {
   final String? country;
   @JsonKey(name: 'admin1')
   final String? admin1;
+  @JsonKey(name: 'population')
+  final int? population;
 
   const GeocodingResultModel({
     required this.name,
@@ -49,10 +42,20 @@ class GeocodingResultModel {
     required this.longitude,
     this.country,
     this.admin1,
+    this.population,
   });
 
   factory GeocodingResultModel.fromJson(Map<String, dynamic> json) =>
       _$GeocodingResultModelFromJson(json);
 
   Map<String, dynamic> toJson() => _$GeocodingResultModelToJson(this);
+
+  SavedLocation toEntity() => SavedLocation(
+        id: '${latitude}_$longitude',
+        name: name,
+        country: country ?? '',
+        latitude: latitude,
+        longitude: longitude,
+        admin1: admin1,
+      );
 }

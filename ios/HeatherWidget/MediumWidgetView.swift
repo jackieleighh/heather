@@ -26,64 +26,80 @@ struct MediumWidgetView: View {
                 VStack(alignment: .leading, spacing: 0) {
 
                     Text(data.cityName)
-                        .font(.custom("Poppins-Medium", size: 12))
+                        .font(.custom("Quicksand-Bold", size: 12))
                         .lineLimit(1)
 
                     // Details row: H/L + feels like on left, labels + icon on right
                     HStack(alignment: .bottom, spacing: 6) {
 
                         Text("\(data.temperature)°")
-                            .font(.custom("Poppins-SemiBold", size: 42))
+                            .font(.custom("Poppins-Bold", size: 42))
                             .minimumScaleFactor(0.7)
 
                         VStack(alignment: .leading, spacing: 1) {
                             Text("\(data.high)°/\(data.low)°")
-                                .font(.custom("Poppins-Medium", size: 14))
-                                .opacity(0.8)
+                                .font(.custom("Quicksand-SemiBold", size: 15))
+                                .opacity(0.9)
 
                             Text("Feels like \(data.feelsLike)°")
-                                .font(.custom("Poppins-Regular", size: 10))
-                                .opacity(0.7)
+                                .font(.custom("Quicksand-Medium", size: 11))
+                                .opacity(0.9)
 
                             Text(data.description.capitalized)
-                                .font(.custom("Poppins-Regular", size: 10))
-                                .opacity(0.7)
+                                .font(.custom("Quicksand-Medium", size: 11))
+                                .opacity(0.9)
                         }
 
                         Spacer()
 
-                        HStack(alignment: .bottom, spacing: 4) {
-                            VStack(alignment: .trailing, spacing: 3) {
-                                if data.isDay {
-                                    if let sunsetLabel = data.sunsetLabel {
+                        VStack(alignment: .trailing, spacing: 3) {
+                            HStack(alignment: .bottom, spacing: 4) {
+                                VStack(alignment: .trailing, spacing: 3) {
+                                    if data.isDay {
+                                        if let sunsetLabel = data.sunsetLabel {
+                                            MediumDetailLabel(
+                                                icon: "sunset.fill",
+                                                value: sunsetLabel
+                                            )
+                                        }
                                         MediumDetailLabel(
-                                            icon: "sunset.fill",
-                                            value: sunsetLabel
+                                            icon: "sun.max.fill",
+                                            value: "UV \(data.uvIndexMax ?? data.uvIndex)"
+                                        )
+                                    } else {
+                                        if let sunriseLabel = data.sunriseLabel {
+                                            MediumDetailLabel(
+                                                icon: "sunrise.fill",
+                                                value: sunriseLabel
+                                            )
+                                        }
+                                        let phase = getMoonPhase()
+                                        MediumDetailLabel(
+                                            icon: phase.sfSymbol,
+                                            value: "\(moonIllumination())%"
                                         )
                                     }
-                                    MediumDetailLabel(
-                                        icon: "sun.max.fill",
-                                        value: "UV \(data.uvIndexMax ?? data.uvIndex)"
-                                    )
-                                } else {
-                                    if let sunriseLabel = data.sunriseLabel {
-                                        MediumDetailLabel(
-                                            icon: "sunrise.fill",
-                                            value: sunriseLabel
-                                        )
-                                    }
-                                    let phase = getMoonPhase()
-                                    MediumDetailLabel(
-                                        icon: phase.sfSymbol,
-                                        value: "\(moonIllumination())%"
-                                    )
                                 }
+                                WidgetConditionIcon(
+                                    conditionName: data.conditionName,
+                                    isDay: data.isDay,
+                                    size: 32
+                                )
                             }
-                            WidgetConditionIcon(
-                                conditionName: data.conditionName,
-                                isDay: data.isDay,
-                                size: 32
-                            )
+                            if let alertLabel = data.alertLabel {
+                                MediumDetailLabel(
+                                    icon: data.alertIcon,
+                                    value: alertLabel,
+                                    iconTint: data.alertColor
+                                )
+                            } else if let precipLabel = data.precipLabel {
+                                MediumDetailLabel(
+                                    icon: precipIcon(precipLabel),
+                                    value: precipLabel
+                                )
+                            } else {
+                                Spacer().frame(height: 14)
+                            }
                         }
                     }
 
@@ -106,15 +122,15 @@ struct MediumWidgetView: View {
                             ForEach(Array(items.enumerated()), id: \.offset) { index, entry in
                                 VStack(spacing: 1) {
                                     Text(entry.hourLabel)
-                                        .font(.custom("Poppins-Regular", size: 9))
-                                        .opacity(0.7)
+                                        .font(.custom("Quicksand-Medium", size: 10))
+                                        .opacity(0.9)
                                     WidgetConditionIcon(
                                         conditionName: entry.conditionName,
                                         isDay: entry.isDay ?? data.isDay,
                                         size: 24
                                     ).frame(height: 26)
                                     Text("\(entry.temperature)°")
-                                        .font(.custom("Poppins-SemiBold", size: 10))
+                                        .font(.custom("Poppins-SemiBold", size: 11))
                                 }
                                 if index < items.count - 1 {
                                     Spacer(minLength: 0)
@@ -127,15 +143,14 @@ struct MediumWidgetView: View {
                 .padding(.horizontal, 16)
                 .padding(.vertical, 14)
                 .foregroundStyle(.white)
-                .shadow(color: .black.opacity(0.35), radius: 0.5, x: 0, y: 0.5)
-                .shadow(color: .black.opacity(0.2), radius: 2, x: 0, y: 1)
-                .shadow(color: .black.opacity(0.1), radius: 4, x: 0, y: 2)
+                .shadow(color: .black.opacity(0.3), radius: 0.5, x: 0, y: 0.5)
+                .shadow(color: .black.opacity(0.15), radius: 2, x: 0, y: 1)
             }
         }
         .containerBackground(for: .widget) {
             ZStack {
                 LinearGradient(
-                    colors: data.gradientColors.map { Color(hex: $0) },
+                    stops: WidgetGradients.gradientStops(from: data.gradientColors),
                     startPoint: (data.conditionName == "sunny" || data.conditionName == "mostlySunny") ? .topTrailing : .top,
                     endPoint: (data.conditionName == "sunny" || data.conditionName == "mostlySunny") ? .bottomLeading : .bottom
                 )
@@ -147,15 +162,20 @@ struct MediumWidgetView: View {
 private struct MediumDetailLabel: View {
     let icon: String
     let value: String
+    var iconTint: Color? = nil
 
     var body: some View {
         HStack(spacing: 3) {
             Image(systemName: icon)
                 .font(.system(size: 9))
-                .opacity(0.7)
+                .opacity(iconTint != nil ? 1.0 : 0.9)
+                .foregroundStyle(iconTint ?? .white)
             Text(value)
-                .font(.custom("Poppins-SemiBold", size: 10))
-                .opacity(0.8)
+                .font(.custom("Poppins-SemiBold", size: 11))
+                .minimumScaleFactor(0.8)
+                .lineLimit(1)
+                .opacity(iconTint != nil ? 1.0 : 0.9)
+                .foregroundStyle(iconTint ?? .white)
         }
         .fixedSize()
     }

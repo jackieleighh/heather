@@ -49,6 +49,24 @@ import com.totms.heather.MainActivity
 import com.totms.heather.R
 import es.antonborri.home_widget.actionStartActivity
 
+/**
+ * Returns the icon resource for a precipitation label.
+ *
+ * When the label contains a transition arrow (→), only the current
+ * condition (before the arrow) is used for icon selection.
+ */
+private fun precipIconRes(label: String, isDay: Boolean): Int {
+    val text = label.substringBefore("→")
+    val lower = text.lowercase()
+    return when {
+        lower.contains("snow") || lower.contains("flurries") -> R.drawable.ic_weather_snow
+        lower.contains("slush") -> R.drawable.ic_weather_rain
+        lower.contains("drizzle") || lower.contains("slight rain") ->
+            if (isDay) R.drawable.ic_weather_drizzle_day else R.drawable.ic_weather_drizzle_night
+        else -> R.drawable.ic_weather_rain
+    }
+}
+
 class HeatherGlanceWidget : GlanceAppWidget() {
 
     override val sizeMode = SizeMode.Exact
@@ -117,71 +135,82 @@ class HeatherGlanceWidget : GlanceAppWidget() {
     private fun SmallContent(data: WeatherWidgetData) {
         val context = LocalContext.current
         Column(
-            modifier = GlanceModifier.fillMaxSize().padding(14.dp),
+            modifier = GlanceModifier.fillMaxSize().padding(12.dp),
         ) {
             // Top: city + icon
             Row(
                 modifier = GlanceModifier.fillMaxWidth(),
                 verticalAlignment = Alignment.Top,
             ) {
-                PoppinsText(
+                WidgetText(
                     context = context,
                     text = data.cityName,
-                    fontRes = R.font.poppins_medium,
+                    fontRes = R.font.quicksand_bold,
                     sizeSp = 12f,
                     color = 0xFFFFFFFF.toInt(),
-                    modifier = GlanceModifier.defaultWeight(),
                     contentDescription = data.cityName,
                 )
+                Spacer(modifier = GlanceModifier.defaultWeight())
                 Image(
                     provider = ImageProvider(ConditionIcons.iconRes(data.conditionName, data.isDay)),
                     contentDescription = data.conditionName,
                     modifier = GlanceModifier.size(26.dp),
-                    colorFilter = ColorFilter.tint(ColorProvider(white80)),
+                    colorFilter = ColorFilter.tint(ColorProvider(white90)),
                 )
             }
 
             Spacer(modifier = GlanceModifier.defaultWeight())
 
             // Temperature
-            PoppinsText(
+            WidgetText(
                 context = context,
                 text = "${data.temperature}°",
-                fontRes = R.font.poppins_semibold,
-                sizeSp = 50f,
+                fontRes = R.font.poppins_bold,
+                sizeSp = 48f,
                 color = 0xFFFFFFFF.toInt(),
                 contentDescription = "${data.temperature} degrees",
             )
 
             // H/L
-            PoppinsText(
+            WidgetText(
                 context = context,
                 text = "${data.high}°/${data.low}°",
-                fontRes = R.font.poppins_medium,
-                sizeSp = 12f,
-                color = 0xCCFFFFFF.toInt(),
+                fontRes = R.font.quicksand_semibold,
+                sizeSp = 13f,
+                color = 0xE6FFFFFF.toInt(),
                 contentDescription = "High ${data.high}, Low ${data.low}",
             )
 
             // Feels like
-            PoppinsText(
+            WidgetText(
                 context = context,
                 text = "Feels like ${data.feelsLike}°",
-                fontRes = R.font.poppins_regular,
-                sizeSp = 10f,
-                color = 0xB3FFFFFF.toInt(),
+                fontRes = R.font.quicksand_medium,
+                sizeSp = 11f,
+                color = 0xE6FFFFFF.toInt(),
                 contentDescription = "Feels like ${data.feelsLike} degrees",
             )
 
-            // Description
-            PoppinsText(
-                context = context,
-                text = data.description.replaceFirstChar { it.uppercase() },
-                fontRes = R.font.poppins_regular,
-                sizeSp = 10f,
-                color = 0xB3FFFFFF.toInt(),
-                contentDescription = data.description,
-            )
+            // Description or alert
+            if (data.alertLabel != null) {
+                WidgetText(
+                    context = context,
+                    text = data.alertLabel,
+                    fontRes = R.font.quicksand_semibold,
+                    sizeSp = 10f,
+                    color = data.alertColor,
+                    contentDescription = data.alertLabel,
+                )
+            } else {
+                WidgetText(
+                    context = context,
+                    text = data.description.replaceFirstChar { it.uppercase() },
+                    fontRes = R.font.quicksand_medium,
+                    sizeSp = 11f,
+                    color = 0xE6FFFFFF.toInt(),
+                    contentDescription = data.description,
+                )
+            }
         }
     }
 
@@ -195,10 +224,10 @@ class HeatherGlanceWidget : GlanceAppWidget() {
                 .padding(horizontal = 16.dp, vertical = 14.dp),
         ) {
             // City name
-            PoppinsText(
+            WidgetText(
                 context = context,
                 text = data.cityName,
-                fontRes = R.font.poppins_medium,
+                fontRes = R.font.quicksand_bold,
                 sizeSp = 12f,
                 color = 0xFFFFFFFF.toInt(),
                 contentDescription = data.cityName,
@@ -210,10 +239,10 @@ class HeatherGlanceWidget : GlanceAppWidget() {
                 verticalAlignment = Alignment.Bottom,
             ) {
                 // Left: temp
-                PoppinsText(
+                WidgetText(
                     context = context,
                     text = "${data.temperature}°",
-                    fontRes = R.font.poppins_semibold,
+                    fontRes = R.font.poppins_bold,
                     sizeSp = 42f,
                     color = 0xFFFFFFFF.toInt(),
                     contentDescription = "${data.temperature} degrees",
@@ -223,60 +252,81 @@ class HeatherGlanceWidget : GlanceAppWidget() {
 
                 // Left: H/L, feels like, description
                 Column(modifier = GlanceModifier.defaultWeight().padding(bottom = 6.dp)) {
-                    PoppinsText(
+                    WidgetText(
                         context = context,
                         text = "${data.high}°/${data.low}°",
-                        fontRes = R.font.poppins_medium,
-                        sizeSp = 12f,
-                        color = 0xCCFFFFFF.toInt(),
+                        fontRes = R.font.quicksand_semibold,
+                        sizeSp = 15f,
+                        color = 0xE6FFFFFF.toInt(),
                         contentDescription = "High ${data.high}, Low ${data.low}",
                     )
-                    PoppinsText(
+                    WidgetText(
                         context = context,
                         text = "Feels like ${data.feelsLike}°",
-                        fontRes = R.font.poppins_regular,
-                        sizeSp = 10f,
-                        color = 0xB3FFFFFF.toInt(),
+                        fontRes = R.font.quicksand_medium,
+                        sizeSp = 11f,
+                        color = 0xE6FFFFFF.toInt(),
                         contentDescription = "Feels like ${data.feelsLike} degrees",
                     )
-                    PoppinsText(
+                    WidgetText(
                         context = context,
                         text = data.description.replaceFirstChar { it.uppercase() },
-                        fontRes = R.font.poppins_regular,
-                        sizeSp = 10f,
-                        color = 0xB3FFFFFF.toInt(),
+                        fontRes = R.font.quicksand_medium,
+                        sizeSp = 11f,
+                        color = 0xE6FFFFFF.toInt(),
                         contentDescription = data.description,
                     )
                 }
 
                 // Right: details + icon
                 Column(horizontalAlignment = Alignment.End) {
-                    if (data.isDay) {
-                        data.sunsetLabel?.let { label ->
-                            DetailRow(context, iconRes = R.drawable.ic_weather_sunset, value = label)
+                    Row(verticalAlignment = Alignment.Bottom) {
+                        Column(horizontalAlignment = Alignment.End) {
+                            if (data.isDay) {
+                                data.sunsetLabel?.let { label ->
+                                    DetailRow(context, iconRes = R.drawable.ic_weather_sunset, value = label, iconSize = 9, fontSize = 11f, spacing = 3)
+                                }
+                                DetailRow(
+                                    context,
+                                    iconRes = R.drawable.ic_weather_uv,
+                                    value = "UV ${data.uvIndexMax ?: data.uvIndex}",
+                                    iconSize = 9, fontSize = 11f, spacing = 3,
+                                )
+                            } else {
+                                data.sunriseLabel?.let { label ->
+                                    DetailRow(context, iconRes = R.drawable.ic_weather_sunrise, value = label, iconSize = 9, fontSize = 11f, spacing = 3)
+                                }
+                                val phase = getMoonPhase()
+                                DetailRow(context, iconRes = phase.iconRes, value = "${moonIllumination()}%", iconSize = 9, fontSize = 11f, spacing = 3)
+                            }
                         }
+                        Spacer(modifier = GlanceModifier.width(4.dp))
+                        Image(
+                            provider = ImageProvider(ConditionIcons.iconRes(data.conditionName, data.isDay)),
+                            contentDescription = data.conditionName,
+                            modifier = GlanceModifier.size(32.dp),
+                            colorFilter = ColorFilter.tint(ColorProvider(white90)),
+                        )
+                    }
+                    if (data.alertLabel != null) {
                         DetailRow(
                             context,
-                            iconRes = R.drawable.ic_weather_uv,
-                            value = "UV ${data.uvIndexMax ?: data.uvIndex}",
+                            iconRes = data.alertIconRes,
+                            value = data.alertLabel,
+                            tintColor = data.alertColor,
+                            iconSize = 9, fontSize = 11f, spacing = 3,
+                        )
+                    } else if (data.precipLabel != null) {
+                        DetailRow(
+                            context,
+                            iconRes = precipIconRes(data.precipLabel, data.isDay),
+                            value = data.precipLabel,
+                            iconSize = 9, fontSize = 11f, spacing = 3,
                         )
                     } else {
-                        data.sunriseLabel?.let { label ->
-                            DetailRow(context, iconRes = R.drawable.ic_weather_sunrise, value = label)
-                        }
-                        val phase = getMoonPhase()
-                        DetailRow(context, iconRes = phase.iconRes, value = "${moonIllumination()}%")
+                        Spacer(modifier = GlanceModifier.height(14.dp))
                     }
                 }
-
-                Spacer(modifier = GlanceModifier.width(4.dp))
-
-                Image(
-                    provider = ImageProvider(ConditionIcons.iconRes(data.conditionName, data.isDay)),
-                    contentDescription = data.conditionName,
-                    modifier = GlanceModifier.size(32.dp),
-                    colorFilter = ColorFilter.tint(ColorProvider(white80)),
-                )
             }
 
             Spacer(modifier = GlanceModifier.defaultWeight())
@@ -303,48 +353,48 @@ class HeatherGlanceWidget : GlanceAppWidget() {
             ) {
                 // Left column
                 Column(modifier = GlanceModifier.defaultWeight()) {
-                    PoppinsText(
+                    WidgetText(
                         context = context,
                         text = data.cityName,
-                        fontRes = R.font.poppins_medium,
+                        fontRes = R.font.quicksand_bold,
                         sizeSp = 15f,
                         color = 0xFFFFFFFF.toInt(),
                         contentDescription = data.cityName,
                     )
 
-                    PoppinsText(
+                    WidgetText(
                         context = context,
                         text = "${data.temperature}°",
-                        fontRes = R.font.poppins_semibold,
+                        fontRes = R.font.poppins_bold,
                         sizeSp = 58f,
                         color = 0xFFFFFFFF.toInt(),
                         contentDescription = "${data.temperature} degrees",
                     )
 
-                    PoppinsText(
+                    WidgetText(
                         context = context,
                         text = "${data.high}°/${data.low}°",
-                        fontRes = R.font.poppins_medium,
+                        fontRes = R.font.quicksand_semibold,
                         sizeSp = 13f,
                         color = 0xE6FFFFFF.toInt(),
                         contentDescription = "High ${data.high}, Low ${data.low}",
                     )
 
-                    PoppinsText(
+                    WidgetText(
                         context = context,
                         text = "Feels like ${data.feelsLike}°",
-                        fontRes = R.font.poppins_regular,
+                        fontRes = R.font.quicksand_medium,
                         sizeSp = 12f,
-                        color = 0xB3FFFFFF.toInt(),
+                        color = 0xE6FFFFFF.toInt(),
                         contentDescription = "Feels like ${data.feelsLike} degrees",
                     )
 
-                    PoppinsText(
+                    WidgetText(
                         context = context,
                         text = data.description.replaceFirstChar { it.uppercase() },
-                        fontRes = R.font.poppins_regular,
+                        fontRes = R.font.quicksand_medium,
                         sizeSp = 12f,
-                        color = 0xB3FFFFFF.toInt(),
+                        color = 0xE6FFFFFF.toInt(),
                         contentDescription = data.description,
                     )
                 }
@@ -355,7 +405,7 @@ class HeatherGlanceWidget : GlanceAppWidget() {
                         provider = ImageProvider(ConditionIcons.iconRes(data.conditionName, data.isDay)),
                         contentDescription = data.conditionName,
                         modifier = GlanceModifier.size(48.dp),
-                        colorFilter = ColorFilter.tint(ColorProvider(white80)),
+                        colorFilter = ColorFilter.tint(ColorProvider(white90)),
                     )
                     Spacer(modifier = GlanceModifier.height(4.dp))
                     if (data.isDay) {
@@ -374,16 +424,32 @@ class HeatherGlanceWidget : GlanceAppWidget() {
                         val phase = getMoonPhase()
                         DetailRow(context, iconRes = phase.iconRes, value = "${moonIllumination()}%")
                     }
+                    if (data.alertLabel != null) {
+                        DetailRow(
+                            context,
+                            iconRes = data.alertIconRes,
+                            value = data.alertLabel,
+                            tintColor = data.alertColor,
+                        )
+                    } else if (data.precipLabel != null) {
+                        DetailRow(
+                            context,
+                            iconRes = precipIconRes(data.precipLabel, data.isDay),
+                            value = data.precipLabel,
+                        )
+                    } else {
+                        Spacer(modifier = GlanceModifier.height(16.dp))
+                    }
                 }
             }
 
             Spacer(modifier = GlanceModifier.defaultWeight())
 
             // Quip (between info and hourly, matching iOS)
-            PoppinsText(
+            WidgetText(
                 context = context,
                 text = data.quip,
-                fontRes = R.font.poppins_medium,
+                fontRes = R.font.poppins_bold,
                 sizeSp = 14f,
                 color = 0xF2FFFFFF.toInt(),
                 contentDescription = data.quip,
@@ -402,21 +468,34 @@ class HeatherGlanceWidget : GlanceAppWidget() {
     // ── Shared components ────────────────────────────────────────
 
     @Composable
-    private fun DetailRow(context: Context, iconRes: Int, value: String) {
+    private fun DetailRow(
+        context: Context,
+        iconRes: Int,
+        value: String,
+        tintColor: Int? = null,
+        iconSize: Int = 11,
+        fontSize: Float = 12f,
+        spacing: Int = 4,
+    ) {
         Row(verticalAlignment = Alignment.CenterVertically) {
             Image(
                 provider = ImageProvider(iconRes),
                 contentDescription = null,
-                modifier = GlanceModifier.size(11.dp),
-                colorFilter = ColorFilter.tint(ColorProvider(white70)),
+                modifier = GlanceModifier.size(iconSize.dp),
+                colorFilter = ColorFilter.tint(
+                    ColorProvider(
+                        if (tintColor != null) androidx.compose.ui.graphics.Color(tintColor)
+                        else white90
+                    )
+                ),
             )
-            Spacer(modifier = GlanceModifier.width(3.dp))
-            PoppinsText(
+            Spacer(modifier = GlanceModifier.width(spacing.dp))
+            WidgetText(
                 context = context,
                 text = value,
                 fontRes = R.font.poppins_semibold,
-                sizeSp = 11f,
-                color = 0xCCFFFFFF.toInt(),
+                sizeSp = fontSize,
+                color = tintColor ?: 0xE6FFFFFF.toInt(),
                 contentDescription = value,
             )
         }
@@ -426,8 +505,8 @@ class HeatherGlanceWidget : GlanceAppWidget() {
     private fun HourlyRow(hours: List<HourlyEntry>, compact: Boolean) {
         val context = LocalContext.current
         val iconSize = if (compact) 24.dp else 28.dp
-        val timeFontSize = if (compact) 9f else 11f
-        val tempFontSize = if (compact) 10f else 13f
+        val timeFontSize = if (compact) 10f else 11f
+        val tempFontSize = if (compact) 11f else 13f
 
         Row(modifier = GlanceModifier.fillMaxWidth()) {
             hours.forEach { entry ->
@@ -435,12 +514,12 @@ class HeatherGlanceWidget : GlanceAppWidget() {
                     modifier = GlanceModifier.defaultWeight(),
                     horizontalAlignment = Alignment.CenterHorizontally,
                 ) {
-                    PoppinsText(
+                    WidgetText(
                         context = context,
                         text = entry.hourLabel,
-                        fontRes = R.font.poppins_regular,
+                        fontRes = R.font.quicksand_medium,
                         sizeSp = timeFontSize,
-                        color = 0xB3FFFFFF.toInt(),
+                        color = 0xE6FFFFFF.toInt(),
                         contentDescription = entry.hourLabel,
                     )
                     Spacer(modifier = GlanceModifier.height(if (compact) 1.dp else 3.dp))
@@ -448,10 +527,10 @@ class HeatherGlanceWidget : GlanceAppWidget() {
                         provider = ImageProvider(ConditionIcons.iconRes(entry.conditionName, entry.isDay)),
                         contentDescription = null,
                         modifier = GlanceModifier.size(iconSize),
-                        colorFilter = ColorFilter.tint(ColorProvider(white80)),
+                        colorFilter = ColorFilter.tint(ColorProvider(white90)),
                     )
                     Spacer(modifier = GlanceModifier.height(if (compact) 1.dp else 3.dp))
-                    PoppinsText(
+                    WidgetText(
                         context = context,
                         text = "${entry.temperature}°",
                         fontRes = R.font.poppins_semibold,
@@ -464,10 +543,10 @@ class HeatherGlanceWidget : GlanceAppWidget() {
         }
     }
 
-    // ── Poppins text as bitmap ─────────────────────────────────────
+    // ── Text as bitmap ────────────────────────────────────────────
 
     @Composable
-    private fun PoppinsText(
+    private fun WidgetText(
         context: Context,
         text: String,
         fontRes: Int,
@@ -630,5 +709,4 @@ class HeatherGlanceWidget : GlanceAppWidget() {
     }
 }
 
-private val white80 = androidx.compose.ui.graphics.Color(0xCCFFFFFF.toInt())
-private val white70 = androidx.compose.ui.graphics.Color(0xB3FFFFFF.toInt())
+private val white90 = androidx.compose.ui.graphics.Color(0xE6FFFFFF.toInt())

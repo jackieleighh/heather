@@ -141,6 +141,32 @@ class WeatherRepositoryImpl implements WeatherRepository {
     return ForecastResponseModel.fromJson(json).toEntity();
   }
 
+  /// Returns cached [LocationInfo] + [Forecast] from SharedPreferences,
+  /// or null if either is missing or the forecast is older than 12 hours.
+  Future<(LocationInfo, Forecast)?> getCachedWeather() async {
+    final prefs = await SharedPreferences.getInstance();
+
+    final cityName = prefs.getString('last_city_name');
+    final lat = prefs.getDouble('last_city_lat');
+    final lon = prefs.getDouble('last_city_lon');
+    if (cityName == null || lat == null || lon == null) return null;
+
+    final countryCode = prefs.getString('last_country_code');
+    final cacheKey = 'cached_forecast_${lat}_$lon';
+    final cacheTsKey = 'cached_forecast_ts_${lat}_$lon';
+
+    final forecast = await _getCachedForecast(cacheKey, cacheTsKey);
+    if (forecast == null) return null;
+
+    final location = LocationInfo(
+      latitude: lat,
+      longitude: lon,
+      cityName: cityName,
+      countryCode: countryCode,
+    );
+    return (location, forecast);
+  }
+
   Future<Forecast?> _getCachedForecast(
     String cacheKey,
     String cacheTsKey,

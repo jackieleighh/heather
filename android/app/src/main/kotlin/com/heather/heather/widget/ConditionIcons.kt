@@ -9,12 +9,12 @@ object ConditionIcons {
         "overcast" -> R.drawable.ic_weather_overcast
         "foggy" -> R.drawable.ic_weather_foggy
         "drizzle" -> if (isDay) R.drawable.ic_weather_drizzle_day else R.drawable.ic_weather_drizzle_night
-        "rain" -> R.drawable.ic_weather_rain
-        "heavyRain" -> R.drawable.ic_weather_heavy_rain
+        "rain" -> if (isDay) R.drawable.ic_weather_rain_day else R.drawable.ic_weather_rain_night
+        "heavyRain" -> if (isDay) R.drawable.ic_weather_heavy_rain_day else R.drawable.ic_weather_heavy_rain_night
         "freezingRain" -> R.drawable.ic_weather_freezing_rain
         "snow" -> R.drawable.ic_weather_snow
         "blizzard" -> R.drawable.ic_weather_blizzard
-        "thunderstorm" -> R.drawable.ic_weather_thunderstorm
+        "thunderstorm" -> if (isDay) R.drawable.ic_weather_thunderstorm_day else R.drawable.ic_weather_thunderstorm_night
         "hail" -> R.drawable.ic_weather_hail
         else -> R.drawable.ic_weather_overcast
     }

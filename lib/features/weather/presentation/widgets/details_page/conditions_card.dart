@@ -1,8 +1,10 @@
 import 'package:flutter/material.dart';
+import 'package:google_fonts/google_fonts.dart';
 import 'package:intl/intl.dart';
 import 'package:weather_icons/weather_icons.dart';
 
 import '../../../../../core/constants/app_colors.dart';
+import '../../../../../core/utils/geo_utils.dart';
 import '../../../../../core/utils/weather_icon_mapper.dart';
 import '../../../domain/entities/hourly_weather.dart';
 import './card_container.dart';
@@ -43,26 +45,6 @@ class _ConditionsCardState extends State<ConditionsCard> {
     super.dispose();
   }
 
-  bool _isHourDay(DateTime time) {
-    final sunrise = widget.sunrise;
-    final sunset = widget.sunset;
-    if (sunrise == null || sunset == null) return true;
-
-    // Transition-hour logic: if sunrise/sunset falls within this hour,
-    // use day icon only if the hour has >30 min of daylight.
-    if (time.hour == sunrise.hour) {
-      return (60 - sunrise.minute) > 30;
-    }
-    if (time.hour == sunset.hour) {
-      return sunset.minute > 30;
-    }
-
-    final minutes = time.hour * 60 + time.minute;
-    final sunriseMin = sunrise.hour * 60 + sunrise.minute;
-    final sunsetMin = sunset.hour * 60 + sunset.minute;
-    return minutes >= sunriseMin && minutes < sunsetMin;
-  }
-
   void _onScroll() {
     final pos = _scrollController.position;
     final atStart = pos.pixels <= 0;
@@ -86,18 +68,24 @@ class _ConditionsCardState extends State<ConditionsCard> {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Row(
+            crossAxisAlignment: CrossAxisAlignment.baseline,
+            textBaseline: TextBaseline.alphabetic,
             children: [
               Icon(
                 WeatherIcons.cloud,
-                size: widget.compact ? 12 : 18,
+                size: widget.compact ? 10 : 15,
                 color: AppColors.cream.withValues(alpha: 0.9),
               ),
-              SizedBox(width: widget.compact ? 5 : 8),
+              SizedBox(width: widget.compact ? 3 : 4),
               Text(
                 'Conditions',
-                style: theme.textTheme.bodySmall?.copyWith(
-                  fontWeight: FontWeight.w600,
-                  fontSize: 16,
+                style: GoogleFonts.figtree(
+                  fontSize: widget.compact ? 14 : 18,
+                  fontWeight: FontWeight.w400,
+                  color: AppColors.cream,
+                  shadows: [
+                    const Shadow(color: Color(0x28000000), blurRadius: 6),
+                  ],
                 ),
               ),
             ],
@@ -146,12 +134,12 @@ class _ConditionsCardState extends State<ConditionsCard> {
                         Icon(
                           conditionIcon(
                             h.weatherCode,
-                            isDay: _isHourDay(h.time),
+                            isDay: isDayForSunTimes(h.time, sunrise: widget.sunrise, sunset: widget.sunset),
                           ),
                           color: AppColors.cream,
                           size: widget.compact ? 14 : 20,
                         ),
-                        const SizedBox(height: 2),
+                        const SizedBox(height: 1),
                         Text(
                           hourLabel,
                           style: theme.textTheme.bodySmall?.copyWith(

@@ -1,11 +1,9 @@
 import 'dart:convert';
 import 'dart:io';
 import 'dart:math';
-import 'dart:ui';
 
 import 'package:dio/dio.dart';
 import 'package:flutter/foundation.dart';
-import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import 'package:geocoding/geocoding.dart' as geocoding;
 import 'package:geolocator/geolocator.dart';
 import 'package:home_widget/home_widget.dart';
@@ -13,33 +11,26 @@ import 'package:shared_preferences/shared_preferences.dart';
 import 'package:workmanager/workmanager.dart';
 
 import '../../features/weather/data/models/forecast_response_model.dart';
-import '../../features/weather/domain/entities/daily_weather.dart';
 import '../../features/weather/domain/entities/temperature_tier.dart';
 import '../constants/api_endpoints.dart';
-import '../constants/background_gradients.dart';
 import '../constants/persona.dart';
+import '../utils/geo_utils.dart';
+import 'widget_payload_builder.dart';
 
 const _taskName = 'com.totms.heather.alertCheck';
 const _locationsKey = 'bg_alert_locations';
-const _sentIdsKey = 'sent_alert_ids';
-
-const _alertChannelId = 'heather_weather_alerts';
-const _alertChannelName = 'Severe Weather Alerts';
-const _alertChannelDescription =
-    'Critical weather alerts like tornado warnings and severe thunderstorms';
 
 @pragma('vm:entry-point')
 void callbackDispatcher() {
   Workmanager().executeTask((task, inputData) async {
     if (task == _taskName || task == Workmanager.iOSBackgroundTask) {
-      await _checkAlerts();
       await _refreshWidgetData();
       // iOS doesn't support periodic tasks — re-schedule a one-off
       if (!Platform.isAndroid) {
         await Workmanager().registerOneOffTask(
           _taskName,
           _taskName,
-          initialDelay: const Duration(minutes: 5),
+          initialDelay: const Duration(minutes: 15),
           constraints: Constraints(networkType: NetworkType.connected),
           existingWorkPolicy: ExistingWorkPolicy.replace,
         );
@@ -47,142 +38,6 @@ void callbackDispatcher() {
     }
     return true;
   });
-}
-
-/// Rough bounding box for US territories (CONUS, Alaska, Hawaii, PR/USVI, Guam).
-bool _isInUSBounds(double lat, double lon) {
-  // Continental US
-  if (lat >= 24.0 && lat <= 50.0 && lon >= -125.0 && lon <= -66.0) return true;
-  // Alaska
-  if (lat >= 51.0 && lat <= 72.0 && lon >= -180.0 && lon <= -129.0) return true;
-  // Hawaii
-  if (lat >= 18.5 && lat <= 22.5 && lon >= -161.0 && lon <= -154.0) return true;
-  // Puerto Rico / US Virgin Islands
-  if (lat >= 17.5 && lat <= 18.6 && lon >= -67.5 && lon <= -64.5) return true;
-  // Guam / Northern Mariana Islands
-  if (lat >= 13.0 && lat <= 21.0 && lon >= 144.0 && lon <= 146.5) return true;
-  return false;
-}
-
-Future<void> _checkAlerts() async {
-  final prefs = await SharedPreferences.getInstance();
-
-  final locationsJson = prefs.getString(_locationsKey);
-  if (locationsJson == null) return;
-
-  final locations =
-      (jsonDecode(locationsJson) as List<dynamic>).cast<Map<String, dynamic>>();
-  if (locations.isEmpty) return;
-
-  // Load previously sent alert IDs with timestamps
-  final sentIdsJson = prefs.getString(_sentIdsKey);
-  final sentIds = <String, int>{};
-  if (sentIdsJson != null) {
-    final decoded = jsonDecode(sentIdsJson) as Map<String, dynamic>;
-    for (final entry in decoded.entries) {
-      sentIds[entry.key] = entry.value as int;
-    }
-  }
-
-  // Prune IDs older than 48 hours
-  final cutoff =
-      DateTime.now().subtract(const Duration(hours: 48)).millisecondsSinceEpoch;
-  sentIds.removeWhere((_, timestamp) => timestamp < cutoff);
-
-  final dio = Dio();
-  Map<String, dynamic>? mostSevereNew;
-  int bestSortOrder = 999;
-
-  for (final loc in locations) {
-    final lat = loc['latitude'] as double;
-    final lon = loc['longitude'] as double;
-
-    // NWS alerts only cover US territories — skip non-US coordinates
-    if (!_isInUSBounds(lat, lon)) continue;
-
-    try {
-      final response = await dio.get(
-        ApiEndpoints.nwsAlerts(latitude: lat, longitude: lon),
-        options: Options(
-          headers: {
-            'User-Agent': '(Heather Weather App)',
-            'Accept': 'application/geo+json',
-          },
-        ),
-      );
-
-      final data = response.data as Map<String, dynamic>;
-      final features = data['features'] as List<dynamic>? ?? [];
-      final now = DateTime.now();
-
-      for (final feature in features) {
-        final props = feature['properties'] as Map<String, dynamic>;
-        final id = props['id'] as String? ?? '';
-        final expires = DateTime.tryParse(props['expires'] as String? ?? '');
-
-        if (expires != null && expires.isBefore(now)) continue;
-        if (sentIds.containsKey(id)) continue;
-
-        final severityStr = (props['severity'] as String? ?? '').toLowerCase();
-        final sortOrder = switch (severityStr) {
-          'extreme' => 0,
-          'severe' => 1,
-          'moderate' => 2,
-          'minor' => 3,
-          _ => 4,
-        };
-
-        if (sortOrder < bestSortOrder) {
-          bestSortOrder = sortOrder;
-          mostSevereNew = props;
-        }
-      }
-    } catch (e) {
-      if (kDebugMode) {
-        print('Alert check failed for ($lat, $lon): $e');
-      }
-    }
-  }
-
-  if (mostSevereNew != null) {
-    final alertId = mostSevereNew['id'] as String? ?? '';
-    final event = mostSevereNew['event'] as String? ?? 'Weather Alert';
-    final headline = mostSevereNew['headline'] as String? ?? '';
-
-    final localNotifications = FlutterLocalNotificationsPlugin();
-    await localNotifications.initialize(
-      const InitializationSettings(
-        android: AndroidInitializationSettings('@mipmap/launcher_icon'),
-        iOS: DarwinInitializationSettings(),
-      ),
-    );
-
-    await localNotifications.show(
-      alertId.hashCode,
-      event,
-      headline,
-      const NotificationDetails(
-        android: AndroidNotificationDetails(
-          _alertChannelId,
-          _alertChannelName,
-          channelDescription: _alertChannelDescription,
-          importance: Importance.high,
-          priority: Priority.high,
-          icon: '@mipmap/launcher_icon',
-        ),
-        iOS: DarwinNotificationDetails(
-          presentAlert: true,
-          presentBadge: true,
-          presentSound: true,
-        ),
-      ),
-    );
-
-    sentIds[alertId] = DateTime.now().millisecondsSinceEpoch;
-    await prefs.setString(_sentIdsKey, jsonEncode(sentIds));
-  }
-
-  dio.close();
 }
 
 const _appGroupId = 'group.com.totms.heather';
@@ -274,61 +129,70 @@ Future<void> _refreshWidgetData() async {
     final forecast = forecastModel.toEntity();
 
     final current = forecast.current;
-    final today = forecast.daily.first;
     final isDay = forecast.isCurrentlyDay;
     final tier = TemperatureTier.fromTemperature(current.temperature);
-    final gradientColors = BackgroundGradients.forCondition(
-      current.condition,
-      tier,
-      isDay: isDay,
-    );
 
     // Pick a random quip
     final quipMap = heatherQuipMap(altTone: explicit, isDay: isDay);
     final quips = quipMap[current.condition]?[tier] ?? ['Stay cozy.'];
     final quip = quips[Random().nextInt(quips.length)];
 
-    final payload = jsonEncode({
-      'temperature': current.temperature.round(),
-      'feelsLike': current.feelsLike.round(),
-      'high': today.temperatureMax.round(),
-      'low': today.temperatureMin.round(),
-      'conditionName': current.condition.name,
-      'description': current.description,
-      'isDay': isDay,
-      'humidity': current.humidity,
-      'windSpeed': current.windSpeed.round(),
-      'uvIndex': current.uvIndex.round(),
-      'quip': quip,
-      'persona': 'heather',
-      'cityName': cityName,
-      'latitude': lat,
-      'longitude': lon,
-      'lastUpdated': DateTime.now().toIso8601String(),
-      'gradientColors':
-          gradientColors.map(_colorToHex).toList(),
-      'hourly': forecast.hourly.take(24).map((h) {
-        final tzCorrection =
-            h.time.timeZoneOffset.inSeconds - forecast.utcOffsetSeconds;
-        return {
-            'time': h.time.toIso8601String(),
-            'epoch': (h.time.millisecondsSinceEpoch ~/ 1000) + tzCorrection,
-            'temperature': h.temperature.round(),
-            'weatherCode': h.weatherCode,
-            'isDay': _isHourDay(h.time, forecast.daily),
+    // Compute alert label and severity from NWS alerts (extreme/severe only)
+    String? alertLabel;
+    String? alertSeverity;
+    if (isInUSBounds(lat, lon)) {
+      try {
+        final alertDio = Dio();
+        final alertResponse = await alertDio.get(
+          ApiEndpoints.nwsAlerts(latitude: lat, longitude: lon),
+          options: Options(
+            headers: {
+              'User-Agent': '(Heather Weather App)',
+              'Accept': 'application/geo+json',
+            },
+            receiveTimeout: const Duration(seconds: 10),
+            sendTimeout: const Duration(seconds: 10),
+          ),
+        );
+        alertDio.close();
+        final alertData = alertResponse.data as Map<String, dynamic>;
+        final features = alertData['features'] as List<dynamic>? ?? [];
+        final now = DateTime.now();
+        int bestSortOrder = 999;
+
+        for (final feature in features) {
+          final props = feature['properties'] as Map<String, dynamic>;
+          final expires = DateTime.tryParse(props['expires'] as String? ?? '');
+          if (expires != null && expires.isBefore(now)) continue;
+
+          final severityStr = (props['severity'] as String? ?? '').toLowerCase();
+          final sortOrder = switch (severityStr) {
+            'extreme' => 0,
+            'severe' => 1,
+            _ => 999,
           };
-      }).toList(),
-      'sunrise': today.sunrise.toIso8601String(),
-      'sunset': today.sunset.toIso8601String(),
-      'sunriseEpoch': (today.sunrise.millisecondsSinceEpoch ~/ 1000) +
-          today.sunrise.timeZoneOffset.inSeconds -
-          forecast.utcOffsetSeconds,
-      'sunsetEpoch': (today.sunset.millisecondsSinceEpoch ~/ 1000) +
-          today.sunset.timeZoneOffset.inSeconds -
-          forecast.utcOffsetSeconds,
-      'uvIndexMax': today.uvIndexMax.round(),
-      'utcOffsetSeconds': forecast.utcOffsetSeconds,
-    });
+
+          if (sortOrder < bestSortOrder) {
+            bestSortOrder = sortOrder;
+            alertLabel = '\u26A0 ${props['event'] as String? ?? 'Weather Alert'}';
+            alertSeverity = severityStr;
+            if (sortOrder == 0) break; // can't get more severe
+          }
+        }
+      } catch (e) {
+        if (kDebugMode) print('Widget alert fetch failed: $e');
+      }
+    }
+
+    final payload = buildWidgetPayload(
+      forecast: forecast,
+      cityName: cityName,
+      latitude: lat,
+      longitude: lon,
+      quip: quip,
+      alertLabel: alertLabel,
+      alertSeverity: alertSeverity,
+    );
 
     await HomeWidget.saveWidgetData<String>(_widgetDataKey, payload);
 
@@ -347,40 +211,9 @@ Future<void> _refreshWidgetData() async {
       iOSName: _iOSWidgetName,
       androidName: _androidWidgetName,
     );
-  } catch (_) {
-    // Silently fail — widget keeps stale data
+  } catch (e) {
+    if (kDebugMode) print('Widget refresh failed: $e');
   }
-}
-
-bool _isHourDay(DateTime time, List<DailyWeather> daily) {
-  DateTime? sunrise;
-  DateTime? sunset;
-  for (final day in daily) {
-    if (day.date.year == time.year &&
-        day.date.month == time.month &&
-        day.date.day == time.day) {
-      sunrise = day.sunrise;
-      sunset = day.sunset;
-      break;
-    }
-  }
-  if (sunrise == null || sunset == null) return true;
-
-  if (time.hour == sunrise.hour) {
-    return (60 - sunrise.minute) > 30;
-  }
-  if (time.hour == sunset.hour) {
-    return sunset.minute > 30;
-  }
-
-  final minutes = time.hour * 60 + time.minute;
-  final sunriseMin = sunrise.hour * 60 + sunrise.minute;
-  final sunsetMin = sunset.hour * 60 + sunset.minute;
-  return minutes >= sunriseMin && minutes < sunsetMin;
-}
-
-String _colorToHex(Color color) {
-  return '#${color.toARGB32().toRadixString(16).padLeft(8, '0').toUpperCase()}';
 }
 
 class BackgroundAlertService {
@@ -410,7 +243,7 @@ class BackgroundAlertService {
         await Workmanager().registerOneOffTask(
           _taskName,
           _taskName,
-          initialDelay: const Duration(minutes: 5),
+          initialDelay: const Duration(minutes: 15),
           constraints: Constraints(networkType: NetworkType.connected),
           existingWorkPolicy: ExistingWorkPolicy.replace,
         );

@@ -1,6 +1,7 @@
 package com.totms.heather.widget
 
 import android.content.SharedPreferences
+import com.totms.heather.R
 import org.json.JSONObject
 import java.text.SimpleDateFormat
 import java.util.Locale
@@ -49,7 +50,23 @@ data class WeatherWidgetData(
     val sunset: String?,
     val uvIndexMax: Int?,
     val utcOffsetSeconds: Int?,
+    val precipLabel: String?,
+    val alertLabel: String?,
+    val alertSeverity: String?,
 ) {
+    val alertColor: Int
+        get() = when (alertSeverity?.lowercase()) {
+            "extreme" -> 0xFFEF4444.toInt()
+            "severe" -> 0xFFF97316.toInt()
+            else -> 0xFFFFEB3B.toInt()
+        }
+
+    val alertIconRes: Int
+        get() = when (alertSeverity?.lowercase()) {
+            "extreme" -> R.drawable.ic_weather_alert_extreme
+            else -> R.drawable.ic_weather_alert
+        }
+
     val locationTimeZone: TimeZone
         get() = utcOffsetSeconds?.let {
             TimeZone.getTimeZone("GMT${if (it >= 0) "+" else ""}${it / 3600}:${"%02d".format((Math.abs(it) % 3600) / 60)}")
@@ -79,6 +96,9 @@ data class WeatherWidgetData(
             sunset = null,
             uvIndexMax = null,
             utcOffsetSeconds = null,
+            precipLabel = null,
+            alertLabel = null,
+            alertSeverity = null,
         )
 
         fun fromPreferences(prefs: SharedPreferences): WeatherWidgetData {
@@ -127,6 +147,9 @@ data class WeatherWidgetData(
                     sunset = json.optString("sunset", "").ifEmpty { null },
                     uvIndexMax = if (json.has("uvIndexMax")) json.optInt("uvIndexMax") else null,
                     utcOffsetSeconds = if (json.has("utcOffsetSeconds")) json.optInt("utcOffsetSeconds") else null,
+                    precipLabel = json.optString("precipLabel", "").ifEmpty { null },
+                    alertLabel = json.optString("alertLabel", "").ifEmpty { null },
+                    alertSeverity = json.optString("alertSeverity", "").ifEmpty { null },
                 )
             } catch (_: Exception) {
                 placeholder

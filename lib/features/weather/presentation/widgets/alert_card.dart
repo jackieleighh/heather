@@ -62,9 +62,9 @@ class AlertCard extends StatelessWidget {
                       primary.headline,
                       maxLines: 1,
                       overflow: TextOverflow.ellipsis,
-                      style: GoogleFonts.inter(
+                      style: GoogleFonts.quicksand(
                         fontSize: 12,
-                        color: AppColors.cream.withValues(alpha: 0.7),
+                        color: AppColors.cream.withValues(alpha: 0.85),
                       ),
                     ),
                   if (moreCount > 0)
@@ -72,10 +72,10 @@ class AlertCard extends StatelessWidget {
                       padding: const EdgeInsets.only(top: 2),
                       child: Text(
                         '+$moreCount more alert${moreCount == 1 ? '' : 's'}',
-                        style: GoogleFonts.inter(
+                        style: GoogleFonts.quicksand(
                           fontSize: 11,
                           fontWeight: FontWeight.w500,
-                          color: AppColors.cream.withValues(alpha: 0.5),
+                          color: AppColors.cream.withValues(alpha: 0.7),
                         ),
                       ),
                     ),
@@ -84,7 +84,7 @@ class AlertCard extends StatelessWidget {
             ),
             Icon(
               Icons.chevron_right,
-              color: AppColors.cream.withValues(alpha: 0.5),
+              color: AppColors.cream.withValues(alpha: 0.7),
               size: 20,
             ),
           ],

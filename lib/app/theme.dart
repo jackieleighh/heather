@@ -6,7 +6,9 @@ import '../core/constants/app_colors.dart';
 class HeatherTheme {
   HeatherTheme._();
 
-  static ThemeData light({Color accentColor = const Color.fromARGB(255, 199, 14, 137)}) => ThemeData(
+  static ThemeData light({
+    Color accentColor = const Color.fromARGB(255, 199, 14, 137),
+  }) => ThemeData(
     useMaterial3: true,
     colorScheme: ColorScheme.fromSeed(
       seedColor: accentColor,
@@ -61,20 +63,20 @@ class HeatherTheme {
       shadows: _subtleShadow,
     ),
     // Body
-    bodyLarge: GoogleFonts.inter(
+    bodyLarge: GoogleFonts.figtree(
       fontSize: 20,
       fontWeight: FontWeight.w400,
       color: AppColors.cream,
       shadows: _subtleShadow,
     ),
-    bodyMedium: GoogleFonts.inter(
+    bodyMedium: GoogleFonts.figtree(
       fontSize: 18,
       fontWeight: FontWeight.w400,
       color: AppColors.cream,
       shadows: _subtleShadow,
     ),
     // Meta details
-    bodySmall: GoogleFonts.inter(
+    bodySmall: GoogleFonts.figtree(
       fontSize: 18,
       fontWeight: FontWeight.w400,
       color: AppColors.cream,
