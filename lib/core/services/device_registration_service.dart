@@ -100,6 +100,16 @@ class DeviceRegistrationService {
     await prefs.setString(_prefsLocationsKey, jsonEncode(locations));
     await prefs.setBool(_prefsAlertsEnabledKey, alertsEnabled);
 
+    // On iOS the initial getToken() in init() returns null before notification
+    // permission is granted. Re-fetch here so the first registerLocations()
+    // call after onboarding actually writes the device doc.
+    if (_currentToken == null) {
+      final token = await _messaging.getToken();
+      if (token != null) {
+        _handleNewToken(token);
+      }
+    }
+
     final token = _currentToken;
     if (token == null) return;
 

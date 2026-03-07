@@ -11,11 +11,11 @@ class LogoOverlay extends StatelessWidget {
     final screenHeight = MediaQuery.sizeOf(context).height;
 
     return Positioned(
-      left: -20,
-      bottom: 0,
+      left: -30,
+      bottom: -10,
       child: IgnorePointer(
         child: Opacity(
-          opacity: isDay ? 0.2 : 0.35,
+          opacity: isDay ? 0.15 : 0.4,
           child: SvgPicture.asset(
             'assets/images/heather_logo.svg',
             height: screenHeight * 0.5,

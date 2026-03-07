@@ -14,17 +14,28 @@ final locationRepositoryProvider = Provider<LocationRepositoryImpl>((ref) {
   );
 });
 
+// Seed provider: holds pre-read saved locations for instant display
+final savedLocationsSeedProvider =
+    StateProvider<List<SavedLocation>?>((_) => null);
+
 final savedLocationsProvider =
     StateNotifierProvider<SavedLocationsNotifier, List<SavedLocation>>((ref) {
+  final seed = ref.read(savedLocationsSeedProvider);
+  ref.read(savedLocationsSeedProvider.notifier).state = null;
+
   return SavedLocationsNotifier(
     repository: ref.watch(locationRepositoryProvider),
+    seed: seed,
   );
 });
 
 class SavedLocationsNotifier extends StateNotifier<List<SavedLocation>> {
   final LocationRepositoryImpl repository;
 
-  SavedLocationsNotifier({required this.repository}) : super([]) {
+  SavedLocationsNotifier({
+    required this.repository,
+    List<SavedLocation>? seed,
+  }) : super(seed ?? []) {
     _load();
   }
 

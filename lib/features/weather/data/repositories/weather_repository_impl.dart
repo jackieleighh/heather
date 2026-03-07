@@ -4,6 +4,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 
 import '../../domain/entities/forecast.dart';
 import '../../domain/entities/location_info.dart';
+import '../../domain/entities/saved_location.dart';
 import '../../domain/repositories/weather_repository.dart';
 import '../models/forecast_response_model.dart';
 import '../sources/location_source.dart';
@@ -154,7 +155,8 @@ class WeatherRepositoryImpl implements WeatherRepository {
 
   /// Synchronously reads cached [LocationInfo] + [Forecast] from an
   /// already-resolved [SharedPreferences] instance.
-  /// Returns null if either is missing or the forecast is older than 12 hours.
+  /// Returns null if either is missing. No TTL — the background refresh()
+  /// will update stale data after the UI renders.
   static (LocationInfo, Forecast)? readCachedWeather(SharedPreferences prefs) {
     final cityName = prefs.getString('last_city_name');
     final lat = prefs.getDouble('last_city_lat');
@@ -170,9 +172,6 @@ class WeatherRepositoryImpl implements WeatherRepository {
     final ts = prefs.getInt(cacheTsKey);
     if (cached == null || ts == null) return null;
 
-    final age = DateTime.now().millisecondsSinceEpoch - ts;
-    if (age > const Duration(hours: 12).inMilliseconds) return null;
-
     final json = jsonDecode(cached) as Map<String, dynamic>;
     final forecast = ForecastResponseModel.fromJson(json).toEntity();
     final countryCode = prefs.getString('last_country_code');
@@ -183,6 +182,25 @@ class WeatherRepositoryImpl implements WeatherRepository {
       countryCode: countryCode,
     );
     return (location, forecast);
+  }
+
+  /// Synchronously reads cached forecasts for a list of saved locations
+  /// from an already-resolved [SharedPreferences]. No TTL check.
+  static Map<String, Forecast> readCachedSavedForecasts(
+    SharedPreferences prefs,
+    List<SavedLocation> locations,
+  ) {
+    final results = <String, Forecast>{};
+    for (final loc in locations) {
+      final cacheKey = 'cached_forecast_${loc.latitude}_${loc.longitude}';
+      final cached = prefs.getString(cacheKey);
+      if (cached == null) continue;
+      try {
+        final json = jsonDecode(cached) as Map<String, dynamic>;
+        results[loc.id] = ForecastResponseModel.fromJson(json).toEntity();
+      } catch (_) {}
+    }
+    return results;
   }
 
   Future<Forecast?> _getCachedForecast(

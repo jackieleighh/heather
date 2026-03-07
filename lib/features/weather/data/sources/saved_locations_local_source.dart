@@ -8,6 +8,20 @@ import '../../domain/entities/saved_location.dart';
 class SavedLocationsLocalSource {
   static const _key = 'saved_locations';
 
+  /// Reads saved locations from an already-resolved [SharedPreferences].
+  static List<SavedLocation> readSync(SharedPreferences prefs) {
+    final raw = prefs.getString(_key);
+    if (raw == null) return [];
+    try {
+      final list = jsonDecode(raw) as List<dynamic>;
+      return list
+          .map((e) => SavedLocation.fromJson(e as Map<String, dynamic>))
+          .toList();
+    } catch (_) {
+      return [];
+    }
+  }
+
   Future<List<SavedLocation>> getLocations() async {
     final prefs = await SharedPreferences.getInstance();
     final raw = prefs.getString(_key);

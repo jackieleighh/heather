@@ -28,9 +28,9 @@ struct MediumWidgetView: View {
                     .renderingMode(.template)
                     .resizable()
                     .scaledToFit()
-                    .frame(height: 150)
+                    .frame(height: 130)
                     .foregroundStyle(.black)
-                    .opacity(data.isDay ? 0.2 : 0.3)
+                    .opacity(data.isDay ? 0.15 : 0.4)
                     .offset(x: 10, y: 16)
 
                 VStack(spacing: 0) {
@@ -150,7 +150,7 @@ struct MediumWidgetView: View {
         .containerBackground(for: .widget) {
             ZStack {
                 LinearGradient(
-                    stops: WidgetGradients.gradientStops(from: data.gradientColors),
+                    stops: WidgetGradients.gradientStops(from: data.gradientColors, condition: data.conditionName, isDay: data.isDay),
                     startPoint: .topTrailing,
                     endPoint: .bottomLeading
                 )
@@ -173,9 +173,9 @@ struct MediumWidgetView: View {
                     .renderingMode(.template)
                     .resizable()
                     .scaledToFit()
-                    .frame(height: 150)
+                    .frame(height: 130)
                     .foregroundStyle(.black)
-                    .opacity(data.isDay ? 0.2 : 0.3)
+                    .opacity(data.isDay ? 0.15 : 0.4)
                     .offset(x: 10, y: 16)
 
                 VStack(alignment: .leading, spacing: 0) {
@@ -295,7 +295,7 @@ struct MediumWidgetView: View {
         .containerBackground(for: .widget) {
             ZStack {
                 LinearGradient(
-                    stops: WidgetGradients.gradientStops(from: data.gradientColors),
+                    stops: WidgetGradients.gradientStops(from: data.gradientColors, condition: data.conditionName, isDay: data.isDay),
                     startPoint: .topTrailing,
                     endPoint: .bottomLeading
                 )

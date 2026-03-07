@@ -59,7 +59,9 @@ class _MostlySunnyBackgroundState extends State<MostlySunnyBackground>
                 begin: Alignment.topCenter,
                 end: Alignment.bottomCenter,
                 colors: widget.gradientColors,
-                stops: BackgroundGradients.sunnyStops(widget.gradientColors.length),
+                stops: widget.isDay
+                    ? BackgroundGradients.sunnyStops(widget.gradientColors.length)
+                    : BackgroundGradients.nightStops(widget.gradientColors.length),
               ),
             ),
           ),

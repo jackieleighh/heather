@@ -19,9 +19,9 @@ struct LargeWidgetView: View {
                     .renderingMode(.template)
                     .resizable()
                     .scaledToFit()
-                    .frame(height: 200)
+                    .frame(height: 170)
                     .foregroundStyle(.black)
-                    .opacity(data.isDay ? 0.2 : 0.3)
+                    .opacity(data.isDay ? 0.15 : 0.4)
                     .offset(x: 15, y: 20)
 
                 VStack(alignment: .leading, spacing: 2) {
@@ -140,7 +140,7 @@ struct LargeWidgetView: View {
         .containerBackground(for: .widget) {
             ZStack {
                 LinearGradient(
-                    stops: WidgetGradients.gradientStops(from: data.gradientColors),
+                    stops: WidgetGradients.gradientStops(from: data.gradientColors, condition: data.conditionName, isDay: data.isDay),
                     startPoint: .topTrailing,
                     endPoint: .bottomLeading
                 )

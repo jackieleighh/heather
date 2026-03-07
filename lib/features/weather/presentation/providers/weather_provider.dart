@@ -312,15 +312,23 @@ class SavedLocationsForecastState with _$SavedLocationsForecastState {
       _SavedError;
 }
 
+// Seed provider: holds pre-read cached saved-location forecasts
+final cachedSavedForecastsSeedProvider =
+    StateProvider<Map<String, Forecast>?>((_) => null);
+
 final savedLocationsForecastProvider = StateNotifierProvider<
   SavedLocationsForecastNotifier,
   SavedLocationsForecastState
 >((ref) {
   final settings = ref.read(settingsProvider);
+  final seed = ref.read(cachedSavedForecastsSeedProvider);
+  ref.read(cachedSavedForecastsSeedProvider.notifier).state = null;
+
   final notifier = SavedLocationsForecastNotifier(
     weatherRepo: ref.watch(weatherRepositoryProvider),
     quipRepo: ref.watch(quipRepositoryProvider),
     explicit: settings.explicitLanguage,
+    cachedSeed: seed,
   );
 
   ref.listen<SettingsState>(settingsProvider, (previous, next) {
@@ -343,8 +351,26 @@ class SavedLocationsForecastNotifier
     required this.weatherRepo,
     required this.quipRepo,
     required bool explicit,
+    Map<String, Forecast>? cachedSeed,
   }) : _explicit = explicit,
-       super(const SavedLocationsForecastState.loading());
+       super(const SavedLocationsForecastState.loading()) {
+    if (cachedSeed != null && cachedSeed.isNotEmpty) {
+      final forecasts = <String, LocationForecastData>{};
+      for (final entry in cachedSeed.entries) {
+        final quip = quipRepo.getLocalQuip(
+          weather: entry.value.current,
+          explicit: _explicit,
+        );
+        _lastQuipKeys[entry.key] = _quipKeyFor(entry.value);
+        forecasts[entry.key] = (
+          forecast: entry.value,
+          quip: quip,
+          alerts: const [],
+        );
+      }
+      state = SavedLocationsForecastState.loaded(forecasts: forecasts);
+    }
+  }
 
   void updateExplicit(bool value) {
     _explicit = value;
@@ -409,6 +435,12 @@ class SavedLocationsForecastNotifier
   Future<void> load(List<SavedLocation> locations) async {
     if (locations.isEmpty) {
       state = const SavedLocationsForecastState.loaded(forecasts: {});
+      return;
+    }
+    // If already loaded (e.g. from seed), refresh in background instead of
+    // resetting to loading which would flash a loading view.
+    if (state is _SavedLoaded) {
+      refresh(locations);
       return;
     }
     state = const SavedLocationsForecastState.loading();
