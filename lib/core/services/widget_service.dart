@@ -33,7 +33,17 @@ class WidgetService {
     if (initialUri != null) {
       coldLaunchedFromWidget = true;
       widgetTapped.add(null);
+    } else {
+      // Fallback: check native flag written by AppDelegate
+      final nativeFlag =
+          await HomeWidget.getWidgetData<bool>('widget_cold_launch');
+      if (nativeFlag == true) {
+        coldLaunchedFromWidget = true;
+        widgetTapped.add(null);
+      }
     }
+    // Always clear the native flag so normal launches aren't affected
+    await HomeWidget.saveWidgetData<bool>('widget_cold_launch', null);
 
     // Handle warm start (app resumed from background via widget tap)
     HomeWidget.widgetClicked.listen((_) {

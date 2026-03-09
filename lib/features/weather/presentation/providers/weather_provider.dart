@@ -65,7 +65,8 @@ final weatherStateProvider =
     StateNotifierProvider<WeatherNotifier, WeatherState>((ref) {
       final settings = ref.read(settingsProvider);
       final seed = ref.read(cachedWeatherSeedProvider);
-      ref.read(cachedWeatherSeedProvider.notifier).state = null; // consume once
+      // Defer clearing seed to avoid modifying another provider during initialization
+      Future.microtask(() => ref.read(cachedWeatherSeedProvider.notifier).state = null);
 
       final notifier = WeatherNotifier(
         weatherRepo: ref.watch(weatherRepositoryProvider),
@@ -98,23 +99,31 @@ class WeatherNotifier extends StateNotifier<WeatherState> {
     required bool explicit,
     (LocationInfo, Forecast)? cachedSeed,
   }) : _explicit = explicit,
-       super(const WeatherState.loading()) {
+       super(
+         _initialState(cachedSeed, quipRepo, explicit),
+       ) {
     if (cachedSeed != null) {
-      final (location, forecast) = cachedSeed;
-      final quip = quipRepo.getLocalQuip(
-        weather: forecast.current,
-        explicit: _explicit,
-      );
-      _lastQuipKey = _quipKeyFor(forecast);
-      state = WeatherState.loaded(
-        forecast: forecast,
-        location: location,
-        quip: quip,
-      );
+      _lastQuipKey = _quipKeyFor(cachedSeed.$2);
       refresh();
     } else {
       loadWeather();
     }
+  }
+
+  /// Compute the initial state for [super] so Riverpod never sees `loading`
+  /// when a cached seed is available.
+  static WeatherState _initialState(
+    (LocationInfo, Forecast)? seed,
+    QuipRepositoryImpl quipRepo,
+    bool explicit,
+  ) {
+    if (seed == null) return const WeatherState.loading();
+    final (location, forecast) = seed;
+    return WeatherState.loaded(
+      forecast: forecast,
+      location: location,
+      quip: quipRepo.getLocalQuip(weather: forecast.current, explicit: explicit),
+    );
   }
 
   void updateExplicit(bool value) {
@@ -322,7 +331,8 @@ final savedLocationsForecastProvider = StateNotifierProvider<
 >((ref) {
   final settings = ref.read(settingsProvider);
   final seed = ref.read(cachedSavedForecastsSeedProvider);
-  ref.read(cachedSavedForecastsSeedProvider.notifier).state = null;
+  // Defer clearing seed to avoid modifying another provider during initialization
+  Future.microtask(() => ref.read(cachedSavedForecastsSeedProvider.notifier).state = null);
 
   final notifier = SavedLocationsForecastNotifier(
     weatherRepo: ref.watch(weatherRepositoryProvider),
@@ -353,23 +363,34 @@ class SavedLocationsForecastNotifier
     required bool explicit,
     Map<String, Forecast>? cachedSeed,
   }) : _explicit = explicit,
-       super(const SavedLocationsForecastState.loading()) {
+       super(_initialState(cachedSeed, quipRepo, explicit)) {
     if (cachedSeed != null && cachedSeed.isNotEmpty) {
-      final forecasts = <String, LocationForecastData>{};
       for (final entry in cachedSeed.entries) {
-        final quip = quipRepo.getLocalQuip(
-          weather: entry.value.current,
-          explicit: _explicit,
-        );
         _lastQuipKeys[entry.key] = _quipKeyFor(entry.value);
-        forecasts[entry.key] = (
-          forecast: entry.value,
-          quip: quip,
-          alerts: const [],
-        );
       }
-      state = SavedLocationsForecastState.loaded(forecasts: forecasts);
     }
+  }
+
+  static SavedLocationsForecastState _initialState(
+    Map<String, Forecast>? seed,
+    QuipRepositoryImpl quipRepo,
+    bool explicit,
+  ) {
+    if (seed == null || seed.isEmpty) {
+      return const SavedLocationsForecastState.loading();
+    }
+    final forecasts = <String, LocationForecastData>{};
+    for (final entry in seed.entries) {
+      forecasts[entry.key] = (
+        forecast: entry.value,
+        quip: quipRepo.getLocalQuip(
+          weather: entry.value.current,
+          explicit: explicit,
+        ),
+        alerts: const [],
+      );
+    }
+    return SavedLocationsForecastState.loaded(forecasts: forecasts);
   }
 
   void updateExplicit(bool value) {

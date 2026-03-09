@@ -23,6 +23,12 @@ import workmanager_apple
       GeneratedPluginRegistrant.register(with: registry)
     }
 
+    // Write a native flag when cold-launched from the home widget URL scheme
+    if let launchUrl = launchOptions?[.url] as? URL,
+       launchUrl.scheme == "heather" {
+        UserDefaults(suiteName: "group.com.totms.heather")?.set(true, forKey: "widget_cold_launch")
+    }
+
     GeneratedPluginRegistrant.register(with: self)
 
     // WorkManager: register BGTask identifier

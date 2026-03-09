@@ -5,12 +5,6 @@ class AppColors {
 
   // --- Hero colors (Luminous & Electric) ---
   static const magenta = Color(0xFFb50060);
-  static const vibrantPurple = Color(0xFF8B5CF6);
-  static const mustardYellow = Color(0xFFFFD700);
-  static const teal = Color(0xFF058285);
-  static const chartreuse = Color(0xFFA3E635);
-  static const orange = Color(0xFFFF8C00);
-  static const electricIndigo = Color(0xFF6366F1);
   static const royalBlue = Color(0xFF2563EB);
 
   // --- Dark variants (The "Inky" Night foundations) ---
@@ -18,102 +12,90 @@ class AppColors {
   static const midnightPurple = Color(0xFF0F0716);
   static const deepPurple = Color(0xFF2E1065);
   static const darkIndigo = Color(0xFF1E1B4B);
-  static const darkTeal = Color(0xFF0C4A5E);
-  static const darkMagenta = Color(0xFF831843);
-  static const midnightBlue = Color(0xFF0A0F1E);
-  static const midnightNavy = Color(0xFF1A2744);
-  static const voidPurple = Color(0xFF10071F);
+  static const darkTeal = Color(0xFF186880);
+  static const darkMagenta = Color(0xFFA82058);
 
   // --- Light / muted variants ---
-  static const softMagenta = Color(0xFFFBCFE8);
   static const palePurple = Color(0xFFEDE9FE);
-  static const mutedTeal = Color(0xFF86D2D6);
+  static const mutedTeal = Color(0xFF60B8C0);
   static const cream = Color(0xFFFAFAFA);
-  static const fogSilver = Color(0xFFE2E8F0);
-  static const snowLavender = Color(0xFFD8D0F0);
 
   // --- Cold tier palette (Stark & Icy) ---
-  static const icyBlue = Color(0xFF68B2DB);
-  static const slateBlue = Color(0xFF475569);
-  static const frostLavender = Color(0xFF8B75E5);
+  static const frostLavender = Color(0xFF7060D0);
   static const coldIndigo = Color(0xFF312E81);
-  static const steelGrey = Color(0xFF94A3B8);
 
   // --- Sunny sky palette (natural, readable) ---
-  static const skyPeriwinkle = Color(0xFF8B9DD4);
-  static const lavenderBlue = Color(0xFF7C8FCC);
-  static const warmSkyBlue = Color(0xFF4A8EC2);
-  static const sunnyGreen = Color(0xFF5BA847);
+  static const lavenderBlue = Color(0xFF5E78B0);
+  static const warmSkyBlue = Color(0xFF3878A8);
   static const goldenAmber = Color(0xFFD4960A);
 
   // --- Overcast sky palette (muted, cloudy) ---
   static const stormBlue = Color(0xFF405888);
-  static const cloudySage = Color(0xFF6E8A5E);
-  static const cloudyAmber = Color(0xFF9C8535);
   static const overcastBlue = Color(0xFF687CC0);
-  static const overcastSlate = Color(0xFF8A9CBE);
-  static const overcastTeal = Color(0xFF4E8FAE);
+  static const overcastSlate = Color(0xFF6880A8);
+  static const overcastTeal = Color(0xFF387898);
   static const overcastSage = Color(0xFF74A85E);
   static const overcastAmber = Color(0xFFC49E2E);
-  static const overcastOrange = Color(0xFFE27D25);
-  static const overcastRose = Color(0xFFD06888);
-  static const overcastIndigo = Color(0xFF5567A4);
+  static const overcastOrange = Color(0xFFC86818);
   static const overcastViolet = Color(0xFF6465C4);
   static const overcastLilac = Color(0xFF8D93CE);
-  static const brightLilac = Color(0xFF9088DD);
-  static const overcastSteel = Color(0xFF6079B0);
-  static const overcastPeriwinkle = Color(0xFF6E86CC);
+  static const brightLilac = Color(0xFF7868C8);
   static const overcastIce = Color(0xFF7BAEE3);
-  static const overcastSageBlue = Color(0xFF6AAE8E);
-  static const overcastDenim = Color(0xFF5277B0);
-  static const overcastPlum = Color(0xFF9C5CBC);
-  static const overcastMauve = Color(0xFF9B7AC6);
+  static const overcastMauve = Color(0xFF8060B0);
   static const overcastWisteria = Color(0xFF7464C7);
-  static const overcastAmethyst = Color(0xFF8058B0);
-  static const overcastSoftAmethyst = Color(0xFF9A70C8);
   static const overcastLavender = Color(0xFFB8A5E0);
-  static const overcastDeepRose = Color(0xFFB5436E);
-  static const overcastCloudBlue = Color(0xFF8AB8E8);
-  static const overcastVividBlue = Color(0xFF5A7EC8);
+  static const overcastSkyBlue = Color(0xFF6898D0);
+  static const overcastBrightSage = Color(0xFF5CB840);
+  static const overcastGold = Color(0xFFCCA018);
+  static const overcastBrightWisteria = Color(0xFF7060C8);
+  static const overcastBrightBlue = Color(0xFF5878D0);
+  static const overcastBrightIce = Color(0xFF70A8E0);
+  static const sunnyViolet = Color(0xFF7050F0);
+  static const sunnyLavender = Color(0xFF8868E0);
+  static const sunnyOrchid = Color(0xFFB898F0);
+  static const sunnyLilac = Color(0xFF7868D8);
+  static const sunnySkyBlue = Color(0xFF5098E0);
+  static const sunnyIce = Color(0xFF68C8E8);
+  static const sunnySage = Color(0xFF68D040);
+  static const sunnyAmber = Color(0xFFD4A818);
+  static const overcastBrightViolet = Color(0xFF6060C8);
+  static const overcastBrightLilac = Color(0xFF8088D0);
+  static const overcastBrightLavender = Color(0xFFA898D8);
+
+  // --- Drizzle palette (more vibrant overcast) ---
+  static const drizzleWisteria = Color(0xFF7058E0);
+  static const drizzleIce = Color(0xFF4898E0);
+  static const drizzleBlue = Color(0xFF668ced);
+  static const drizzleTeal = Color(0xFF2880A8);
+  static const drizzleSage = Color(0xFF50A038);
+  static const drizzleAmber = Color(0xFFC09010);
+  static const drizzleOrange = Color(0xFFF07818);
+  static const drizzleDeepRose = Color(0xFFD03870);
 
   // --- Bright sunny day palette (vibrant, ~15% lighter) ---
-  static const brightSkyPeriwinkle = Color(0xFF9AAFE5);
-  static const brightFrostLavender = Color(0xFFA08CF0);
-  static const brightRoyalBlue = Color(0xFF4D82F5);
-  static const brightSkyBlue = Color(0xFF78C3F2);
-  static const brightFrostBlue = Color(0xFF88C8E8);
-  static const brightIcyBlue = Color(0xFF92D0FC);
-  static const brightWarmSkyBlue = Color(0xFF5EA6D5);
-  static const brightAzure = Color(0xFF5bc6f0);
-  static const brightDeepAzure = Color(0xFF40B8C8);
-  static const brightSunGold = Color(0xFFE0B430);
-  static const brightHotMagenta = Color(0xFFD03888);
-  static const brightDesertGold = Color(0xFFC09840);
-  static const brightGoldenAmber = Color(0xFFEBB020);
-  static const brightOrange = Color(0xFFff9d0a);
-  static const brightHotAmber = Color(0xFFFDD45A);
-  static const brightHeatPink = Color(0xFFDC9450);
+  static const brightSkyPeriwinkle = Color(0xFF7890D0);
+  static const brightFrostLavender = Color(0xFF8070D8);
+  static const brightFrostBlue = Color(0xFF60A8D0);
+  static const brightIcyBlue = Color(0xFF68B8E8);
+  static const brightWarmSkyBlue = Color(0xFF4088B8);
+  static const brightAzure = Color(0xFF38A8D8);
+  static const brightDeepAzure = Color(0xFF2898A8);
+  static const brightSunGold = Color(0xFFC49818);
+  static const brightDesertGold = Color(0xFFA88028);
   static const brightLavenderFrost = Color(0xFF75A0E0);
-  static const brightPeriwinkle = Color(0xFF8A9EE5);
-  static const brightSeafoam = Color(0xFF5EB890);
+  static const brightPeriwinkle = Color(0xFF6878D0);
+  static const brightSeafoam = Color(0xFF40A070);
 
   // --- Sunny night bottom colors ---
   static const nightPurple = Color(0xFF4C1D95);
-  static const nightBlue = Color(0xFF1A3A8C);
-  static const nightBlueTeal = Color(0xFF134A66);
-  static const nightGreenTeal = Color(0xFF0E4A3A);
-  static const nightAmber = Color(0xFF552A0D);
-  static const nightBurntOrange = Color(0xFF64250C);
-  static const nightCoral = Color(0xFF7B2D35);
+  static const nightBlue = Color(0xFF2850B0);
+  static const nightBlueTeal = Color(0xFF1E6890);
+  static const nightGreenTeal = Color(0xFF187858);
+  static const nightCoral = Color(0xFFA83848);
 
   // --- Hot tier palette (Fire & Sunset vibes) ---
   static const burntOrange = Color(0xFFF06A0A);
-  static const hotAmber = Color(0xFFFBBF24);
   static const heatPink = Color(0xFFE05A9C);
-  static const warmCoral = Color(0xFFEF4444);
-  static const lightChartreuse = Color(0xFFAAE48C);
-  static const sunnyWheat = Color(0xFFDDCC88);
-  static const goldenYellow = Color(0xFFFDE047);
   static const orangeRed = Color(0xFFB91C1C);
   static const dullOrange = Color(0xFFC2410C);
 }

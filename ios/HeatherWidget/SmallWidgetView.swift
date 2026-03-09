@@ -77,13 +77,11 @@ struct SmallWidgetView: View {
             }
         }
         .containerBackground(for: .widget) {
-            ZStack {
-                LinearGradient(
-                    stops: WidgetGradients.gradientStops(from: data.gradientColors, condition: data.conditionName, isDay: data.isDay),
-                    startPoint: .topTrailing,
-                    endPoint: .bottomLeading
-                )
-            }
+            WidgetGradientBackground(
+                hexColors: data.gradientColors,
+                condition: data.conditionName,
+                isDay: data.isDay
+            )
         }
     }
 }

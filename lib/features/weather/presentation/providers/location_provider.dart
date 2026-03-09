@@ -21,7 +21,8 @@ final savedLocationsSeedProvider =
 final savedLocationsProvider =
     StateNotifierProvider<SavedLocationsNotifier, List<SavedLocation>>((ref) {
   final seed = ref.read(savedLocationsSeedProvider);
-  ref.read(savedLocationsSeedProvider.notifier).state = null;
+  // Defer clearing seed to avoid modifying another provider during initialization
+  Future.microtask(() => ref.read(savedLocationsSeedProvider.notifier).state = null);
 
   return SavedLocationsNotifier(
     repository: ref.watch(locationRepositoryProvider),

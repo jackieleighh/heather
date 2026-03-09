@@ -215,15 +215,21 @@ class _MoonDiscPainter extends CustomPainter {
     if (radius <= 0) return;
     final center = Offset(size.width / 2, size.height / 2);
 
+    // Use saveLayer so BlendMode.clear erases to transparency
+    canvas.saveLayer(Rect.fromCircle(center: center, radius: radius + 1), Paint());
+
     // 1. Draw base lit circle
     final litPaint = Paint()
       ..color = AppColors.cream.withValues(alpha: 0.85)
       ..style = PaintingStyle.fill;
     canvas.drawCircle(center, radius, litPaint);
 
-    // 2. Draw shadow
+    // 2. Erase shadow portion to transparency
     // fraction: 0 = new moon (full shadow), 0.5 = full moon (no shadow)
-    // Near full moon — skip shadow entirely
+    final shadowPaint = Paint()
+      ..blendMode = BlendMode.clear
+      ..style = PaintingStyle.fill;
+
     if (fraction > 0.02 && fraction < 0.98) {
       // terminatorX: +1 at new moon, 0 at quarters, -1 at full moon
       final terminatorX = math.cos(2 * math.pi * fraction);
@@ -234,51 +240,39 @@ class _MoonDiscPainter extends CustomPainter {
 
       if (waxing) {
         // Shadow on the left side
-        // Semicircular arc along left edge (from top to bottom)
         shadowPath.addArc(
           Rect.fromCircle(center: center, radius: radius),
-          -math.pi / 2, // start at top
-          -math.pi, // sweep left semicircle (top -> left -> bottom)
+          -math.pi / 2,
+          -math.pi,
         );
-        // Elliptical terminator arc connecting bottom back to top
         final terminatorRect = Rect.fromCenter(
           center: center,
           width: absTerminatorX * radius * 2,
           height: radius * 2,
         );
         if (fraction < 0.25) {
-          // Crescent: terminator bulges left (same side as shadow)
           shadowPath.addArc(terminatorRect, math.pi / 2, -math.pi);
         } else {
-          // Gibbous: terminator bulges right (opposite side)
           shadowPath.addArc(terminatorRect, math.pi / 2, math.pi);
         }
       } else {
         // Waning: shadow on the right side
-        // Semicircular arc along right edge (from top to bottom)
         shadowPath.addArc(
           Rect.fromCircle(center: center, radius: radius),
-          -math.pi / 2, // start at top
-          math.pi, // sweep right semicircle (top -> right -> bottom)
+          -math.pi / 2,
+          math.pi,
         );
-        // Elliptical terminator arc connecting bottom back to top
         final terminatorRect = Rect.fromCenter(
           center: center,
           width: absTerminatorX * radius * 2,
           height: radius * 2,
         );
         if (fraction > 0.75) {
-          // Crescent: terminator bulges right (same side as shadow)
           shadowPath.addArc(terminatorRect, math.pi / 2, math.pi);
         } else {
-          // Gibbous: terminator bulges left (opposite side)
           shadowPath.addArc(terminatorRect, math.pi / 2, -math.pi);
         }
       }
-
-      final shadowPaint = Paint()
-        ..color = Colors.black.withValues(alpha: 0.6)
-        ..style = PaintingStyle.fill;
 
       // Clip to circle to avoid overflow
       canvas.save();
@@ -288,10 +282,7 @@ class _MoonDiscPainter extends CustomPainter {
       canvas.drawPath(shadowPath, shadowPaint);
       canvas.restore();
     } else if (fraction <= 0.02 || fraction >= 0.98) {
-      // Near new moon — full shadow
-      final shadowPaint = Paint()
-        ..color = Colors.black.withValues(alpha: 0.6)
-        ..style = PaintingStyle.fill;
+      // Near new moon — fully transparent
       canvas.drawCircle(center, radius, shadowPaint);
     }
 
@@ -301,6 +292,8 @@ class _MoonDiscPainter extends CustomPainter {
       ..style = PaintingStyle.stroke
       ..strokeWidth = 1;
     canvas.drawCircle(center, radius, outlinePaint);
+
+    canvas.restore();
   }
 
   @override

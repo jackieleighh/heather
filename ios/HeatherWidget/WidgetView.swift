@@ -8,8 +8,6 @@ struct WidgetView<Content: View>: View {
     }
 
     var body: some View {
-        ZStack {
-            content
-        }
+        content
     }
 }

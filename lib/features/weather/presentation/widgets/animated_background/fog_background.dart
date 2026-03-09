@@ -147,26 +147,14 @@ class _FogPainter extends CustomPainter {
 
     paint
       ..color = Colors.white.withValues(
-        alpha: 0.12 + sin(time * 0.2) * 0.03,
+        alpha: 0.04 + sin(time * 0.2) * 0.01,
       )
-      ..maskFilter = const MaskFilter.blur(BlurStyle.normal, 80);
+      ..maskFilter = const MaskFilter.blur(BlurStyle.normal, 100);
     canvas.drawOval(
       Rect.fromCenter(
-        center: Offset(w * 0.5, h * 0.3),
-        width: w * 2.2,
-        height: h * 0.7,
-      ),
-      paint,
-    );
-
-    paint.color = Colors.white.withValues(
-      alpha: 0.10 + sin(time * 0.15 + 1.5) * 0.02,
-    );
-    canvas.drawOval(
-      Rect.fromCenter(
-        center: Offset(w * 0.5, h * 0.7),
-        width: w * 1.8,
-        height: h * 0.5,
+        center: Offset(w * 0.5, h * 0.25),
+        width: w * 1.6,
+        height: h * 0.4,
       ),
       paint,
     );

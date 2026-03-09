@@ -169,19 +169,22 @@ class WeatherRepositoryImpl implements WeatherRepository {
     if (cacheKey == null || cacheTsKey == null) return null;
 
     final cached = prefs.getString(cacheKey);
-    final ts = prefs.getInt(cacheTsKey);
-    if (cached == null || ts == null) return null;
+    if (cached == null) return null;
 
-    final json = jsonDecode(cached) as Map<String, dynamic>;
-    final forecast = ForecastResponseModel.fromJson(json).toEntity();
-    final countryCode = prefs.getString('last_country_code');
-    final location = LocationInfo(
-      latitude: lat,
-      longitude: lon,
-      cityName: cityName,
-      countryCode: countryCode,
-    );
-    return (location, forecast);
+    try {
+      final json = jsonDecode(cached) as Map<String, dynamic>;
+      final forecast = ForecastResponseModel.fromJson(json).toEntity();
+      final countryCode = prefs.getString('last_country_code');
+      final location = LocationInfo(
+        latitude: lat,
+        longitude: lon,
+        cityName: cityName,
+        countryCode: countryCode,
+      );
+      return (location, forecast);
+    } catch (_) {
+      return null;
+    }
   }
 
   /// Synchronously reads cached forecasts for a list of saved locations

@@ -18,6 +18,6 @@ struct HeatherWidgetEntryView: View {
                 SmallWidgetView(data: entry.data)
             }
         }
-        .widgetURL(URL(string: "heather://home"))
+        .widgetURL(URL(string: "heather://home?homeWidget=true"))
     }
 }

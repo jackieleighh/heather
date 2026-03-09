@@ -1,4 +1,5 @@
 import 'package:firebase_core/firebase_core.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_native_splash/flutter_native_splash.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -13,7 +14,6 @@ import 'core/services/widget_service.dart';
 import 'features/weather/data/repositories/weather_repository_impl.dart';
 import 'features/weather/data/sources/saved_locations_local_source.dart';
 import 'features/weather/domain/entities/forecast.dart';
-import 'features/weather/domain/entities/location_info.dart';
 import 'features/weather/domain/entities/saved_location.dart';
 import 'features/weather/presentation/providers/location_provider.dart';
 import 'features/weather/presentation/providers/weather_provider.dart';
@@ -29,22 +29,27 @@ Future<void> main() async {
   final onboardingCompleted = prefs.getBool('onboarding_completed') ?? false;
   final router = buildRouter(onboardingCompleted: onboardingCompleted);
 
-  // Pre-read cached data synchronously so notifier constructors can
-  // skip the loading state entirely on widget-launched cold starts.
-  (LocationInfo, Forecast)? cachedWeatherSeed;
+  // Always read cached data so providers start in `loaded` state when
+  // cache exists. The 3-second splash timer handles normal-launch UX
+  // separately (controlled by coldLaunchedFromWidget in weather_screen).
+  final cachedWeatherSeed = WeatherRepositoryImpl.readCachedWeather(prefs);
+
   List<SavedLocation>? savedLocationsSeed;
   Map<String, Forecast>? savedForecastsSeed;
 
-  if (WidgetService.coldLaunchedFromWidget) {
-    cachedWeatherSeed = WeatherRepositoryImpl.readCachedWeather(prefs);
+  final savedLocs = SavedLocationsLocalSource.readSync(prefs);
+  if (savedLocs.isNotEmpty) {
+    savedLocationsSeed = savedLocs;
+    final forecasts =
+        WeatherRepositoryImpl.readCachedSavedForecasts(prefs, savedLocs);
+    if (forecasts.isNotEmpty) savedForecastsSeed = forecasts;
+  }
 
-    final savedLocs = SavedLocationsLocalSource.readSync(prefs);
-    if (savedLocs.isNotEmpty) {
-      savedLocationsSeed = savedLocs;
-      final forecasts =
-          WeatherRepositoryImpl.readCachedSavedForecasts(prefs, savedLocs);
-      if (forecasts.isNotEmpty) savedForecastsSeed = forecasts;
-    }
+  if (kDebugMode) {
+    debugPrint('[launch] weatherSeed=${cachedWeatherSeed != null}, '
+        'savedLocs=${savedLocationsSeed?.length ?? 0}, '
+        'savedForecasts=${savedForecastsSeed?.length ?? 0}, '
+        'widgetColdLaunch=${WidgetService.coldLaunchedFromWidget}');
   }
 
   runApp(
