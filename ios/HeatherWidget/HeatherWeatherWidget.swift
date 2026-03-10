@@ -188,7 +188,8 @@ struct HeatherWeatherProvider: TimelineProvider {
                     entries.append(WeatherEntry(date: entryDate, data: data, isPlaceholder: false))
                 }
 
-                completion(Timeline(entries: entries, policy: .atEnd))
+                let nextUpdate = calendar.date(byAdding: .minute, value: 30, to: now)!
+                completion(Timeline(entries: entries, policy: .after(nextUpdate)))
                 return
             }
 
@@ -329,10 +330,11 @@ struct HeatherWeatherProvider: TimelineProvider {
                 WeatherData.save(first.data)
             }
 
-            // Use .atEnd so WidgetKit requests a fresh timeline as soon as
-            // all entries have been displayed, rather than waiting for a
-            // budget-throttled .after() window.
-            completion(Timeline(entries: entries, policy: .atEnd))
+            // Refresh after 30 minutes — WidgetKit will call getTimeline() again,
+            // and if cache is stale the native code fetches fresh data from Open-Meteo.
+            // This keeps the widget current even when iOS throttles the Dart background task.
+            let nextUpdate = calendar.date(byAdding: .minute, value: 30, to: now)!
+            completion(Timeline(entries: entries, policy: .after(nextUpdate)))
         }
     }
 

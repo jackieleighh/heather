@@ -83,10 +83,10 @@ struct LargeWidgetView: View {
                                     )
                                 }
                             }
-                            if let alertLabel = data.alertLabel {
+                            if let alertText = data.alertText {
                                 DetailLabel(
                                     icon: data.alertIcon,
-                                    value: alertLabel,
+                                    value: alertText,
                                     iconTint: data.alertColor
                                 )
                             } else if let precipLabel = data.precipLabel {
@@ -162,7 +162,7 @@ private struct DetailLabel: View {
                 .font(.custom("Poppins-SemiBold", size: 12))
                 .lineLimit(1)
                 .opacity(iconTint != nil ? 1.0 : 0.9)
+                .foregroundStyle(.white)
         }
-        .foregroundStyle(iconTint ?? .white)
     }
 }

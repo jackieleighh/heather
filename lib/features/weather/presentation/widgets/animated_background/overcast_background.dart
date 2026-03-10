@@ -198,5 +198,5 @@ class _OvercastPainter extends CustomPainter {
   }
 
   @override
-  bool shouldRepaint(covariant CustomPainter oldDelegate) => true;
+  bool shouldRepaint(_OvercastPainter oldDelegate) => oldDelegate.time != time;
 }

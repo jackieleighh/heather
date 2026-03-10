@@ -117,8 +117,8 @@ class _SunnyPainter extends CustomPainter {
       center,
       130,
       [
-        Colors.white.withValues(alpha: 0.55),
-        Colors.white.withValues(alpha: 0.15),
+        Colors.white.withValues(alpha: 0.35),
+        Colors.white.withValues(alpha: 0.08),
         Colors.white.withValues(alpha: 0.0),
       ],
       [0.0, 0.5, 1.0],
@@ -140,5 +140,5 @@ class _SunnyPainter extends CustomPainter {
   }
 
   @override
-  bool shouldRepaint(covariant CustomPainter oldDelegate) => true;
+  bool shouldRepaint(_SunnyPainter oldDelegate) => oldDelegate.time != time;
 }

@@ -16,9 +16,9 @@ struct WidgetGradients {
         case 2:
             return [.init(color: colors[0], location: 0), .init(color: colors[1], location: 1)]
         case 3:
-            return zip(colors, [0.0, 0.45, 1.0]).map { .init(color: $0, location: $1) }
+            return zip(colors, [0.0, 0.6, 1.0]).map { .init(color: $0, location: $1) }
         case 4:
-            return zip(colors, [0.0, 0.35, 0.65, 1.0]).map { .init(color: $0, location: $1) }
+            return zip(colors, [0.0, 0.45, 0.78, 1.0]).map { .init(color: $0, location: $1) }
         case 5:
             return zip(colors, [0.0, 0.25, 0.50, 0.75, 1.0]).map { .init(color: $0, location: $1) }
         default:
@@ -79,60 +79,60 @@ struct WidgetGradients {
 
     private static let dayGradients: [String: [[String]]] = [
         "sunny": [
-            ["#FF7050F0", "#FF8868E0", "#FFB898F0"],
-            ["#FF7868D8", "#FF5098E0", "#FF68C8E8"],
-            ["#FF60A8D0", "#FF2898A8", "#FF68D040"],
-            ["#FF2898A8", "#FF68D040", "#FFD4A818"],
-            ["#FF68D040", "#FFC49818", "#FFF06A0A"],
-            ["#FFC49818", "#FFF06A0A", "#FFB50060"],
+            ["#FF7858E0", "#FF8870D8", "#FFB498E8"],
+            ["#FF7C68D0", "#FF5898D8", "#FF68C0E0"],
+            ["#FF60A0C8", "#FF50B8D0", "#FF68C898"],
+            ["#FF5898D8", "#FF68D0B0", "#FFD8C038"],
+            ["#FF50B8D0", "#FFD8B038", "#FFE07018"],
+            ["#FFE8D058", "#FFE07018", "#FFC84068"],
         ],
         "partlyCloudy": [
-            ["#FF7060D0", "#FF6878D0", "#FF7868C8"],
-            ["#FF7868C8", "#FF6878D0", "#FF60A8D0"],
-            ["#FF60A8D0", "#FF2898A8", "#FF40A070"],
-            ["#FF2898A8", "#FF40A070", "#FFA88028"],
-            ["#FF40A070", "#FFC49818", "#FFF06A0A"],
-            ["#FFC49818", "#FFF06A0A", "#FFB50060"],
+            ["#FF7060D0", "#FF6878C8", "#FF7C68D0"],
+            ["#FF7C68D0", "#FF6878C8", "#FF60A0C8"],
+            ["#FF60A0C8", "#FF50B8D0", "#FF68B8E8"],
+            ["#FF50B8D0", "#FF60C8A8", "#FF80E0A0"],
+            ["#FF60C8A8", "#FFE8D058", "#FFE07018"],
+            ["#FFE8D058", "#FFE07018", "#FFC84068"],
         ],
         "overcast": [
             ["#FF6060C8", "#FF8088D0", "#FFA898D8"],
             ["#FF7060C8", "#FF5878D0", "#FF70A8E0"],
-            ["#FF7464C7", "#FF6898D0", "#FF5CB840"],
-            ["#FF6898D0", "#FF5CB840", "#FFCCA018"],
-            ["#FF8060B0", "#FFCCA018", "#FFF06A0A"],
-            ["#FFC86818", "#FFF06A0A", "#FFB50060"],
+            ["#FF7464C7", "#FF6898D0", "#FF88B898"],
+            ["#FF6898D0", "#FF88B898", "#FFD8C038"],
+            ["#FF8060B0", "#FFD8C038", "#FFE07018"],
+            ["#FFC07018", "#FFE07018", "#FFC84068"],
         ],
         "drizzle": [
-            ["#FF7058E0", "#FF4898E0", "#FF668CED"],
-            ["#FF7058E0", "#FF4898E0", "#FF2880A8"],
-            ["#FF4898E0", "#FF2880A8", "#FF50A038"],
-            ["#FF668CED", "#FF50A038", "#FFC09010"],
-            ["#FF668CED", "#FFC09010", "#FFF06A0A"],
-            ["#FF668CED", "#FFF07818", "#FFD03870"],
+            ["#FF7060D8", "#FF4C98D8", "#FF6888E0"],
+            ["#FF6888E0", "#FF4C98D8", "#FF7060D8"],
+            ["#FF6888E0", "#FF4C98D8", "#FF60B898"],
+            ["#FF6888E0", "#FF60B898", "#FFD8B030"],
+            ["#FF6888E0", "#FFD8B030", "#FFE07018"],
+            ["#FF6888E0", "#FFE87820", "#FFC84068"],
         ],
         "rain": [
-            ["#FF7058E0", "#FF4898E0", "#FF668CED"],
-            ["#FF7058E0", "#FF4898E0", "#FF2880A8"],
-            ["#FF4898E0", "#FF2880A8", "#FF50A038"],
-            ["#FF668CED", "#FF50A038", "#FFC09010"],
-            ["#FF668CED", "#FFC09010", "#FFF06A0A"],
-            ["#FF668CED", "#FFF07818", "#FFD03870"],
+            ["#FF7060D8", "#FF4C98D8", "#FF6888E0"],
+            ["#FF6888E0", "#FF4C98D8", "#FF7060D8"],
+            ["#FF6888E0", "#FF4C98D8", "#FF60B898"],
+            ["#FF6888E0", "#FF60B898", "#FFD8B030"],
+            ["#FF6888E0", "#FFD8B030", "#FFE07018"],
+            ["#FF6888E0", "#FFE87820", "#FFC84068"],
         ],
         "heavyRain": [
             ["#FF405888", "#FF2563EB", "#FF5E78B0"],
             ["#FF405888", "#FF5E78B0", "#FF6880A8"],
             ["#FF405888", "#FF3878A8", "#FF387898"],
             ["#FF405888", "#FF387898", "#FFD4960A"],
-            ["#FF405888", "#FFD4960A", "#FFC2410C"],
-            ["#FF405888", "#FFC2410C", "#FFB50060"],
+            ["#FF405888", "#FFD4960A", "#FFB85010"],
+            ["#FF405888", "#FFB85010", "#FFC84068"],
         ],
         "freezingRain": [
             ["#FF405888", "#FF2563EB", "#FF5E78B0"],
             ["#FF405888", "#FF5E78B0", "#FF6880A8"],
             ["#FF405888", "#FF3878A8", "#FF387898"],
             ["#FF405888", "#FF387898", "#FFD4960A"],
-            ["#FF405888", "#FFD4960A", "#FFC2410C"],
-            ["#FF405888", "#FFC2410C", "#FFB50060"],
+            ["#FF405888", "#FFD4960A", "#FFB85010"],
+            ["#FF405888", "#FFB85010", "#FFC84068"],
         ],
         "snow": [
             ["#FFFAFAFA", "#FF7060D0", "#FF7890D0"],
@@ -140,7 +140,7 @@ struct WidgetGradients {
             ["#FFFAFAFA", "#FF68B8E8", "#FF38A8D8"],
             ["#FFFAFAFA", "#FF38A8D8", "#FF4088B8"],
             ["#FFFAFAFA", "#FF4088B8", "#FF387898"],
-            ["#FFFAFAFA", "#FF387898", "#FFF06A0A"],
+            ["#FFFAFAFA", "#FF387898", "#FFE07018"],
         ],
         "blizzard": [
             ["#FFFAFAFA", "#FF7060D0", "#FF7890D0"],
@@ -148,23 +148,23 @@ struct WidgetGradients {
             ["#FFFAFAFA", "#FF68B8E8", "#FF38A8D8"],
             ["#FFFAFAFA", "#FF38A8D8", "#FF4088B8"],
             ["#FFFAFAFA", "#FF4088B8", "#FF387898"],
-            ["#FFFAFAFA", "#FF387898", "#FFF06A0A"],
+            ["#FFFAFAFA", "#FF387898", "#FFE07018"],
         ],
         "thunderstorm": [
             ["#FF405888", "#FF2563EB", "#FF5E78B0"],
             ["#FF405888", "#FF5E78B0", "#FF6880A8"],
             ["#FF405888", "#FF3878A8", "#FF387898"],
             ["#FF405888", "#FF387898", "#FFD4960A"],
-            ["#FF405888", "#FFD4960A", "#FFC2410C"],
-            ["#FF405888", "#FFC2410C", "#FFB50060"],
+            ["#FF405888", "#FFD4960A", "#FFB85010"],
+            ["#FF405888", "#FFB85010", "#FFC84068"],
         ],
         "hail": [
             ["#FF405888", "#FF2563EB", "#FF5E78B0"],
             ["#FF405888", "#FF5E78B0", "#FF6880A8"],
             ["#FF405888", "#FF3878A8", "#FF387898"],
             ["#FF405888", "#FF387898", "#FFD4960A"],
-            ["#FF405888", "#FFD4960A", "#FFC2410C"],
-            ["#FF405888", "#FFC2410C", "#FFB50060"],
+            ["#FF405888", "#FFD4960A", "#FFB85010"],
+            ["#FF405888", "#FFB85010", "#FFC84068"],
         ],
     ]
 
@@ -297,9 +297,9 @@ struct WidgetGradientBackground: View {
                 // Blue from top-right — strong presence, smooth melt into green
                 RadialGradient(
                     gradient: Gradient(stops: [
-                        .init(color: colors[0], location: 0),
-                        .init(color: colors[0].opacity(0.95), location: 0.2),
-                        .init(color: colors[0].opacity(0.6), location: 0.45),
+                        .init(color: colors[0].opacity(0.85), location: 0),
+                        .init(color: colors[0].opacity(0.65), location: 0.2),
+                        .init(color: colors[0].opacity(0.35), location: 0.45),
                         .init(color: colors[0].opacity(0), location: 0.7),
                     ]),
                     center: .topTrailing,
@@ -310,9 +310,9 @@ struct WidgetGradientBackground: View {
                 // Gold from bottom-left — warm accent, smooth melt into green
                 RadialGradient(
                     gradient: Gradient(stops: [
-                        .init(color: colors[2], location: 0),
-                        .init(color: colors[2].opacity(0.9), location: 0.15),
-                        .init(color: colors[2].opacity(0.5), location: 0.35),
+                        .init(color: colors[2].opacity(0.75), location: 0),
+                        .init(color: colors[2].opacity(0.55), location: 0.15),
+                        .init(color: colors[2].opacity(0.30), location: 0.35),
                         .init(color: colors[2].opacity(0), location: 0.55),
                     ]),
                     center: .bottomLeading,

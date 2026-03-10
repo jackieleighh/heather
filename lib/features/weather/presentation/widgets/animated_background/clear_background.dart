@@ -111,7 +111,7 @@ class _DayClearPainter extends CustomPainter {
   }
 
   @override
-  bool shouldRepaint(covariant CustomPainter oldDelegate) => true;
+  bool shouldRepaint(_DayClearPainter oldDelegate) => oldDelegate.time != time;
 }
 
 class _NightClearPainter extends CustomPainter {
@@ -173,5 +173,6 @@ class _NightClearPainter extends CustomPainter {
   }
 
   @override
-  bool shouldRepaint(covariant CustomPainter oldDelegate) => true;
+  bool shouldRepaint(_NightClearPainter oldDelegate) =>
+      oldDelegate.time != time;
 }

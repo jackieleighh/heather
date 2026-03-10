@@ -84,12 +84,14 @@ class VerticalForecastPagerState extends State<VerticalForecastPager> {
       fit: StackFit.expand,
       children: [
         // Vertical PageView
-        PageView(
-          controller: _pageController,
-          scrollDirection: Axis.vertical,
-          physics: const ClampingScrollPhysics(),
-          onPageChanged: (page) => setState(() => _currentPage = page),
-          children: pages,
+        RepaintBoundary(
+          child: PageView(
+            controller: _pageController,
+            scrollDirection: Axis.vertical,
+            physics: const ClampingScrollPhysics(),
+            onPageChanged: (page) => setState(() => _currentPage = page),
+            children: pages,
+          ),
         ),
 
         // Page indicator dots

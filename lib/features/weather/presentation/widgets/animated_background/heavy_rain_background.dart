@@ -18,6 +18,7 @@ class _HeavyRainBackgroundState extends State<HeavyRainBackground>
   late final AnimationController _controller;
   final List<Particle> _drops = [];
   final Random _random = Random();
+  double _time = 0;
 
   @override
   void initState() {
@@ -26,6 +27,9 @@ class _HeavyRainBackgroundState extends State<HeavyRainBackground>
       vsync: this,
       duration: const Duration(seconds: 1),
     )..repeat();
+    _controller.addListener(() {
+      _time += 0.016;
+    });
   }
 
   @override
@@ -40,7 +44,7 @@ class _HeavyRainBackgroundState extends State<HeavyRainBackground>
       animation: _controller,
       builder: (context, child) {
         return CustomPaint(
-          foregroundPainter: _HeavyRainPainter(_drops, _random),
+          foregroundPainter: _HeavyRainPainter(_drops, _random, _time),
           size: Size.infinite,
           child: Container(
             decoration: BoxDecoration(
@@ -60,8 +64,9 @@ class _HeavyRainBackgroundState extends State<HeavyRainBackground>
 class _HeavyRainPainter extends CustomPainter {
   final List<Particle> drops;
   final Random random;
+  final double time;
 
-  _HeavyRainPainter(this.drops, this.random);
+  _HeavyRainPainter(this.drops, this.random, this.time);
 
   @override
   void paint(Canvas canvas, Size size) {
@@ -106,5 +111,6 @@ class _HeavyRainPainter extends CustomPainter {
   }
 
   @override
-  bool shouldRepaint(covariant CustomPainter oldDelegate) => true;
+  bool shouldRepaint(_HeavyRainPainter oldDelegate) =>
+      oldDelegate.time != time;
 }

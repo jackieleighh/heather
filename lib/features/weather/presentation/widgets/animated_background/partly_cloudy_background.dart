@@ -173,7 +173,8 @@ class _PartlyCloudyDayPainter extends CustomPainter {
   }
 
   @override
-  bool shouldRepaint(covariant CustomPainter oldDelegate) => true;
+  bool shouldRepaint(_PartlyCloudyDayPainter oldDelegate) =>
+      oldDelegate.time != time;
 }
 
 class _PartlyCloudyNightPainter extends CustomPainter {
@@ -235,7 +236,8 @@ class _PartlyCloudyNightPainter extends CustomPainter {
   }
 
   @override
-  bool shouldRepaint(covariant CustomPainter oldDelegate) => true;
+  bool shouldRepaint(_PartlyCloudyNightPainter oldDelegate) =>
+      oldDelegate.time != time;
 }
 
 /// Draws a cloud that drifts continuously across the screen and wraps around.

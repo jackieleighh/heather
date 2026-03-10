@@ -129,5 +129,6 @@ class _FreezingRainPainter extends CustomPainter {
   }
 
   @override
-  bool shouldRepaint(covariant CustomPainter oldDelegate) => true;
+  bool shouldRepaint(_FreezingRainPainter oldDelegate) =>
+      oldDelegate.time != time;
 }

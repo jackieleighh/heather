@@ -55,15 +55,15 @@ struct MediumWidgetView: View {
                                         .font(.custom("Quicksand-Medium", size: 11))
                                         .opacity(0.9)
 
-                                    if let alertLabel = data.alertLabel {
+                                    if let alertText = data.alertText {
                                         HStack(spacing: 2) {
                                             Image(systemName: data.alertIcon)
                                                 .font(.system(size: 9))
-                                            Text(alertLabel)
+                                                .foregroundStyle(data.alertColor)
+                                            Text(alertText)
                                                 .font(.custom("Quicksand-SemiBold", size: 10))
                                                 .lineLimit(1)
                                         }
-                                        .foregroundStyle(data.alertColor)
                                     } else {
                                         Text(data.description.capitalized)
                                             .font(.custom("Quicksand-Medium", size: 11))
@@ -240,10 +240,10 @@ struct MediumWidgetView: View {
                                     size: 32
                                 )
                             }
-                            if let alertLabel = data.alertLabel {
+                            if let alertText = data.alertText {
                                 MediumDetailLabel(
                                     icon: data.alertIcon,
-                                    value: alertLabel,
+                                    value: alertText,
                                     iconTint: data.alertColor
                                 )
                             } else if let precipLabel = data.precipLabel {
@@ -316,7 +316,7 @@ private struct MediumDetailLabel: View {
                 .minimumScaleFactor(0.8)
                 .lineLimit(1)
                 .opacity(iconTint != nil ? 1.0 : 0.9)
-                .foregroundStyle(iconTint ?? .white)
+                .foregroundStyle(.white)
         }
         .fixedSize()
     }

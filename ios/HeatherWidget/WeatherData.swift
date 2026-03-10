@@ -105,19 +105,28 @@ struct WeatherData: Codable {
         return "moon.fill"
     }
 
-    /// Alert color based on severity: extreme=red, severe=orange, default=yellow.
+    /// Alert label with the leading ⚠ prefix stripped (the widget uses its own SF Symbol icon).
+    var alertText: String? {
+        guard let alertLabel else { return nil }
+        return alertLabel.replacingOccurrences(of: "\u{26A0} ", with: "")
+    }
+
+    /// Alert color based on severity.
     var alertColor: Color {
         switch alertSeverity?.lowercased() {
         case "extreme": return Color(red: 0xEF/255.0, green: 0x44/255.0, blue: 0x44/255.0)
         case "severe": return Color(red: 0xF9/255.0, green: 0x73/255.0, blue: 0x16/255.0)
+        case "moderate": return Color(red: 0xFB/255.0, green: 0xBF/255.0, blue: 0x24/255.0)
+        case "minor": return Color(red: 0x94/255.0, green: 0xA3/255.0, blue: 0xB8/255.0)
         default: return .yellow
         }
     }
 
-    /// Alert icon based on severity: extreme=circle exclamation, severe/default=triangle.
+    /// Alert icon based on severity.
     var alertIcon: String {
         switch alertSeverity?.lowercased() {
         case "extreme": return "exclamationmark.circle.fill"
+        case "minor": return "info.circle.fill"
         default: return "exclamationmark.triangle.fill"
         }
     }

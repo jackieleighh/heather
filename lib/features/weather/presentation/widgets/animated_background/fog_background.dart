@@ -161,5 +161,5 @@ class _FogPainter extends CustomPainter {
   }
 
   @override
-  bool shouldRepaint(covariant CustomPainter oldDelegate) => true;
+  bool shouldRepaint(_FogPainter oldDelegate) => oldDelegate.time != time;
 }

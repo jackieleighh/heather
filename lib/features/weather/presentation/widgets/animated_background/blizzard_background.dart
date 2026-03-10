@@ -118,5 +118,6 @@ class _BlizzardPainter extends CustomPainter {
   }
 
   @override
-  bool shouldRepaint(covariant CustomPainter oldDelegate) => true;
+  bool shouldRepaint(_BlizzardPainter oldDelegate) =>
+      oldDelegate.time != time;
 }

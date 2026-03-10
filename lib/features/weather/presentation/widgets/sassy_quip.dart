@@ -8,16 +8,18 @@ class SassyQuip extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final length = quip.length;
-    final fontSize = length > 120
-        ? 22.0
-        : length > 80
+    final fontSize = length > 100
         ? 26.0
-        : 30.0;
+        : length > 80
+        ? 30.0
+        : length > 60
+        ? 34.0
+        : 38.0;
 
     return Container(
       width: double.infinity,
       constraints: BoxConstraints(
-        maxWidth: MediaQuery.sizeOf(context).width * 0.92,
+        maxWidth: MediaQuery.sizeOf(context).width * 0.85,
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.end,

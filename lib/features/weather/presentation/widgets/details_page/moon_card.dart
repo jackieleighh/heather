@@ -52,26 +52,27 @@ class MoonCard extends ConsumerWidget {
               children: [
                 Icon(
                   WeatherIcons.moon_full,
-                  size: 15,
+                  size: 18,
                   color: AppColors.cream.withValues(alpha: 0.9),
                 ),
-                const SizedBox(width: 4),
+                const SizedBox(width: 8),
                 Text(
                   'Sky',
-                  style: GoogleFonts.figtree(
-                    fontSize: 18,
-                    fontWeight: FontWeight.w400,
-                    color: AppColors.cream,
-                    shadows: [
-                      const Shadow(color: Color(0x28000000), blurRadius: 6),
-                    ],
+                  style: theme.textTheme.bodySmall?.copyWith(
+                    fontWeight: FontWeight.w600,
                   ),
                 ),
               ],
             ),
-            const Spacer(),
-            _VisiblePlanetsRow(latitude: latitude, longitude: longitude),
-            _AstroEventRow(now: now),
+            const Expanded(child: SizedBox.expand()),
+            const SizedBox(height: 14),
+            Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                _VisiblePlanetsRow(latitude: latitude, longitude: longitude),
+                _AstroEventRow(now: now),
+              ],
+            ),
           ],
         ),
       );
@@ -405,7 +406,7 @@ class _VisiblePlanetsRow extends ConsumerWidget {
           ),
         );
       },
-      loading: () => const SizedBox.shrink(),
+      loading: () => const SizedBox(height: 15),
       error: (_, _) => const SizedBox.shrink(),
     );
   }

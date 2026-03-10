@@ -21,6 +21,7 @@ class _HailBackgroundState extends State<HailBackground>
   final Random _random = Random();
   double _lightningOpacity = 0;
   double _nextFlash = 3.0;
+  double _time = 0;
 
   @override
   void initState() {
@@ -30,6 +31,9 @@ class _HailBackgroundState extends State<HailBackground>
       duration: const Duration(seconds: 1),
     )..repeat();
     _controller.addListener(_updateLightning);
+    _controller.addListener(() {
+      _time += 0.016;
+    });
   }
 
   void _updateLightning() {
@@ -62,6 +66,7 @@ class _HailBackgroundState extends State<HailBackground>
             _hailStones,
             _random,
             _lightningOpacity,
+            _time,
           ),
           size: Size.infinite,
           child: Container(
@@ -96,8 +101,9 @@ class _HailPainter extends CustomPainter {
   final List<Particle> hailStones;
   final Random random;
   final double lightningOpacity;
+  final double time;
 
-  _HailPainter(this.drops, this.hailStones, this.random, this.lightningOpacity);
+  _HailPainter(this.drops, this.hailStones, this.random, this.lightningOpacity, this.time);
 
   @override
   void paint(Canvas canvas, Size size) {
@@ -143,5 +149,7 @@ class _HailPainter extends CustomPainter {
   }
 
   @override
-  bool shouldRepaint(covariant CustomPainter oldDelegate) => true;
+  bool shouldRepaint(_HailPainter oldDelegate) =>
+      oldDelegate.time != time ||
+      oldDelegate.lightningOpacity != lightningOpacity;
 }

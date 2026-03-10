@@ -137,7 +137,7 @@ Future<void> _refreshWidgetData() async {
     final quips = quipMap[current.condition]?[tier] ?? ['Stay cozy.'];
     final quip = quips[Random().nextInt(quips.length)];
 
-    // Compute alert label and severity from NWS alerts (extreme/severe only)
+    // Compute alert label and severity from NWS alerts (all severities)
     String? alertLabel;
     String? alertSeverity;
     if (isInUSBounds(lat, lon)) {
@@ -169,7 +169,9 @@ Future<void> _refreshWidgetData() async {
           final sortOrder = switch (severityStr) {
             'extreme' => 0,
             'severe' => 1,
-            _ => 999,
+            'moderate' => 2,
+            'minor' => 3,
+            _ => 4,
           };
 
           if (sortOrder < bestSortOrder) {

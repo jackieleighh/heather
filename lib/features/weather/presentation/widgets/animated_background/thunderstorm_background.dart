@@ -20,6 +20,7 @@ class _ThunderstormBackgroundState extends State<ThunderstormBackground>
   final Random _random = Random();
   double _lightningOpacity = 0;
   double _nextFlash = 2.0;
+  double _time = 0;
 
   @override
   void initState() {
@@ -29,6 +30,9 @@ class _ThunderstormBackgroundState extends State<ThunderstormBackground>
       duration: const Duration(seconds: 1),
     )..repeat();
     _controller.addListener(_updateLightning);
+    _controller.addListener(() {
+      _time += 0.016;
+    });
   }
 
   void _updateLightning() {
@@ -56,7 +60,7 @@ class _ThunderstormBackgroundState extends State<ThunderstormBackground>
       animation: _controller,
       builder: (context, child) {
         return CustomPaint(
-          foregroundPainter: _ThunderstormPainter(_drops, _random, _lightningOpacity),
+          foregroundPainter: _ThunderstormPainter(_drops, _random, _lightningOpacity, _time),
           size: Size.infinite,
           child: Container(
             decoration: BoxDecoration(
@@ -89,8 +93,9 @@ class _ThunderstormPainter extends CustomPainter {
   final List<Particle> drops;
   final Random random;
   final double lightningOpacity;
+  final double time;
 
-  _ThunderstormPainter(this.drops, this.random, this.lightningOpacity);
+  _ThunderstormPainter(this.drops, this.random, this.lightningOpacity, this.time);
 
   @override
   void paint(Canvas canvas, Size size) {
@@ -144,5 +149,7 @@ class _ThunderstormPainter extends CustomPainter {
   }
 
   @override
-  bool shouldRepaint(covariant CustomPainter oldDelegate) => true;
+  bool shouldRepaint(_ThunderstormPainter oldDelegate) =>
+      oldDelegate.time != time ||
+      oldDelegate.lightningOpacity != lightningOpacity;
 }

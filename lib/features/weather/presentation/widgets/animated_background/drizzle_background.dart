@@ -18,6 +18,7 @@ class _DrizzleBackgroundState extends State<DrizzleBackground>
   late final AnimationController _controller;
   final List<Particle> _drops = [];
   final Random _random = Random();
+  double _time = 0;
 
   @override
   void initState() {
@@ -26,6 +27,9 @@ class _DrizzleBackgroundState extends State<DrizzleBackground>
       vsync: this,
       duration: const Duration(seconds: 1),
     )..repeat();
+    _controller.addListener(() {
+      _time += 0.016;
+    });
   }
 
   @override
@@ -40,7 +44,7 @@ class _DrizzleBackgroundState extends State<DrizzleBackground>
       animation: _controller,
       builder: (context, child) {
         return CustomPaint(
-          foregroundPainter: _DrizzlePainter(_drops, _random),
+          foregroundPainter: _DrizzlePainter(_drops, _random, _time),
           size: Size.infinite,
           child: Container(
             decoration: BoxDecoration(
@@ -60,8 +64,9 @@ class _DrizzleBackgroundState extends State<DrizzleBackground>
 class _DrizzlePainter extends CustomPainter {
   final List<Particle> drops;
   final Random random;
+  final double time;
 
-  _DrizzlePainter(this.drops, this.random);
+  _DrizzlePainter(this.drops, this.random, this.time);
 
   @override
   void paint(Canvas canvas, Size size) {
@@ -106,5 +111,5 @@ class _DrizzlePainter extends CustomPainter {
   }
 
   @override
-  bool shouldRepaint(covariant CustomPainter oldDelegate) => true;
+  bool shouldRepaint(_DrizzlePainter oldDelegate) => oldDelegate.time != time;
 }

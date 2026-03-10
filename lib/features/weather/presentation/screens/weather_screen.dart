@@ -415,10 +415,12 @@ class _WeatherScreenState extends ConsumerState<WeatherScreen>
         return Stack(
           children: [
             // Animated background
-            WeatherBackground(
-              condition: bgCondition,
-              isDay: bgIsDay,
-              temperature: bgTemperature,
+            RepaintBoundary(
+              child: WeatherBackground(
+                condition: bgCondition,
+                isDay: bgIsDay,
+                temperature: bgTemperature,
+              ),
             ),
             // Light scrim for text readability
             Positioned.fill(
@@ -444,10 +446,12 @@ class _WeatherScreenState extends ConsumerState<WeatherScreen>
             ),
             // Logo behind all page content
             LogoOverlay(isDay: bgIsDay),
-            PageView(
-              controller: _horizontalController,
-              physics: const ClampingScrollPhysics(),
-              children: pages,
+            RepaintBoundary(
+              child: PageView(
+                controller: _horizontalController,
+                physics: const ClampingScrollPhysics(),
+                children: pages,
+              ),
             ),
             if (pages.length > 1)
               Positioned(

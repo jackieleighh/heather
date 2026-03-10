@@ -107,5 +107,5 @@ class _SnowPainter extends CustomPainter {
   }
 
   @override
-  bool shouldRepaint(covariant CustomPainter oldDelegate) => true;
+  bool shouldRepaint(_SnowPainter oldDelegate) => oldDelegate.time != time;
 }

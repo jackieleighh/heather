@@ -53,15 +53,15 @@ struct SmallWidgetView: View {
                         .opacity(0.9)
                         .padding(.top, 1)
 
-                    if let alertLabel = data.alertLabel {
+                    if let alertText = data.alertText {
                         HStack(spacing: 2) {
                             Image(systemName: data.alertIcon)
                                 .font(.system(size: 9))
-                            Text(alertLabel)
+                                .foregroundStyle(data.alertColor)
+                            Text(alertText)
                                 .font(.custom("Quicksand-SemiBold", size: 10))
                                 .lineLimit(1)
                         }
-                        .foregroundStyle(data.alertColor)
                         .padding(.top, 1)
                     } else {
                         Text(data.description.capitalized)
