@@ -102,8 +102,8 @@ Future<void> _refreshWidgetData() async {
     if (cachedJson != null &&
         cachedTs != null &&
         DateTime.now().millisecondsSinceEpoch - cachedTs <
-            const Duration(minutes: 14).inMilliseconds) {
-      // Cache is <14 min old — reuse foreground data
+            const Duration(minutes: 5).inMilliseconds) {
+      // Cache is <5 min old — reuse foreground data
       forecastModel = ForecastResponseModel.fromJson(
           jsonDecode(cachedJson) as Map<String, dynamic>);
     } else {
@@ -125,6 +125,14 @@ Future<void> _refreshWidgetData() async {
       await prefs.setInt(
           cacheTsKey, DateTime.now().millisecondsSinceEpoch);
     }
+
+    // Update pointer keys so readCachedWeather() always finds the freshest
+    // data, regardless of GPS coordinate drift between refreshes.
+    await prefs.setString('last_forecast_cache_key', cacheKey);
+    await prefs.setString('last_forecast_cache_ts_key', cacheTsKey);
+    await prefs.setString('last_city_name', cityName);
+    await prefs.setDouble('last_city_lat', lat);
+    await prefs.setDouble('last_city_lon', lon);
 
     final forecast = forecastModel.toEntity();
 

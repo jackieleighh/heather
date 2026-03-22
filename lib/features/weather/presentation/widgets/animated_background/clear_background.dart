@@ -1,16 +1,16 @@
 import 'dart:math';
 
 import 'package:flutter/material.dart';
-import 'package:heather/core/constants/background_gradients.dart';
-
 class ClearBackground extends StatefulWidget {
   final bool isDay;
   final List<Color> gradientColors;
+  final bool isActive;
 
   const ClearBackground({
     super.key,
     required this.isDay,
     required this.gradientColors,
+    this.isActive = true,
   });
 
   @override
@@ -30,10 +30,19 @@ class _ClearBackgroundState extends State<ClearBackground>
     _controller = AnimationController(
       vsync: this,
       duration: const Duration(seconds: 1),
-    )..repeat();
+    );
+    if (widget.isActive) _controller.repeat();
     _controller.addListener(() {
       _time += 0.01;
     });
+  }
+
+  @override
+  void didUpdateWidget(ClearBackground oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    if (widget.isActive != oldWidget.isActive) {
+      widget.isActive ? _controller.repeat() : _controller.stop();
+    }
   }
 
   @override
@@ -58,9 +67,6 @@ class _ClearBackgroundState extends State<ClearBackground>
                 begin: Alignment.topCenter,
                 end: Alignment.bottomCenter,
                 colors: widget.gradientColors,
-                stops: widget.isDay
-                    ? BackgroundGradients.sunnyStops(widget.gradientColors.length)
-                    : BackgroundGradients.nightStops(widget.gradientColors.length),
               ),
             ),
           ),
@@ -93,7 +99,7 @@ class _DayClearPainter extends CustomPainter {
 
   @override
   void paint(Canvas canvas, Size size) {
-    final center = Offset(size.width * 0.75, size.height * 0.1);
+    final center = Offset(size.width * 0.8, size.height * 0.12);
 
     final glowPaint = Paint()
       ..style = PaintingStyle.fill

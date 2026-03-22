@@ -208,9 +208,6 @@ class _CollapsedDayContent extends StatelessWidget {
                 fontSize: 20,
                 fontWeight: FontWeight.w400,
                 color: AppColors.cream,
-                shadows: [
-                  const Shadow(color: Color(0x28000000), blurRadius: 6),
-                ],
               ),
             ),
             const SizedBox(width: 6),

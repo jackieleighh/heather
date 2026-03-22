@@ -49,17 +49,21 @@ class MoonCard extends ConsumerWidget {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Row(
+              crossAxisAlignment: CrossAxisAlignment.baseline,
+              textBaseline: TextBaseline.alphabetic,
               children: [
                 Icon(
                   WeatherIcons.moon_full,
-                  size: 18,
+                  size: 15,
                   color: AppColors.cream.withValues(alpha: 0.9),
                 ),
-                const SizedBox(width: 8),
+                const SizedBox(width: 4),
                 Text(
                   'Sky',
-                  style: theme.textTheme.bodySmall?.copyWith(
-                    fontWeight: FontWeight.w600,
+                  style: GoogleFonts.figtree(
+                    fontSize: 18,
+                    fontWeight: FontWeight.w400,
+                    color: AppColors.cream,
                   ),
                 ),
               ],
@@ -108,17 +112,21 @@ class MoonCard extends ConsumerWidget {
         children: [
           // Header
           Row(
+            crossAxisAlignment: CrossAxisAlignment.baseline,
+            textBaseline: TextBaseline.alphabetic,
             children: [
               Icon(
                 icon,
-                size: 18,
+                size: 15,
                 color: AppColors.cream.withValues(alpha: 0.9),
               ),
-              const SizedBox(width: 8),
+              const SizedBox(width: 4),
               Text(
                 'Sky',
-                style: theme.textTheme.bodySmall?.copyWith(
-                  fontWeight: FontWeight.w600,
+                style: GoogleFonts.figtree(
+                  fontSize: 18,
+                  fontWeight: FontWeight.w400,
+                  color: AppColors.cream,
                 ),
               ),
               const Spacer(),

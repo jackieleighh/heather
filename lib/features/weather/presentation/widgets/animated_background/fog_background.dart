@@ -26,8 +26,9 @@ class _FogWisp {
 
 class FogBackground extends StatefulWidget {
   final List<Color> gradientColors;
+  final bool isActive;
 
-  const FogBackground({super.key, required this.gradientColors});
+  const FogBackground({super.key, required this.gradientColors, this.isActive = true});
 
   @override
   State<FogBackground> createState() => _FogBackgroundState();
@@ -47,10 +48,19 @@ class _FogBackgroundState extends State<FogBackground>
     _controller = AnimationController(
       vsync: this,
       duration: const Duration(seconds: 1),
-    )..repeat();
+    );
+    if (widget.isActive) _controller.repeat();
     _controller.addListener(() {
       _time += 0.004;
     });
+  }
+
+  @override
+  void didUpdateWidget(FogBackground oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    if (widget.isActive != oldWidget.isActive) {
+      widget.isActive ? _controller.repeat() : _controller.stop();
+    }
   }
 
   List<_FogWisp> _generateWisps() {

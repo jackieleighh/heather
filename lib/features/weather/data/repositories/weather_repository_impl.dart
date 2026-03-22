@@ -157,7 +157,40 @@ class WeatherRepositoryImpl implements WeatherRepository {
   /// already-resolved [SharedPreferences] instance.
   /// Returns null if either is missing. No TTL — the background refresh()
   /// will update stale data after the UI renders.
-  static (LocationInfo, Forecast)? readCachedWeather(SharedPreferences prefs) {
+  ///
+  /// When [overrideLat], [overrideLon], and [overrideCityName] are provided
+  /// (e.g. from widget cold-launch), the method first tries a direct
+  /// coordinate-based cache lookup before falling through to the normal
+  /// pointer-key path.
+  static (LocationInfo, Forecast)? readCachedWeather(
+    SharedPreferences prefs, {
+    double? overrideLat,
+    double? overrideLon,
+    String? overrideCityName,
+  }) {
+    // Try widget-coordinate override first
+    if (overrideLat != null && overrideLon != null) {
+      final overrideKey =
+          'cached_forecast_${overrideLat}_$overrideLon';
+      final overrideCached = prefs.getString(overrideKey);
+      if (overrideCached != null) {
+        try {
+          final json = jsonDecode(overrideCached) as Map<String, dynamic>;
+          final forecast = ForecastResponseModel.fromJson(json).toEntity();
+          final countryCode = prefs.getString('last_country_code');
+          final location = LocationInfo(
+            latitude: overrideLat,
+            longitude: overrideLon,
+            cityName: overrideCityName ?? 'Unknown',
+            countryCode: countryCode,
+          );
+          return (location, forecast);
+        } catch (_) {
+          // Fall through to normal path
+        }
+      }
+    }
+
     final cityName = prefs.getString('last_city_name');
     final lat = prefs.getDouble('last_city_lat');
     final lon = prefs.getDouble('last_city_lon');

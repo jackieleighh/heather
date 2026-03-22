@@ -161,6 +161,45 @@ class ForecastResponseModel {
       }
     }
 
+    // Derive condition from WMO code
+    var condition = WeatherCodes.fromWmo(current.weatherCode);
+    var description = WeatherCodes.description(current.weatherCode);
+    var weatherCode = current.weatherCode;
+
+    // Override: API reports active precipitation but weather code doesn't
+    if (!WeatherCodes.isPrecipitation(condition)) {
+      if (current.snowfall > 0) {
+        condition = WeatherCondition.snow;
+        weatherCode = 71;
+        description = WeatherCodes.description(71);
+      } else if (current.rain > 2.0) {
+        condition = WeatherCondition.heavyRain;
+        weatherCode = 65;
+        description = WeatherCodes.description(65);
+      } else if (current.rain > 0.5) {
+        condition = WeatherCondition.rain;
+        weatherCode = 61;
+        description = WeatherCodes.description(61);
+      } else if (current.rain > 0 || current.precipitation > 0) {
+        condition = WeatherCondition.drizzle;
+        weatherCode = 51;
+        description = WeatherCodes.description(51);
+      }
+    }
+
+    // Cross-reference: if the hourly slot for "now" shows precipitation
+    // but the current snapshot doesn't, prefer the hourly code
+    final currentSlot = hourlyAllEntities
+        .where((h) => !h.time.isAfter(now))
+        .lastOrNull;
+    if (currentSlot != null &&
+        !WeatherCodes.isPrecipitation(condition) &&
+        WeatherCodes.isPrecipitation(currentSlot.condition)) {
+      condition = currentSlot.condition;
+      weatherCode = currentSlot.weatherCode;
+      description = WeatherCodes.description(currentSlot.weatherCode);
+    }
+
     return Forecast(
       minutely15: minutelyEntities,
       current: Weather(
@@ -168,9 +207,9 @@ class ForecastResponseModel {
         feelsLike: current.apparentTemperature,
         humidity: current.relativeHumidity2m,
         windSpeed: current.windSpeed10m,
-        weatherCode: current.weatherCode,
-        condition: WeatherCodes.fromWmo(current.weatherCode),
-        description: WeatherCodes.description(current.weatherCode),
+        weatherCode: weatherCode,
+        condition: condition,
+        description: description,
         isDay: current.isDay == 1,
         precipitation: current.precipitation,
         cloudCover: current.cloudCover,

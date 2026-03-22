@@ -6,8 +6,9 @@ import 'particle.dart';
 
 class FreezingRainBackground extends StatefulWidget {
   final List<Color> gradientColors;
+  final bool isActive;
 
-  const FreezingRainBackground({super.key, required this.gradientColors});
+  const FreezingRainBackground({super.key, required this.gradientColors, this.isActive = true});
 
   @override
   State<FreezingRainBackground> createState() => _FreezingRainBackgroundState();
@@ -26,10 +27,19 @@ class _FreezingRainBackgroundState extends State<FreezingRainBackground>
     _controller = AnimationController(
       vsync: this,
       duration: const Duration(seconds: 1),
-    )..repeat();
+    );
+    if (widget.isActive) _controller.repeat();
     _controller.addListener(() {
       _time += 0.01;
     });
+  }
+
+  @override
+  void didUpdateWidget(FreezingRainBackground oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    if (widget.isActive != oldWidget.isActive) {
+      widget.isActive ? _controller.repeat() : _controller.stop();
+    }
   }
 
   @override

@@ -38,6 +38,8 @@ exports.checkWeatherAlerts = onSchedule(
     // Build a map of unique locations (rounded to 2 decimals) -> device tokens
     const locationMap = new Map(); // "lat,lon" -> Set<token>
     const tokenPlatforms = new Map(); // token -> platform
+    const tokenLocNames = new Map(); // token -> Map("lat,lon" -> name)
+    const tokenLocIds = new Map(); // token -> Map("lat,lon" -> locationId)
 
     devicesSnap.forEach((doc) => {
       const data = doc.data();
@@ -45,6 +47,8 @@ exports.checkWeatherAlerts = onSchedule(
       const locations = data.locations || [];
       const platform = data.platform || 'android';
       tokenPlatforms.set(token, platform);
+      tokenLocNames.set(token, new Map());
+      tokenLocIds.set(token, new Map());
 
       for (const loc of locations) {
         const key = `${loc.latitude.toFixed(2)},${loc.longitude.toFixed(2)}`;
@@ -52,6 +56,8 @@ exports.checkWeatherAlerts = onSchedule(
           locationMap.set(key, new Set());
         }
         locationMap.get(key).add(token);
+        tokenLocNames.get(token).set(key, loc.name || '');
+        tokenLocIds.get(token).set(key, loc.locationId || '');
       }
     });
 
@@ -85,19 +91,23 @@ exports.checkWeatherAlerts = onSchedule(
               if (expires && expires < now) continue;
 
               const severity = (props.severity || '').toLowerCase();
-              if (!['extreme', 'severe', 'moderate'].includes(severity))
+              if (!['extreme', 'severe', 'moderate', 'minor'].includes(severity))
                 continue;
 
               for (const token of tokens) {
                 if (!alertsByToken.has(token)) {
                   alertsByToken.set(token, []);
                 }
+                const locName = tokenLocNames.get(token)?.get(coordKey) || '';
+                const locId = tokenLocIds.get(token)?.get(coordKey) || '';
                 alertsByToken.get(token).push({
                   id: alertId,
                   event: props.event || 'Weather Alert',
                   headline: props.headline || '',
                   severity,
                   description: props.description || '',
+                  locationName: locName,
+                  locationId: locId,
                 });
               }
             }
@@ -149,7 +159,7 @@ exports.checkWeatherAlerts = onSchedule(
       if (newAlerts.length === 0) continue;
 
       // Sort by severity (extreme first)
-      const severityOrder = { extreme: 0, severe: 1, moderate: 2 };
+      const severityOrder = { extreme: 0, severe: 1, moderate: 2, minor: 3 };
       newAlerts.sort(
         (a, b) =>
           (severityOrder[a.severity] ?? 3) - (severityOrder[b.severity] ?? 3)
@@ -169,6 +179,8 @@ exports.checkWeatherAlerts = onSchedule(
           event: top.event,
           severity: top.severity,
           type: 'weather_alert',
+          locationName: top.locationName || '',
+          locationId: top.locationId || '',
         },
         android: {
           priority: 'high',

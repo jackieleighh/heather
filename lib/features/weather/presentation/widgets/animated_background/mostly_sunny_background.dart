@@ -2,16 +2,16 @@ import 'dart:math';
 import 'dart:ui' as ui;
 
 import 'package:flutter/material.dart';
-import 'package:heather/core/constants/background_gradients.dart';
-
 class MostlySunnyBackground extends StatefulWidget {
   final List<Color> gradientColors;
   final bool isDay;
+  final bool isActive;
 
   const MostlySunnyBackground({
     super.key,
     required this.gradientColors,
     required this.isDay,
+    this.isActive = true,
   });
 
   @override
@@ -31,10 +31,19 @@ class _MostlySunnyBackgroundState extends State<MostlySunnyBackground>
     _controller = AnimationController(
       vsync: this,
       duration: const Duration(seconds: 1),
-    )..repeat();
+    );
+    if (widget.isActive) _controller.repeat();
     _controller.addListener(() {
       _time += 0.007;
     });
+  }
+
+  @override
+  void didUpdateWidget(MostlySunnyBackground oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    if (widget.isActive != oldWidget.isActive) {
+      widget.isActive ? _controller.repeat() : _controller.stop();
+    }
   }
 
   @override
@@ -59,9 +68,6 @@ class _MostlySunnyBackgroundState extends State<MostlySunnyBackground>
                 begin: Alignment.topCenter,
                 end: Alignment.bottomCenter,
                 colors: widget.gradientColors,
-                stops: widget.isDay
-                    ? BackgroundGradients.sunnyStops(widget.gradientColors.length)
-                    : BackgroundGradients.nightStops(widget.gradientColors.length),
               ),
             ),
           ),
@@ -104,15 +110,15 @@ class _MostlySunnyDayPainter extends CustomPainter {
     const rayAngles = [0.0, 0.55, 1.05, 1.6, 2.15, 2.65, 3.2, 3.75, 4.3, 4.85, 5.35, 5.9];
     const rayLengths = [300.0, 190.0, 260.0, 160.0, 290.0, 210.0, 270.0, 180.0, 240.0, 200.0, 280.0, 185.0];
     const raySpreads = [0.055, 0.037, 0.05, 0.032, 0.055, 0.04, 0.05, 0.037, 0.045, 0.037, 0.055, 0.032];
-    const rayAlphas = [0.32, 0.20, 0.28, 0.16, 0.30, 0.22, 0.26, 0.18, 0.24, 0.19, 0.30, 0.15];
+    const rayAlphas = [0.22, 0.14, 0.20, 0.11, 0.21, 0.15, 0.18, 0.13, 0.17, 0.13, 0.21, 0.10];
     const innerR = 22.0;
-    final spin = time * 0.08;
+    final spin = time * 0.15;
 
     for (var i = 0; i < rayAngles.length; i++) {
       final angle = rayAngles[i] + spin;
       final outerR = rayLengths[i];
       final halfSpread = raySpreads[i];
-      final alpha = rayAlphas[i] + sin(time * 0.5 + i * 0.7).abs() * 0.04;
+      final alpha = rayAlphas[i] + sin(time * 0.5 + i * 0.7).abs() * 0.03;
 
       final cosA = cos(angle);
       final sinA = sin(angle);
@@ -146,8 +152,8 @@ class _MostlySunnyDayPainter extends CustomPainter {
       center,
       110,
       [
-        Colors.white.withValues(alpha: 0.45),
-        Colors.white.withValues(alpha: 0.12),
+        Colors.white.withValues(alpha: 0.30),
+        Colors.white.withValues(alpha: 0.08),
         Colors.white.withValues(alpha: 0.0),
       ],
       [0.0, 0.5, 1.0],
@@ -159,8 +165,8 @@ class _MostlySunnyDayPainter extends CustomPainter {
       center,
       45,
       [
-        Colors.white.withValues(alpha: 0.95),
-        Colors.white.withValues(alpha: 0.60),
+        Colors.white.withValues(alpha: 0.85),
+        Colors.white.withValues(alpha: 0.40),
         Colors.white.withValues(alpha: 0.0),
       ],
       [0.0, 0.35, 1.0],
@@ -168,9 +174,9 @@ class _MostlySunnyDayPainter extends CustomPainter {
     canvas.drawRect(Offset.zero & size, paint);
 
     // Drifting cumulus clouds
-    _drawDriftingCloud(canvas, w, h, time, 0.15, 0.30, w * 0.38, 0.30, 0.06);
-    _drawDriftingCloud(canvas, w, h, time, 0.58, 0.38, w * 0.42, 0.28, 0.04);
-    _drawDriftingCloud(canvas, w, h, time, 0.30, 0.62, w * 0.35, 0.22, 0.05);
+    _drawDriftingCloud(canvas, w, h, time, 0.15, 0.30, w * 0.38, 0.30, 0.096);
+    _drawDriftingCloud(canvas, w, h, time, 0.58, 0.38, w * 0.42, 0.28, 0.072);
+    _drawDriftingCloud(canvas, w, h, time, 0.30, 0.62, w * 0.35, 0.22, 0.08);
   }
 
   @override
@@ -232,9 +238,9 @@ class _MostlySunnyNightPainter extends CustomPainter {
     canvas.drawCircle(Offset(w * 0.8, h * 0.12), 25, moonPaint);
 
     // Drifting cumulus clouds (same positions as day)
-    _drawDriftingCloud(canvas, w, h, time, 0.15, 0.30, w * 0.38, 0.30, 0.04);
-    _drawDriftingCloud(canvas, w, h, time, 0.58, 0.38, w * 0.42, 0.28, 0.03);
-    _drawDriftingCloud(canvas, w, h, time, 0.30, 0.62, w * 0.35, 0.22, 0.035);
+    _drawDriftingCloud(canvas, w, h, time, 0.15, 0.30, w * 0.38, 0.30, 0.072);
+    _drawDriftingCloud(canvas, w, h, time, 0.58, 0.38, w * 0.42, 0.28, 0.056);
+    _drawDriftingCloud(canvas, w, h, time, 0.30, 0.62, w * 0.35, 0.22, 0.064);
   }
 
   @override
@@ -257,7 +263,7 @@ void _drawDriftingCloud(
   // Continuous horizontal drift with wrap-around
   final totalWidth = w + scale * 1.5;
   final rawX = (startXFrac * w + time * w * speed) % totalWidth - scale * 0.75;
-  final y = h * yFrac + sin(time * 0.3 + startXFrac * 10) * 8;
+  final y = h * yFrac + sin(time * 0.25 + startXFrac * 10) * 6;
 
   _drawCloud(
     canvas,

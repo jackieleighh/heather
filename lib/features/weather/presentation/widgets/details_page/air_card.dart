@@ -46,6 +46,8 @@ class AirCard extends StatelessWidget {
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
           Row(
+            crossAxisAlignment: CrossAxisAlignment.baseline,
+            textBaseline: TextBaseline.alphabetic,
             children: [
               Icon(
                 WeatherIcons.smoke,
@@ -59,9 +61,6 @@ class AirCard extends StatelessWidget {
                   fontSize: 18,
                   fontWeight: FontWeight.w400,
                   color: AppColors.cream,
-                  shadows: [
-                    const Shadow(color: Color(0x28000000), blurRadius: 6),
-                  ],
                 ),
               ),
               const Spacer(),

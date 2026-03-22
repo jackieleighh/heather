@@ -21,6 +21,7 @@ class WeatherDetails extends ConsumerWidget {
   final double latitude;
   final double longitude;
   final int utcOffsetSeconds;
+  final bool isDay;
 
   const WeatherDetails({
     super.key,
@@ -32,6 +33,7 @@ class WeatherDetails extends ConsumerWidget {
     required this.latitude,
     required this.longitude,
     required this.utcOffsetSeconds,
+    required this.isDay,
   });
 
   @override
@@ -55,8 +57,9 @@ class WeatherDetails extends ConsumerWidget {
 
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+      // width: double.infinity,
       decoration: BoxDecoration(
-        color: AppColors.cream.withValues(alpha: 0.22),
+        color: AppColors.cream.withValues(alpha: 0.18),
         borderRadius: BorderRadius.circular(16),
         boxShadow: [
           BoxShadow(
@@ -94,16 +97,18 @@ class WeatherDetails extends ConsumerWidget {
                   style: style,
                 ),
                 const SizedBox(width: 16),
-                if (weather.isDay)
+                if (isDay)
                   _DetailChip(
                     icon: WeatherIcons.day_sunny,
                     label: 'UV ${weather.uvIndex.round()}',
                     style: style,
                   )
-                else if (usno != null)
+                else
                   _DetailChip(
-                    icon: moonPhaseIcon(usno.fractionForDate(locationNow)),
-                    label: '${usno.fracIllum.round()}%',
+                    icon: usno != null
+                        ? moonPhaseIcon(usno.fractionForDate(locationNow))
+                        : WeatherIcons.moon_waxing_crescent_3,
+                    label: usno != null ? '${usno.fracIllum.round()}%' : '— %',
                     style: style,
                   ),
               ],
@@ -177,7 +182,7 @@ class WeatherDetails extends ConsumerWidget {
 
     // No precipitation — show normal condition
     return _DetailChip(
-      icon: conditionIcon(weather.weatherCode, isDay: weather.isDay),
+      icon: conditionIcon(weather.weatherCode, isDay: isDay),
       label: weather.description,
       style: style,
     );
@@ -189,9 +194,11 @@ class WeatherDetails extends ConsumerWidget {
     // Cross-reference hourly precipitation probability — if very high for
     // the current slot, the condition code may lag behind actual conditions
     // (e.g., API says "overcast" but probability is 99%).
-    final currentSlot =
-        hourly.where((h) => !h.time.isAfter(locationNow)).lastOrNull;
-    final probRaining = !isRaining &&
+    final currentSlot = hourly
+        .where((h) => !h.time.isAfter(locationNow))
+        .lastOrNull;
+    final probRaining =
+        !isRaining &&
         currentSlot != null &&
         currentSlot.precipitationProbability >= 90;
 
@@ -217,7 +224,7 @@ class WeatherDetails extends ConsumerWidget {
 
     // Fallback: tomorrow's precipitation probability (nighttime only —
     // during the day the "tonight" / "this afternoon" labels cover it)
-    if (!weather.isDay) {
+    if (!isDay) {
       return tomorrowPrecipLabel(daily: daily, locationNow: locationNow);
     }
     return null;

@@ -28,9 +28,10 @@ struct HeatherWeatherProvider: TimelineProvider {
             return
         }
 
-        // Check if cached data (pushed from Dart) is fresh enough to skip the API call.
-        // The Dart background task refreshes every ~14 min, so if lastUpdated is
-        // within 14 minutes we can trust the cached data and avoid a double-fetch.
+        // The Dart background task triggers reloadTimelines immediately after pushing
+        // data, so freshly-pushed data is only seconds old. A 5-minute window safely
+        // prevents double-fetching while allowing WidgetKit-initiated refreshes
+        // (which happen after 15+ min) to fetch fresh data from Open-Meteo.
         let cachedIsFresh: Bool = {
             let updatedStr = cached.lastUpdated
             let formats = [
@@ -55,7 +56,7 @@ struct HeatherWeatherProvider: TimelineProvider {
                 updatedDate = iso.date(from: updatedStr)
             }
             guard let date = updatedDate else { return false }
-            return Date().timeIntervalSince(date) < 14 * 60
+            return Date().timeIntervalSince(date) < 5 * 60
         }()
 
         Task {
@@ -188,7 +189,7 @@ struct HeatherWeatherProvider: TimelineProvider {
                     entries.append(WeatherEntry(date: entryDate, data: data, isPlaceholder: false))
                 }
 
-                let nextUpdate = calendar.date(byAdding: .minute, value: 30, to: now)!
+                let nextUpdate = calendar.date(byAdding: .minute, value: 15, to: now)!
                 completion(Timeline(entries: entries, policy: .after(nextUpdate)))
                 return
             }
@@ -330,10 +331,10 @@ struct HeatherWeatherProvider: TimelineProvider {
                 WeatherData.save(first.data)
             }
 
-            // Refresh after 30 minutes — WidgetKit will call getTimeline() again,
+            // Refresh after 15 minutes — WidgetKit will call getTimeline() again,
             // and if cache is stale the native code fetches fresh data from Open-Meteo.
             // This keeps the widget current even when iOS throttles the Dart background task.
-            let nextUpdate = calendar.date(byAdding: .minute, value: 30, to: now)!
+            let nextUpdate = calendar.date(byAdding: .minute, value: 15, to: now)!
             completion(Timeline(entries: entries, policy: .after(nextUpdate)))
         }
     }

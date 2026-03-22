@@ -54,9 +54,6 @@ class TemperatureCard extends StatelessWidget {
                   fontSize: compact ? 14 : 18,
                   fontWeight: FontWeight.w400,
                   color: AppColors.cream,
-                  shadows: [
-                    const Shadow(color: Color(0x28000000), blurRadius: 6),
-                  ],
                 ),
               ),
               const Spacer(),

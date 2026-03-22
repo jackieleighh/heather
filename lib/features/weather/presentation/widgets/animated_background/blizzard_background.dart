@@ -6,8 +6,9 @@ import 'particle.dart';
 
 class BlizzardBackground extends StatefulWidget {
   final List<Color> gradientColors;
+  final bool isActive;
 
-  const BlizzardBackground({super.key, required this.gradientColors});
+  const BlizzardBackground({super.key, required this.gradientColors, this.isActive = true});
 
   @override
   State<BlizzardBackground> createState() => _BlizzardBackgroundState();
@@ -26,10 +27,19 @@ class _BlizzardBackgroundState extends State<BlizzardBackground>
     _controller = AnimationController(
       vsync: this,
       duration: const Duration(seconds: 1),
-    )..repeat();
+    );
+    if (widget.isActive) _controller.repeat();
     _controller.addListener(() {
       _time += 0.016;
     });
+  }
+
+  @override
+  void didUpdateWidget(BlizzardBackground oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    if (widget.isActive != oldWidget.isActive) {
+      widget.isActive ? _controller.repeat() : _controller.stop();
+    }
   }
 
   @override

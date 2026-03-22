@@ -6,8 +6,9 @@ import 'particle.dart';
 
 class HailBackground extends StatefulWidget {
   final List<Color> gradientColors;
+  final bool isActive;
 
-  const HailBackground({super.key, required this.gradientColors});
+  const HailBackground({super.key, required this.gradientColors, this.isActive = true});
 
   @override
   State<HailBackground> createState() => _HailBackgroundState();
@@ -29,11 +30,20 @@ class _HailBackgroundState extends State<HailBackground>
     _controller = AnimationController(
       vsync: this,
       duration: const Duration(seconds: 1),
-    )..repeat();
+    );
+    if (widget.isActive) _controller.repeat();
     _controller.addListener(_updateLightning);
     _controller.addListener(() {
       _time += 0.016;
     });
+  }
+
+  @override
+  void didUpdateWidget(HailBackground oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    if (widget.isActive != oldWidget.isActive) {
+      widget.isActive ? _controller.repeat() : _controller.stop();
+    }
   }
 
   void _updateLightning() {

@@ -6,8 +6,9 @@ import 'particle.dart';
 
 class DrizzleBackground extends StatefulWidget {
   final List<Color> gradientColors;
+  final bool isActive;
 
-  const DrizzleBackground({super.key, required this.gradientColors});
+  const DrizzleBackground({super.key, required this.gradientColors, this.isActive = true});
 
   @override
   State<DrizzleBackground> createState() => _DrizzleBackgroundState();
@@ -26,10 +27,19 @@ class _DrizzleBackgroundState extends State<DrizzleBackground>
     _controller = AnimationController(
       vsync: this,
       duration: const Duration(seconds: 1),
-    )..repeat();
+    );
+    if (widget.isActive) _controller.repeat();
     _controller.addListener(() {
       _time += 0.016;
     });
+  }
+
+  @override
+  void didUpdateWidget(DrizzleBackground oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    if (widget.isActive != oldWidget.isActive) {
+      widget.isActive ? _controller.repeat() : _controller.stop();
+    }
   }
 
   @override
@@ -71,14 +81,14 @@ class _DrizzlePainter extends CustomPainter {
   @override
   void paint(Canvas canvas, Size size) {
     if (drops.isEmpty) {
-      for (var i = 0; i < 55; i++) {
+      for (var i = 0; i < 80; i++) {
         drops.add(
           Particle(
             x: random.nextDouble() * size.width,
             y: random.nextDouble() * size.height,
-            speed: 3.0 + random.nextDouble() * 5.0,
-            size: 0.6 + random.nextDouble() * 1.0,
-            opacity: 0.08 + random.nextDouble() * 0.22,
+            speed: 1.8 + random.nextDouble() * 2.7,
+            size: 0.5 + random.nextDouble() * 0.9,
+            opacity: 0.08 + random.nextDouble() * 0.18,
           ),
         );
       }
@@ -90,7 +100,7 @@ class _DrizzlePainter extends CustomPainter {
 
     for (final drop in drops) {
       drop.y += drop.speed;
-      drop.x += 0.5;
+      drop.x += 0.2;
 
       if (drop.y > size.height) {
         drop.y = -10;
@@ -104,7 +114,7 @@ class _DrizzlePainter extends CustomPainter {
 
       canvas.drawLine(
         Offset(drop.x, drop.y),
-        Offset(drop.x + 0.5, drop.y + 10 + drop.speed),
+        Offset(drop.x + 0.2, drop.y + 6 + drop.speed),
         paint,
       );
     }

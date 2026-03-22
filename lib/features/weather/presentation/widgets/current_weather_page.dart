@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'dart:math' as math;
 
 import 'package:flutter/material.dart';
@@ -44,11 +45,13 @@ class CurrentWeatherPage extends StatefulWidget {
 class _CurrentWeatherPageState extends State<CurrentWeatherPage> {
   final _scrollController = ScrollController();
   final _refreshController = RefreshController();
-  static const _overscrollThreshold = 60.0;
+  static const _overscrollThreshold = 50.0;
   bool _pageChanging = false;
+  Timer? _cooldownTimer;
 
   @override
   void dispose() {
+    _cooldownTimer?.cancel();
     _scrollController.dispose();
     _refreshController.dispose();
     super.dispose();
@@ -63,13 +66,21 @@ class _CurrentWeatherPageState extends State<CurrentWeatherPage> {
       // At bottom and swiping up → next page
       if (pos.pixels > pos.maxScrollExtent + _overscrollThreshold) {
         _pageChanging = true;
-        widget.parentPageController
-            .nextPage(
-              duration: const Duration(milliseconds: 300),
-              curve: Curves.easeOut,
-            )
-            .then((_) => _pageChanging = false);
-        _scrollController.jumpTo(_scrollController.position.maxScrollExtent);
+        // Just trigger the page change — don't touch the scroll position.
+        // BouncingScrollPhysics will bounce back naturally and the page
+        // is already sliding away, so the bounce is barely visible.
+        widget.parentPageController.nextPage(
+          duration: const Duration(milliseconds: 400),
+          curve: Curves.easeOutCubic,
+        );
+        _cooldownTimer?.cancel();
+        _cooldownTimer = Timer(const Duration(milliseconds: 600), () {
+          _pageChanging = false;
+          // Reset scroll after the page transition completes
+          if (_scrollController.hasClients) {
+            _scrollController.jumpTo(0);
+          }
+        });
         return true;
       }
     }
@@ -161,6 +172,7 @@ class _CurrentWeatherPageState extends State<CurrentWeatherPage> {
                         latitude: widget.latitude,
                         longitude: widget.longitude,
                         utcOffsetSeconds: widget.forecast.utcOffsetSeconds,
+                        isDay: widget.forecast.isCurrentlyDay,
                       ),
                       const Spacer(flex: 4),
                     ],
@@ -175,3 +187,4 @@ class _CurrentWeatherPageState extends State<CurrentWeatherPage> {
     );
   }
 }
+

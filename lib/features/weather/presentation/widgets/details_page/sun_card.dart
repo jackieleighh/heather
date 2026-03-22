@@ -38,6 +38,8 @@ class SunCard extends StatelessWidget {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Row(
+            crossAxisAlignment: CrossAxisAlignment.baseline,
+            textBaseline: TextBaseline.alphabetic,
             children: [
               Icon(
                 WeatherIcons.day_sunny,
@@ -51,9 +53,6 @@ class SunCard extends StatelessWidget {
                   fontSize: 18,
                   fontWeight: FontWeight.w400,
                   color: AppColors.cream,
-                  shadows: [
-                    const Shadow(color: Color(0x28000000), blurRadius: 6),
-                  ],
                 ),
               ),
               const Spacer(),

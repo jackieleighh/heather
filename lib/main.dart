@@ -29,10 +29,41 @@ Future<void> main() async {
   final onboardingCompleted = prefs.getBool('onboarding_completed') ?? false;
   final router = buildRouter(onboardingCompleted: onboardingCompleted);
 
-  // Always read cached data so providers start in `loaded` state when
-  // cache exists. The 3-second splash timer handles normal-launch UX
-  // separately (controlled by coldLaunchedFromWidget in weather_screen).
-  final cachedWeatherSeed = WeatherRepositoryImpl.readCachedWeather(prefs);
+  // Detect when the native widget (iOS WidgetKit) has independently fetched
+  // fresher data than the app's own cache. In that case, the app should
+  // force-refresh from the API so it doesn't show stale data while the
+  // widget shows something newer.
+  if (WidgetService.widgetLastUpdated != null) {
+    final cacheTsKey = prefs.getString('last_forecast_cache_ts_key');
+    final cacheTs = cacheTsKey != null ? prefs.getInt(cacheTsKey) : null;
+    final widgetMs = WidgetService.widgetLastUpdated!.millisecondsSinceEpoch;
+    if (cacheTs == null || widgetMs > cacheTs) {
+      WidgetService.widgetDataIsNewer = true;
+    }
+  }
+
+  // Always read the full cached forecast so providers start in `loaded`
+  // state when cache exists.
+  var cachedWeatherSeed = WeatherRepositoryImpl.readCachedWeather(
+    prefs,
+    overrideLat: WidgetService.coldLaunchedFromWidget
+        ? WidgetService.widgetLatitude
+        : null,
+    overrideLon: WidgetService.coldLaunchedFromWidget
+        ? WidgetService.widgetLongitude
+        : null,
+    overrideCityName: WidgetService.coldLaunchedFromWidget
+        ? WidgetService.widgetCityName
+        : null,
+  );
+
+  // When the widget has fresher data, overlay its current conditions onto
+  // the cached forecast so the user immediately sees the same temperature
+  // and condition the widget shows — while keeping the full 10-day/24-hour
+  // structure intact for the detail pages.
+  if (WidgetService.coldLaunchedFromWidget || WidgetService.widgetDataIsNewer) {
+    cachedWeatherSeed = WidgetService.applyWidgetOverlay(cachedWeatherSeed);
+  }
 
   List<SavedLocation>? savedLocationsSeed;
   Map<String, Forecast>? savedForecastsSeed;
@@ -49,7 +80,9 @@ Future<void> main() async {
     debugPrint('[launch] weatherSeed=${cachedWeatherSeed != null}, '
         'savedLocs=${savedLocationsSeed?.length ?? 0}, '
         'savedForecasts=${savedForecastsSeed?.length ?? 0}, '
-        'widgetColdLaunch=${WidgetService.coldLaunchedFromWidget}');
+        'widgetColdLaunch=${WidgetService.coldLaunchedFromWidget}, '
+        'widgetDataIsNewer=${WidgetService.widgetDataIsNewer}, '
+        'widgetLastUpdated=${WidgetService.widgetLastUpdated}');
   }
 
   runApp(

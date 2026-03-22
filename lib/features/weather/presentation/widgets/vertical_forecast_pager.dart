@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 
 import '../../../../core/constants/app_colors.dart';
+import '../../../../core/utils/smooth_page_physics.dart';
 import '../../domain/entities/forecast.dart';
 import '../../domain/entities/weather_alert.dart';
 import 'current_weather_page.dart';
@@ -38,7 +39,6 @@ class VerticalForecastPager extends StatefulWidget {
 
 class VerticalForecastPagerState extends State<VerticalForecastPager> {
   final _pageController = PageController();
-  int _currentPage = 0;
 
   void jumpToFirst() {
     if (_pageController.hasClients) {
@@ -88,8 +88,7 @@ class VerticalForecastPagerState extends State<VerticalForecastPager> {
           child: PageView(
             controller: _pageController,
             scrollDirection: Axis.vertical,
-            physics: const ClampingScrollPhysics(),
-            onPageChanged: (page) => setState(() => _currentPage = page),
+            physics: const SmoothPageScrollPhysics(),
             children: pages,
           ),
         ),
@@ -100,32 +99,76 @@ class VerticalForecastPagerState extends State<VerticalForecastPager> {
           top: 0,
           bottom: 0,
           child: Center(
-            child: Container(
-              padding: const EdgeInsets.only(left: 10),
-              child: Column(
-                mainAxisSize: MainAxisSize.min,
-                children: List.generate(pages.length, (index) {
-                  final isActive = index == _currentPage;
-                  return Padding(
-                    padding: const EdgeInsets.symmetric(vertical: 3),
-                    child: AnimatedContainer(
-                      duration: const Duration(milliseconds: 200),
-                      width: 6,
-                      height: isActive ? 18 : 6,
-                      decoration: BoxDecoration(
-                        color: isActive
-                            ? AppColors.cream.withValues(alpha: 0.9)
-                            : AppColors.cream.withValues(alpha: 0.5),
-                        borderRadius: BorderRadius.circular(3),
-                      ),
-                    ),
-                  );
-                }),
-              ),
+            child: _VerticalPageIndicator(
+              controller: _pageController,
+              count: pages.length,
             ),
           ),
         ),
       ],
+    );
+  }
+}
+
+class _VerticalPageIndicator extends StatefulWidget {
+  final PageController controller;
+  final int count;
+
+  const _VerticalPageIndicator({
+    required this.controller,
+    required this.count,
+  });
+
+  @override
+  State<_VerticalPageIndicator> createState() => _VerticalPageIndicatorState();
+}
+
+class _VerticalPageIndicatorState extends State<_VerticalPageIndicator> {
+  int _currentPage = 0;
+
+  @override
+  void initState() {
+    super.initState();
+    widget.controller.addListener(_onPageChanged);
+  }
+
+  @override
+  void dispose() {
+    widget.controller.removeListener(_onPageChanged);
+    super.dispose();
+  }
+
+  void _onPageChanged() {
+    final page = widget.controller.page?.round() ?? 0;
+    if (page != _currentPage) {
+      setState(() => _currentPage = page);
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      padding: const EdgeInsets.only(left: 10),
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        children: List.generate(widget.count, (index) {
+          final isActive = index == _currentPage;
+          return Padding(
+            padding: const EdgeInsets.symmetric(vertical: 3),
+            child: AnimatedContainer(
+              duration: const Duration(milliseconds: 200),
+              width: 6,
+              height: isActive ? 18 : 6,
+              decoration: BoxDecoration(
+                color: isActive
+                    ? AppColors.cream.withValues(alpha: 0.9)
+                    : AppColors.cream.withValues(alpha: 0.5),
+                borderRadius: BorderRadius.circular(3),
+              ),
+            ),
+          );
+        }),
+      ),
     );
   }
 }

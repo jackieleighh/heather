@@ -1,11 +1,12 @@
 import 'dart:async';
+import 'dart:io' show Platform;
 
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_native_splash/flutter_native_splash.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:go_router/go_router.dart';
-import 'package:heather/features/weather/domain/entities/weather_condition.dart';
 import 'package:heather/features/weather/presentation/screens/error_screen.dart';
 import 'package:heather/features/weather/presentation/screens/loading_screen.dart';
 import 'package:heather/features/weather/domain/entities/saved_location.dart';
@@ -23,6 +24,7 @@ import '../providers/weather_provider.dart';
 import '../screens/alert_detail_sheet.dart';
 import '../screens/location_search_screen.dart';
 import '../widgets/animated_background/weather_background.dart';
+import '../../../../core/utils/smooth_page_physics.dart';
 import '../widgets/vertical_forecast_pager.dart';
 
 class WeatherScreen extends ConsumerStatefulWidget {
@@ -41,6 +43,7 @@ class _WeatherScreenState extends ConsumerState<WeatherScreen>
   Timer? _pollTimer;
   Timer? _gracePeriodTimer;
   Timer? _forceTimeoutTimer;
+  Timer? _pendingAlertRetryTimer;
   DateTime? _lastRefreshTime;
   DateTime? _lastForceRefreshTime;
   bool _splashRemoved = false;
@@ -48,7 +51,12 @@ class _WeatherScreenState extends ConsumerState<WeatherScreen>
   bool _minimumDisplayElapsed = false;
   bool _initialRegistrationDone = false;
   bool _savedLocationsLoaded = false;
-  int _currentHorizontalPage = 0;
+  bool _pendingAlertNavigated = false;
+  bool _pendingAlertActive = false;
+  bool _isAppActive = true;
+  String? _pendingLocationId;
+  String? _pendingLocationName;
+  final _currentHorizontalPage = ValueNotifier<int>(0);
 
   @override
   void initState() {
@@ -61,6 +69,8 @@ class _WeatherScreenState extends ConsumerState<WeatherScreen>
       _resetToFirstAndRefresh();
     });
     _alertTapSub = FcmService().alertTapped.listen((_) {
+      if (kDebugMode) debugPrint('[ALERT] stream listener fired');
+      _consumePendingFromFcm();
       _showPendingAlert();
     });
     _pollTimer = Timer.periodic(const Duration(minutes: 15), (_) {
@@ -80,7 +90,14 @@ class _WeatherScreenState extends ConsumerState<WeatherScreen>
       _minimumDisplayElapsed = true;
     } else {
       Timer(const Duration(seconds: 3), () {
-        if (mounted) setState(() => _minimumDisplayElapsed = true);
+        if (mounted) {
+          setState(() => _minimumDisplayElapsed = true);
+          if (kDebugMode) debugPrint('[ALERT] 3s timer fired, fcm.pending=${FcmService().pendingAlertTap}');
+          _consumePendingFromFcm();
+          WidgetsBinding.instance.addPostFrameCallback((_) {
+            if (mounted) _showPendingAlert();
+          });
+        }
       });
     }
     // Grace period: show loading screen for at least 10s before showing errors
@@ -100,16 +117,24 @@ class _WeatherScreenState extends ConsumerState<WeatherScreen>
     _gracePeriodTimer?.cancel();
     _forceTimeoutTimer?.cancel();
     _pollTimer?.cancel();
+    _pendingAlertRetryTimer?.cancel();
     WidgetsBinding.instance.removeObserver(this);
     _widgetTapSub?.cancel();
     _alertTapSub?.cancel();
     _horizontalController.removeListener(_onHorizontalPageChanged);
     _horizontalController.dispose();
+    _currentHorizontalPage.dispose();
     super.dispose();
   }
 
   @override
   void didChangeAppLifecycleState(AppLifecycleState state) {
+    final wasActive = _isAppActive;
+    _isAppActive = state == AppLifecycleState.resumed;
+    if (_isAppActive != wasActive) {
+      setState(() {});
+    }
+
     if (state == AppLifecycleState.resumed) {
       final now = DateTime.now();
       if (_lastRefreshTime != null &&
@@ -125,13 +150,13 @@ class _WeatherScreenState extends ConsumerState<WeatherScreen>
       _horizontalController.jumpToPage(0);
     }
     _verticalPagerKey.currentState?.jumpToFirst();
-    _refreshAll();
+    _refreshAll(force: true);
   }
 
   void _onHorizontalPageChanged() {
     final page = _horizontalController.page?.round() ?? 0;
-    if (page != _currentHorizontalPage) {
-      setState(() => _currentHorizontalPage = page);
+    if (page != _currentHorizontalPage.value) {
+      _currentHorizontalPage.value = page;
     }
   }
 
@@ -176,12 +201,175 @@ class _WeatherScreenState extends ConsumerState<WeatherScreen>
     context.push('/settings');
   }
 
+  /// Copies pending alert data from FcmService into local fields and clears
+  /// FcmService immediately. This ensures the location ID/name are preserved
+  /// locally even after FcmService is cleared, so [_collectAlertsForPendingLocation]
+  /// reads from stable local state instead of a mutable singleton.
+  void _consumePendingFromFcm() {
+    final fcm = FcmService();
+    if (!fcm.pendingAlertTap) return;
+    if (kDebugMode) {
+      debugPrint('[ALERT] _consumePendingFromFcm: locationId=${fcm.pendingAlertLocationId}, '
+          'locationName=${fcm.pendingAlertLocationName}');
+    }
+    _pendingAlertActive = true;
+    _pendingLocationId = fcm.pendingAlertLocationId;
+    _pendingLocationName = fcm.pendingAlertLocationName;
+    _pendingAlertNavigated = false;
+    fcm.clearPendingAlertTap();
+
+    // Force a refresh of saved location forecasts so seed data (which has
+    // alerts: const []) gets replaced with real alert data from the API.
+    final savedLocations = ref.read(savedLocationsProvider);
+    if (kDebugMode) debugPrint('[ALERT] triggering saved loc refresh, count=${savedLocations.length}');
+    if (savedLocations.isNotEmpty) {
+      ref
+          .read(savedLocationsForecastProvider.notifier)
+          .refresh(savedLocations, forceRefresh: true);
+    }
+  }
+
+  void _clearPendingAlert() {
+    _pendingAlertActive = false;
+    _pendingLocationId = null;
+    _pendingLocationName = null;
+    _pendingAlertNavigated = false;
+    _pendingAlertRetryTimer?.cancel();
+    _pendingAlertRetryTimer = null;
+  }
+
   void _showPendingAlert() {
     if (!mounted) return;
-    final alerts = _collectAllAlerts();
-    if (alerts.isNotEmpty) {
-      FcmService().clearPendingAlertTap();
-      showAlertDetailSheet(context, alerts);
+    if (!_minimumDisplayElapsed) {
+      if (kDebugMode) debugPrint('[ALERT] _showPendingAlert: skipped, splash not elapsed');
+      return;
+    }
+
+    // Try to consume from FcmService in case init() completed after earlier
+    // attempts (e.g. Firebase init was slow on cold start).
+    _consumePendingFromFcm();
+
+    if (!_pendingAlertActive) {
+      if (kDebugMode) debugPrint('[ALERT] _showPendingAlert: no pending alert');
+      return;
+    }
+
+    if (kDebugMode) {
+      debugPrint('[ALERT] _showPendingAlert: active=true, navigated=$_pendingAlertNavigated, '
+          'hasClients=${_horizontalController.hasClients}, locId=$_pendingLocationId');
+    }
+
+    // Navigate to the correct page. Retry on each call until successful
+    // (PageView may not have clients on the first attempt).
+    if (!_pendingAlertNavigated && _horizontalController.hasClients) {
+      _navigateToAlertLocation();
+      _pendingAlertNavigated = true;
+    }
+
+    _startAlertRetryTimer();
+  }
+
+  /// A single polling timer that checks for alert data every 500ms.
+  /// The first tick fires at 500ms, giving the page time to settle after
+  /// navigation. Gives up after 15 seconds (30 ticks).
+  void _startAlertRetryTimer() {
+    if (_pendingAlertRetryTimer != null) return; // already running
+    if (kDebugMode) debugPrint('[ALERT] starting retry timer, locId=$_pendingLocationId');
+
+    _pendingAlertRetryTimer = Timer.periodic(
+      const Duration(milliseconds: 500),
+      (timer) {
+        if (!mounted) {
+          timer.cancel();
+          _pendingAlertRetryTimer = null;
+          return;
+        }
+
+        // Try to consume late-arriving FcmService data on each tick.
+        _consumePendingFromFcm();
+
+        if (!_pendingAlertActive) {
+          if (kDebugMode) debugPrint('[ALERT] timer tick ${timer.tick}: no longer active, stopping');
+          timer.cancel();
+          _pendingAlertRetryTimer = null;
+          return;
+        }
+
+        // Give up after 15 seconds
+        if (timer.tick > 30) {
+          if (kDebugMode) debugPrint('[ALERT] timer: gave up after 15s');
+          _clearPendingAlert();
+          return;
+        }
+
+        // Retry navigation if it hasn't happened yet.
+        if (!_pendingAlertNavigated && _horizontalController.hasClients) {
+          if (kDebugMode) debugPrint('[ALERT] timer tick ${timer.tick}: retrying navigation');
+          _navigateToAlertLocation();
+          _pendingAlertNavigated = true;
+        }
+
+        final savedState = ref.read(savedLocationsForecastProvider);
+        if (kDebugMode && timer.tick <= 6) {
+          savedState.whenOrNull(
+            loading: () => debugPrint('[ALERT] tick ${timer.tick}: savedState=loading'),
+            loaded: (forecasts) {
+              final entry = forecasts[_pendingLocationId];
+              debugPrint('[ALERT] tick ${timer.tick}: savedState=loaded, '
+                  'hasKey=${entry != null}, alertCount=${entry?.alerts.length ?? 0}, '
+                  'allKeys=${forecasts.keys.toList()}');
+            },
+            error: (msg) => debugPrint('[ALERT] tick ${timer.tick}: savedState=error: $msg'),
+          );
+        }
+
+        final alerts = _collectAlertsForPendingLocation();
+        if (alerts.isNotEmpty) {
+          if (kDebugMode) debugPrint('[ALERT] timer: found ${alerts.length} alerts, showing sheet');
+          _clearPendingAlert();
+          showAlertDetailSheet(context, alerts);
+        }
+      },
+    );
+  }
+
+  void _navigateToAlertLocation() {
+    if (!_horizontalController.hasClients) return;
+
+    final locationId = _pendingLocationId;
+    final locationName = _pendingLocationName;
+
+    // GPS or empty → ensure we're on page 0
+    if ((locationId == null || locationId.isEmpty || locationId == 'GPS') &&
+        (locationName == null ||
+            locationName.isEmpty ||
+            locationName == 'GPS')) {
+      if (kDebugMode) debugPrint('[ALERT] _navigateToAlertLocation: GPS path');
+      if (_horizontalController.page?.round() != 0) {
+        _horizontalController.jumpToPage(0);
+      }
+      return;
+    }
+
+    final savedLocations = ref.read(savedLocationsProvider);
+
+    // Match by ID first (reliable), fall back to name (backward compat)
+    var index = -1;
+    if (locationId != null && locationId.isNotEmpty) {
+      index = savedLocations.indexWhere((loc) => loc.id == locationId);
+    }
+    if (index < 0 && locationName != null && locationName.isNotEmpty) {
+      index = savedLocations.indexWhere((loc) => loc.name == locationName);
+    }
+
+    if (kDebugMode) {
+      debugPrint('[ALERT] _navigateToAlertLocation: locId=$locationId, '
+          'locName=$locationName, index=$index, '
+          'savedLocIds=${savedLocations.map((l) => l.id).toList()}');
+    }
+
+    if (index >= 0 && _horizontalController.hasClients) {
+      _horizontalController.jumpToPage(index + 1);
     }
   }
 
@@ -213,6 +401,41 @@ class _WeatherScreenState extends ConsumerState<WeatherScreen>
     return alerts;
   }
 
+  /// Collect alerts for the specific location referenced by the pending notification.
+  /// Reads from local [_pendingLocationId] instead of the FcmService singleton.
+  List<WeatherAlert> _collectAlertsForPendingLocation() {
+    final locationId = _pendingLocationId;
+
+    // GPS or empty/null → return GPS alerts
+    if (locationId == null || locationId.isEmpty || locationId == 'GPS') {
+      final alerts = <WeatherAlert>[];
+      final state = ref.read(weatherStateProvider);
+      state.whenOrNull(
+        loaded: (forecast, location, quip, gpsAlerts) {
+          alerts.addAll(gpsAlerts);
+        },
+      );
+      alerts.sort(
+        (a, b) => a.severity.sortOrder.compareTo(b.severity.sortOrder),
+      );
+      return alerts;
+    }
+
+    // Saved location → return alerts for that specific location
+    final savedState = ref.read(savedLocationsForecastProvider);
+    final alerts = <WeatherAlert>[];
+    savedState.whenOrNull(
+      loaded: (forecasts) {
+        final entry = forecasts[locationId];
+        if (entry != null) {
+          alerts.addAll(entry.alerts);
+        }
+      },
+    );
+    alerts.sort((a, b) => a.severity.sortOrder.compareTo(b.severity.sortOrder));
+    return alerts;
+  }
+
   Future<void> _registerAllLocations({
     required double gpsLatitude,
     required double gpsLongitude,
@@ -224,12 +447,18 @@ class _WeatherScreenState extends ConsumerState<WeatherScreen>
     final savedLocations = ref.read(savedLocationsProvider);
     final locations = alertsEnabled
         ? <Map<String, dynamic>>[
-            {'latitude': gpsLatitude, 'longitude': gpsLongitude, 'name': 'GPS'},
+            {
+              'latitude': gpsLatitude,
+              'longitude': gpsLongitude,
+              'name': 'GPS',
+              'locationId': 'GPS',
+            },
             ...savedLocations.map(
               (loc) => {
                 'latitude': loc.latitude,
                 'longitude': loc.longitude,
                 'name': loc.name,
+                'locationId': loc.id,
               },
             ),
           ]
@@ -335,8 +564,15 @@ class _WeatherScreenState extends ConsumerState<WeatherScreen>
           return const LoadingScreen();
         }
 
-        // Show alert sheet if app was opened via notification tap (cold start)
-        if (FcmService().pendingAlertTap) {
+        // Show alert sheet if app was opened via notification tap.
+        // Check both local state (already consumed) and FcmService (not yet
+        // consumed — e.g. init completed between builds). _showPendingAlert
+        // handles consumption internally via _consumePendingFromFcm().
+        if (_pendingAlertActive || FcmService().pendingAlertTap) {
+          if (kDebugMode) {
+            debugPrint('[ALERT] build: scheduling _showPendingAlert '
+                '(active=$_pendingAlertActive, fcm=${FcmService().pendingAlertTap})');
+          }
           WidgetsBinding.instance.addPostFrameCallback((_) {
             if (mounted) _showPendingAlert();
           });
@@ -390,66 +626,74 @@ class _WeatherScreenState extends ConsumerState<WeatherScreen>
           ),
         ];
 
-        // Determine active weather for background based on current page
-        var bgCondition = forecast.current.condition;
-        var bgIsDay = forecast.isCurrentlyDay;
-        var bgTemperature = forecast.current.temperature;
-
-        if (_currentHorizontalPage > 0) {
-          final locIndex = _currentHorizontalPage - 1;
-          if (locIndex < savedLocations.length) {
-            final locId = savedLocations[locIndex].id;
-            savedForecastState.whenOrNull(
-              loaded: (forecasts) {
-                final data = forecasts[locId];
-                if (data != null) {
-                  bgCondition = data.forecast.current.condition;
-                  bgIsDay = data.forecast.isCurrentlyDay;
-                  bgTemperature = data.forecast.current.temperature;
-                }
-              },
-            );
-          }
-        }
-
         return Stack(
           children: [
-            // Animated background
-            RepaintBoundary(
-              child: WeatherBackground(
-                condition: bgCondition,
-                isDay: bgIsDay,
-                temperature: bgTemperature,
-              ),
+            // Background, scrim, and logo — only rebuild on page change
+            ValueListenableBuilder<int>(
+              valueListenable: _currentHorizontalPage,
+              builder: (context, currentPage, _) {
+                var bgCondition = forecast.current.condition;
+                var bgIsDay = forecast.isCurrentlyDay;
+                var bgTemperature = forecast.current.temperature;
+
+                if (currentPage > 0) {
+                  final locIndex = currentPage - 1;
+                  if (locIndex < savedLocations.length) {
+                    final locId = savedLocations[locIndex].id;
+                    savedForecastState.whenOrNull(
+                      loaded: (forecasts) {
+                        final data = forecasts[locId];
+                        if (data != null) {
+                          bgCondition = data.forecast.current.condition;
+                          bgIsDay = data.forecast.isCurrentlyDay;
+                          bgTemperature = data.forecast.current.temperature;
+                        }
+                      },
+                    );
+                  }
+                }
+
+                return Stack(
+                  children: [
+                    RepaintBoundary(
+                      child: WeatherBackground(
+                        condition: bgCondition,
+                        isDay: bgIsDay,
+                        temperature: bgTemperature,
+                        isActive: _isAppActive,
+                      ),
+                    ),
+                    Positioned.fill(
+                      child: DecoratedBox(
+                        decoration: BoxDecoration(
+                          gradient: LinearGradient(
+                            begin: Alignment.topCenter,
+                            end: Alignment.bottomCenter,
+                            colors: bgIsDay
+                                ? [
+                                    Colors.black.withValues(alpha: 0.12),
+                                    Colors.black.withValues(alpha: 0.05),
+                                    Colors.black.withValues(alpha: 0.15),
+                                  ]
+                                : [
+                                    Colors.black.withValues(alpha: 0.03),
+                                    Colors.black.withValues(alpha: 0.0),
+                                    Colors.black.withValues(alpha: 0.05),
+                                  ],
+                          ),
+                        ),
+                      ),
+                    ),
+                    LogoOverlay(isDay: bgIsDay),
+                  ],
+                );
+              },
             ),
-            // Light scrim for text readability
-            Positioned.fill(
-              child: DecoratedBox(
-                decoration: BoxDecoration(
-                  gradient: LinearGradient(
-                    begin: Alignment.topCenter,
-                    end: Alignment.bottomCenter,
-                    colors: bgIsDay
-                        ? [
-                            Colors.black.withValues(alpha: 0.03),
-                            Colors.black.withValues(alpha: 0.0),
-                            Colors.black.withValues(alpha: 0.06),
-                          ]
-                        : [
-                            Colors.black.withValues(alpha: 0.03),
-                            Colors.black.withValues(alpha: 0.0),
-                            Colors.black.withValues(alpha: 0.05),
-                          ],
-                  ),
-                ),
-              ),
-            ),
-            // Logo behind all page content
-            LogoOverlay(isDay: bgIsDay),
             RepaintBoundary(
               child: PageView(
                 controller: _horizontalController,
-                physics: const ClampingScrollPhysics(),
+                physics: const SmoothPageScrollPhysics(),
+                clipBehavior: Clip.none,
                 children: pages,
               ),
             ),
@@ -464,7 +708,8 @@ class _WeatherScreenState extends ConsumerState<WeatherScreen>
                 ),
               ),
             Positioned(
-              top: MediaQuery.paddingOf(context).top + 8,
+              top:
+                  MediaQuery.paddingOf(context).top + (Platform.isIOS ? -8 : 4),
               left: 12,
               right: 12,
               child: Row(

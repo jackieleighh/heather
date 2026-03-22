@@ -104,7 +104,12 @@ class WeatherNotifier extends StateNotifier<WeatherState> {
        ) {
     if (cachedSeed != null) {
       _lastQuipKey = _quipKeyFor(cachedSeed.$2);
-      refresh();
+      // Force-refresh when the native widget has fresher data than the
+      // app's cache, or when cold-launched from a widget tap.
+      refresh(
+        forceRefresh: WidgetService.coldLaunchedFromWidget ||
+            WidgetService.widgetDataIsNewer,
+      );
     } else {
       loadWeather();
     }

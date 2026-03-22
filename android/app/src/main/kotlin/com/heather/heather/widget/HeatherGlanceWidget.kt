@@ -7,6 +7,7 @@ import android.graphics.Bitmap
 import android.graphics.Canvas
 import android.graphics.LinearGradient
 import android.graphics.Paint
+import android.graphics.RadialGradient
 import android.graphics.Shader
 import android.graphics.Typeface
 import androidx.compose.runtime.Composable
@@ -922,13 +923,21 @@ class HeatherGlanceWidget : GlanceAppWidget() {
         val w = width.toFloat()
         val h = height.toFloat()
 
-        // 1. Draw gradient background
+        // 1. Draw radial gradient background (matching iOS widget)
         val colors = hexColors.map { parseHexColor(it) }.toIntArray()
         if (colors.size < 2) {
             canvas.drawColor(colors.firstOrNull() ?: android.graphics.Color.parseColor("#5B86E5"))
         } else {
+            val cx = w * 0.75f
+            val cy = h * 0.15f
+            val endRadius = kotlin.math.sqrt(w * w + h * h)
+            // Compress stops to 82% so the bottom/outer color fills more area
+            val maxStop = 0.82f
+            val stops = FloatArray(colors.size) { i ->
+                (i.toFloat() / (colors.size - 1).coerceAtLeast(1)) * maxStop
+            }
             val paint = Paint()
-            paint.shader = LinearGradient(w, 0f, 0f, h, colors, null, Shader.TileMode.CLAMP)
+            paint.shader = RadialGradient(cx, cy, endRadius, colors, stops, Shader.TileMode.CLAMP)
             canvas.drawRect(0f, 0f, w, h, paint)
         }
 

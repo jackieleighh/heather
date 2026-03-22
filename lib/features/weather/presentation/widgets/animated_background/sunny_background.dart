@@ -2,12 +2,11 @@ import 'dart:math';
 import 'dart:ui' as ui;
 
 import 'package:flutter/material.dart';
-import 'package:heather/core/constants/background_gradients.dart';
-
 class SunnyBackground extends StatefulWidget {
   final List<Color> gradientColors;
+  final bool isActive;
 
-  const SunnyBackground({super.key, required this.gradientColors});
+  const SunnyBackground({super.key, required this.gradientColors, this.isActive = true});
 
   @override
   State<SunnyBackground> createState() => _SunnyBackgroundState();
@@ -24,10 +23,19 @@ class _SunnyBackgroundState extends State<SunnyBackground>
     _controller = AnimationController(
       vsync: this,
       duration: const Duration(seconds: 1),
-    )..repeat();
+    );
+    if (widget.isActive) _controller.repeat();
     _controller.addListener(() {
       _time += 0.008;
     });
+  }
+
+  @override
+  void didUpdateWidget(SunnyBackground oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    if (widget.isActive != oldWidget.isActive) {
+      widget.isActive ? _controller.repeat() : _controller.stop();
+    }
   }
 
   @override
@@ -50,7 +58,6 @@ class _SunnyBackgroundState extends State<SunnyBackground>
                 begin: Alignment.topCenter,
                 end: Alignment.bottomCenter,
                 colors: widget.gradientColors,
-                stops: BackgroundGradients.sunnyStops(widget.gradientColors.length),
               ),
             ),
           ),
@@ -69,7 +76,7 @@ class _SunnyPainter extends CustomPainter {
   void paint(Canvas canvas, Size size) {
     final center = Offset(size.width * 0.8, size.height * 0.12);
     final paint = Paint()..style = PaintingStyle.fill;
-    final spin = time * 0.08;
+    final spin = time * 0.15;
 
     // 1. Rays — narrow, distinct beams with varying lengths
     final rayPaint = Paint()..style = PaintingStyle.fill;

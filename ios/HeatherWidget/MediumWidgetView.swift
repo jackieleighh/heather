@@ -151,7 +151,8 @@ struct MediumWidgetView: View {
             WidgetGradientBackground(
                 hexColors: data.gradientColors,
                 condition: data.conditionName,
-                isDay: data.isDay
+                isDay: data.isDay,
+                family: .systemMedium
             )
         }
     }
@@ -294,7 +295,8 @@ struct MediumWidgetView: View {
             WidgetGradientBackground(
                 hexColors: data.gradientColors,
                 condition: data.conditionName,
-                isDay: data.isDay
+                isDay: data.isDay,
+                family: .systemMedium
             )
         }
     }

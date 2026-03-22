@@ -6,8 +6,9 @@ import 'particle.dart';
 
 class RainBackground extends StatefulWidget {
   final List<Color> gradientColors;
+  final bool isActive;
 
-  const RainBackground({super.key, required this.gradientColors});
+  const RainBackground({super.key, required this.gradientColors, this.isActive = true});
 
   @override
   State<RainBackground> createState() => _RainBackgroundState();
@@ -26,10 +27,19 @@ class _RainBackgroundState extends State<RainBackground>
     _controller = AnimationController(
       vsync: this,
       duration: const Duration(seconds: 1),
-    )..repeat();
+    );
+    if (widget.isActive) _controller.repeat();
     _controller.addListener(() {
       _time += 0.016;
     });
+  }
+
+  @override
+  void didUpdateWidget(RainBackground oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    if (widget.isActive != oldWidget.isActive) {
+      widget.isActive ? _controller.repeat() : _controller.stop();
+    }
   }
 
   @override
@@ -71,13 +81,13 @@ class _RainPainter extends CustomPainter {
   @override
   void paint(Canvas canvas, Size size) {
     if (drops.isEmpty) {
-      for (var i = 0; i < 120; i++) {
+      for (var i = 0; i < 160; i++) {
         drops.add(
           Particle(
             x: random.nextDouble() * size.width,
             y: random.nextDouble() * size.height,
-            speed: 4.0 + random.nextDouble() * 5.0,
-            size: 0.8 + random.nextDouble() * 1.5,
+            speed: 5.0 + random.nextDouble() * 6.0,
+            size: 0.9 + random.nextDouble() * 1.8,
             opacity: 0.1 + random.nextDouble() * 0.3,
           ),
         );
@@ -90,7 +100,7 @@ class _RainPainter extends CustomPainter {
 
     for (final drop in drops) {
       drop.y += drop.speed;
-      drop.x += 0.5;
+      drop.x += 0.8;
 
       if (drop.y > size.height) {
         drop.y = -10;
@@ -106,7 +116,7 @@ class _RainPainter extends CustomPainter {
 
       canvas.drawLine(
         Offset(drop.x, drop.y),
-        Offset(drop.x + 0.5, drop.y + 12 + drop.speed),
+        Offset(drop.x + 0.8, drop.y + 14 + drop.speed),
         paint,
       );
     }

@@ -38,7 +38,17 @@ class FcmService {
   /// True when a notification tap opened the app but the UI hasn't consumed it yet.
   bool pendingAlertTap = false;
 
-  void clearPendingAlertTap() => pendingAlertTap = false;
+  /// The location name from the tapped alert notification (e.g. "GPS" or "Pittsburgh").
+  String? pendingAlertLocationName;
+
+  /// The location ID from the tapped alert notification (e.g. "GPS" or a saved location UUID).
+  String? pendingAlertLocationId;
+
+  void clearPendingAlertTap() {
+    pendingAlertTap = false;
+    pendingAlertLocationName = null;
+    pendingAlertLocationId = null;
+  }
 
   Future<void> init() async {
     if (_initialized) return;
@@ -69,11 +79,13 @@ class FcmService {
       await _createAndroidAlertChannel();
     }
 
-    // Tell iOS to show banners/badges/sound even when the app is in foreground
+    // Don't let iOS show the FCM notification in the foreground — we show
+    // our own local notification (with payload) via _handleForegroundMessage.
+    // Showing both causes duplicates and unreliable cold-start tap detection.
     await _messaging.setForegroundNotificationPresentationOptions(
-      alert: true,
+      alert: false,
       badge: true,
-      sound: true,
+      sound: false,
     );
 
     // Handle foreground messages
@@ -84,6 +96,9 @@ class FcmService {
 
     // Check if app was opened from a terminated state via notification
     final initialMessage = await _messaging.getInitialMessage();
+    if (kDebugMode) {
+      debugPrint('[FCM] getInitialMessage: ${initialMessage != null ? 'YES data=${initialMessage.data}' : 'null'}');
+    }
     if (initialMessage != null) {
       _handleNotificationTap(initialMessage);
     }
@@ -91,10 +106,26 @@ class FcmService {
     // Check if app was launched by tapping a local notification (cold start)
     final launchDetails =
         await _localNotifications.getNotificationAppLaunchDetails();
+    if (kDebugMode) {
+      debugPrint('[FCM] getNotificationAppLaunchDetails: didLaunch=${launchDetails?.didNotificationLaunchApp}, '
+          'payload=${launchDetails?.notificationResponse?.payload}');
+    }
     if (launchDetails?.didNotificationLaunchApp == true) {
       pendingAlertTap = true;
+      final payload = launchDetails!.notificationResponse?.payload ?? '';
+      final parts = payload.split('|');
+      pendingAlertLocationId = parts.isNotEmpty ? parts[0] : null;
+      pendingAlertLocationName = parts.length > 1 ? parts[1] : payload;
+      // Fire the stream so WeatherScreen's listener is notified regardless of
+      // timing with the 3-second splash timer. Without this, the pending
+      // alert can be missed if init() completes after the timer fires.
+      _alertTapController.add(null);
     }
 
+    if (kDebugMode) {
+      debugPrint('[FCM] init complete: pendingAlertTap=$pendingAlertTap, '
+          'locationId=$pendingAlertLocationId, locationName=$pendingAlertLocationName');
+    }
     _initialized = true;
   }
 
@@ -138,16 +169,31 @@ class FcmService {
           presentSound: true,
         ),
       ),
+      payload: '${message.data['locationId'] ?? ''}|${message.data['locationName'] ?? ''}',
     );
   }
 
   void _handleLocalNotificationTap(NotificationResponse response) {
     pendingAlertTap = true;
+    final payload = response.payload ?? '';
+    final parts = payload.split('|');
+    pendingAlertLocationId = parts.isNotEmpty ? parts[0] : null;
+    pendingAlertLocationName = parts.length > 1 ? parts[1] : payload;
+    if (kDebugMode) {
+      debugPrint('[FCM] _handleLocalNotificationTap: locId=$pendingAlertLocationId, '
+          'locName=$pendingAlertLocationName, payload=$payload');
+    }
     _alertTapController.add(null);
   }
 
   void _handleNotificationTap(RemoteMessage message) {
     pendingAlertTap = true;
+    pendingAlertLocationId = message.data['locationId'];
+    pendingAlertLocationName = message.data['locationName'];
+    if (kDebugMode) {
+      debugPrint('[FCM] _handleNotificationTap: locId=$pendingAlertLocationId, '
+          'locName=$pendingAlertLocationName, data=${message.data}');
+    }
     _alertTapController.add(null);
   }
 

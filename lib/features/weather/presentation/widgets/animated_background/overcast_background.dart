@@ -32,8 +32,9 @@ class _CloudMass {
 
 class OvercastBackground extends StatefulWidget {
   final List<Color> gradientColors;
+  final bool isActive;
 
-  const OvercastBackground({super.key, required this.gradientColors});
+  const OvercastBackground({super.key, required this.gradientColors, this.isActive = true});
 
   @override
   State<OvercastBackground> createState() => _OvercastBackgroundState();
@@ -53,21 +54,30 @@ class _OvercastBackgroundState extends State<OvercastBackground>
     _controller = AnimationController(
       vsync: this,
       duration: const Duration(seconds: 1),
-    )..repeat();
+    );
+    if (widget.isActive) _controller.repeat();
     _controller.addListener(() {
       _time += 0.005;
     });
   }
 
+  @override
+  void didUpdateWidget(OvercastBackground oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    if (widget.isActive != oldWidget.isActive) {
+      widget.isActive ? _controller.repeat() : _controller.stop();
+    }
+  }
+
   List<_CloudMass> _generateMasses() {
     const params = [
       // (yFraction, scale, speed, alpha)
-      (0.08, 0.58, 0.24, 0.18),
-      (0.22, 0.54, 0.28, 0.16),
-      (0.38, 0.52, 0.36, 0.15),
-      (0.52, 0.56, 0.26, 0.14),
-      (0.66, 0.50, 0.38, 0.13),
-      (0.80, 0.48, 0.30, 0.12),
+      (0.08, 0.58, 0.22, 0.18),
+      (0.22, 0.54, 0.25, 0.16),
+      (0.38, 0.52, 0.32, 0.15),
+      (0.52, 0.56, 0.23, 0.14),
+      (0.66, 0.50, 0.34, 0.13),
+      (0.80, 0.48, 0.27, 0.12),
     ];
 
     return params.map((p) {
@@ -138,7 +148,7 @@ class _OvercastPainter extends CustomPainter {
       ..maskFilter = const MaskFilter.blur(BlurStyle.normal, 70);
     glowPaint.color =
         Colors.white.withValues(alpha: 0.15 + sin(time * 0.4) * 0.03);
-    canvas.drawCircle(Offset(w * 0.7, h * 0.08), 90, glowPaint);
+    canvas.drawCircle(Offset(w * 0.8, h * 0.12), 90, glowPaint);
 
     // Drifting cloud masses
     final paint = Paint()..style = PaintingStyle.fill;
@@ -147,7 +157,7 @@ class _OvercastPainter extends CustomPainter {
       final raw = mass.startX + time * mass.speed;
       final xNorm = (raw % 2.2) - 0.6;
       final centerX = xNorm * w;
-      final wobble = sin(time * 0.5 + mass.wobblePhase) * h * 0.012;
+      final wobble = sin(time * 0.35 + mass.wobblePhase) * h * 0.008;
       final centerY = h * mass.yFraction + wobble;
       final scale = w * mass.scale;
 

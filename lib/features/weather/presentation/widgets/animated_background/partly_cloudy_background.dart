@@ -2,16 +2,16 @@ import 'dart:math';
 import 'dart:ui' as ui;
 
 import 'package:flutter/material.dart';
-import 'package:heather/core/constants/background_gradients.dart';
-
 class PartlyCloudyBackground extends StatefulWidget {
   final List<Color> gradientColors;
   final bool isDay;
+  final bool isActive;
 
   const PartlyCloudyBackground({
     super.key,
     required this.gradientColors,
     required this.isDay,
+    this.isActive = true,
   });
 
   @override
@@ -32,10 +32,19 @@ class _PartlyCloudyBackgroundState extends State<PartlyCloudyBackground>
     _controller = AnimationController(
       vsync: this,
       duration: const Duration(seconds: 1),
-    )..repeat();
+    );
+    if (widget.isActive) _controller.repeat();
     _controller.addListener(() {
       _time += 0.007;
     });
+  }
+
+  @override
+  void didUpdateWidget(PartlyCloudyBackground oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    if (widget.isActive != oldWidget.isActive) {
+      widget.isActive ? _controller.repeat() : _controller.stop();
+    }
   }
 
   @override
@@ -60,9 +69,6 @@ class _PartlyCloudyBackgroundState extends State<PartlyCloudyBackground>
                 begin: Alignment.topCenter,
                 end: Alignment.bottomCenter,
                 colors: widget.gradientColors,
-                stops: widget.isDay
-                    ? BackgroundGradients.sunnyStops(widget.gradientColors.length)
-                    : BackgroundGradients.nightStops(widget.gradientColors.length),
               ),
             ),
           ),
@@ -99,14 +105,14 @@ class _PartlyCloudyDayPainter extends CustomPainter {
     final h = size.height;
 
     // Sun rays peeking through gaps
-    final sunCenter = Offset(w * 0.75, h * 0.12);
+    final sunCenter = Offset(w * 0.8, h * 0.12);
     final rayPaint = Paint()..style = PaintingStyle.fill;
     const rayAngles = [0.0, 0.7, 1.3, 2.0, 2.7, 3.3, 4.0, 4.7, 5.3, 5.95];
     const rayLengths = [200.0, 130.0, 180.0, 120.0, 190.0, 140.0, 170.0, 125.0, 160.0, 135.0];
     const raySpreads = [0.05, 0.033, 0.045, 0.028, 0.05, 0.035, 0.045, 0.033, 0.04, 0.033];
     const rayAlphas = [0.25, 0.15, 0.22, 0.13, 0.24, 0.17, 0.20, 0.14, 0.19, 0.15];
     const innerR = 18.0;
-    final spin = time * 0.08;
+    final spin = time * 0.15;
 
     for (var i = 0; i < rayAngles.length; i++) {
       final angle = rayAngles[i] + spin;
@@ -219,7 +225,7 @@ class _PartlyCloudyNightPainter extends CustomPainter {
     }
 
     // Moon glow
-    final moonCenter = Offset(w * 0.75, h * 0.12);
+    final moonCenter = Offset(w * 0.8, h * 0.12);
     final moonPaint = Paint()
       ..style = PaintingStyle.fill
       ..color = Colors.white.withValues(alpha: 0.15)
@@ -254,7 +260,7 @@ void _drawDriftingCloud(
 ) {
   final totalWidth = w + scale * 1.5;
   final rawX = (startXFrac * w + time * w * speed) % totalWidth - scale * 0.75;
-  final y = h * yFrac + sin(time * 0.3 + startXFrac * 10) * 8;
+  final y = h * yFrac + sin(time * 0.25 + startXFrac * 10) * 6;
 
   _drawCloud(
     canvas,
@@ -266,11 +272,11 @@ void _drawDriftingCloud(
 
 /// Draws the 5 cumulus clouds shared by both day and night painters.
 void _drawClouds(Canvas canvas, double w, double h, double time) {
-  _drawDriftingCloud(canvas, w, h, time, 0.20, 0.08, w * 0.40, 0.35, 0.05);
-  _drawDriftingCloud(canvas, w, h, time, 0.65, 0.20, w * 0.48, 0.38, 0.035);
-  _drawDriftingCloud(canvas, w, h, time, 0.10, 0.38, w * 0.42, 0.32, 0.06);
-  _drawDriftingCloud(canvas, w, h, time, 0.75, 0.55, w * 0.36, 0.28, 0.045);
-  _drawDriftingCloud(canvas, w, h, time, 0.40, 0.72, w * 0.34, 0.24, 0.055);
+  _drawDriftingCloud(canvas, w, h, time, 0.20, 0.08, w * 0.40, 0.35, 0.08);
+  _drawDriftingCloud(canvas, w, h, time, 0.65, 0.20, w * 0.48, 0.38, 0.064);
+  _drawDriftingCloud(canvas, w, h, time, 0.10, 0.38, w * 0.42, 0.32, 0.096);
+  _drawDriftingCloud(canvas, w, h, time, 0.75, 0.55, w * 0.36, 0.28, 0.072);
+  _drawDriftingCloud(canvas, w, h, time, 0.40, 0.72, w * 0.34, 0.24, 0.088);
 }
 
 /// Draws a single cumulus cloud as a cluster of overlapping soft circles.

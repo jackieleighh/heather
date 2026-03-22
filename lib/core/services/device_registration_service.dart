@@ -128,6 +128,7 @@ class DeviceRegistrationService {
                   'latitude': loc['latitude'] as double,
                   'longitude': loc['longitude'] as double,
                   'name': loc['name'] as String? ?? '',
+                  'locationId': loc['locationId'] as String? ?? '',
                 })
             .toList(),
         'alertsEnabled': alertsEnabled,

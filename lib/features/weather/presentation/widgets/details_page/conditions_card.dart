@@ -83,9 +83,6 @@ class _ConditionsCardState extends State<ConditionsCard> {
                   fontSize: widget.compact ? 14 : 18,
                   fontWeight: FontWeight.w400,
                   color: AppColors.cream,
-                  shadows: [
-                    const Shadow(color: Color(0x28000000), blurRadius: 6),
-                  ],
                 ),
               ),
             ],

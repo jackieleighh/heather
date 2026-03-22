@@ -37,57 +37,45 @@ struct WeatherEffectOverlay: View {
             if isDay {
                 drawSunRaysWedge(ctx: ctx, size: size, time: t, lengthScale: 0.78, alphaScale: 0.8)
                 drawSunGlowRadial(ctx: ctx, size: size, time: t, outerRadius: 80, innerRadius: 32, outerAlpha: 0.32, innerAlpha: 0.42)
-                drawClouds(ctx: ctx, size: size, time: t, configs: [
-                    CloudConfig(cx: 0.15, cy: 0.30, scale: 0.28, alpha: 0.20, speed: 0.06),
-                    CloudConfig(cx: 0.58, cy: 0.38, scale: 0.30, alpha: 0.18, speed: 0.04),
-                ])
             } else {
                 drawStars(ctx: ctx, size: size, time: t, count: Int(50 * scale))
                 drawMoonGlow(ctx: ctx, size: size, time: t)
-                drawClouds(ctx: ctx, size: size, time: t, configs: [
-                    CloudConfig(cx: 0.15, cy: 0.30, scale: 0.28, alpha: 0.20, speed: 0.04),
-                    CloudConfig(cx: 0.58, cy: 0.38, scale: 0.30, alpha: 0.18, speed: 0.03),
-                ])
             }
         case "partlyCloudy":
             let pcCenter = CGPoint(x: size.width * 0.75, y: size.height * 0.12)
-            let pcClouds = [
-                CloudConfig(cx: 0.20, cy: 0.08, scale: 0.30, alpha: 0.24, speed: 0.05),
-                CloudConfig(cx: 0.65, cy: 0.20, scale: 0.36, alpha: 0.26, speed: 0.035),
-                CloudConfig(cx: 0.40, cy: 0.55, scale: 0.28, alpha: 0.20, speed: 0.045),
-            ]
             if isDay {
                 drawSunRaysWedge(ctx: ctx, size: size, time: t, lengthScale: 0.54, alphaScale: 0.65, sunCenter: pcCenter)
                 drawSunGlowRadial(ctx: ctx, size: size, time: t, outerRadius: 65, innerRadius: 25, outerAlpha: 0.28, innerAlpha: 0.36, sunCenter: pcCenter)
-                drawPartlyCloudyClouds(ctx: ctx, size: size, time: t, configs: pcClouds)
             } else {
                 drawStars(ctx: ctx, size: size, time: t, count: Int(50 * scale))
                 drawMoonGlow(ctx: ctx, size: size, time: t, moonCenter: pcCenter)
-                drawPartlyCloudyClouds(ctx: ctx, size: size, time: t, configs: pcClouds)
             }
+            drawTopDarkeningBand(ctx: ctx, size: size)
         case "overcast":
             drawOvercast(ctx: ctx, size: size, time: t)
         case "foggy":
             drawFog(ctx: ctx, size: size, time: t)
         case "drizzle":
-            drawRainStreaks(ctx: ctx, size: size, count: Int(15 * scale), minAlpha: 0.10, maxAlpha: 0.18, strokeWidth: 0.5, angle: 0.15, lengthRange: 8...14)
+            drawDrizzleDots(ctx: ctx, size: size, count: Int(12 * scale))
         case "rain":
-            drawRainStreaks(ctx: ctx, size: size, count: Int(30 * scale), minAlpha: 0.12, maxAlpha: 0.22, strokeWidth: 0.7, angle: 0.22, lengthRange: 10...18)
+            drawRainStreaks(ctx: ctx, size: size, count: Int(20 * scale), minAlpha: 0.10, maxAlpha: 0.20, strokeWidth: 0.5, angle: 0.22, lengthRange: 6...10)
         case "heavyRain":
-            drawRainStreaks(ctx: ctx, size: size, count: Int(45 * scale), minAlpha: 0.12, maxAlpha: 0.25, strokeWidth: 0.8, angle: 0.28, lengthRange: 12...22)
+            drawRainStreaks(ctx: ctx, size: size, count: Int(30 * scale), minAlpha: 0.10, maxAlpha: 0.20, strokeWidth: 0.6, angle: 0.28, lengthRange: 8...14)
             drawBottomHaze(ctx: ctx, size: size, opacity: 0.05)
         case "freezingRain":
-            drawFreezingRain(ctx: ctx, size: size, count: Int(24 * scale))
+            drawFreezingRain(ctx: ctx, size: size, count: Int(18 * scale))
         case "snow":
-            drawSnowDots(ctx: ctx, size: size, count: Int(22 * scale), minAlpha: 0.12, maxAlpha: 0.25, radiusRange: 1.0...2.5)
+            drawSnowDots(ctx: ctx, size: size, count: Int(25 * scale), minAlpha: 0.14, maxAlpha: 0.22, radiusRange: 1.0...2.5)
+            drawDarkOverlay(ctx: ctx, size: size, opacity: 0.10)
         case "blizzard":
-            drawSnowDots(ctx: ctx, size: size, count: Int(40 * scale), minAlpha: 0.14, maxAlpha: 0.28, radiusRange: 1.0...3.0)
+            drawSnowDots(ctx: ctx, size: size, count: Int(40 * scale), minAlpha: 0.16, maxAlpha: 0.35, radiusRange: 1.0...3.0)
             drawWhiteHaze(ctx: ctx, size: size, opacity: 0.03)
+            drawDarkOverlay(ctx: ctx, size: size, opacity: 0.10)
         case "thunderstorm":
-            drawRainStreaks(ctx: ctx, size: size, count: Int(35 * scale), minAlpha: 0.12, maxAlpha: 0.22, strokeWidth: 0.7, angle: 0.22, lengthRange: 10...18)
+            drawRainStreaks(ctx: ctx, size: size, count: Int(25 * scale), minAlpha: 0.10, maxAlpha: 0.20, strokeWidth: 0.5, angle: 0.22, lengthRange: 6...10)
             drawSubtleLightningGlow(ctx: ctx, size: size, opacity: 0.06)
         case "hail":
-            drawHailStones(ctx: ctx, size: size, count: Int(24 * scale))
+            drawHailStones(ctx: ctx, size: size, count: Int(25 * scale))
             drawSubtleLightningGlow(ctx: ctx, size: size, opacity: 0.05)
         default:
             break
@@ -106,7 +94,7 @@ struct WeatherEffectOverlay: View {
     ) {
         let center = sunCenter ?? CGPoint(x: size.width * 0.8, y: size.height * 0.12)
         let szScale = min(size.width, size.height) / 400.0
-        let spin = time * 0.08
+        let spin = time * 0.15
 
         let rayAngles: [Double] =  [0.0, 0.63, 1.26, 1.88, 2.51, 3.14, 3.77, 4.40, 5.03, 5.65]
         let rayLengths: [Double] = [240, 160, 220, 140, 230, 170, 210, 150, 200, 165]
@@ -212,6 +200,20 @@ struct WeatherEffectOverlay: View {
             )),
             with: .color(.white.opacity(innerAlpha))
         )
+
+        // Bright core (matches Flutter's 55px core)
+        let coreR = 22 * szScale
+        var coreCtx = ctx
+        coreCtx.addFilter(.blur(radius: 8 * szScale))
+        coreCtx.fill(
+            Circle().path(in: CGRect(
+                x: center.x - coreR,
+                y: center.y - coreR,
+                width: coreR * 2,
+                height: coreR * 2
+            )),
+            with: .color(.white.opacity(0.55))
+        )
     }
 
     // MARK: - Moon Glow (Mini)
@@ -272,227 +274,65 @@ struct WeatherEffectOverlay: View {
         }
     }
 
-    // MARK: - Clouds (Mini, faint)
+    // MARK: - Top Darkening Band (Partly cloudy cloud hint)
 
-    private struct CloudConfig {
-        let cx: Double
-        let cy: Double
-        let scale: Double
-        let alpha: Double
-        let speed: Double
-    }
-
-    private func drawClouds(ctx: GraphicsContext, size: CGSize, time: Double, configs: [CloudConfig]) {
-        for config in configs {
-            let cloudScale = size.width * config.scale
-
-            let totalWidth = size.width + cloudScale * 1.5
-            let rawX = (config.cx * size.width + time * size.width * config.speed)
-                .truncatingRemainder(dividingBy: totalWidth) - cloudScale * 0.75
-            let wobble = sin(time * 0.3 + config.cx * 10) * 4
-            let center = CGPoint(x: rawX, y: size.height * config.cy + wobble)
-
-            drawSingleCloud(ctx: ctx, center: center, scale: cloudScale, alpha: config.alpha)
-        }
-    }
-
-    private func drawSingleCloud(ctx: GraphicsContext, center: CGPoint, scale: CGFloat, alpha: Double) {
-        var cloudCtx = ctx
-        cloudCtx.addFilter(.blur(radius: scale * 0.06))
-
-        cloudCtx.fill(
+    private func drawTopDarkeningBand(ctx: GraphicsContext, size: CGSize) {
+        let szScale = min(size.width, size.height) / 400.0
+        var bandCtx = ctx
+        bandCtx.addFilter(.blur(radius: 30 * szScale))
+        bandCtx.fill(
             Ellipse().path(in: CGRect(
-                x: center.x - scale * 0.65,
-                y: center.y + scale * 0.10,
-                width: scale * 1.3,
-                height: scale * 0.28
+                x: size.width * 0.5 - size.width * 0.7,
+                y: -size.height * 0.075,
+                width: size.width * 1.4,
+                height: size.height * 0.15
             )),
-            with: .color(.white.opacity(alpha * 0.7))
-        )
-
-        let leftR = scale * 0.24
-        cloudCtx.fill(
-            Circle().path(in: CGRect(
-                x: center.x - scale * 0.25 - leftR,
-                y: center.y - leftR,
-                width: leftR * 2,
-                height: leftR * 2
-            )),
-            with: .color(.white.opacity(alpha))
-        )
-
-        let centerR = scale * 0.30
-        cloudCtx.fill(
-            Circle().path(in: CGRect(
-                x: center.x - centerR,
-                y: center.y - scale * 0.08 - centerR,
-                width: centerR * 2,
-                height: centerR * 2
-            )),
-            with: .color(.white.opacity(alpha))
-        )
-
-        let rightR = scale * 0.22
-        cloudCtx.fill(
-            Circle().path(in: CGRect(
-                x: center.x + scale * 0.28 - rightR,
-                y: center.y + scale * 0.02 - rightR,
-                width: rightR * 2,
-                height: rightR * 2
-            )),
-            with: .color(.white.opacity(alpha))
-        )
-
-        let topR = scale * 0.18
-        cloudCtx.fill(
-            Circle().path(in: CGRect(
-                x: center.x + scale * 0.04 - topR,
-                y: center.y - scale * 0.20 - topR,
-                width: topR * 2,
-                height: topR * 2
-            )),
-            with: .color(.white.opacity(alpha * 0.8))
+            with: .color(.black.opacity(0.06))
         )
     }
 
-    // MARK: - Partly Cloudy Clouds (Mini)
+    // MARK: - Overcast Cloud Masses (matches Flutter overcast_background.dart)
 
-    private func drawPartlyCloudyClouds(ctx: GraphicsContext, size: CGSize, time: Double, configs: [CloudConfig]) {
-        for config in configs {
-            let cloudScale = size.width * config.scale
-            let totalWidth = size.width + cloudScale * 1.5
-            let rawX = (config.cx * size.width + time * size.width * config.speed)
-                .truncatingRemainder(dividingBy: totalWidth) - cloudScale * 0.75
-            let wobble = sin(time * 0.3 + config.cx * 10) * 4
-            let center = CGPoint(x: rawX, y: size.height * config.cy + wobble)
-            drawPartlyCloudyCloud(ctx: ctx, center: center, scale: cloudScale, alpha: config.alpha)
-        }
-    }
-
-    private func drawPartlyCloudyCloud(ctx: GraphicsContext, center: CGPoint, scale: CGFloat, alpha: Double) {
-        var cloudCtx = ctx
-        cloudCtx.addFilter(.blur(radius: scale * 0.06))
-
-        cloudCtx.fill(
-            Ellipse().path(in: CGRect(
-                x: center.x - scale * 0.70,
-                y: center.y + scale * 0.12 - scale * 0.175,
-                width: scale * 1.4,
-                height: scale * 0.35
-            )),
-            with: .color(.white.opacity(alpha * 0.75))
-        )
-
-        let leftR = scale * 0.30
-        cloudCtx.fill(
-            Circle().path(in: CGRect(
-                x: center.x - scale * 0.30 - leftR,
-                y: center.y - leftR,
-                width: leftR * 2,
-                height: leftR * 2
-            )),
-            with: .color(.white.opacity(alpha))
-        )
-
-        let centerR = scale * 0.36
-        cloudCtx.fill(
-            Circle().path(in: CGRect(
-                x: center.x - centerR,
-                y: center.y - scale * 0.12 - centerR,
-                width: centerR * 2,
-                height: centerR * 2
-            )),
-            with: .color(.white.opacity(alpha))
-        )
-
-        let rightR = scale * 0.28
-        cloudCtx.fill(
-            Circle().path(in: CGRect(
-                x: center.x + scale * 0.32 - rightR,
-                y: center.y + scale * 0.02 - rightR,
-                width: rightR * 2,
-                height: rightR * 2
-            )),
-            with: .color(.white.opacity(alpha))
-        )
-
-        let topR = scale * 0.22
-        cloudCtx.fill(
-            Circle().path(in: CGRect(
-                x: center.x + scale * 0.05 - topR,
-                y: center.y - scale * 0.24 - topR,
-                width: topR * 2,
-                height: topR * 2
-            )),
-            with: .color(.white.opacity(alpha * 0.85))
-        )
-
-        let shoulderR = scale * 0.18
-        cloudCtx.fill(
-            Circle().path(in: CGRect(
-                x: center.x + scale * 0.44 - shoulderR,
-                y: center.y + scale * 0.05 - shoulderR,
-                width: shoulderR * 2,
-                height: shoulderR * 2
-            )),
-            with: .color(.white.opacity(alpha * 0.85))
-        )
-    }
-
-    // MARK: - Overcast (Fewer masses, fainter)
-
-    private func drawOvercast(ctx: GraphicsContext, size: CGSize, time: Double) {
+    private func drawOvercastCloudBlobs(ctx: GraphicsContext, size: CGSize) {
         let w = size.width
         let h = size.height
-        let szScale = min(w, h) / 400.0
-
-        let glowR = 65.0 * szScale
-        var glowCtx = ctx
-        glowCtx.addFilter(.blur(radius: 50 * szScale))
-        glowCtx.fill(
-            Circle().path(in: CGRect(
-                x: w * 0.7 - glowR,
-                y: h * 0.08 - glowR,
-                width: glowR * 2,
-                height: glowR * 2
-            )),
-            with: .color(.white.opacity(0.045))
-        )
-
-        let massParams: [(yFrac: Double, scale: Double, speed: Double, alpha: Double, startX: Double, wobblePhase: Double)] = [
-            (0.08, 0.52, 0.24, 0.06, 0.3, 0.0),
-            (0.25, 0.48, 0.28, 0.055, 0.7, 1.2),
-            (0.42, 0.50, 0.36, 0.05, 0.45, 2.4),
-            (0.58, 0.46, 0.26, 0.045, 0.55, 3.6),
-            (0.74, 0.44, 0.32, 0.04, 0.40, 4.8),
-        ]
 
         var rng = SeededRNG(seed: 88)
 
-        for mass in massParams {
-            let massScale = w * mass.scale
-            let blurRadius = massScale * 0.12
+        // 6 cloud masses matching the app's parameters:
+        // (xFraction, yFraction, scale, alpha)
+        // x positions pushed toward edges so blobs don't sit on center text
+        let masses: [(xFrac: Double, yFrac: Double, scale: Double, alpha: Double)] = [
+            (0.15, 0.06,  0.55, 0.16),  // top-left
+            (0.85, 0.20,  0.50, 0.14),  // upper-right
+            (0.10, 0.38,  0.48, 0.13),  // mid-left
+            (0.90, 0.52,  0.52, 0.12),  // mid-right
+            (0.20, 0.68,  0.46, 0.11),  // lower-left
+            (0.80, 0.82,  0.50, 0.12),  // lower-right
+        ]
 
-            let totalWidth = w * 2.2
-            let raw = mass.startX * w + time * mass.speed * w
-            let xNorm = (raw.truncatingRemainder(dividingBy: totalWidth)) / totalWidth
-            let centerX = (xNorm * 2.2 - 0.6) * w
-            let wobble = sin(time * 0.5 + mass.wobblePhase) * h * 0.008
-            let centerY = h * mass.yFrac + wobble
+        for mass in masses {
+            let scale = w * mass.scale
+            let blurR = scale * 0.12
+            let centerX = w * mass.xFrac
+            let centerY = h * mass.yFrac
+            let blobCount = 10 + Int(rng.nextDouble() * 6) // 10-15 blobs per mass
 
-            var cloudCtx = ctx
-            cloudCtx.addFilter(.blur(radius: blurRadius))
+            var blobCtx = ctx
+            blobCtx.addFilter(.blur(radius: blurR))
 
-            let blobCount = 4 + Int(rng.nextDouble() * 3)
             for _ in 0..<blobCount {
                 let dx = (rng.nextDouble() - 0.5) * 1.8
                 let dy = (rng.nextDouble() - 0.5) * 0.8
-                let blobRadius = (0.16 + rng.nextDouble() * 0.22) * massScale
+                let blobRadius = (0.16 + rng.nextDouble() * 0.22) * scale
 
-                cloudCtx.fill(
+                let bx = centerX + dx * scale
+                let by = centerY + dy * scale
+
+                blobCtx.fill(
                     Circle().path(in: CGRect(
-                        x: centerX + dx * massScale - blobRadius,
-                        y: centerY + dy * massScale - blobRadius,
+                        x: bx - blobRadius,
+                        y: by - blobRadius,
                         width: blobRadius * 2,
                         height: blobRadius * 2
                     )),
@@ -500,7 +340,56 @@ struct WeatherEffectOverlay: View {
                 )
             }
         }
+    }
 
+    // MARK: - Drizzle Dots (Scattered mist circles)
+
+    private func drawDrizzleDots(ctx: GraphicsContext, size: CGSize, count: Int) {
+        var rng = SeededRNG(seed: 55)
+
+        for _ in 0..<count {
+            let x = rng.nextDouble() * size.width
+            let y = rng.nextDouble() * size.height
+            let radius = 0.8 + rng.nextDouble() * 0.4
+            let alpha = 0.08 + rng.nextDouble() * 0.08
+
+            ctx.fill(
+                Circle().path(in: CGRect(
+                    x: x - radius,
+                    y: y - radius,
+                    width: radius * 2,
+                    height: radius * 2
+                )),
+                with: .color(.white.opacity(alpha))
+            )
+        }
+    }
+
+    // MARK: - Overcast (Cloud blobs + haze)
+
+    private func drawOvercast(ctx: GraphicsContext, size: CGSize, time: Double) {
+        let w = size.width
+        let h = size.height
+        let szScale = min(w, h) / 400.0
+
+        // Soft sun glow high up
+        let glowR = 70.0 * szScale
+        var glowCtx = ctx
+        glowCtx.addFilter(.blur(radius: 50 * szScale))
+        glowCtx.fill(
+            Circle().path(in: CGRect(
+                x: w * 0.8 - glowR,
+                y: h * 0.12 - glowR,
+                width: glowR * 2,
+                height: glowR * 2
+            )),
+            with: .color(.white.opacity(0.16))
+        )
+
+        // Cloud blobs at edges/corners
+        drawOvercastCloudBlobs(ctx: ctx, size: size)
+
+        // Upper haze
         var hazeCtx = ctx
         hazeCtx.addFilter(.blur(radius: 100 * szScale))
         hazeCtx.fill(
@@ -510,7 +399,18 @@ struct WeatherEffectOverlay: View {
                 width: w * 2.0,
                 height: h * 0.5
             )),
-            with: .color(.white.opacity(0.009))
+            with: .color(.white.opacity(0.04))
+        )
+
+        // Lower haze
+        hazeCtx.fill(
+            Ellipse().path(in: CGRect(
+                x: w * 0.5 - w * 0.9,
+                y: h * 0.65 - h * 0.2,
+                width: w * 1.8,
+                height: h * 0.4
+            )),
+            with: .color(.white.opacity(0.03))
         )
     }
 
@@ -535,15 +435,15 @@ struct WeatherEffectOverlay: View {
 
         var rng = SeededRNG(seed: 77)
 
-        for _ in 0..<6 {
+        for _ in 0..<5 {
             let yRaw = rng.nextDouble()
             let yBiased = yRaw * yRaw
             let yFraction = 0.05 + yBiased * 0.85
             let bandHeight = (50.0 + rng.nextDouble() * 70.0) * szScale
             let speed = 0.08 + rng.nextDouble() * 0.14
-            let wispWidth = 0.4 + rng.nextDouble() * 0.6
+            let wispWidth = 0.3 + rng.nextDouble() * 0.3
             let blur = bandHeight * 0.16 + rng.nextDouble() * 6
-            let baseAlpha = 0.06 + rng.nextDouble() * 0.04
+            let baseAlpha = 0.04 + rng.nextDouble() * 0.04
             let startX = rng.nextDouble() * 2.4
             let wobblePhase = rng.nextDouble() * .pi * 2
 
@@ -628,7 +528,7 @@ struct WeatherEffectOverlay: View {
         for i in 0..<count {
             let x = rng.nextDouble() * size.width
             let y = rng.nextDouble() * size.height
-            let length = 10.0 + rng.nextDouble() * 8.0
+            let length = 6.0 + rng.nextDouble() * 4.0
             let alpha = 0.12 + rng.nextDouble() * 0.08
             let angle = 0.20
 
@@ -707,6 +607,15 @@ struct WeatherEffectOverlay: View {
                 height: size.height * 0.8
             )),
             with: .color(.white.opacity(opacity))
+        )
+    }
+
+    // MARK: - Dark Overlay (Snow / Blizzard)
+
+    private func drawDarkOverlay(ctx: GraphicsContext, size: CGSize, opacity: Double) {
+        ctx.fill(
+            Rectangle().path(in: CGRect(origin: .zero, size: size)),
+            with: .color(.black.opacity(opacity))
         )
     }
 

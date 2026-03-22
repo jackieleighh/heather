@@ -24,44 +24,25 @@ object WeatherEffectRenderer {
             "mostlySunny" -> if (isDay) {
                 drawSunRaysWedge(canvas, w, h, time, szScale, lengthScale = 0.78f, alphaScale = 0.8f)
                 drawSunGlow(canvas, w, h, time, szScale, outerR = 110f, innerR = 45f, outerA = 0.18f, innerA = 0.24f)
-                drawClouds(canvas, w, h, time, listOf(
-                    CloudCfg(0.15, 0.30, 0.38, 0.30, 0.06),
-                    CloudCfg(0.58, 0.38, 0.42, 0.28, 0.04),
-                    CloudCfg(0.30, 0.62, 0.35, 0.22, 0.05),
-                ))
             } else {
                 drawStars(canvas, w, h, time, 60)
                 drawMoonGlow(canvas, w, h, time, szScale)
-                drawClouds(canvas, w, h, time, listOf(
-                    CloudCfg(0.15, 0.30, 0.38, 0.30, 0.04),
-                    CloudCfg(0.58, 0.38, 0.42, 0.28, 0.03),
-                    CloudCfg(0.30, 0.62, 0.35, 0.22, 0.035),
-                ))
             }
-            "partlyCloudy" -> if (isDay) {
-                drawSunRaysWedge(canvas, w, h, time, szScale, lengthScale = 0.62f, alphaScale = 0.65f)
-                drawSunGlow(canvas, w, h, time, szScale, outerR = 90f, innerR = 35f, outerA = 0.14f, innerA = 0.20f)
-                drawClouds(canvas, w, h, time, listOf(
-                    CloudCfg(0.20, 0.08, 0.40, 0.35, 0.05),
-                    CloudCfg(0.65, 0.20, 0.48, 0.38, 0.035),
-                    CloudCfg(0.10, 0.38, 0.42, 0.32, 0.06),
-                    CloudCfg(0.75, 0.55, 0.36, 0.28, 0.045),
-                    CloudCfg(0.40, 0.72, 0.34, 0.24, 0.055),
-                ))
-            } else {
-                drawStars(canvas, w, h, time, 60)
-                drawMoonGlow(canvas, w, h, time, szScale)
-                drawClouds(canvas, w, h, time, listOf(
-                    CloudCfg(0.2, 0.1, 0.38, 0.28, 0.05),
-                    CloudCfg(0.6, 0.25, 0.42, 0.30, 0.035),
-                    CloudCfg(0.35, 0.55, 0.35, 0.24, 0.045),
-                ))
+            "partlyCloudy" -> {
+                if (isDay) {
+                    drawSunRaysWedge(canvas, w, h, time, szScale, lengthScale = 0.62f, alphaScale = 0.65f)
+                    drawSunGlow(canvas, w, h, time, szScale, outerR = 90f, innerR = 35f, outerA = 0.14f, innerA = 0.20f)
+                } else {
+                    drawStars(canvas, w, h, time, 60)
+                    drawMoonGlow(canvas, w, h, time, szScale)
+                }
+                drawTopDarkeningBand(canvas, w, h)
             }
             "overcast" -> drawOvercast(canvas, w, h, time)
             "foggy" -> drawFog(canvas, w, h, time)
-            "drizzle" -> drawRain(canvas, w, h, time, 64, 2.0, 6.0, 0.8, 2.0, 0.3, 8.0, 101)
-            "rain" -> drawRain(canvas, w, h, time, 96, 4.0, 9.0, 0.8, 2.3, 0.5, 12.0, 102)
-            "heavyRain" -> drawRain(canvas, w, h, time, 160, 6.0, 14.0, 1.0, 3.0, 1.2, 16.0, 103)
+            "drizzle" -> drawRain(canvas, w, h, time, 24, 1.5, 3.5, 0.5, 1.2, 0.3, 4.0, 101)
+            "rain" -> drawRain(canvas, w, h, time, 40, 3.0, 7.0, 0.6, 1.5, 0.5, 7.0, 102)
+            "heavyRain" -> drawRain(canvas, w, h, time, 64, 6.0, 14.0, 0.8, 2.0, 1.2, 10.0, 103)
             "freezingRain" -> drawFreezingRain(canvas, w, h, time)
             "snow" -> {
                 drawDarkOverlay(canvas, w, h, 0.18f)
@@ -73,7 +54,7 @@ object WeatherEffectRenderer {
                 drawWhiteoutHaze(canvas, w, h, time)
             }
             "thunderstorm" -> {
-                drawRain(canvas, w, h, time, 200, 6.0, 16.0, 1.0, 2.5, 1.5, 15.0, 104)
+                drawRain(canvas, w, h, time, 50, 6.0, 16.0, 1.0, 2.5, 1.5, 15.0, 104)
                 drawLightning(canvas, w, h, time)
             }
             "hail" -> {
@@ -184,6 +165,13 @@ object WeatherEffectRenderer {
             color = Color.argb(((innerA + pulse) * 255).toInt().coerceIn(0, 255), 255, 255, 255)
         }
         canvas.drawCircle(cx, cy, innerR * szScale, innerPaint)
+
+        // Bright core (matches Flutter's 55px core)
+        val corePaint = Paint(Paint.ANTI_ALIAS_FLAG).apply {
+            maskFilter = BlurMaskFilter(8f * szScale, BlurMaskFilter.Blur.NORMAL)
+            color = Color.argb((0.55f * 255).toInt(), 255, 255, 255)
+        }
+        canvas.drawCircle(cx, cy, 22f * szScale, corePaint)
     }
 
     // ── Moon glow ────────────────────────────────────────────────
@@ -225,97 +213,94 @@ object WeatherEffectRenderer {
         }
     }
 
-    // ── Clouds (drifting with wrap-around) ───────────────────────
+    // ── Top darkening band (partly cloudy cloud hint) ───────────
 
-    private data class CloudCfg(val cx: Double, val cy: Double, val scale: Double, val alpha: Double, val speed: Double)
-
-    private fun drawClouds(canvas: Canvas, w: Float, h: Float, time: Double, configs: List<CloudCfg>) {
-        for (cfg in configs) {
-            val cloudScale = w * cfg.scale.toFloat()
-            val totalW = w + cloudScale * 1.5f
-            val rawX = ((cfg.cx * w + time * w * cfg.speed) % totalW - cloudScale * 0.75).toFloat()
-            val wobble = (sin(time * 0.3 + cfg.cx * 10) * 8).toFloat()
-            drawSingleCloud(canvas, rawX, h * cfg.cy.toFloat() + wobble, cloudScale, cfg.alpha.toFloat())
-        }
-    }
-
-    private fun drawSingleCloud(canvas: Canvas, cx: Float, cy: Float, scale: Float, alpha: Float) {
+    private fun drawTopDarkeningBand(canvas: Canvas, w: Float, h: Float) {
+        val szScale = min(w, h) / 400f
         val paint = Paint(Paint.ANTI_ALIAS_FLAG).apply {
-            style = Paint.Style.FILL
-            maskFilter = BlurMaskFilter(scale * 0.06f, BlurMaskFilter.Blur.NORMAL)
+            maskFilter = BlurMaskFilter(30f * szScale, BlurMaskFilter.Blur.NORMAL)
+            color = Color.argb((0.06f * 255).toInt(), 0, 0, 0)
         }
-
-        // Flat base
-        paint.color = Color.argb((alpha * 0.7f * 255).toInt(), 255, 255, 255)
-        canvas.drawOval(cx - scale * 0.65f, cy + scale * 0.10f,
-            cx + scale * 0.65f, cy + scale * 0.10f + scale * 0.28f, paint)
-
-        // Main lobes
-        paint.color = Color.argb((alpha * 255).toInt(), 255, 255, 255)
-        canvas.drawCircle(cx - scale * 0.25f, cy, scale * 0.24f, paint)
-        canvas.drawCircle(cx, cy - scale * 0.08f, scale * 0.30f, paint)
-        canvas.drawCircle(cx + scale * 0.28f, cy + scale * 0.02f, scale * 0.22f, paint)
-
-        // Top accent
-        paint.color = Color.argb((alpha * 0.8f * 255).toInt(), 255, 255, 255)
-        canvas.drawCircle(cx + scale * 0.04f, cy - scale * 0.20f, scale * 0.18f, paint)
+        canvas.drawOval(
+            w * 0.5f - w * 0.7f,
+            -h * 0.075f,
+            w * 0.5f + w * 0.7f,
+            h * 0.075f,
+            paint,
+        )
     }
 
-    // ── Overcast (blob masses + subtle haze, matching iOS) ──────
+    // ── Overcast cloud masses (matches Flutter overcast_background.dart) ───
+
+    private fun drawOvercastCloudBlobs(canvas: Canvas, w: Float, h: Float) {
+        val rng = SeededRNG(88)
+
+        // 6 cloud masses matching the app's parameters:
+        // [xFraction, yFraction, scale, alpha]
+        // x positions pushed toward edges so blobs don't sit on center text
+        val masses = arrayOf(
+            doubleArrayOf(0.15, 0.06, 0.55, 0.16),  // top-left
+            doubleArrayOf(0.85, 0.20, 0.50, 0.14),  // upper-right
+            doubleArrayOf(0.10, 0.38, 0.48, 0.13),  // mid-left
+            doubleArrayOf(0.90, 0.52, 0.52, 0.12),  // mid-right
+            doubleArrayOf(0.20, 0.68, 0.46, 0.11),  // lower-left
+            doubleArrayOf(0.80, 0.82, 0.50, 0.12),  // lower-right
+        )
+
+        val paint = Paint(Paint.ANTI_ALIAS_FLAG).apply { style = Paint.Style.FILL }
+
+        for (mass in masses) {
+            val scale = (w * mass[2]).toFloat()
+            val blurR = scale * 0.12f
+            val centerX = (w * mass[0]).toFloat()
+            val centerY = (h * mass[1]).toFloat()
+            val alpha = mass[3].toFloat()
+            val blobCount = 10 + (rng.nextDouble() * 6).toInt() // 10-15 blobs per mass
+
+            paint.maskFilter = BlurMaskFilter(blurR, BlurMaskFilter.Blur.NORMAL)
+
+            repeat(blobCount) {
+                val dx = (rng.nextDouble() - 0.5) * 1.8
+                val dy = (rng.nextDouble() - 0.5) * 0.8
+                val blobRadius = ((0.16 + rng.nextDouble() * 0.22) * scale).toFloat()
+
+                val bx = centerX + (dx * scale).toFloat()
+                val by = centerY + (dy * scale).toFloat()
+
+                paint.color = Color.argb((alpha * 255).toInt(), 255, 255, 255)
+                canvas.drawCircle(bx, by, blobRadius, paint)
+            }
+        }
+    }
+
+    // ── Overcast (cloud blobs + haze) ────────────────────────────
 
     private fun drawOvercast(canvas: Canvas, w: Float, h: Float, time: Double) {
         // Soft sun glow through clouds
         val glowPaint = Paint(Paint.ANTI_ALIAS_FLAG).apply {
             maskFilter = BlurMaskFilter(70f, BlurMaskFilter.Blur.NORMAL)
-            color = Color.argb(((0.15 + sin(time * 0.4) * 0.03) * 255).toInt().coerceIn(0, 255), 255, 255, 255)
+            color = Color.argb(((0.16 + sin(time * 0.4) * 0.03) * 255).toInt().coerceIn(0, 255), 255, 255, 255)
         }
         canvas.drawCircle(w * 0.7f, h * 0.08f, 60f, glowPaint)
 
-        // Cloud masses with blob rendering
-        val massParams = listOf(
-            arrayOf(0.08, 0.55, 0.14, 0.18, 0.3, 0.0),
-            arrayOf(0.22, 0.50, 0.18, 0.16, 0.7, 1.2),
-            arrayOf(0.38, 0.48, 0.26, 0.14, 0.45, 2.4),
-            arrayOf(0.52, 0.52, 0.16, 0.13, 0.55, 3.6),
-            arrayOf(0.66, 0.45, 0.28, 0.12, 0.35, 4.8),
-            arrayOf(0.80, 0.42, 0.20, 0.10, 0.60, 6.0),
-        )
+        // Cloud blobs at edges/corners
+        drawOvercastCloudBlobs(canvas, w, h)
 
-        val rng = SeededRNG(88)
-        for (mp in massParams) {
-            val yFrac = mp[0]; val sc = mp[1]; val speed = mp[2]
-            val alpha = mp[3]; val startX = mp[4]; val wobblePhase = mp[5]
-            val massScale = w * sc.toFloat()
-            val blurR = massScale * 0.12f
-            val totalWidth = w * 2.2
-            val raw = startX * w + time * speed * w
-            val xNorm = (raw % totalWidth) / totalWidth
-            val centerX = ((xNorm * 2.2 - 0.6) * w).toFloat()
-            val wobble = (sin(time * 0.5 + wobblePhase) * h * 0.012).toFloat()
-            val centerY = (h * yFrac).toFloat() + wobble
-
-            val paint = Paint(Paint.ANTI_ALIAS_FLAG).apply {
-                style = Paint.Style.FILL
-                maskFilter = BlurMaskFilter(blurR, BlurMaskFilter.Blur.NORMAL)
-                color = Color.argb((alpha * 255).toInt(), 255, 255, 255)
-            }
-
-            val blobCount = 8 + (rng.nextDouble() * 3).toInt()
-            repeat(blobCount) {
-                val dx = ((rng.nextDouble() - 0.5) * 1.4).toFloat()
-                val dy = ((rng.nextDouble() - 0.5) * 0.6).toFloat()
-                val blobR = ((0.14 + rng.nextDouble() * 0.20) * massScale).toFloat()
-                canvas.drawCircle(centerX + dx * massScale, centerY + dy * massScale, blobR, paint)
-            }
-        }
-
-        // Very subtle haze
+        // Upper haze
         val hazePaint = Paint(Paint.ANTI_ALIAS_FLAG).apply {
             maskFilter = BlurMaskFilter(100f, BlurMaskFilter.Blur.NORMAL)
-            color = Color.argb(((0.03 + sin(time * 0.15) * 0.01) * 255).toInt().coerceIn(0, 255), 255, 255, 255)
+            color = Color.argb(((0.04 + sin(time * 0.15) * 0.01) * 255).toInt().coerceIn(0, 255), 255, 255, 255)
         }
         canvas.drawOval(w * 0.5f - w, h * 0.25f - h * 0.25f,
             w * 0.5f + w, h * 0.25f + h * 0.25f, hazePaint)
+
+        // Lower haze
+        val lowerHazePaint = Paint(Paint.ANTI_ALIAS_FLAG).apply {
+            maskFilter = BlurMaskFilter(100f, BlurMaskFilter.Blur.NORMAL)
+            color = Color.argb((0.03 * 255).toInt(), 255, 255, 255)
+        }
+        canvas.drawOval(w * 0.5f - w * 0.9f, h * 0.65f - h * 0.2f,
+            w * 0.5f + w * 0.9f, h * 0.65f + h * 0.2f, lowerHazePaint)
     }
 
     // ── Fog ──────────────────────────────────────────────────────
@@ -325,20 +310,20 @@ object WeatherEffectRenderer {
         val hazePaint = Paint(Paint.ANTI_ALIAS_FLAG).apply {
             maskFilter = BlurMaskFilter(80f, BlurMaskFilter.Blur.NORMAL)
         }
-        hazePaint.color = Color.argb(((0.12 + sin(time * 0.2) * 0.03) * 255).toInt().coerceIn(0, 255), 255, 255, 255)
+        hazePaint.color = Color.argb(((0.06 + sin(time * 0.2) * 0.03) * 255).toInt().coerceIn(0, 255), 255, 255, 255)
         canvas.drawOval(w * 0.5f - w * 1.1f, h * 0.3f - h * 0.35f,
             w * 0.5f + w * 1.1f, h * 0.3f + h * 0.35f, hazePaint)
 
         // Fog wisps
         val rng = SeededRNG(77)
-        repeat(14) { i ->
+        repeat(6) { i ->
             val yRaw = rng.nextDouble()
             val yFrac = 0.05 + yRaw * yRaw * 0.85
             val bandH = (50.0 + rng.nextDouble() * 70.0).toFloat()
             val speed = 0.08 + rng.nextDouble() * 0.14
-            val wispW = (0.4 + rng.nextDouble() * 0.6).toFloat()
+            val wispW = (0.3 + rng.nextDouble() * 0.3).toFloat()
             val blur = (bandH * 0.16f + rng.nextDouble() * 6.0).toFloat()
-            val baseAlpha = (0.13 + rng.nextDouble() * 0.12).toFloat()
+            val baseAlpha = (0.06 + rng.nextDouble() * 0.04).toFloat()
             val startX = rng.nextDouble() * 2.4
             val wobblePhase = rng.nextDouble() * PI * 2
 
@@ -401,7 +386,7 @@ object WeatherEffectRenderer {
         val driftPerSec = 0.6 * 60.0
         val paint = Paint(Paint.ANTI_ALIAS_FLAG).apply { strokeCap = Paint.Cap.BUTT }
 
-        repeat(144) { // ~180 * 0.8
+        repeat(50) {
             val initX = rng.nextDouble() * totalW - 10
             val initY = rng.nextDouble() * totalH - 15
             val speed = 3.0 + rng.nextDouble() * 7.0
@@ -435,7 +420,7 @@ object WeatherEffectRenderer {
         val totalH = h + 20f
         val paint = Paint(Paint.ANTI_ALIAS_FLAG).apply { style = Paint.Style.FILL }
 
-        repeat(80) { // ~100 * 0.8
+        repeat(50) {
             val initX = rng.nextDouble() * w
             val initY = rng.nextDouble() * totalH - 10
             val speed = 0.5 + rng.nextDouble() * 2.0
@@ -461,7 +446,7 @@ object WeatherEffectRenderer {
         val totalH = h + 20f
         val paint = Paint(Paint.ANTI_ALIAS_FLAG).apply { style = Paint.Style.FILL }
 
-        repeat(280) { // ~350 * 0.8
+        repeat(140) {
             val initX = rng.nextDouble() * w
             val initY = rng.nextDouble() * totalH - 10
             val speed = 1.5 + rng.nextDouble() * 4.0
@@ -509,7 +494,7 @@ object WeatherEffectRenderer {
         val driftPerSec = 0.5 * 60.0
         val paint = Paint(Paint.ANTI_ALIAS_FLAG).apply { style = Paint.Style.FILL }
 
-        repeat(96) { // ~120 * 0.8
+        repeat(50) {
             val initX = rng.nextDouble() * totalW
             val initY = rng.nextDouble() * totalH - 10
             val speed = 4.0 + rng.nextDouble() * 8.0
