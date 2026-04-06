@@ -75,9 +75,9 @@ struct WidgetGradients {
 
     private static let dayGradients: [String: [[String]]] = [
         "sunny": [
-            ["#FF18CED2", "#FF4CAEF8", "#FF7C56F0"],
-            ["#FF18CED2", "#FF3098F0", "#FF2563EB"],
-            ["#FF18CED2", "#FF3098F0", "#FF1CC8AA"],
+            ["#FF88CCFF", "#FF60B4FF", "#FF9E80FF"],
+            ["#FF88CCFF", "#FF60B4FF", "#FF18CED2"],
+            ["#FF88CCFF", "#FF18CED2", "#FF1CC8AA"],
             ["#FF18CED2", "#FF1CC8AA", "#FFF2CC00"],
             ["#FF18CED2", "#FFF2CC00", "#FFF87008"],
             ["#FF18CED2", "#FFF2CC00", "#FFF03478"],

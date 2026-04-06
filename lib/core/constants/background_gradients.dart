@@ -54,18 +54,18 @@ class BackgroundGradients {
 
   static const _sunny = {
     TemperatureTier.singleDigits: [
-      AppColors.sunnyAqua,
-      AppColors.sunnyCrispBlue,
+      AppColors.sunnyBrightBlue,
+      AppColors.sunnyCerulean,
       AppColors.sunnyRichViolet,
     ],
     TemperatureTier.freezing: [
-      AppColors.sunnyAqua,
+      AppColors.sunnyBrightBlue,
       AppColors.sunnyCerulean,
-      AppColors.royalBlue,
+      AppColors.sunnyAqua,
     ],
     TemperatureTier.jacketWeather: [
+      AppColors.sunnyBrightBlue,
       AppColors.sunnyAqua,
-      AppColors.sunnyCerulean,
       AppColors.sunnyBrightTeal,
     ],
     TemperatureTier.flannelWeather: [
