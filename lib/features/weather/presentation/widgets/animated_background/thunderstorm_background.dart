@@ -21,7 +21,7 @@ class _ThunderstormBackgroundState extends State<ThunderstormBackground>
   final Random _random = Random();
   double _lightningOpacity = 0;
   double _nextFlash = 2.0;
-  double _time = 0;
+  final _stopwatch = Stopwatch();
 
   @override
   void initState() {
@@ -30,18 +30,24 @@ class _ThunderstormBackgroundState extends State<ThunderstormBackground>
       vsync: this,
       duration: const Duration(seconds: 1),
     );
-    if (widget.isActive) _controller.repeat();
+    if (widget.isActive) {
+      _controller.repeat();
+      _stopwatch.start();
+    }
     _controller.addListener(_updateLightning);
-    _controller.addListener(() {
-      _time += 0.016;
-    });
   }
 
   @override
   void didUpdateWidget(ThunderstormBackground oldWidget) {
     super.didUpdateWidget(oldWidget);
     if (widget.isActive != oldWidget.isActive) {
-      widget.isActive ? _controller.repeat() : _controller.stop();
+      if (widget.isActive) {
+        _controller.repeat();
+        _stopwatch.start();
+      } else {
+        _controller.stop();
+        _stopwatch.stop();
+      }
     }
   }
 
@@ -69,8 +75,9 @@ class _ThunderstormBackgroundState extends State<ThunderstormBackground>
     return AnimatedBuilder(
       animation: _controller,
       builder: (context, child) {
+        final time = _stopwatch.elapsedMilliseconds / 1000.0 * 0.96;
         return CustomPaint(
-          foregroundPainter: _ThunderstormPainter(_drops, _random, _lightningOpacity, _time),
+          foregroundPainter: _ThunderstormPainter(_drops, _random, _lightningOpacity, time),
           size: Size.infinite,
           child: Container(
             decoration: BoxDecoration(
@@ -110,7 +117,7 @@ class _ThunderstormPainter extends CustomPainter {
   @override
   void paint(Canvas canvas, Size size) {
     if (drops.isEmpty) {
-      for (var i = 0; i < 250; i++) {
+      for (var i = 0; i < 120; i++) {
         drops.add(
           Particle(
             x: random.nextDouble() * size.width,
@@ -139,7 +146,7 @@ class _ThunderstormPainter extends CustomPainter {
       if (drop.x > size.width) drop.x = 0;
 
       paint
-        ..color = Colors.white.withValues(alpha: drop.opacity)
+        ..color = Color.fromRGBO(255, 255, 255, drop.opacity)
         ..strokeWidth = drop.size;
 
       canvas.drawLine(
@@ -152,7 +159,7 @@ class _ThunderstormPainter extends CustomPainter {
     // Lightning flash overlay
     if (lightningOpacity > 0) {
       final flashPaint = Paint()
-        ..color = Colors.white.withValues(alpha: lightningOpacity * 0.15)
+        ..color = Color.fromRGBO(255, 255, 255, lightningOpacity * 0.15)
         ..style = PaintingStyle.fill;
       canvas.drawRect(Rect.fromLTWH(0, 0, size.width, size.height), flashPaint);
     }

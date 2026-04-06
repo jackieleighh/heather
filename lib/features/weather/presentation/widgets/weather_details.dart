@@ -45,15 +45,7 @@ class WeatherDetails extends ConsumerWidget {
     );
 
     // USNO moon data for the nighttime chip
-    final usno = ref
-        .watch(
-          moonDataProvider((
-            lat: latitude,
-            lon: longitude,
-            utcOffsetSeconds: utcOffsetSeconds,
-          )),
-        )
-        .valueOrNull;
+    final usno = ref.watch(moonDataProvider).valueOrNull;
 
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),

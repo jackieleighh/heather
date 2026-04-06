@@ -19,7 +19,7 @@ class _BlizzardBackgroundState extends State<BlizzardBackground>
   late final AnimationController _controller;
   final List<Particle> _flakes = [];
   final Random _random = Random();
-  double _time = 0;
+  final _stopwatch = Stopwatch();
 
   @override
   void initState() {
@@ -28,17 +28,23 @@ class _BlizzardBackgroundState extends State<BlizzardBackground>
       vsync: this,
       duration: const Duration(seconds: 1),
     );
-    if (widget.isActive) _controller.repeat();
-    _controller.addListener(() {
-      _time += 0.016;
-    });
+    if (widget.isActive) {
+      _controller.repeat();
+      _stopwatch.start();
+    }
   }
 
   @override
   void didUpdateWidget(BlizzardBackground oldWidget) {
     super.didUpdateWidget(oldWidget);
     if (widget.isActive != oldWidget.isActive) {
-      widget.isActive ? _controller.repeat() : _controller.stop();
+      if (widget.isActive) {
+        _controller.repeat();
+        _stopwatch.start();
+      } else {
+        _controller.stop();
+        _stopwatch.stop();
+      }
     }
   }
 
@@ -53,23 +59,25 @@ class _BlizzardBackgroundState extends State<BlizzardBackground>
     return AnimatedBuilder(
       animation: _controller,
       builder: (context, child) {
+        final time = _stopwatch.elapsedMilliseconds / 1000.0 * 0.96;
         return CustomPaint(
-          foregroundPainter: _BlizzardPainter(_flakes, _random, _time),
+          foregroundPainter: _BlizzardPainter(_flakes, _random, time),
           size: Size.infinite,
-          child: Container(
-            decoration: BoxDecoration(
-              gradient: LinearGradient(
-                begin: Alignment.topCenter,
-                end: Alignment.bottomCenter,
-                colors: widget.gradientColors,
-              ),
-            ),
-            foregroundDecoration: BoxDecoration(
-              color: Colors.black.withValues(alpha: 0.18),
-            ),
-          ),
+          child: child,
         );
       },
+      child: Container(
+        decoration: BoxDecoration(
+          gradient: LinearGradient(
+            begin: Alignment.topCenter,
+            end: Alignment.bottomCenter,
+            colors: widget.gradientColors,
+          ),
+        ),
+        foregroundDecoration: BoxDecoration(
+          color: Colors.black.withValues(alpha: 0.18),
+        ),
+      ),
     );
   }
 }
@@ -84,7 +92,7 @@ class _BlizzardPainter extends CustomPainter {
   @override
   void paint(Canvas canvas, Size size) {
     if (flakes.isEmpty) {
-      for (var i = 0; i < 350; i++) {
+      for (var i = 0; i < 150; i++) {
         flakes.add(
           Particle(
             x: random.nextDouble() * size.width,
@@ -100,12 +108,12 @@ class _BlizzardPainter extends CustomPainter {
 
     final paint = Paint()..style = PaintingStyle.fill;
 
+    // Pre-compute shared wind component once per frame
+    final wind = sin(time * 1.8) * 2.5 + 1.0;
+
     for (final flake in flakes) {
       flake.y += flake.speed;
-      // Chaotic wind: layered sine waves at different frequencies per flake
-      flake.x += sin(time * 1.8 + flake.wobble) * 2.5
-          + sin(time * 3.7 + flake.wobble * 2.3) * 1.2
-          + 1.0;
+      flake.x += wind + sin(time * 1.8 + flake.wobble) * 1.2;
 
       if (flake.y > size.height + 10) {
         flake.y = -10;
@@ -114,14 +122,14 @@ class _BlizzardPainter extends CustomPainter {
       if (flake.x > size.width) flake.x = 0;
       if (flake.x < 0) flake.x = size.width;
 
-      paint.color = Colors.white.withValues(alpha: flake.opacity);
+      paint.color = Color.fromRGBO(255, 255, 255, flake.opacity);
       canvas.drawCircle(Offset(flake.x, flake.y), flake.size / 2, paint);
     }
 
     // Whiteout haze
     final hazePaint = Paint()
       ..style = PaintingStyle.fill
-      ..color = Colors.white.withValues(alpha: 0.06 + sin(time * 0.5) * 0.03)
+      ..color = Color.fromRGBO(255, 255, 255, 0.06 + sin(time * 0.5) * 0.03)
       ..maskFilter = const MaskFilter.blur(BlurStyle.normal, 100);
 
     canvas.drawRect(Rect.fromLTWH(0, 0, size.width, size.height), hazePaint);

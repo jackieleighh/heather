@@ -41,15 +41,7 @@ class _WeeklyForecastPageState extends ConsumerState<WeeklyForecastPage> {
     final now = forecast.locationNow;
     final today = DateTime(now.year, now.month, now.day);
 
-    final usno = ref
-        .watch(
-          moonDataProvider((
-            lat: widget.latitude,
-            lon: widget.longitude,
-            utcOffsetSeconds: forecast.utcOffsetSeconds,
-          )),
-        )
-        .valueOrNull;
+    final usno = ref.watch(moonDataProvider).valueOrNull;
 
     return SafeArea(
       child: Padding(
@@ -436,8 +428,8 @@ class _ExpandedDayContent extends StatefulWidget {
 
 class _ExpandedDayContentState extends State<_ExpandedDayContent> {
   final _scrollController = ScrollController();
-  bool _showTopFade = false;
-  bool _showBottomFade = true;
+  final _showTopFade = ValueNotifier(false);
+  final _showBottomFade = ValueNotifier(true);
 
   @override
   void initState() {
@@ -449,20 +441,15 @@ class _ExpandedDayContentState extends State<_ExpandedDayContent> {
   void dispose() {
     _scrollController.removeListener(_onScroll);
     _scrollController.dispose();
+    _showTopFade.dispose();
+    _showBottomFade.dispose();
     super.dispose();
   }
 
   void _onScroll() {
     final pos = _scrollController.position;
-    final atTop = pos.pixels <= 0;
-    final atBottom = pos.pixels >= pos.maxScrollExtent;
-
-    if (_showTopFade == atTop || _showBottomFade == atBottom) {
-      setState(() {
-        _showTopFade = !atTop;
-        _showBottomFade = !atBottom;
-      });
-    }
+    _showTopFade.value = pos.pixels > 0;
+    _showBottomFade.value = pos.pixels < pos.maxScrollExtent;
   }
 
   @override
@@ -545,21 +532,25 @@ class _ExpandedDayContentState extends State<_ExpandedDayContent> {
         ),
         // Detail cards with scroll fades
         Expanded(
-          child: ShaderMask(
-            shaderCallback: (bounds) {
-              return LinearGradient(
-                begin: Alignment.topCenter,
-                end: Alignment.bottomCenter,
-                colors: [
-                  if (_showTopFade) Colors.transparent else Colors.white,
-                  Colors.white,
-                  Colors.white,
-                  if (_showBottomFade) Colors.transparent else Colors.white,
-                ],
-                stops: const [0.0, 0.04, 0.94, 1.0],
-              ).createShader(bounds);
-            },
-            blendMode: BlendMode.dstIn,
+          child: ListenableBuilder(
+            listenable: Listenable.merge([_showTopFade, _showBottomFade]),
+            builder: (context, child) => ShaderMask(
+              shaderCallback: (bounds) {
+                return LinearGradient(
+                  begin: Alignment.topCenter,
+                  end: Alignment.bottomCenter,
+                  colors: [
+                    if (_showTopFade.value) Colors.transparent else Colors.white,
+                    Colors.white,
+                    Colors.white,
+                    if (_showBottomFade.value) Colors.transparent else Colors.white,
+                  ],
+                  stops: const [0.0, 0.04, 0.94, 1.0],
+                ).createShader(bounds);
+              },
+              blendMode: BlendMode.dstIn,
+              child: child,
+            ),
             child: ListView(
               controller: _scrollController,
               padding: const EdgeInsets.fromLTRB(10, 0, 10, 6),

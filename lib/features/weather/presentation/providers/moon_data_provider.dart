@@ -29,15 +29,11 @@ class UsnoPhaseTransition {
 class UsnoMoonData {
   final String curPhase;
   final double fracIllum;
-  final String? moonrise;
-  final String? moonset;
   final List<UsnoPhaseTransition> transitions;
 
   const UsnoMoonData({
     required this.curPhase,
     required this.fracIllum,
-    this.moonrise,
-    this.moonset,
     this.transitions = const [],
   });
 
@@ -129,16 +125,12 @@ class UsnoMoonData {
   Map<String, dynamic> toJson() => {
     'curPhase': curPhase,
     'fracIllum': fracIllum,
-    'moonrise': moonrise,
-    'moonset': moonset,
     'transitions': transitions.map((t) => t.toJson()).toList(),
   };
 
   factory UsnoMoonData.fromJson(Map<String, dynamic> json) => UsnoMoonData(
     curPhase: json['curPhase'] as String,
     fracIllum: (json['fracIllum'] as num).toDouble(),
-    moonrise: json['moonrise'] as String?,
-    moonset: json['moonset'] as String?,
     transitions: (json['transitions'] as List<dynamic>?)
             ?.map((t) =>
                 UsnoPhaseTransition.fromJson(t as Map<String, dynamic>))
@@ -147,11 +139,10 @@ class UsnoMoonData {
   );
 }
 
-final moonDataProvider = FutureProvider.family<UsnoMoonData?,
-    ({double lat, double lon, int utcOffsetSeconds})>((ref, coords) async {
+final moonDataProvider = FutureProvider<UsnoMoonData?>((ref) async {
   final prefs = await SharedPreferences.getInstance();
-  final cacheKey = 'cached_moon_${coords.lat}_${coords.lon}';
-  final cacheTsKey = 'cached_moon_ts_${coords.lat}_${coords.lon}';
+  const cacheKey = 'cached_moon_global';
+  const cacheTsKey = 'cached_moon_global_ts';
 
   final cachedJson = prefs.getString(cacheKey);
   final cachedTs = prefs.getInt(cacheTsKey);
@@ -175,12 +166,10 @@ final moonDataProvider = FutureProvider.family<UsnoMoonData?,
 
   try {
     final nowUtc = DateTime.now().toUtc();
-    final localNow = nowUtc.add(Duration(seconds: coords.utcOffsetSeconds));
-    final dateStr = '${localNow.year}-${localNow.month}-${localNow.day}';
-    final tzOffsetHours = coords.utcOffsetSeconds / 3600;
+    final dateStr = '${nowUtc.year}-${nowUtc.month}-${nowUtc.day}';
 
     // Fetch phases starting 35 days ago to cover the current lunar cycle
-    final phasesStart = localNow.subtract(const Duration(days: 35));
+    final phasesStart = nowUtc.subtract(const Duration(days: 35));
     final phasesDateStr =
         '${phasesStart.year}-${phasesStart.month}-${phasesStart.day}';
 
@@ -191,9 +180,9 @@ final moonDataProvider = FutureProvider.family<UsnoMoonData?,
     final results = await Future.wait([
       dio.get(ApiEndpoints.usnoOneDay(
         date: dateStr,
-        latitude: coords.lat,
-        longitude: coords.lon,
-        tzOffset: tzOffsetHours,
+        latitude: 0,
+        longitude: 0,
+        tzOffset: 0,
       )),
       dio.get(ApiEndpoints.usnoMoonPhases(date: phasesDateStr, nump: 16)),
     ]);
@@ -209,18 +198,6 @@ final moonDataProvider = FutureProvider.family<UsnoMoonData?,
     final fracStr = oneDayData['fracillum'] as String;
     final fracIllum = double.tryParse(fracStr.replaceAll('%', '')) ?? 0;
 
-    String? moonrise;
-    String? moonset;
-    final moondata = oneDayData['moondata'] as List<dynamic>?;
-    if (moondata != null) {
-      for (final entry in moondata) {
-        final phen = entry['phen'] as String?;
-        final time = entry['time'] as String?;
-        if (phen == 'Rise') moonrise = time;
-        if (phen == 'Set') moonset = time;
-      }
-    }
-
     final transitions = phasesData
         .map((p) => UsnoPhaseTransition(
               date: DateTime(
@@ -232,8 +209,6 @@ final moonDataProvider = FutureProvider.family<UsnoMoonData?,
     final data = UsnoMoonData(
       curPhase: curPhase,
       fracIllum: fracIllum,
-      moonrise: moonrise,
-      moonset: moonset,
       transitions: transitions,
     );
 

@@ -20,7 +20,7 @@ class ClearBackground extends StatefulWidget {
 class _ClearBackgroundState extends State<ClearBackground>
     with SingleTickerProviderStateMixin {
   late final AnimationController _controller;
-  double _time = 0;
+  final _stopwatch = Stopwatch();
   final List<_Star> _stars = [];
   final Random _random = Random();
 
@@ -31,17 +31,23 @@ class _ClearBackgroundState extends State<ClearBackground>
       vsync: this,
       duration: const Duration(seconds: 1),
     );
-    if (widget.isActive) _controller.repeat();
-    _controller.addListener(() {
-      _time += 0.01;
-    });
+    if (widget.isActive) {
+      _controller.repeat();
+      _stopwatch.start();
+    }
   }
 
   @override
   void didUpdateWidget(ClearBackground oldWidget) {
     super.didUpdateWidget(oldWidget);
     if (widget.isActive != oldWidget.isActive) {
-      widget.isActive ? _controller.repeat() : _controller.stop();
+      if (widget.isActive) {
+        _controller.repeat();
+        _stopwatch.start();
+      } else {
+        _controller.stop();
+        _stopwatch.stop();
+      }
     }
   }
 
@@ -56,22 +62,24 @@ class _ClearBackgroundState extends State<ClearBackground>
     return AnimatedBuilder(
       animation: _controller,
       builder: (context, child) {
+        final time = _stopwatch.elapsedMilliseconds / 1000.0 * 0.6;
         return CustomPaint(
           foregroundPainter: widget.isDay
-              ? _DayClearPainter(_time)
-              : _NightClearPainter(_stars, _random, _time),
+              ? _DayClearPainter(time)
+              : _NightClearPainter(_stars, _random, time),
           size: Size.infinite,
-          child: Container(
-            decoration: BoxDecoration(
-              gradient: LinearGradient(
-                begin: Alignment.topCenter,
-                end: Alignment.bottomCenter,
-                colors: widget.gradientColors,
-              ),
-            ),
-          ),
+          child: child,
         );
       },
+      child: Container(
+        decoration: BoxDecoration(
+          gradient: LinearGradient(
+            begin: Alignment.topCenter,
+            end: Alignment.bottomCenter,
+            colors: widget.gradientColors,
+          ),
+        ),
+      ),
     );
   }
 }
@@ -105,14 +113,15 @@ class _DayClearPainter extends CustomPainter {
       ..style = PaintingStyle.fill
       ..maskFilter = const MaskFilter.blur(BlurStyle.normal, 50);
 
-    glowPaint.color = Colors.white.withValues(alpha: 0.1 + sin(time) * 0.03);
+    glowPaint.color = Color.fromRGBO(255, 255, 255, 0.1 + sin(time) * 0.03);
     canvas.drawCircle(center, 130, glowPaint);
 
-    glowPaint.color = Colors.white.withValues(alpha: 0.15 + sin(time) * 0.03);
+    glowPaint.color = Color.fromRGBO(255, 255, 255, 0.15 + sin(time) * 0.03);
     canvas.drawCircle(center, 80, glowPaint);
 
-    glowPaint.color = Colors.white.withValues(alpha: 0.25);
-    glowPaint.maskFilter = const MaskFilter.blur(BlurStyle.normal, 20);
+    glowPaint
+      ..color = const Color.fromRGBO(255, 255, 255, 0.25)
+      ..maskFilter = const MaskFilter.blur(BlurStyle.normal, 20);
     canvas.drawCircle(center, 40, glowPaint);
   }
 
@@ -149,33 +158,13 @@ class _NightClearPainter extends CustomPainter {
       final twinkle = (sin(time * star.twinkleSpeed + star.phase) + 1) / 2;
       final opacity = 0.1 + twinkle * 0.3;
 
-      paint.color = Colors.white.withValues(alpha: opacity);
+      paint.color = Color.fromRGBO(255, 255, 255, opacity);
       canvas.drawCircle(
         Offset(star.x, star.y),
         star.size * (0.8 + twinkle * 0.2),
         paint,
       );
     }
-
-    // Moon
-    final moonPaint = Paint()
-      ..style = PaintingStyle.fill
-      ..color = Colors.white.withValues(alpha: 0.15)
-      ..maskFilter = const MaskFilter.blur(BlurStyle.normal, 25);
-    canvas.drawCircle(
-      Offset(size.width * 0.8, size.height * 0.12),
-      50,
-      moonPaint,
-    );
-
-    moonPaint
-      ..color = Colors.white.withValues(alpha: 0.4)
-      ..maskFilter = const MaskFilter.blur(BlurStyle.normal, 8);
-    canvas.drawCircle(
-      Offset(size.width * 0.8, size.height * 0.12),
-      25,
-      moonPaint,
-    );
   }
 
   @override

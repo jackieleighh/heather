@@ -19,7 +19,7 @@ class _FreezingRainBackgroundState extends State<FreezingRainBackground>
   late final AnimationController _controller;
   final List<Particle> _drops = [];
   final Random _random = Random();
-  double _time = 0;
+  final _stopwatch = Stopwatch();
 
   @override
   void initState() {
@@ -28,17 +28,23 @@ class _FreezingRainBackgroundState extends State<FreezingRainBackground>
       vsync: this,
       duration: const Duration(seconds: 1),
     );
-    if (widget.isActive) _controller.repeat();
-    _controller.addListener(() {
-      _time += 0.01;
-    });
+    if (widget.isActive) {
+      _controller.repeat();
+      _stopwatch.start();
+    }
   }
 
   @override
   void didUpdateWidget(FreezingRainBackground oldWidget) {
     super.didUpdateWidget(oldWidget);
     if (widget.isActive != oldWidget.isActive) {
-      widget.isActive ? _controller.repeat() : _controller.stop();
+      if (widget.isActive) {
+        _controller.repeat();
+        _stopwatch.start();
+      } else {
+        _controller.stop();
+        _stopwatch.stop();
+      }
     }
   }
 
@@ -53,20 +59,22 @@ class _FreezingRainBackgroundState extends State<FreezingRainBackground>
     return AnimatedBuilder(
       animation: _controller,
       builder: (context, child) {
+        final time = _stopwatch.elapsedMilliseconds / 1000.0 * 0.6;
         return CustomPaint(
-          foregroundPainter: _FreezingRainPainter(_drops, _random, _time),
+          foregroundPainter: _FreezingRainPainter(_drops, _random, time),
           size: Size.infinite,
-          child: Container(
-            decoration: BoxDecoration(
-              gradient: LinearGradient(
-                begin: Alignment.topCenter,
-                end: Alignment.bottomCenter,
-                colors: widget.gradientColors,
-              ),
-            ),
-          ),
+          child: child,
         );
       },
+      child: Container(
+        decoration: BoxDecoration(
+          gradient: LinearGradient(
+            begin: Alignment.topCenter,
+            end: Alignment.bottomCenter,
+            colors: widget.gradientColors,
+          ),
+        ),
+      ),
     );
   }
 }
@@ -78,12 +86,10 @@ class _FreezingRainPainter extends CustomPainter {
 
   _FreezingRainPainter(this.drops, this.random, this.time);
 
-  static const _icyBlue = Color(0xFFB0E0FF);
-
   @override
   void paint(Canvas canvas, Size size) {
     if (drops.isEmpty) {
-      for (var i = 0; i < 180; i++) {
+      for (var i = 0; i < 90; i++) {
         drops.add(
           Particle(
             x: random.nextDouble() * size.width,
@@ -111,9 +117,10 @@ class _FreezingRainPainter extends CustomPainter {
       if (drop.x > size.width) drop.x = 0;
 
       // Alternate between icy blue and white drops
-      final color = drop.size > 2.0 ? _icyBlue : Colors.white;
       paint
-        ..color = color.withValues(alpha: drop.opacity)
+        ..color = drop.size > 2.0
+            ? Color.fromRGBO(176, 224, 255, drop.opacity)
+            : Color.fromRGBO(255, 255, 255, drop.opacity)
         ..strokeWidth = drop.size;
 
       canvas.drawLine(
@@ -124,13 +131,12 @@ class _FreezingRainPainter extends CustomPainter {
     }
 
     // Icy sheen overlay — subtle frost shimmer
+    final sheenAlpha = 0.04 + sin(time * 0.5) * 0.02;
     final sheenPaint = Paint()
       ..style = PaintingStyle.fill
-      ..maskFilter = const MaskFilter.blur(BlurStyle.normal, 80);
+      ..maskFilter = const MaskFilter.blur(BlurStyle.normal, 80)
+      ..color = Color.fromRGBO(176, 224, 255, sheenAlpha);
 
-    sheenPaint.color = _icyBlue.withValues(
-      alpha: 0.04 + sin(time * 0.5) * 0.02,
-    );
     canvas.drawCircle(
       Offset(size.width * 0.3, size.height * 0.7),
       size.width * 0.5,

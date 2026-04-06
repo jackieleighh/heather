@@ -19,7 +19,7 @@ class _SnowBackgroundState extends State<SnowBackground>
   late final AnimationController _controller;
   final List<Particle> _flakes = [];
   final Random _random = Random();
-  double _time = 0;
+  final _stopwatch = Stopwatch();
 
   @override
   void initState() {
@@ -28,17 +28,23 @@ class _SnowBackgroundState extends State<SnowBackground>
       vsync: this,
       duration: const Duration(seconds: 1),
     );
-    if (widget.isActive) _controller.repeat();
-    _controller.addListener(() {
-      _time += 0.016;
-    });
+    if (widget.isActive) {
+      _controller.repeat();
+      _stopwatch.start();
+    }
   }
 
   @override
   void didUpdateWidget(SnowBackground oldWidget) {
     super.didUpdateWidget(oldWidget);
     if (widget.isActive != oldWidget.isActive) {
-      widget.isActive ? _controller.repeat() : _controller.stop();
+      if (widget.isActive) {
+        _controller.repeat();
+        _stopwatch.start();
+      } else {
+        _controller.stop();
+        _stopwatch.stop();
+      }
     }
   }
 
@@ -53,23 +59,25 @@ class _SnowBackgroundState extends State<SnowBackground>
     return AnimatedBuilder(
       animation: _controller,
       builder: (context, child) {
+        final time = _stopwatch.elapsedMilliseconds / 1000.0 * 0.96;
         return CustomPaint(
-          foregroundPainter: _SnowPainter(_flakes, _random, _time),
+          foregroundPainter: _SnowPainter(_flakes, _random, time),
           size: Size.infinite,
-          child: Container(
-            decoration: BoxDecoration(
-              gradient: LinearGradient(
-                begin: Alignment.topCenter,
-                end: Alignment.bottomCenter,
-                colors: widget.gradientColors,
-              ),
-            ),
-            foregroundDecoration: BoxDecoration(
-              color: Colors.black.withValues(alpha: 0.18),
-            ),
-          ),
+          child: child,
         );
       },
+      child: Container(
+        decoration: BoxDecoration(
+          gradient: LinearGradient(
+            begin: Alignment.topCenter,
+            end: Alignment.bottomCenter,
+            colors: widget.gradientColors,
+          ),
+        ),
+        foregroundDecoration: BoxDecoration(
+          color: Colors.black.withValues(alpha: 0.18),
+        ),
+      ),
     );
   }
 }
@@ -84,7 +92,7 @@ class _SnowPainter extends CustomPainter {
   @override
   void paint(Canvas canvas, Size size) {
     if (flakes.isEmpty) {
-      for (var i = 0; i < 100; i++) {
+      for (var i = 0; i < 60; i++) {
         flakes.add(
           Particle(
             x: random.nextDouble() * size.width,
@@ -111,7 +119,7 @@ class _SnowPainter extends CustomPainter {
       if (flake.x < 0) flake.x = size.width;
       if (flake.x > size.width) flake.x = 0;
 
-      paint.color = Colors.white.withValues(alpha: flake.opacity);
+      paint.color = Color.fromRGBO(255, 255, 255, flake.opacity);
       canvas.drawCircle(Offset(flake.x, flake.y), flake.size / 2, paint);
     }
   }

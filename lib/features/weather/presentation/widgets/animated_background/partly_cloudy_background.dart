@@ -22,7 +22,7 @@ class PartlyCloudyBackground extends StatefulWidget {
 class _PartlyCloudyBackgroundState extends State<PartlyCloudyBackground>
     with SingleTickerProviderStateMixin {
   late final AnimationController _controller;
-  double _time = 0;
+  final _stopwatch = Stopwatch();
   final List<_Star> _stars = [];
   final Random _random = Random();
 
@@ -33,17 +33,23 @@ class _PartlyCloudyBackgroundState extends State<PartlyCloudyBackground>
       vsync: this,
       duration: const Duration(seconds: 1),
     );
-    if (widget.isActive) _controller.repeat();
-    _controller.addListener(() {
-      _time += 0.007;
-    });
+    if (widget.isActive) {
+      _controller.repeat();
+      _stopwatch.start();
+    }
   }
 
   @override
   void didUpdateWidget(PartlyCloudyBackground oldWidget) {
     super.didUpdateWidget(oldWidget);
     if (widget.isActive != oldWidget.isActive) {
-      widget.isActive ? _controller.repeat() : _controller.stop();
+      if (widget.isActive) {
+        _controller.repeat();
+        _stopwatch.start();
+      } else {
+        _controller.stop();
+        _stopwatch.stop();
+      }
     }
   }
 
@@ -58,22 +64,24 @@ class _PartlyCloudyBackgroundState extends State<PartlyCloudyBackground>
     return AnimatedBuilder(
       animation: _controller,
       builder: (context, child) {
+        final time = _stopwatch.elapsedMilliseconds / 1000.0 * 0.42;
         return CustomPaint(
           foregroundPainter: widget.isDay
-              ? _PartlyCloudyDayPainter(_time)
-              : _PartlyCloudyNightPainter(_stars, _random, _time),
+              ? _PartlyCloudyDayPainter(time)
+              : _PartlyCloudyNightPainter(_stars, _random, time),
           size: Size.infinite,
-          child: Container(
-            decoration: BoxDecoration(
-              gradient: LinearGradient(
-                begin: Alignment.topCenter,
-                end: Alignment.bottomCenter,
-                colors: widget.gradientColors,
-              ),
-            ),
-          ),
+          child: child,
         );
       },
+      child: Container(
+        decoration: BoxDecoration(
+          gradient: LinearGradient(
+            begin: Alignment.topCenter,
+            end: Alignment.bottomCenter,
+            colors: widget.gradientColors,
+          ),
+        ),
+      ),
     );
   }
 }
@@ -99,6 +107,20 @@ class _PartlyCloudyDayPainter extends CustomPainter {
 
   _PartlyCloudyDayPainter(this.time);
 
+  static const _white0 = Color.fromRGBO(255, 255, 255, 0);
+  static const _glowColors = [
+    Color.fromRGBO(255, 255, 255, 0.38),
+    Color.fromRGBO(255, 255, 255, 0.10),
+    _white0,
+  ];
+  static const _coreColors = [
+    Color.fromRGBO(255, 255, 255, 0.90),
+    Color.fromRGBO(255, 255, 255, 0.50),
+    _white0,
+  ];
+  static const _glowStops = [0.0, 0.5, 1.0];
+  static const _coreStops = [0.0, 0.35, 1.0];
+
   @override
   void paint(Canvas canvas, Size size) {
     final w = size.width;
@@ -106,7 +128,9 @@ class _PartlyCloudyDayPainter extends CustomPainter {
 
     // Sun rays peeking through gaps
     final sunCenter = Offset(w * 0.8, h * 0.12);
-    final rayPaint = Paint()..style = PaintingStyle.fill;
+    final rayPaint = Paint()
+      ..style = PaintingStyle.fill
+      ..maskFilter = const MaskFilter.blur(BlurStyle.normal, 4);
     const rayAngles = [0.0, 0.7, 1.3, 2.0, 2.7, 3.3, 4.0, 4.7, 5.3, 5.95];
     const rayLengths = [200.0, 130.0, 180.0, 120.0, 190.0, 140.0, 170.0, 125.0, 160.0, 135.0];
     const raySpreads = [0.05, 0.033, 0.045, 0.028, 0.05, 0.035, 0.045, 0.033, 0.04, 0.033];
@@ -134,44 +158,21 @@ class _PartlyCloudyDayPainter extends CustomPainter {
         ..lineTo(sunCenter.dx + cosR * innerR, sunCenter.dy + sinR * innerR)
         ..close();
 
-      rayPaint
-        ..maskFilter = const MaskFilter.blur(BlurStyle.normal, 4)
-        ..shader = ui.Gradient.linear(
-          Offset(sunCenter.dx + cosA * innerR, sunCenter.dy + sinA * innerR),
-          Offset(sunCenter.dx + cosA * outerR, sunCenter.dy + sinA * outerR),
-          [
-            Colors.white.withValues(alpha: alpha),
-            Colors.white.withValues(alpha: 0),
-          ],
-        );
+      rayPaint.shader = ui.Gradient.linear(
+        Offset(sunCenter.dx + cosA * innerR, sunCenter.dy + sinA * innerR),
+        Offset(sunCenter.dx + cosA * outerR, sunCenter.dy + sinA * outerR),
+        [Color.fromRGBO(255, 255, 255, alpha), _white0],
+      );
       canvas.drawPath(path, rayPaint);
     }
 
     // Glow around core
     final glowPaint = Paint()..style = PaintingStyle.fill;
-    glowPaint.shader = ui.Gradient.radial(
-      sunCenter,
-      90,
-      [
-        Colors.white.withValues(alpha: 0.38),
-        Colors.white.withValues(alpha: 0.10),
-        Colors.white.withValues(alpha: 0.0),
-      ],
-      [0.0, 0.5, 1.0],
-    );
+    glowPaint.shader = ui.Gradient.radial(sunCenter, 90, _glowColors, _glowStops);
     canvas.drawRect(Offset.zero & size, glowPaint);
 
     // Bright core
-    glowPaint.shader = ui.Gradient.radial(
-      sunCenter,
-      35,
-      [
-        Colors.white.withValues(alpha: 0.90),
-        Colors.white.withValues(alpha: 0.50),
-        Colors.white.withValues(alpha: 0.0),
-      ],
-      [0.0, 0.35, 1.0],
-    );
+    glowPaint.shader = ui.Gradient.radial(sunCenter, 35, _coreColors, _coreStops);
     canvas.drawRect(Offset.zero & size, glowPaint);
 
     // Cumulus clouds
@@ -216,26 +217,13 @@ class _PartlyCloudyNightPainter extends CustomPainter {
       final twinkle = (sin(time * star.twinkleSpeed + star.phase) + 1) / 2;
       final opacity = 0.1 + twinkle * 0.3;
 
-      starPaint.color = Colors.white.withValues(alpha: opacity);
+      starPaint.color = Color.fromRGBO(255, 255, 255, opacity);
       canvas.drawCircle(
         Offset(star.x, star.y),
         star.size * (0.8 + twinkle * 0.2),
         starPaint,
       );
     }
-
-    // Moon glow
-    final moonCenter = Offset(w * 0.8, h * 0.12);
-    final moonPaint = Paint()
-      ..style = PaintingStyle.fill
-      ..color = Colors.white.withValues(alpha: 0.15)
-      ..maskFilter = const MaskFilter.blur(BlurStyle.normal, 25);
-    canvas.drawCircle(moonCenter, 50, moonPaint);
-
-    moonPaint
-      ..color = Colors.white.withValues(alpha: 0.4)
-      ..maskFilter = const MaskFilter.blur(BlurStyle.normal, 8);
-    canvas.drawCircle(moonCenter, 25, moonPaint);
 
     // Cumulus clouds (layered over stars)
     _drawClouds(canvas, w, h, time);
@@ -291,7 +279,7 @@ void _drawCloud(
     ..maskFilter = MaskFilter.blur(BlurStyle.normal, scale * 0.06);
 
   // Flat base — wide oval anchoring the bottom
-  paint.color = Colors.white.withValues(alpha: alpha * 0.75);
+  paint.color = Color.fromRGBO(255, 255, 255, alpha * 0.75);
   canvas.drawOval(
     Rect.fromCenter(
       center: Offset(center.dx, center.dy + scale * 0.12),
@@ -302,7 +290,7 @@ void _drawCloud(
   );
 
   // Main body — overlapping circles that form the puffy top
-  paint.color = Colors.white.withValues(alpha: alpha);
+  paint.color = Color.fromRGBO(255, 255, 255, alpha);
 
   // Left lobe
   canvas.drawCircle(
@@ -326,7 +314,7 @@ void _drawCloud(
   );
 
   // Small accent puff — top center for height
-  paint.color = Colors.white.withValues(alpha: alpha * 0.85);
+  paint.color = Color.fromRGBO(255, 255, 255, alpha * 0.85);
   canvas.drawCircle(
     Offset(center.dx + scale * 0.05, center.dy - scale * 0.24),
     scale * 0.22,

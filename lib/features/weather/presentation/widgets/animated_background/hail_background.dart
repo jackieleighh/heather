@@ -22,7 +22,7 @@ class _HailBackgroundState extends State<HailBackground>
   final Random _random = Random();
   double _lightningOpacity = 0;
   double _nextFlash = 3.0;
-  double _time = 0;
+  final _stopwatch = Stopwatch();
 
   @override
   void initState() {
@@ -31,18 +31,24 @@ class _HailBackgroundState extends State<HailBackground>
       vsync: this,
       duration: const Duration(seconds: 1),
     );
-    if (widget.isActive) _controller.repeat();
+    if (widget.isActive) {
+      _controller.repeat();
+      _stopwatch.start();
+    }
     _controller.addListener(_updateLightning);
-    _controller.addListener(() {
-      _time += 0.016;
-    });
   }
 
   @override
   void didUpdateWidget(HailBackground oldWidget) {
     super.didUpdateWidget(oldWidget);
     if (widget.isActive != oldWidget.isActive) {
-      widget.isActive ? _controller.repeat() : _controller.stop();
+      if (widget.isActive) {
+        _controller.repeat();
+        _stopwatch.start();
+      } else {
+        _controller.stop();
+        _stopwatch.stop();
+      }
     }
   }
 
@@ -70,13 +76,14 @@ class _HailBackgroundState extends State<HailBackground>
     return AnimatedBuilder(
       animation: _controller,
       builder: (context, child) {
+        final time = _stopwatch.elapsedMilliseconds / 1000.0 * 0.96;
         return CustomPaint(
           foregroundPainter: _HailPainter(
             _drops,
             _hailStones,
             _random,
             _lightningOpacity,
-            _time,
+            time,
           ),
           size: Size.infinite,
           child: Container(
@@ -118,7 +125,7 @@ class _HailPainter extends CustomPainter {
   @override
   void paint(Canvas canvas, Size size) {
     if (hailStones.isEmpty) {
-      for (var i = 0; i < 120; i++) {
+      for (var i = 0; i < 60; i++) {
         hailStones.add(
           Particle(
             x: random.nextDouble() * size.width,
@@ -145,14 +152,14 @@ class _HailPainter extends CustomPainter {
       }
       if (stone.x > size.width) stone.x = 0;
 
-      paint.color = Colors.white.withValues(alpha: stone.opacity);
+      paint.color = Color.fromRGBO(255, 255, 255, stone.opacity);
       canvas.drawCircle(Offset(stone.x, stone.y), stone.size / 2, paint);
     }
 
     // Lightning flash
     if (lightningOpacity > 0) {
       final flashPaint = Paint()
-        ..color = Colors.white.withValues(alpha: lightningOpacity * 0.15)
+        ..color = Color.fromRGBO(255, 255, 255, lightningOpacity * 0.15)
         ..style = PaintingStyle.fill;
       canvas.drawRect(Rect.fromLTWH(0, 0, size.width, size.height), flashPaint);
     }

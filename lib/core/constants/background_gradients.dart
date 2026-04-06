@@ -54,39 +54,34 @@ class BackgroundGradients {
 
   static const _sunny = {
     TemperatureTier.singleDigits: [
-      AppColors.softIce,
-      AppColors.sunnyFrostPeriwinkle,
-      AppColors.softOrchid,
+      AppColors.sunnyAqua,
+      AppColors.sunnyCrispBlue,
+      AppColors.sunnyRichViolet,
     ],
     TemperatureTier.freezing: [
-      AppColors.softIce,
-      AppColors.sunnySkyWash,
-      AppColors.sunnySteelTeal,
-      AppColors.brightDeepAzure,
+      AppColors.sunnyAqua,
+      AppColors.sunnyCerulean,
+      AppColors.royalBlue,
     ],
     TemperatureTier.jacketWeather: [
-      AppColors.softSkyBlue,
-      AppColors.sunnyAiryBlue,
-      AppColors.brightDeepAzure,
-      AppColors.brightSage,
+      AppColors.sunnyAqua,
+      AppColors.sunnyCerulean,
+      AppColors.sunnyBrightTeal,
     ],
     TemperatureTier.flannelWeather: [
-      AppColors.sunnyAiryBlue,
-      AppColors.brightSeafoam,
-      AppColors.brightSage,
-      AppColors.brightSunGold,
+      AppColors.sunnyAqua,
+      AppColors.sunnyBrightTeal,
+      AppColors.sunnyVividGold,
     ],
     TemperatureTier.shortsWeather: [
-      AppColors.sunnyTealBlue,
-      AppColors.brightSage,
-      AppColors.brightSunGold,
-      AppColors.vibrantOrange,
+      AppColors.sunnyAqua,
+      AppColors.sunnyVividGold,
+      AppColors.sunnyBlazingOrange,
     ],
     TemperatureTier.scorcher: [
-      AppColors.brightSage,
-      AppColors.sunYellow,
-      AppColors.softPeachOrange,
-      AppColors.warmCoral,
+      AppColors.sunnyAqua,
+      AppColors.sunnyVividGold,
+      AppColors.sunnyHotRose,
     ],
   };
 
@@ -131,34 +126,34 @@ class BackgroundGradients {
 
   static const _drizzle = {
     TemperatureTier.singleDigits: [
-      AppColors.softDrizzleWisteria,
-      AppColors.softDrizzleIce,
-      AppColors.softDrizzleBlue,
+      AppColors.drizzleViolet,
+      AppColors.drizzleSkyBlue,
+      AppColors.drizzleLavenderPop,
     ],
     TemperatureTier.freezing: [
-      AppColors.softDrizzleBlue,
-      AppColors.softDrizzleIce,
-      AppColors.softDrizzleWisteria,
+      AppColors.drizzleSteel,
+      AppColors.drizzleSkyBlue,
+      AppColors.drizzleViolet,
     ],
     TemperatureTier.jacketWeather: [
-      AppColors.softDrizzleBlue,
-      AppColors.softDrizzleIce,
-      AppColors.softDrizzleSage,
+      AppColors.drizzleSteel,
+      AppColors.drizzleSkyBlue,
+      AppColors.drizzleTealMint,
     ],
     TemperatureTier.flannelWeather: [
-      AppColors.softDrizzleBlue,
-      AppColors.softDrizzleSage,
-      AppColors.softAmber,
+      AppColors.drizzleSkyBlue,
+      AppColors.drizzleTealMint,
+      AppColors.drizzleHoney,
     ],
     TemperatureTier.shortsWeather: [
-      AppColors.softDrizzleBlue,
-      AppColors.softAmber,
-      AppColors.softOrange,
+      AppColors.drizzleSkyBlue,
+      AppColors.drizzleHoney,
+      AppColors.drizzleTangerine,
     ],
     TemperatureTier.scorcher: [
-      AppColors.softDrizzleBlue,
-      AppColors.softDrizzleOrange,
-      AppColors.softDrizzleRose,
+      AppColors.drizzleTangerine,
+      AppColors.softAmber,
+      AppColors.drizzlePlumRose,
     ],
   };
 

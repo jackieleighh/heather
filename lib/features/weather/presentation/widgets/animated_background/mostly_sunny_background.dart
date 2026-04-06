@@ -21,7 +21,7 @@ class MostlySunnyBackground extends StatefulWidget {
 class _MostlySunnyBackgroundState extends State<MostlySunnyBackground>
     with SingleTickerProviderStateMixin {
   late final AnimationController _controller;
-  double _time = 0;
+  final _stopwatch = Stopwatch();
   final List<_Star> _stars = [];
   final Random _random = Random();
 
@@ -32,17 +32,23 @@ class _MostlySunnyBackgroundState extends State<MostlySunnyBackground>
       vsync: this,
       duration: const Duration(seconds: 1),
     );
-    if (widget.isActive) _controller.repeat();
-    _controller.addListener(() {
-      _time += 0.007;
-    });
+    if (widget.isActive) {
+      _controller.repeat();
+      _stopwatch.start();
+    }
   }
 
   @override
   void didUpdateWidget(MostlySunnyBackground oldWidget) {
     super.didUpdateWidget(oldWidget);
     if (widget.isActive != oldWidget.isActive) {
-      widget.isActive ? _controller.repeat() : _controller.stop();
+      if (widget.isActive) {
+        _controller.repeat();
+        _stopwatch.start();
+      } else {
+        _controller.stop();
+        _stopwatch.stop();
+      }
     }
   }
 
@@ -57,22 +63,24 @@ class _MostlySunnyBackgroundState extends State<MostlySunnyBackground>
     return AnimatedBuilder(
       animation: _controller,
       builder: (context, child) {
+        final time = _stopwatch.elapsedMilliseconds / 1000.0 * 0.42;
         return CustomPaint(
           foregroundPainter: widget.isDay
-              ? _MostlySunnyDayPainter(_time)
-              : _MostlySunnyNightPainter(_stars, _random, _time),
+              ? _MostlySunnyDayPainter(time)
+              : _MostlySunnyNightPainter(_stars, _random, time),
           size: Size.infinite,
-          child: Container(
-            decoration: BoxDecoration(
-              gradient: LinearGradient(
-                begin: Alignment.topCenter,
-                end: Alignment.bottomCenter,
-                colors: widget.gradientColors,
-              ),
-            ),
-          ),
+          child: child,
         );
       },
+      child: Container(
+        decoration: BoxDecoration(
+          gradient: LinearGradient(
+            begin: Alignment.topCenter,
+            end: Alignment.bottomCenter,
+            colors: widget.gradientColors,
+          ),
+        ),
+      ),
     );
   }
 }
@@ -98,6 +106,20 @@ class _MostlySunnyDayPainter extends CustomPainter {
 
   _MostlySunnyDayPainter(this.time);
 
+  static const _white0 = Color.fromRGBO(255, 255, 255, 0);
+  static const _glowColors = [
+    Color.fromRGBO(255, 255, 255, 0.30),
+    Color.fromRGBO(255, 255, 255, 0.08),
+    _white0,
+  ];
+  static const _coreColors = [
+    Color.fromRGBO(255, 255, 255, 0.85),
+    Color.fromRGBO(255, 255, 255, 0.40),
+    _white0,
+  ];
+  static const _glowStops = [0.0, 0.5, 1.0];
+  static const _coreStops = [0.0, 0.35, 1.0];
+
   @override
   void paint(Canvas canvas, Size size) {
     final w = size.width;
@@ -106,7 +128,9 @@ class _MostlySunnyDayPainter extends CustomPainter {
     final paint = Paint()..style = PaintingStyle.fill;
 
     // 1. Rays — narrow, distinct beams with varying lengths
-    final rayPaint = Paint()..style = PaintingStyle.fill;
+    final rayPaint = Paint()
+      ..style = PaintingStyle.fill
+      ..maskFilter = const MaskFilter.blur(BlurStyle.normal, 5);
     const rayAngles = [0.0, 0.55, 1.05, 1.6, 2.15, 2.65, 3.2, 3.75, 4.3, 4.85, 5.35, 5.9];
     const rayLengths = [300.0, 190.0, 260.0, 160.0, 290.0, 210.0, 270.0, 180.0, 240.0, 200.0, 280.0, 185.0];
     const raySpreads = [0.055, 0.037, 0.05, 0.032, 0.055, 0.04, 0.05, 0.037, 0.045, 0.037, 0.055, 0.032];
@@ -134,43 +158,20 @@ class _MostlySunnyDayPainter extends CustomPainter {
         ..lineTo(center.dx + cosR * innerR, center.dy + sinR * innerR)
         ..close();
 
-      rayPaint
-        ..maskFilter = const MaskFilter.blur(BlurStyle.normal, 5)
-        ..shader = ui.Gradient.linear(
-          Offset(center.dx + cosA * innerR, center.dy + sinA * innerR),
-          Offset(center.dx + cosA * outerR, center.dy + sinA * outerR),
-          [
-            Colors.white.withValues(alpha: alpha),
-            Colors.white.withValues(alpha: 0),
-          ],
-        );
+      rayPaint.shader = ui.Gradient.linear(
+        Offset(center.dx + cosA * innerR, center.dy + sinA * innerR),
+        Offset(center.dx + cosA * outerR, center.dy + sinA * outerR),
+        [Color.fromRGBO(255, 255, 255, alpha), _white0],
+      );
       canvas.drawPath(path, rayPaint);
     }
 
     // 2. Glow around core
-    paint.shader = ui.Gradient.radial(
-      center,
-      110,
-      [
-        Colors.white.withValues(alpha: 0.30),
-        Colors.white.withValues(alpha: 0.08),
-        Colors.white.withValues(alpha: 0.0),
-      ],
-      [0.0, 0.5, 1.0],
-    );
+    paint.shader = ui.Gradient.radial(center, 110, _glowColors, _glowStops);
     canvas.drawRect(Offset.zero & size, paint);
 
     // 3. Bright core
-    paint.shader = ui.Gradient.radial(
-      center,
-      45,
-      [
-        Colors.white.withValues(alpha: 0.85),
-        Colors.white.withValues(alpha: 0.40),
-        Colors.white.withValues(alpha: 0.0),
-      ],
-      [0.0, 0.35, 1.0],
-    );
+    paint.shader = ui.Gradient.radial(center, 45, _coreColors, _coreStops);
     canvas.drawRect(Offset.zero & size, paint);
 
     // Drifting cumulus clouds
@@ -217,25 +218,13 @@ class _MostlySunnyNightPainter extends CustomPainter {
       final twinkle = (sin(time * star.twinkleSpeed + star.phase) + 1) / 2;
       final opacity = 0.1 + twinkle * 0.3;
 
-      starPaint.color = Colors.white.withValues(alpha: opacity);
+      starPaint.color = Color.fromRGBO(255, 255, 255, opacity);
       canvas.drawCircle(
         Offset(star.x, star.y),
         star.size * (0.8 + twinkle * 0.2),
         starPaint,
       );
     }
-
-    // Moon
-    final moonPaint = Paint()
-      ..style = PaintingStyle.fill
-      ..color = Colors.white.withValues(alpha: 0.15)
-      ..maskFilter = const MaskFilter.blur(BlurStyle.normal, 25);
-    canvas.drawCircle(Offset(w * 0.8, h * 0.12), 50, moonPaint);
-
-    moonPaint
-      ..color = Colors.white.withValues(alpha: 0.4)
-      ..maskFilter = const MaskFilter.blur(BlurStyle.normal, 8);
-    canvas.drawCircle(Offset(w * 0.8, h * 0.12), 25, moonPaint);
 
     // Drifting cumulus clouds (same positions as day)
     _drawDriftingCloud(canvas, w, h, time, 0.15, 0.30, w * 0.38, 0.30, 0.072);
@@ -284,7 +273,7 @@ void _drawCloud(
     ..maskFilter = MaskFilter.blur(BlurStyle.normal, scale * 0.06);
 
   // Flat base
-  paint.color = Colors.white.withValues(alpha: alpha * 0.7);
+  paint.color = Color.fromRGBO(255, 255, 255, alpha * 0.7);
   canvas.drawOval(
     Rect.fromCenter(
       center: Offset(center.dx, center.dy + scale * 0.10),
@@ -295,7 +284,7 @@ void _drawCloud(
   );
 
   // Main lobes
-  paint.color = Colors.white.withValues(alpha: alpha);
+  paint.color = Color.fromRGBO(255, 255, 255, alpha);
   canvas.drawCircle(
     Offset(center.dx - scale * 0.25, center.dy),
     scale * 0.24,
@@ -313,7 +302,7 @@ void _drawCloud(
   );
 
   // Top accent puff
-  paint.color = Colors.white.withValues(alpha: alpha * 0.8);
+  paint.color = Color.fromRGBO(255, 255, 255, alpha * 0.8);
   canvas.drawCircle(
     Offset(center.dx + scale * 0.04, center.dy - scale * 0.20),
     scale * 0.18,

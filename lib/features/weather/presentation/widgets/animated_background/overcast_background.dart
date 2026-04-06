@@ -43,7 +43,7 @@ class OvercastBackground extends StatefulWidget {
 class _OvercastBackgroundState extends State<OvercastBackground>
     with SingleTickerProviderStateMixin {
   late final AnimationController _controller;
-  double _time = 0;
+  final _stopwatch = Stopwatch();
   final Random _random = Random();
   late final List<_CloudMass> _masses;
 
@@ -55,17 +55,23 @@ class _OvercastBackgroundState extends State<OvercastBackground>
       vsync: this,
       duration: const Duration(seconds: 1),
     );
-    if (widget.isActive) _controller.repeat();
-    _controller.addListener(() {
-      _time += 0.005;
-    });
+    if (widget.isActive) {
+      _controller.repeat();
+      _stopwatch.start();
+    }
   }
 
   @override
   void didUpdateWidget(OvercastBackground oldWidget) {
     super.didUpdateWidget(oldWidget);
     if (widget.isActive != oldWidget.isActive) {
-      widget.isActive ? _controller.repeat() : _controller.stop();
+      if (widget.isActive) {
+        _controller.repeat();
+        _stopwatch.start();
+      } else {
+        _controller.stop();
+        _stopwatch.stop();
+      }
     }
   }
 
@@ -113,20 +119,22 @@ class _OvercastBackgroundState extends State<OvercastBackground>
     return AnimatedBuilder(
       animation: _controller,
       builder: (context, child) {
+        final time = _stopwatch.elapsedMilliseconds / 1000.0 * 0.3;
         return CustomPaint(
-          foregroundPainter: _OvercastPainter(_time, _masses),
+          foregroundPainter: _OvercastPainter(time, _masses),
           size: Size.infinite,
-          child: Container(
-            decoration: BoxDecoration(
-              gradient: LinearGradient(
-                begin: Alignment.topCenter,
-                end: Alignment.bottomCenter,
-                colors: widget.gradientColors,
-              ),
-            ),
-          ),
+          child: child,
         );
       },
+      child: Container(
+        decoration: BoxDecoration(
+          gradient: LinearGradient(
+            begin: Alignment.topCenter,
+            end: Alignment.bottomCenter,
+            colors: widget.gradientColors,
+          ),
+        ),
+      ),
     );
   }
 }
@@ -145,9 +153,8 @@ class _OvercastPainter extends CustomPainter {
     // Soft sun glow high up
     final glowPaint = Paint()
       ..style = PaintingStyle.fill
-      ..maskFilter = const MaskFilter.blur(BlurStyle.normal, 70);
-    glowPaint.color =
-        Colors.white.withValues(alpha: 0.15 + sin(time * 0.4) * 0.03);
+      ..maskFilter = const MaskFilter.blur(BlurStyle.normal, 70)
+      ..color = Color.fromRGBO(255, 255, 255, 0.15 + sin(time * 0.4) * 0.03);
     canvas.drawCircle(Offset(w * 0.8, h * 0.12), 90, glowPaint);
 
     // Drifting cloud masses
@@ -161,10 +168,11 @@ class _OvercastPainter extends CustomPainter {
       final centerY = h * mass.yFraction + wobble;
       final scale = w * mass.scale;
 
-      paint.maskFilter = MaskFilter.blur(BlurStyle.normal, scale * 0.12);
+      paint
+        ..maskFilter = MaskFilter.blur(BlurStyle.normal, scale * 0.12)
+        ..color = Color.fromRGBO(255, 255, 255, mass.alpha);
 
       for (final blob in mass.blobs) {
-        paint.color = Colors.white.withValues(alpha: mass.alpha);
         canvas.drawCircle(
           Offset(centerX + blob.dx * scale, centerY + blob.dy * scale),
           blob.radius * scale,
@@ -178,13 +186,11 @@ class _OvercastPainter extends CustomPainter {
   }
 
   void _drawHaze(Canvas canvas, double w, double h) {
-    final paint = Paint()..style = PaintingStyle.fill;
-
-    paint
-      ..color = Colors.white.withValues(
-        alpha: 0.03 + sin(time * 0.15) * 0.01,
-      )
+    final paint = Paint()
+      ..style = PaintingStyle.fill
       ..maskFilter = const MaskFilter.blur(BlurStyle.normal, 100);
+
+    paint.color = Color.fromRGBO(255, 255, 255, 0.03 + sin(time * 0.15) * 0.01);
     canvas.drawOval(
       Rect.fromCenter(
         center: Offset(w * 0.5, h * 0.25),
@@ -194,9 +200,7 @@ class _OvercastPainter extends CustomPainter {
       paint,
     );
 
-    paint.color = Colors.white.withValues(
-      alpha: 0.02 + sin(time * 0.12 + 2.0) * 0.01,
-    );
+    paint.color = Color.fromRGBO(255, 255, 255, 0.02 + sin(time * 0.12 + 2.0) * 0.01);
     canvas.drawOval(
       Rect.fromCenter(
         center: Offset(w * 0.5, h * 0.65),

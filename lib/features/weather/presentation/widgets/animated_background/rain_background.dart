@@ -19,7 +19,7 @@ class _RainBackgroundState extends State<RainBackground>
   late final AnimationController _controller;
   final List<Particle> _drops = [];
   final Random _random = Random();
-  double _time = 0;
+  final _stopwatch = Stopwatch();
 
   @override
   void initState() {
@@ -28,17 +28,23 @@ class _RainBackgroundState extends State<RainBackground>
       vsync: this,
       duration: const Duration(seconds: 1),
     );
-    if (widget.isActive) _controller.repeat();
-    _controller.addListener(() {
-      _time += 0.016;
-    });
+    if (widget.isActive) {
+      _controller.repeat();
+      _stopwatch.start();
+    }
   }
 
   @override
   void didUpdateWidget(RainBackground oldWidget) {
     super.didUpdateWidget(oldWidget);
     if (widget.isActive != oldWidget.isActive) {
-      widget.isActive ? _controller.repeat() : _controller.stop();
+      if (widget.isActive) {
+        _controller.repeat();
+        _stopwatch.start();
+      } else {
+        _controller.stop();
+        _stopwatch.stop();
+      }
     }
   }
 
@@ -53,20 +59,22 @@ class _RainBackgroundState extends State<RainBackground>
     return AnimatedBuilder(
       animation: _controller,
       builder: (context, child) {
+        final time = _stopwatch.elapsedMilliseconds / 1000.0 * 0.96;
         return CustomPaint(
-          foregroundPainter: _RainPainter(_drops, _random, _time),
+          foregroundPainter: _RainPainter(_drops, _random, time),
           size: Size.infinite,
-          child: Container(
-            decoration: BoxDecoration(
-              gradient: LinearGradient(
-                begin: Alignment.topCenter,
-                end: Alignment.bottomCenter,
-                colors: widget.gradientColors,
-              ),
-            ),
-          ),
+          child: child,
         );
       },
+      child: Container(
+        decoration: BoxDecoration(
+          gradient: LinearGradient(
+            begin: Alignment.topCenter,
+            end: Alignment.bottomCenter,
+            colors: widget.gradientColors,
+          ),
+        ),
+      ),
     );
   }
 }
@@ -81,7 +89,7 @@ class _RainPainter extends CustomPainter {
   @override
   void paint(Canvas canvas, Size size) {
     if (drops.isEmpty) {
-      for (var i = 0; i < 160; i++) {
+      for (var i = 0; i < 80; i++) {
         drops.add(
           Particle(
             x: random.nextDouble() * size.width,
@@ -111,7 +119,7 @@ class _RainPainter extends CustomPainter {
       }
 
       paint
-        ..color = Colors.white.withValues(alpha: drop.opacity)
+        ..color = Color.fromRGBO(255, 255, 255, drop.opacity)
         ..strokeWidth = drop.size;
 
       canvas.drawLine(

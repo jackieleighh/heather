@@ -36,6 +36,25 @@ class WeatherScreen extends ConsumerStatefulWidget {
 
 class _WeatherScreenState extends ConsumerState<WeatherScreen>
     with WidgetsBindingObserver {
+  static const _dayScrim = LinearGradient(
+    begin: Alignment.topCenter,
+    end: Alignment.bottomCenter,
+    colors: [
+      Color.fromRGBO(0, 0, 0, 0.12),
+      Color.fromRGBO(0, 0, 0, 0.05),
+      Color.fromRGBO(0, 0, 0, 0.15),
+    ],
+  );
+  static const _nightScrim = LinearGradient(
+    begin: Alignment.topCenter,
+    end: Alignment.bottomCenter,
+    colors: [
+      Color.fromRGBO(0, 0, 0, 0.03),
+      Color.fromRGBO(0, 0, 0, 0.0),
+      Color.fromRGBO(0, 0, 0, 0.05),
+    ],
+  );
+
   late PageController _horizontalController;
   final _verticalPagerKey = GlobalKey<VerticalForecastPagerState>();
   StreamSubscription<void>? _widgetTapSub;
@@ -46,6 +65,7 @@ class _WeatherScreenState extends ConsumerState<WeatherScreen>
   Timer? _pendingAlertRetryTimer;
   DateTime? _lastRefreshTime;
   DateTime? _lastForceRefreshTime;
+  DateTime? _pendingAlertStartTime;
   bool _splashRemoved = false;
   bool _gracePeriodElapsed = false;
   bool _minimumDisplayElapsed = false;
@@ -53,6 +73,7 @@ class _WeatherScreenState extends ConsumerState<WeatherScreen>
   bool _savedLocationsLoaded = false;
   bool _pendingAlertNavigated = false;
   bool _pendingAlertActive = false;
+  bool _pendingAlertSheetShown = false;
   bool _isAppActive = true;
   String? _pendingLocationId;
   String? _pendingLocationName;
@@ -69,9 +90,8 @@ class _WeatherScreenState extends ConsumerState<WeatherScreen>
       _resetToFirstAndRefresh();
     });
     _alertTapSub = FcmService().alertTapped.listen((_) {
-      if (kDebugMode) debugPrint('[ALERT] stream listener fired');
-      _consumePendingFromFcm();
-      _showPendingAlert();
+      if (kDebugMode) debugPrint('[ALERT] stream fired');
+      _handlePendingAlert();
     });
     _pollTimer = Timer.periodic(const Duration(minutes: 15), (_) {
       if (mounted) _refreshAll();
@@ -92,10 +112,8 @@ class _WeatherScreenState extends ConsumerState<WeatherScreen>
       Timer(const Duration(seconds: 3), () {
         if (mounted) {
           setState(() => _minimumDisplayElapsed = true);
-          if (kDebugMode) debugPrint('[ALERT] 3s timer fired, fcm.pending=${FcmService().pendingAlertTap}');
-          _consumePendingFromFcm();
           WidgetsBinding.instance.addPostFrameCallback((_) {
-            if (mounted) _showPendingAlert();
+            if (mounted) _handlePendingAlert();
           });
         }
       });
@@ -136,6 +154,9 @@ class _WeatherScreenState extends ConsumerState<WeatherScreen>
     }
 
     if (state == AppLifecycleState.resumed) {
+      // Check for pending notification tap (fallback for background→foreground)
+      _handlePendingAlert();
+
       final now = DateTime.now();
       if (_lastRefreshTime != null &&
           now.difference(_lastRefreshTime!).inMinutes < 5) {
@@ -201,136 +222,87 @@ class _WeatherScreenState extends ConsumerState<WeatherScreen>
     context.push('/settings');
   }
 
-  /// Copies pending alert data from FcmService into local fields and clears
-  /// FcmService immediately. This ensures the location ID/name are preserved
-  /// locally even after FcmService is cleared, so [_collectAlertsForPendingLocation]
-  /// reads from stable local state instead of a mutable singleton.
-  void _consumePendingFromFcm() {
-    final fcm = FcmService();
-    if (!fcm.pendingAlertTap) return;
-    if (kDebugMode) {
-      debugPrint('[ALERT] _consumePendingFromFcm: locationId=${fcm.pendingAlertLocationId}, '
-          'locationName=${fcm.pendingAlertLocationName}');
-    }
-    _pendingAlertActive = true;
-    _pendingLocationId = fcm.pendingAlertLocationId;
-    _pendingLocationName = fcm.pendingAlertLocationName;
-    _pendingAlertNavigated = false;
-    fcm.clearPendingAlertTap();
+  /// Single idempotent entry point for handling pending notification taps.
+  /// Called from: stream listener, 3s timer, lifecycle resume, and build callback.
+  /// Safe to call multiple times — each call re-checks FcmService and local state.
+  void _handlePendingAlert() {
+    if (!mounted) return;
 
-    // Force a refresh of saved location forecasts so seed data (which has
-    // alerts: const []) gets replaced with real alert data from the API.
-    final savedLocations = ref.read(savedLocationsProvider);
-    if (kDebugMode) debugPrint('[ALERT] triggering saved loc refresh, count=${savedLocations.length}');
-    if (savedLocations.isNotEmpty) {
-      ref
-          .read(savedLocationsForecastProvider.notifier)
-          .refresh(savedLocations, forceRefresh: true);
+    // Try to consume from FcmService (may have new data since last check)
+    final fcm = FcmService();
+    if (fcm.pendingAlertTap && !_pendingAlertActive) {
+      _pendingAlertActive = true;
+      _pendingAlertSheetShown = false;
+      _pendingLocationId = fcm.pendingAlertLocationId;
+      _pendingLocationName = fcm.pendingAlertLocationName;
+      _pendingAlertNavigated = false;
+      _pendingAlertStartTime = DateTime.now();
+      fcm.clearPendingAlertTap();
+
+      if (kDebugMode) {
+        debugPrint(
+          '[ALERT] consumed: locId=$_pendingLocationId, '
+          'locName=$_pendingLocationName',
+        );
+      }
+
+      // Force refresh to get fresh alert data from NWS
+      final savedLocations = ref.read(savedLocationsProvider);
+      if (savedLocations.isNotEmpty) {
+        ref
+            .read(savedLocationsForecastProvider.notifier)
+            .refresh(savedLocations, forceRefresh: true);
+      }
     }
+
+    if (!_pendingAlertActive) return;
+    if (!_minimumDisplayElapsed) return;
+
+    // Timeout after 20 seconds
+    if (_pendingAlertStartTime != null &&
+        DateTime.now().difference(_pendingAlertStartTime!).inSeconds > 20) {
+      if (kDebugMode) debugPrint('[ALERT] timed out after 20s');
+      _clearPendingAlert();
+      return;
+    }
+
+    // Navigate to the correct page
+    if (!_pendingAlertNavigated && _horizontalController.hasClients) {
+      _navigateToAlertLocation();
+      _pendingAlertNavigated = true;
+      if (kDebugMode) debugPrint('[ALERT] navigated to page');
+    }
+
+    // Try to show alert sheet
+    if (!_pendingAlertSheetShown) {
+      final alerts = _collectAlertsForPendingLocation();
+      if (alerts.isNotEmpty) {
+        if (kDebugMode) {
+          debugPrint('[ALERT] showing sheet with ${alerts.length} alerts');
+        }
+        _pendingAlertSheetShown = true;
+        _clearPendingAlert();
+        showAlertDetailSheet(context, alerts);
+        return;
+      }
+    }
+
+    // Alerts not found yet — start retry timer if not already running
+    _pendingAlertRetryTimer ??= Timer.periodic(
+      const Duration(seconds: 1),
+      (_) => _handlePendingAlert(),
+    );
   }
 
   void _clearPendingAlert() {
     _pendingAlertActive = false;
+    _pendingAlertSheetShown = false;
     _pendingLocationId = null;
     _pendingLocationName = null;
     _pendingAlertNavigated = false;
+    _pendingAlertStartTime = null;
     _pendingAlertRetryTimer?.cancel();
     _pendingAlertRetryTimer = null;
-  }
-
-  void _showPendingAlert() {
-    if (!mounted) return;
-    if (!_minimumDisplayElapsed) {
-      if (kDebugMode) debugPrint('[ALERT] _showPendingAlert: skipped, splash not elapsed');
-      return;
-    }
-
-    // Try to consume from FcmService in case init() completed after earlier
-    // attempts (e.g. Firebase init was slow on cold start).
-    _consumePendingFromFcm();
-
-    if (!_pendingAlertActive) {
-      if (kDebugMode) debugPrint('[ALERT] _showPendingAlert: no pending alert');
-      return;
-    }
-
-    if (kDebugMode) {
-      debugPrint('[ALERT] _showPendingAlert: active=true, navigated=$_pendingAlertNavigated, '
-          'hasClients=${_horizontalController.hasClients}, locId=$_pendingLocationId');
-    }
-
-    // Navigate to the correct page. Retry on each call until successful
-    // (PageView may not have clients on the first attempt).
-    if (!_pendingAlertNavigated && _horizontalController.hasClients) {
-      _navigateToAlertLocation();
-      _pendingAlertNavigated = true;
-    }
-
-    _startAlertRetryTimer();
-  }
-
-  /// A single polling timer that checks for alert data every 500ms.
-  /// The first tick fires at 500ms, giving the page time to settle after
-  /// navigation. Gives up after 15 seconds (30 ticks).
-  void _startAlertRetryTimer() {
-    if (_pendingAlertRetryTimer != null) return; // already running
-    if (kDebugMode) debugPrint('[ALERT] starting retry timer, locId=$_pendingLocationId');
-
-    _pendingAlertRetryTimer = Timer.periodic(
-      const Duration(milliseconds: 500),
-      (timer) {
-        if (!mounted) {
-          timer.cancel();
-          _pendingAlertRetryTimer = null;
-          return;
-        }
-
-        // Try to consume late-arriving FcmService data on each tick.
-        _consumePendingFromFcm();
-
-        if (!_pendingAlertActive) {
-          if (kDebugMode) debugPrint('[ALERT] timer tick ${timer.tick}: no longer active, stopping');
-          timer.cancel();
-          _pendingAlertRetryTimer = null;
-          return;
-        }
-
-        // Give up after 15 seconds
-        if (timer.tick > 30) {
-          if (kDebugMode) debugPrint('[ALERT] timer: gave up after 15s');
-          _clearPendingAlert();
-          return;
-        }
-
-        // Retry navigation if it hasn't happened yet.
-        if (!_pendingAlertNavigated && _horizontalController.hasClients) {
-          if (kDebugMode) debugPrint('[ALERT] timer tick ${timer.tick}: retrying navigation');
-          _navigateToAlertLocation();
-          _pendingAlertNavigated = true;
-        }
-
-        final savedState = ref.read(savedLocationsForecastProvider);
-        if (kDebugMode && timer.tick <= 6) {
-          savedState.whenOrNull(
-            loading: () => debugPrint('[ALERT] tick ${timer.tick}: savedState=loading'),
-            loaded: (forecasts) {
-              final entry = forecasts[_pendingLocationId];
-              debugPrint('[ALERT] tick ${timer.tick}: savedState=loaded, '
-                  'hasKey=${entry != null}, alertCount=${entry?.alerts.length ?? 0}, '
-                  'allKeys=${forecasts.keys.toList()}');
-            },
-            error: (msg) => debugPrint('[ALERT] tick ${timer.tick}: savedState=error: $msg'),
-          );
-        }
-
-        final alerts = _collectAlertsForPendingLocation();
-        if (alerts.isNotEmpty) {
-          if (kDebugMode) debugPrint('[ALERT] timer: found ${alerts.length} alerts, showing sheet');
-          _clearPendingAlert();
-          showAlertDetailSheet(context, alerts);
-        }
-      },
-    );
   }
 
   void _navigateToAlertLocation() {
@@ -344,7 +316,6 @@ class _WeatherScreenState extends ConsumerState<WeatherScreen>
         (locationName == null ||
             locationName.isEmpty ||
             locationName == 'GPS')) {
-      if (kDebugMode) debugPrint('[ALERT] _navigateToAlertLocation: GPS path');
       if (_horizontalController.page?.round() != 0) {
         _horizontalController.jumpToPage(0);
       }
@@ -353,7 +324,7 @@ class _WeatherScreenState extends ConsumerState<WeatherScreen>
 
     final savedLocations = ref.read(savedLocationsProvider);
 
-    // Match by ID first (reliable), fall back to name (backward compat)
+    // Match by ID first, fall back to name
     var index = -1;
     if (locationId != null && locationId.isNotEmpty) {
       index = savedLocations.indexWhere((loc) => loc.id == locationId);
@@ -363,9 +334,10 @@ class _WeatherScreenState extends ConsumerState<WeatherScreen>
     }
 
     if (kDebugMode) {
-      debugPrint('[ALERT] _navigateToAlertLocation: locId=$locationId, '
-          'locName=$locationName, index=$index, '
-          'savedLocIds=${savedLocations.map((l) => l.id).toList()}');
+      debugPrint(
+        '[ALERT] navigate: locId=$locationId, index=$index, '
+        'savedIds=${savedLocations.map((l) => l.id).toList()}',
+      );
     }
 
     if (index >= 0 && _horizontalController.hasClients) {
@@ -564,17 +536,11 @@ class _WeatherScreenState extends ConsumerState<WeatherScreen>
           return const LoadingScreen();
         }
 
-        // Show alert sheet if app was opened via notification tap.
-        // Check both local state (already consumed) and FcmService (not yet
-        // consumed — e.g. init completed between builds). _showPendingAlert
-        // handles consumption internally via _consumePendingFromFcm().
+        // Check for pending notification tap on each build (covers late-arriving
+        // FCM data and provider state changes that may now have alert data).
         if (_pendingAlertActive || FcmService().pendingAlertTap) {
-          if (kDebugMode) {
-            debugPrint('[ALERT] build: scheduling _showPendingAlert '
-                '(active=$_pendingAlertActive, fcm=${FcmService().pendingAlertTap})');
-          }
           WidgetsBinding.instance.addPostFrameCallback((_) {
-            if (mounted) _showPendingAlert();
+            if (mounted) _handlePendingAlert();
           });
         }
 
@@ -666,21 +632,7 @@ class _WeatherScreenState extends ConsumerState<WeatherScreen>
                     Positioned.fill(
                       child: DecoratedBox(
                         decoration: BoxDecoration(
-                          gradient: LinearGradient(
-                            begin: Alignment.topCenter,
-                            end: Alignment.bottomCenter,
-                            colors: bgIsDay
-                                ? [
-                                    Colors.black.withValues(alpha: 0.12),
-                                    Colors.black.withValues(alpha: 0.05),
-                                    Colors.black.withValues(alpha: 0.15),
-                                  ]
-                                : [
-                                    Colors.black.withValues(alpha: 0.03),
-                                    Colors.black.withValues(alpha: 0.0),
-                                    Colors.black.withValues(alpha: 0.05),
-                                  ],
-                          ),
+                          gradient: bgIsDay ? _dayScrim : _nightScrim,
                         ),
                       ),
                     ),

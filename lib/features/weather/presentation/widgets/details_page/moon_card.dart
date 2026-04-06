@@ -17,14 +17,12 @@ class MoonCard extends ConsumerWidget {
   final DateTime now;
   final double latitude;
   final double longitude;
-  final int utcOffsetSeconds;
 
   const MoonCard({
     super.key,
     required this.now,
     required this.latitude,
     required this.longitude,
-    required this.utcOffsetSeconds,
   });
 
   @override
@@ -32,15 +30,7 @@ class MoonCard extends ConsumerWidget {
     final theme = Theme.of(context);
     final dateFmt = DateFormat('MMM d');
 
-    final usno = ref
-        .watch(
-          moonDataProvider((
-            lat: latitude,
-            lon: longitude,
-            utcOffsetSeconds: utcOffsetSeconds,
-          )),
-        )
-        .valueOrNull;
+    final usno = ref.watch(moonDataProvider).valueOrNull;
 
     if (usno == null) {
       return CardContainer(

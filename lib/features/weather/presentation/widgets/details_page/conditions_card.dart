@@ -29,8 +29,8 @@ class ConditionsCard extends StatefulWidget {
 
 class _ConditionsCardState extends State<ConditionsCard> {
   final _scrollController = ScrollController();
-  bool _showLeftFade = false;
-  bool _showRightFade = true;
+  final _showLeftFade = ValueNotifier(false);
+  final _showRightFade = ValueNotifier(true);
 
   @override
   void initState() {
@@ -42,20 +42,15 @@ class _ConditionsCardState extends State<ConditionsCard> {
   void dispose() {
     _scrollController.removeListener(_onScroll);
     _scrollController.dispose();
+    _showLeftFade.dispose();
+    _showRightFade.dispose();
     super.dispose();
   }
 
   void _onScroll() {
     final pos = _scrollController.position;
-    final atStart = pos.pixels <= 0;
-    final atEnd = pos.pixels >= pos.maxScrollExtent;
-
-    if (_showLeftFade == atStart || _showRightFade == atEnd) {
-      setState(() {
-        _showLeftFade = !atStart;
-        _showRightFade = !atEnd;
-      });
-    }
+    _showLeftFade.value = pos.pixels > 0;
+    _showRightFade.value = pos.pixels < pos.maxScrollExtent;
   }
 
   @override
@@ -89,21 +84,25 @@ class _ConditionsCardState extends State<ConditionsCard> {
           ),
           SizedBox(height: widget.compact ? 1 : 2),
           Expanded(
-            child: ShaderMask(
-              shaderCallback: (bounds) {
-                return LinearGradient(
-                  colors: [
-                    if (_showLeftFade) Colors.transparent else Colors.white,
-                    Colors.white,
-                    Colors.white,
-                    if (_showRightFade) Colors.transparent else Colors.white,
-                  ],
-                  stops: const [0.0, 0.1, 0.9, 1.0],
-                  begin: Alignment.centerLeft,
-                  end: Alignment.centerRight,
-                ).createShader(bounds);
-              },
-              blendMode: BlendMode.dstIn,
+            child: ListenableBuilder(
+              listenable: Listenable.merge([_showLeftFade, _showRightFade]),
+              builder: (context, child) => ShaderMask(
+                shaderCallback: (bounds) {
+                  return LinearGradient(
+                    colors: [
+                      if (_showLeftFade.value) Colors.transparent else Colors.white,
+                      Colors.white,
+                      Colors.white,
+                      if (_showRightFade.value) Colors.transparent else Colors.white,
+                    ],
+                    stops: const [0.0, 0.1, 0.9, 1.0],
+                    begin: Alignment.centerLeft,
+                    end: Alignment.centerRight,
+                  ).createShader(bounds);
+                },
+                blendMode: BlendMode.dstIn,
+                child: child,
+              ),
               child: ListView.builder(
                 controller: _scrollController,
                 scrollDirection: Axis.horizontal,

@@ -153,7 +153,6 @@ class DetailsPage extends ConsumerWidget {
                 now: now,
                 latitude: latitude,
                 longitude: longitude,
-                utcOffsetSeconds: forecast.utcOffsetSeconds,
               ),
             ),
           ],

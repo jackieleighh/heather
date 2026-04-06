@@ -37,7 +37,7 @@ class FogBackground extends StatefulWidget {
 class _FogBackgroundState extends State<FogBackground>
     with SingleTickerProviderStateMixin {
   late final AnimationController _controller;
-  double _time = 0;
+  final _stopwatch = Stopwatch();
   final Random _random = Random();
   late final List<_FogWisp> _wisps;
 
@@ -49,17 +49,23 @@ class _FogBackgroundState extends State<FogBackground>
       vsync: this,
       duration: const Duration(seconds: 1),
     );
-    if (widget.isActive) _controller.repeat();
-    _controller.addListener(() {
-      _time += 0.004;
-    });
+    if (widget.isActive) {
+      _controller.repeat();
+      _stopwatch.start();
+    }
   }
 
   @override
   void didUpdateWidget(FogBackground oldWidget) {
     super.didUpdateWidget(oldWidget);
     if (widget.isActive != oldWidget.isActive) {
-      widget.isActive ? _controller.repeat() : _controller.stop();
+      if (widget.isActive) {
+        _controller.repeat();
+        _stopwatch.start();
+      } else {
+        _controller.stop();
+        _stopwatch.stop();
+      }
     }
   }
 
@@ -94,20 +100,22 @@ class _FogBackgroundState extends State<FogBackground>
     return AnimatedBuilder(
       animation: _controller,
       builder: (context, child) {
+        final time = _stopwatch.elapsedMilliseconds / 1000.0 * 0.24;
         return CustomPaint(
-          foregroundPainter: _FogPainter(_time, _wisps),
+          foregroundPainter: _FogPainter(time, _wisps),
           size: Size.infinite,
-          child: Container(
-            decoration: BoxDecoration(
-              gradient: LinearGradient(
-                begin: Alignment.topCenter,
-                end: Alignment.bottomCenter,
-                colors: widget.gradientColors,
-              ),
-            ),
-          ),
+          child: child,
         );
       },
+      child: Container(
+        decoration: BoxDecoration(
+          gradient: LinearGradient(
+            begin: Alignment.topCenter,
+            end: Alignment.bottomCenter,
+            colors: widget.gradientColors,
+          ),
+        ),
+      ),
     );
   }
 }
@@ -138,7 +146,7 @@ class _FogPainter extends CustomPainter {
       final y = h * wisp.yFraction + wobble;
 
       paint
-        ..color = Colors.white.withValues(alpha: wisp.alpha)
+        ..color = Color.fromRGBO(255, 255, 255, wisp.alpha)
         ..maskFilter = MaskFilter.blur(BlurStyle.normal, wisp.blur);
 
       canvas.drawOval(
@@ -153,12 +161,9 @@ class _FogPainter extends CustomPainter {
   }
 
   void _drawHaze(Canvas canvas, double w, double h) {
-    final paint = Paint()..style = PaintingStyle.fill;
-
-    paint
-      ..color = Colors.white.withValues(
-        alpha: 0.04 + sin(time * 0.2) * 0.01,
-      )
+    final paint = Paint()
+      ..style = PaintingStyle.fill
+      ..color = Color.fromRGBO(255, 255, 255, 0.04 + sin(time * 0.2) * 0.01)
       ..maskFilter = const MaskFilter.blur(BlurStyle.normal, 100);
     canvas.drawOval(
       Rect.fromCenter(

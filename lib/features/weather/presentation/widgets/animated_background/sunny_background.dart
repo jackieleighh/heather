@@ -15,7 +15,7 @@ class SunnyBackground extends StatefulWidget {
 class _SunnyBackgroundState extends State<SunnyBackground>
     with SingleTickerProviderStateMixin {
   late final AnimationController _controller;
-  double _time = 0;
+  final _stopwatch = Stopwatch();
 
   @override
   void initState() {
@@ -24,17 +24,23 @@ class _SunnyBackgroundState extends State<SunnyBackground>
       vsync: this,
       duration: const Duration(seconds: 1),
     );
-    if (widget.isActive) _controller.repeat();
-    _controller.addListener(() {
-      _time += 0.008;
-    });
+    if (widget.isActive) {
+      _controller.repeat();
+      _stopwatch.start();
+    }
   }
 
   @override
   void didUpdateWidget(SunnyBackground oldWidget) {
     super.didUpdateWidget(oldWidget);
     if (widget.isActive != oldWidget.isActive) {
-      widget.isActive ? _controller.repeat() : _controller.stop();
+      if (widget.isActive) {
+        _controller.repeat();
+        _stopwatch.start();
+      } else {
+        _controller.stop();
+        _stopwatch.stop();
+      }
     }
   }
 
@@ -49,20 +55,22 @@ class _SunnyBackgroundState extends State<SunnyBackground>
     return AnimatedBuilder(
       animation: _controller,
       builder: (context, child) {
+        final time = _stopwatch.elapsedMilliseconds / 1000.0 * 0.48;
         return CustomPaint(
-          foregroundPainter: _SunnyPainter(_time),
+          foregroundPainter: _SunnyPainter(time),
           size: Size.infinite,
-          child: Container(
-            decoration: BoxDecoration(
-              gradient: LinearGradient(
-                begin: Alignment.topCenter,
-                end: Alignment.bottomCenter,
-                colors: widget.gradientColors,
-              ),
-            ),
-          ),
+          child: child,
         );
       },
+      child: Container(
+        decoration: BoxDecoration(
+          gradient: LinearGradient(
+            begin: Alignment.topCenter,
+            end: Alignment.bottomCenter,
+            colors: widget.gradientColors,
+          ),
+        ),
+      ),
     );
   }
 }
@@ -72,6 +80,20 @@ class _SunnyPainter extends CustomPainter {
 
   _SunnyPainter(this.time);
 
+  static const _white0 = Color.fromRGBO(255, 255, 255, 0);
+  static const _glowColors = [
+    Color.fromRGBO(255, 255, 255, 0.35),
+    Color.fromRGBO(255, 255, 255, 0.08),
+    _white0,
+  ];
+  static const _coreColors = [
+    Color.fromRGBO(255, 255, 255, 1),
+    Color.fromRGBO(255, 255, 255, 0.70),
+    _white0,
+  ];
+  static const _glowStops = [0.0, 0.5, 1.0];
+  static const _coreStops = [0.0, 0.35, 1.0];
+
   @override
   void paint(Canvas canvas, Size size) {
     final center = Offset(size.width * 0.8, size.height * 0.12);
@@ -79,7 +101,9 @@ class _SunnyPainter extends CustomPainter {
     final spin = time * 0.15;
 
     // 1. Rays — narrow, distinct beams with varying lengths
-    final rayPaint = Paint()..style = PaintingStyle.fill;
+    final rayPaint = Paint()
+      ..style = PaintingStyle.fill
+      ..maskFilter = const MaskFilter.blur(BlurStyle.normal, 6);
     const rayAngles = [0.0, 0.55, 1.05, 1.6, 2.15, 2.65, 3.2, 3.75, 4.3, 4.85, 5.35, 5.9];
     const rayLengths = [380.0, 240.0, 320.0, 200.0, 360.0, 260.0, 340.0, 220.0, 300.0, 250.0, 350.0, 230.0];
     const raySpreads = [0.06, 0.04, 0.055, 0.035, 0.06, 0.045, 0.055, 0.04, 0.05, 0.04, 0.06, 0.035];
@@ -106,43 +130,20 @@ class _SunnyPainter extends CustomPainter {
         ..lineTo(center.dx + cosR * innerR, center.dy + sinR * innerR)
         ..close();
 
-      rayPaint
-        ..maskFilter = const MaskFilter.blur(BlurStyle.normal, 6)
-        ..shader = ui.Gradient.linear(
-          Offset(center.dx + cosA * innerR, center.dy + sinA * innerR),
-          Offset(center.dx + cosA * outerR, center.dy + sinA * outerR),
-          [
-            Colors.white.withValues(alpha: alpha),
-            Colors.white.withValues(alpha: 0),
-          ],
-        );
+      rayPaint.shader = ui.Gradient.linear(
+        Offset(center.dx + cosA * innerR, center.dy + sinA * innerR),
+        Offset(center.dx + cosA * outerR, center.dy + sinA * outerR),
+        [Color.fromRGBO(255, 255, 255, alpha), _white0],
+      );
       canvas.drawPath(path, rayPaint);
     }
 
     // 2. Glow around core
-    paint.shader = ui.Gradient.radial(
-      center,
-      130,
-      [
-        Colors.white.withValues(alpha: 0.35),
-        Colors.white.withValues(alpha: 0.08),
-        Colors.white.withValues(alpha: 0.0),
-      ],
-      [0.0, 0.5, 1.0],
-    );
+    paint.shader = ui.Gradient.radial(center, 130, _glowColors, _glowStops);
     canvas.drawRect(Offset.zero & size, paint);
 
     // 3. Bright core
-    paint.shader = ui.Gradient.radial(
-      center,
-      55,
-      [
-        Colors.white,
-        Colors.white.withValues(alpha: 0.70),
-        Colors.white.withValues(alpha: 0.0),
-      ],
-      [0.0, 0.35, 1.0],
-    );
+    paint.shader = ui.Gradient.radial(center, 55, _coreColors, _coreStops);
     canvas.drawRect(Offset.zero & size, paint);
   }
 
