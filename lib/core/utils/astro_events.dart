@@ -1,3 +1,4 @@
+import 'dart:math' as math;
 
 // ---------------------------------------------------------------------------
 // Zodiac season
@@ -146,14 +147,48 @@ bool isSupermoon(DateTime fullMoonDate) {
 }
 
 // ---------------------------------------------------------------------------
+// Moon distance (perigee / apogee)
+// ---------------------------------------------------------------------------
+
+/// Approximate distance from Earth to the Moon in km for [date].
+/// Uses sinusoidal interpolation between perigee (~356,500 km) and
+/// apogee (~406,700 km) based on the anomalistic month cycle.
+double moonDistanceKm(DateTime date) {
+  const perigeeKm = 356500.0;
+  const apogeeKm = 406700.0;
+  const midKm = (perigeeKm + apogeeKm) / 2;
+  const ampKm = (apogeeKm - perigeeKm) / 2;
+
+  final daysSinceRef =
+      date.toUtc().difference(_referencePerigee).inHours / 24.0;
+  final cyclePosition = (daysSinceRef % _anomalisticMonth) / _anomalisticMonth;
+  // 0 = perigee (minimum distance), 0.5 = apogee (maximum distance)
+  return midKm + ampKm * math.cos(2 * math.pi * cyclePosition);
+}
+
+/// Returns "Near perigee" / "Near apogee" when the Moon is within 10%
+/// of either extreme, or null otherwise.
+String? moonDistanceLabel(DateTime date) {
+  final daysSinceRef =
+      date.toUtc().difference(_referencePerigee).inHours / 24.0;
+  final cyclePosition =
+      ((daysSinceRef % _anomalisticMonth) / _anomalisticMonth) % 1.0;
+  // 0 = perigee, 0.5 = apogee
+  if (cyclePosition <= 0.10 || cyclePosition >= 0.90) return 'Near perigee';
+  if (cyclePosition >= 0.40 && cyclePosition <= 0.60) return 'Near apogee';
+  return null;
+}
+
+// ---------------------------------------------------------------------------
 // Aggregate: pick the highest-priority event for the moon card
 // ---------------------------------------------------------------------------
 
 class AstroEvent {
   final String label;
   final String? icon;
+  final int? zhr;
 
-  const AstroEvent(this.label, {this.icon});
+  const AstroEvent(this.label, {this.icon, this.zhr});
 }
 
 /// Returns the highest-priority astronomical event active on [date], if any.
@@ -181,7 +216,7 @@ AstroEvent? activeAstroEvent(DateTime date, {DateTime? nextFullMoonDate}) {
     final label = isPeak
         ? '${shower.name} peak tonight!'
         : '${shower.name} active';
-    return AstroEvent('\u2604 $label');
+    return AstroEvent('\u2604 $label', zhr: shower.zhr);
   }
 
   // 3. Supermoon (check if next full moon is a supermoon)

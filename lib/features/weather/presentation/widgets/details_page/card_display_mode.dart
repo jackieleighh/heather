@@ -1,0 +1,1 @@
+enum CardDisplayMode { normal, collapsed, expanded }

@@ -642,11 +642,12 @@ class _WeatherScreenState extends ConsumerState<WeatherScreen>
               },
             ),
             RepaintBoundary(
-              child: PageView(
+              child: PageView.builder(
                 controller: _horizontalController,
                 physics: const SmoothPageScrollPhysics(),
                 clipBehavior: Clip.none,
-                children: pages,
+                itemCount: pages.length,
+                itemBuilder: (context, index) => pages[index],
               ),
             ),
             if (pages.length > 1)

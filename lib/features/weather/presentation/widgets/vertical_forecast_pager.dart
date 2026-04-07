@@ -85,11 +85,12 @@ class VerticalForecastPagerState extends State<VerticalForecastPager> {
       children: [
         // Vertical PageView
         RepaintBoundary(
-          child: PageView(
+          child: PageView.builder(
             controller: _pageController,
             scrollDirection: Axis.vertical,
             physics: const SmoothPageScrollPhysics(),
-            children: pages,
+            itemCount: pages.length,
+            itemBuilder: (context, index) => pages[index],
           ),
         ),
 

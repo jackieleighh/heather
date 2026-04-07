@@ -55,6 +55,19 @@ class UsnoMoonData {
     return null;
   }
 
+  /// Lunar age in days (0–29.5) since the most recent New Moon.
+  /// Returns null if no New Moon found in the transitions list.
+  double? lunarAge(DateTime date) {
+    DateTime? mostRecentNewMoon;
+    for (final t in transitions) {
+      if (t.phase == 'New Moon' && !t.date.isAfter(date)) {
+        mostRecentNewMoon = t.date;
+      }
+    }
+    if (mostRecentNewMoon == null) return null;
+    return date.difference(mostRecentNewMoon).inHours / 24.0;
+  }
+
   /// Cycle fraction (0–1) for a given [date], interpolated from USNO
   /// phase transitions. 0 = new moon, 0.5 = full moon.
   double fractionForDate(DateTime date) {
@@ -218,6 +231,139 @@ final moonDataProvider = FutureProvider<UsnoMoonData?>((ref) async {
     return data;
   } catch (_) {
     // Only return cached data if it's less than 24 hours old
+    if (cachedData != null && cachedTs != null) {
+      final age = DateTime.now().millisecondsSinceEpoch - cachedTs;
+      if (age < const Duration(hours: 24).inMilliseconds) {
+        return cachedData;
+      }
+    }
+    return null;
+  }
+});
+
+// ---------------------------------------------------------------------------
+// Moonrise / Moonset provider (location-aware)
+// ---------------------------------------------------------------------------
+
+class UsnoMoonRiseSet {
+  final DateTime? moonrise;
+  final DateTime? moonset;
+  final DateTime? upperTransit;
+
+  const UsnoMoonRiseSet({this.moonrise, this.moonset, this.upperTransit});
+
+  Map<String, dynamic> toJson() => {
+    'moonrise': moonrise?.toIso8601String(),
+    'moonset': moonset?.toIso8601String(),
+    'upperTransit': upperTransit?.toIso8601String(),
+  };
+
+  factory UsnoMoonRiseSet.fromJson(Map<String, dynamic> json) =>
+      UsnoMoonRiseSet(
+        moonrise: json['moonrise'] != null
+            ? DateTime.parse(json['moonrise'] as String)
+            : null,
+        moonset: json['moonset'] != null
+            ? DateTime.parse(json['moonset'] as String)
+            : null,
+        upperTransit: json['upperTransit'] != null
+            ? DateTime.parse(json['upperTransit'] as String)
+            : null,
+      );
+}
+
+typedef MoonRiseSetKey = ({double lat, double lon, int tzOffsetSeconds});
+
+final moonRiseSetProvider =
+    FutureProvider.family<UsnoMoonRiseSet?, MoonRiseSetKey>((ref, key) async {
+  final prefs = await SharedPreferences.getInstance();
+  final cacheKey =
+      'cached_moonriseset_${key.lat.toStringAsFixed(2)}_${key.lon.toStringAsFixed(2)}';
+  final cacheTsKey = '${cacheKey}_ts';
+
+  final cachedJson = prefs.getString(cacheKey);
+  final cachedTs = prefs.getInt(cacheTsKey);
+
+  UsnoMoonRiseSet? cachedData;
+  if (cachedJson != null) {
+    try {
+      cachedData = UsnoMoonRiseSet.fromJson(
+        jsonDecode(cachedJson) as Map<String, dynamic>,
+      );
+    } catch (_) {}
+  }
+
+  // Return cached value if <30 min old
+  if (cachedData != null && cachedTs != null) {
+    final age = DateTime.now().millisecondsSinceEpoch - cachedTs;
+    if (age < const Duration(minutes: 30).inMilliseconds) {
+      return cachedData;
+    }
+  }
+
+  try {
+    final nowUtc = DateTime.now().toUtc();
+    // Use local date at the forecast location
+    final localNow = nowUtc.add(Duration(seconds: key.tzOffsetSeconds));
+    final dateStr = '${localNow.year}-${localNow.month}-${localNow.day}';
+    final tzHours = (key.tzOffsetSeconds / 3600).round();
+
+    final dio = Dio()
+      ..options.connectTimeout = const Duration(seconds: 10)
+      ..options.receiveTimeout = const Duration(seconds: 10);
+
+    final response = await dio.get(ApiEndpoints.usnoOneDay(
+      date: dateStr,
+      latitude: key.lat,
+      longitude: key.lon,
+      tzOffset: tzHours,
+    ));
+
+    final data =
+        (response.data as Map<String, dynamic>)['properties']['data']
+            as Map<String, dynamic>;
+    final moondata = data['moondata'] as List<dynamic>?;
+
+    DateTime? moonrise;
+    DateTime? moonset;
+    DateTime? upperTransit;
+
+    if (moondata != null) {
+      for (final entry in moondata) {
+        final phen = entry['phen'] as String;
+        final timeStr = entry['time'] as String; // "HH:MM"
+        final parts = timeStr.split(':');
+        final hour = int.parse(parts[0]);
+        final minute = int.parse(parts[1]);
+        final dt = DateTime(localNow.year, localNow.month, localNow.day,
+            hour, minute);
+
+        switch (phen) {
+          case 'Rise':
+          case 'R':
+            moonrise = dt;
+          case 'Set':
+          case 'S':
+            moonset = dt;
+          case 'Upper Transit':
+          case 'U':
+            upperTransit = dt;
+        }
+      }
+    }
+
+    final result = UsnoMoonRiseSet(
+      moonrise: moonrise,
+      moonset: moonset,
+      upperTransit: upperTransit,
+    );
+
+    await prefs.setString(cacheKey, jsonEncode(result.toJson()));
+    await prefs.setInt(cacheTsKey, DateTime.now().millisecondsSinceEpoch);
+
+    return result;
+  } catch (_) {
+    // Return cached data if <24 hours old
     if (cachedData != null && cachedTs != null) {
       final age = DateTime.now().millisecondsSinceEpoch - cachedTs;
       if (age < const Duration(hours: 24).inMilliseconds) {

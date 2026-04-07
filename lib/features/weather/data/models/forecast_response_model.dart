@@ -65,6 +65,18 @@ class ForecastResponseModel {
         pressure: i < hourly.surfacePressure.length
             ? hourly.surfacePressure[i]
             : 0.0,
+        precipitation: i < hourly.precipitation.length
+            ? hourly.precipitation[i] / 25.4
+            : 0.0,
+        cloudCover: i < hourly.cloudCover.length
+            ? hourly.cloudCover[i]
+            : 0,
+        dewPoint: i < hourly.dewPoint2m.length
+            ? hourly.dewPoint2m[i]
+            : 0.0,
+        visibility: i < hourly.visibility.length
+            ? hourly.visibility[i] / 1609.34
+            : 0.0,
       );
       hourlyAllEntities.add(entity);
       // Current + future hours only (for hourly forecast page)
@@ -312,6 +324,14 @@ class HourlyResponseModel {
   final List<int> relativeHumidity2m;
   @JsonKey(name: 'surface_pressure', defaultValue: [])
   final List<double> surfacePressure;
+  @JsonKey(name: 'precipitation', defaultValue: [])
+  final List<double> precipitation;
+  @JsonKey(name: 'cloud_cover', defaultValue: [])
+  final List<int> cloudCover;
+  @JsonKey(name: 'dew_point_2m', defaultValue: [])
+  final List<double> dewPoint2m;
+  @JsonKey(name: 'visibility', defaultValue: [])
+  final List<double> visibility;
 
   const HourlyResponseModel({
     required this.time,
@@ -325,6 +345,10 @@ class HourlyResponseModel {
     required this.windDirection10m,
     required this.relativeHumidity2m,
     required this.surfacePressure,
+    required this.precipitation,
+    required this.cloudCover,
+    required this.dewPoint2m,
+    required this.visibility,
   });
 
   factory HourlyResponseModel.fromJson(Map<String, dynamic> json) =>

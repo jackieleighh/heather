@@ -6,6 +6,8 @@ import 'package:heather/core/constants/app_colors.dart';
 import 'package:intl/intl.dart' hide TextDirection;
 import 'package:weather_icons/weather_icons.dart';
 import './card_container.dart';
+import './card_display_mode.dart';
+import './info_chip.dart';
 
 class SunCard extends StatelessWidget {
   final DateTime sunrise;
@@ -15,6 +17,11 @@ class SunCard extends StatelessWidget {
   final List<double> hourlyUv;
   final List<DateTime> hours;
   final DateTime? now;
+  final CardDisplayMode mode;
+  final double visibility;
+  final int dayLengthDeltaMinutes;
+  final DateTime? tomorrowSunrise;
+  final DateTime? tomorrowSunset;
 
   const SunCard({
     super.key,
@@ -25,6 +32,11 @@ class SunCard extends StatelessWidget {
     required this.hourlyUv,
     required this.hours,
     this.now,
+    this.mode = CardDisplayMode.normal,
+    this.visibility = 0.0,
+    this.dayLengthDeltaMinutes = 0,
+    this.tomorrowSunrise,
+    this.tomorrowSunset,
   });
 
   @override
@@ -32,63 +44,261 @@ class SunCard extends StatelessWidget {
     final timeFmt = DateFormat('h:mm a');
     final theme = Theme.of(context);
 
-    return CardContainer(
-      backgroundIcon: WeatherIcons.day_sunny,
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Row(
-            crossAxisAlignment: CrossAxisAlignment.baseline,
-            textBaseline: TextBaseline.alphabetic,
-            children: [
-              Icon(
-                WeatherIcons.day_sunny,
-                size: 15,
-                color: AppColors.cream.withValues(alpha: 0.9),
+    if (mode == CardDisplayMode.collapsed) {
+      final currentUv = hourlyUv.isNotEmpty ? hourlyUv.first : uvIndex;
+      return Padding(
+        padding: const EdgeInsets.symmetric(horizontal: 14),
+        child: Row(
+          children: [
+            Icon(
+              WeatherIcons.day_sunny,
+              size: 14,
+              color: AppColors.cream.withValues(alpha: 0.9),
+            ),
+            const SizedBox(width: 4),
+            Text(
+              'Sun',
+              style: GoogleFonts.figtree(
+                fontSize: 16,
+                fontWeight: FontWeight.w400,
+                color: AppColors.cream,
               ),
-              const SizedBox(width: 4),
+            ),
+            const Spacer(),
+            if (isSunUp) ...[
               Text(
-                'Sun',
-                style: GoogleFonts.figtree(
-                  fontSize: 18,
-                  fontWeight: FontWeight.w400,
+                'UV ${currentUv.round()}',
+                style: GoogleFonts.poppins(
+                  fontSize: 12,
+                  fontWeight: FontWeight.w700,
                   color: AppColors.cream,
                 ),
               ),
-              const Spacer(),
-              Row(
+              const SizedBox(width: 4),
+              Text(
+                _uvLabel(currentUv),
+                style: GoogleFonts.poppins(
+                  fontSize: 12,
+                  fontWeight: FontWeight.w600,
+                  color: AppColors.cream.withValues(alpha: 0.9),
+                ),
+              ),
+            ] else ...[
+              Icon(
+                WeatherIcons.sunrise,
+                size: 12,
+                color: AppColors.cream.withValues(alpha: 0.9),
+              ),
+              const SizedBox(width: 3),
+              Text(
+                timeFmt.format(sunrise),
+                style: GoogleFonts.poppins(
+                  fontSize: 12,
+                  fontWeight: FontWeight.w700,
+                  color: AppColors.cream,
+                ),
+              ),
+            ],
+          ],
+        ),
+      );
+    }
+
+    if (mode == CardDisplayMode.expanded) {
+      final dayLength = sunset.difference(sunrise);
+      final dayH = dayLength.inHours;
+      final dayM = dayLength.inMinutes % 60;
+      final protection = _uvProtectionWindow(hourlyUv, hours);
+
+      return CardContainer(
+        backgroundIcon: WeatherIcons.day_sunny,
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            // 1. Header row
+            _buildHeaderRow(timeFmt, theme),
+            const SizedBox(height: 2),
+            // 2. Subtitle row
+            Row(
+              children: [
+                const Spacer(),
+                Text(
+                  _formatRemaining(now, isSunUp, sunrise, sunset),
+                  style: GoogleFonts.poppins(
+                    fontSize: 11,
+                    fontWeight: FontWeight.w500,
+                    color: AppColors.cream.withValues(alpha: 0.8),
+                  ),
+                ),
+                const SizedBox(width: 12),
+                Text(
+                  'UV ${uvIndex.round()}',
+                  style: GoogleFonts.poppins(
+                    fontSize: 11,
+                    fontWeight: FontWeight.w700,
+                    color: AppColors.cream,
+                  ),
+                ),
+                const SizedBox(width: 4),
+                Text(
+                  _uvLabel(uvIndex),
+                  style: GoogleFonts.poppins(
+                    fontSize: 11,
+                    fontWeight: FontWeight.w600,
+                    color: AppColors.cream.withValues(alpha: 0.9),
+                  ),
+                ),
+              ],
+            ),
+            const SizedBox(height: 8),
+            // 3. Sun Arc visualization
+            SizedBox(
+              height: 140,
+              child: CustomPaint(
+                size: Size.infinite,
+                painter: _SunArcPainter(
+                  sunrise: sunrise,
+                  sunset: sunset,
+                  now: now ?? DateTime.now(),
+                  goldenHour: _goldenHour(sunset),
+                  protectionStart: protection?.$1,
+                  protectionEnd: protection?.$2,
+                ),
+              ),
+            ),
+            Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 16),
+              child: Row(
                 children: [
                   Icon(
-                    isSunUp ? WeatherIcons.sunset : WeatherIcons.sunrise,
+                    WeatherIcons.sunrise,
                     size: 13,
                     color: AppColors.cream.withValues(alpha: 0.95),
                   ),
                   const SizedBox(width: 4),
                   Text(
-                    timeFmt.format(isSunUp ? sunset : sunrise),
-                    style: theme.textTheme.bodyMedium?.copyWith(
-                      fontWeight: FontWeight.w800,
-                      fontSize: 14,
+                    DateFormat('h:mm a').format(sunrise),
+                    style: GoogleFonts.poppins(
+                      fontSize: 12,
+                      fontWeight: FontWeight.w700,
+                      color: AppColors.cream.withValues(alpha: 0.95),
                     ),
                   ),
-                  const SizedBox(width: 14),
+                  const Spacer(),
+                  Text(
+                    DateFormat('h:mm a').format(sunset),
+                    style: GoogleFonts.poppins(
+                      fontSize: 12,
+                      fontWeight: FontWeight.w700,
+                      color: AppColors.cream.withValues(alpha: 0.95),
+                    ),
+                  ),
+                  const SizedBox(width: 4),
                   Icon(
-                    isSunUp ? WeatherIcons.sunrise : WeatherIcons.sunset,
+                    WeatherIcons.sunset,
                     size: 13,
                     color: AppColors.cream.withValues(alpha: 0.95),
                   ),
-                  const SizedBox(width: 4),
-                  Text(
-                    timeFmt.format(isSunUp ? sunrise : sunset),
-                    style: theme.textTheme.bodyMedium?.copyWith(
-                      fontWeight: FontWeight.w800,
-                      fontSize: 14,
+                ],
+              ),
+            ),
+            const SizedBox(height: 14),
+            // 4. Daylight text + protection window
+            Row(
+              mainAxisAlignment: MainAxisAlignment.end,
+              children: [
+                Icon(
+                  WeatherIcons.time_3,
+                  size: 12,
+                  color: AppColors.cream.withValues(alpha: 0.95),
+                ),
+                const SizedBox(width: 5),
+                Text.rich(
+                  TextSpan(
+                    style: GoogleFonts.poppins(
+                      fontSize: 12,
+                      fontWeight: FontWeight.w700,
+                      color: AppColors.cream.withValues(alpha: 0.95),
+                    ),
+                    children: [
+                      TextSpan(text: '${dayH}h ${dayM}m daylight'),
+                      if (_formatDayDelta(dayLengthDeltaMinutes).isNotEmpty)
+                        TextSpan(
+                          text: _formatDayDelta(dayLengthDeltaMinutes),
+                          style: GoogleFonts.poppins(
+                            fontSize: 12,
+                            fontWeight: FontWeight.w400,
+                            color: AppColors.cream.withValues(alpha: 0.75),
+                          ),
+                        ),
+                    ],
+                  ),
+                ),
+              ],
+            ),
+            if (protection != null) ...[
+              const SizedBox(height: 4),
+              Row(
+                mainAxisAlignment: MainAxisAlignment.end,
+                children: [
+                  Icon(
+                    WeatherIcons.umbrella,
+                    size: 12,
+                    color: AppColors.cream.withValues(alpha: 0.9),
+                  ),
+                  const SizedBox(width: 5),
+                  Text.rich(
+                    TextSpan(
+                      style: GoogleFonts.poppins(
+                        fontSize: 12,
+                        fontWeight: FontWeight.w400,
+                        color: AppColors.cream.withValues(alpha: 0.9),
+                      ),
+                      children: [
+                        const TextSpan(
+                          text: 'SPF/shade ',
+                          style: TextStyle(fontWeight: FontWeight.w700),
+                        ),
+                        TextSpan(
+                          text:
+                              '${DateFormat('h a').format(protection.$1)} - ${DateFormat('h a').format(protection.$2)}',
+                        ),
+                      ],
                     ),
                   ),
                 ],
               ),
             ],
-          ),
+            const SizedBox(height: 18),
+            // 5. 2x2 info grid
+            _buildInfoGrid(),
+            const Spacer(),
+            // 6. UV chart with area fill — bottom aligned
+            if (hourlyUv.length >= 2)
+              SizedBox(
+                height: 70,
+                child: CustomPaint(
+                  size: Size.infinite,
+                  painter: _UvLinePainter(
+                    uvValues: hourlyUv,
+                    hours: hours,
+                    now: now,
+                    showAreaFill: true,
+                  ),
+                ),
+              ),
+          ],
+        ),
+      );
+    }
+
+    // Normal mode
+    return CardContainer(
+      backgroundIcon: WeatherIcons.day_sunny,
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          _buildHeaderRow(timeFmt, theme),
           const SizedBox(height: 2),
           Row(
             children: [
@@ -139,6 +349,115 @@ class SunCard extends StatelessWidget {
     );
   }
 
+  Widget _buildHeaderRow(DateFormat timeFmt, ThemeData theme) {
+    return Row(
+      crossAxisAlignment: CrossAxisAlignment.baseline,
+      textBaseline: TextBaseline.alphabetic,
+      children: [
+        Icon(
+          WeatherIcons.day_sunny,
+          size: 15,
+          color: AppColors.cream.withValues(alpha: 0.9),
+        ),
+        const SizedBox(width: 4),
+        Text(
+          'Sun',
+          style: GoogleFonts.figtree(
+            fontSize: 18,
+            fontWeight: FontWeight.w400,
+            color: AppColors.cream,
+          ),
+        ),
+        const Spacer(),
+        Row(
+          children: [
+            Icon(
+              isSunUp ? WeatherIcons.sunset : WeatherIcons.sunrise,
+              size: 13,
+              color: AppColors.cream.withValues(alpha: 0.95),
+            ),
+            const SizedBox(width: 4),
+            Text(
+              timeFmt.format(isSunUp ? sunset : sunrise),
+              style: theme.textTheme.bodyMedium?.copyWith(
+                fontWeight: FontWeight.w800,
+                fontSize: 14,
+              ),
+            ),
+            const SizedBox(width: 14),
+            Icon(
+              isSunUp ? WeatherIcons.sunrise : WeatherIcons.sunset,
+              size: 13,
+              color: AppColors.cream.withValues(alpha: 0.95),
+            ),
+            const SizedBox(width: 4),
+            Text(
+              timeFmt.format(isSunUp ? sunrise : sunset),
+              style: theme.textTheme.bodyMedium?.copyWith(
+                fontWeight: FontWeight.w800,
+                fontSize: 14,
+              ),
+            ),
+          ],
+        ),
+      ],
+    );
+  }
+
+  Widget _buildInfoGrid() {
+    final timeFmt = DateFormat('h:mm a');
+    final hourFmt = DateFormat('h a');
+    final noon = _solarNoon(sunrise, sunset);
+    final peak = _peakUv(hourlyUv, hours);
+    final golden = _goldenHour(sunset);
+
+    return Column(
+      children: [
+        Row(
+          children: [
+            Expanded(
+              child: InfoChip(
+                icon: WeatherIcons.day_sunny,
+                label: 'Solar Noon',
+                value: timeFmt.format(noon),
+              ),
+            ),
+            const SizedBox(width: 8),
+            Expanded(
+              child: InfoChip(
+                icon: WeatherIcons.day_haze,
+                label: 'Visibility',
+                value: _formatVisibility(visibility),
+              ),
+            ),
+          ],
+        ),
+        const SizedBox(height: 8),
+        Row(
+          children: [
+            Expanded(
+              child: InfoChip(
+                icon: WeatherIcons.hot,
+                label: 'Peak UV',
+                value: peak != null
+                    ? '${hourFmt.format(peak.$1)} (${peak.$2.round()})'
+                    : '--',
+              ),
+            ),
+            const SizedBox(width: 8),
+            Expanded(
+              child: InfoChip(
+                icon: WeatherIcons.sunset,
+                label: 'Golden Hour',
+                value: timeFmt.format(golden),
+              ),
+            ),
+          ],
+        ),
+      ],
+    );
+  }
+
   static String _formatRemaining(
     DateTime? now,
     bool isSunUp,
@@ -164,14 +483,65 @@ class SunCard extends StatelessWidget {
     if (uv < 11) return 'Very High';
     return 'Extreme';
   }
+
+  static DateTime _solarNoon(DateTime sunrise, DateTime sunset) {
+    return sunrise.add(sunset.difference(sunrise) ~/ 2);
+  }
+
+  static (DateTime, double)? _peakUv(List<double> hourlyUv, List<DateTime> hours) {
+    if (hourlyUv.isEmpty) return null;
+    var maxIdx = 0;
+    for (var i = 1; i < hourlyUv.length; i++) {
+      if (hourlyUv[i] > hourlyUv[maxIdx]) maxIdx = i;
+    }
+    if (hourlyUv[maxIdx] <= 0) return null;
+    return (hours[maxIdx], hourlyUv[maxIdx]);
+  }
+
+  static (DateTime, DateTime)? _uvProtectionWindow(
+    List<double> hourlyUv,
+    List<DateTime> hours,
+  ) {
+    DateTime? first;
+    DateTime? last;
+    for (var i = 0; i < hourlyUv.length; i++) {
+      if (hourlyUv[i] >= 3) {
+        first ??= hours[i];
+        last = hours[i];
+      }
+    }
+    if (first == null || last == null) return null;
+    return (first, last);
+  }
+
+  static DateTime _goldenHour(DateTime sunset) {
+    return sunset.subtract(const Duration(minutes: 30));
+  }
+
+  static String _formatDayDelta(int deltaMinutes) {
+    if (deltaMinutes == 0) return '';
+    final sign = deltaMinutes > 0 ? '+' : '';
+    return ' ($sign${deltaMinutes}m tmrw)';
+  }
+
+  static String _formatVisibility(double visMiles) {
+    if (visMiles >= 10) return '${visMiles.round()} mi';
+    return '${visMiles.toStringAsFixed(1)} mi';
+  }
 }
 
 class _UvLinePainter extends CustomPainter {
   final List<double> uvValues;
   final List<DateTime> hours;
   final DateTime? now;
+  final bool showAreaFill;
 
-  _UvLinePainter({required this.uvValues, required this.hours, this.now});
+  _UvLinePainter({
+    required this.uvValues,
+    required this.hours,
+    this.now,
+    this.showAreaFill = false,
+  });
 
   @override
   void paint(Canvas canvas, Size size) {
@@ -181,10 +551,10 @@ class _UvLinePainter extends CustomPainter {
     final maxY = math.max(
       hi,
       3.0,
-    ); // minimum scale of 3 so low UV days look right
+    );
     if (maxY == 0) return;
 
-    const padTop = 2.0;
+    const padTop = 24.0;
     const padBottom = 14.0;
     const padLeft = 20.0;
     final graphH = size.height - padTop - padBottom;
@@ -197,6 +567,21 @@ class _UvLinePainter extends CustomPainter {
       final y = padTop + graphH * (1 - (uvValues[i] / maxY).clamp(0.0, 1.0));
       points.add(Offset(x, y));
     }
+
+    // "UV index" chart label (top-left)
+    final uvLabelPainter = TextPainter(
+      text: TextSpan(
+        text: 'UV index',
+        style: TextStyle(
+          color: AppColors.cream.withValues(alpha: 0.9),
+          fontSize: 10,
+          fontWeight: FontWeight.w700,
+          letterSpacing: 0.5,
+        ),
+      ),
+      textDirection: TextDirection.ltr,
+    )..layout();
+    uvLabelPainter.paint(canvas, const Offset(0, 0));
 
     // Y-axis labels
     final yLabelStyle = TextStyle(
@@ -219,6 +604,32 @@ class _UvLinePainter extends CustomPainter {
       final curr = points[i];
       final cpx = (prev.dx + curr.dx) / 2;
       linePath.cubicTo(cpx, prev.dy, cpx, curr.dy, curr.dx, curr.dy);
+    }
+
+    // Area fill under the curve
+    if (showAreaFill) {
+      final bottomY = padTop + graphH;
+      final fillPath = Path()..addPath(linePath, Offset.zero);
+      fillPath.lineTo(points.last.dx, bottomY);
+      fillPath.lineTo(points.first.dx, bottomY);
+      fillPath.close();
+
+      final fillPaint = Paint()
+        ..shader = LinearGradient(
+          begin: Alignment.topCenter,
+          end: Alignment.bottomCenter,
+          colors: [
+            AppColors.cream.withValues(alpha: 0.15),
+            AppColors.cream.withValues(alpha: 0.03),
+          ],
+        ).createShader(Rect.fromLTRB(
+          padLeft,
+          padTop,
+          padLeft + graphW,
+          bottomY,
+        ))
+        ..style = PaintingStyle.fill;
+      canvas.drawPath(fillPath, fillPaint);
     }
 
     canvas.drawPath(
@@ -294,5 +705,160 @@ class _UvLinePainter extends CustomPainter {
 
   @override
   bool shouldRepaint(covariant _UvLinePainter old) =>
-      uvValues != old.uvValues || now != old.now;
+      uvValues != old.uvValues || now != old.now || showAreaFill != old.showAreaFill;
 }
+
+// ---------------------------------------------------------------------------
+// Sun Arc Painter — semicircular arc showing sun's journey across the sky
+// ---------------------------------------------------------------------------
+
+class _SunArcPainter extends CustomPainter {
+  final DateTime sunrise;
+  final DateTime sunset;
+  final DateTime now;
+  final DateTime goldenHour;
+  final DateTime? protectionStart;
+  final DateTime? protectionEnd;
+
+  _SunArcPainter({
+    required this.sunrise,
+    required this.sunset,
+    required this.now,
+    required this.goldenHour,
+    this.protectionStart,
+    this.protectionEnd,
+  });
+
+  @override
+  void paint(Canvas canvas, Size size) {
+    final w = size.width;
+    final h = size.height;
+    const topPad = 6.0;
+    const bottomLabelGutter = 22.0; // room for sunrise/sunset baseline labels
+    final horizY = h - bottomLabelGutter;
+    final maxRadiusFromHeight = horizY - topPad;
+    final maxRadiusFromWidth = (w - 32) / 2; // 16px padding each side
+    final arcRadius = math.min(maxRadiusFromHeight, maxRadiusFromWidth);
+    final arcCenterX = w / 2;
+    final arcCenterY = horizY;
+    final arcRect = Rect.fromCenter(
+      center: Offset(arcCenterX, arcCenterY),
+      width: arcRadius * 2,
+      height: arcRadius * 2, // equal → true circle
+    );
+    final arcLeft = arcCenterX - arcRadius;
+    final arcRight = arcCenterX + arcRadius;
+
+    // Horizon line
+    canvas.drawLine(
+      Offset(arcLeft, horizY),
+      Offset(arcRight, horizY),
+      Paint()
+        ..color = AppColors.cream.withValues(alpha: 0.15)
+        ..strokeWidth = 1,
+    );
+
+    final totalDuration = sunset.difference(sunrise).inSeconds.toDouble();
+    final fraction = totalDuration > 0
+        ? now.difference(sunrise).inSeconds / totalDuration
+        : 0.0;
+    final isDay = fraction >= 0 && fraction <= 1;
+
+    // Upper dashed arc — full opacity during day, faded at night
+    final upperArcPath = Path()..addArc(arcRect, math.pi, math.pi);
+    _drawDashedPath(
+      canvas,
+      upperArcPath,
+      Paint()
+        ..color = AppColors.cream.withValues(alpha: isDay ? 0.30 : 0.15)
+        ..strokeWidth = 1.5
+        ..style = PaintingStyle.stroke
+        ..strokeCap = StrokeCap.round,
+    );
+
+    if (totalDuration <= 0) return;
+
+    // Golden hour highlight (day only)
+    if (isDay) {
+      final goldenFraction =
+          goldenHour.difference(sunrise).inSeconds / totalDuration;
+      final goldenAngle = math.pi + math.pi * goldenFraction.clamp(0.0, 1.0);
+      const sunsetAngle = math.pi + math.pi; // 2*pi = right end
+      final goldenPath = Path()
+        ..addArc(arcRect, goldenAngle, sunsetAngle - goldenAngle);
+      canvas.drawPath(
+        goldenPath,
+        Paint()
+          ..color = AppColors.cream.withValues(alpha: 0.15)
+          ..strokeWidth = 3
+          ..style = PaintingStyle.stroke
+          ..strokeCap = StrokeCap.round,
+      );
+    }
+
+    // Solar noon tick at top of arc
+    final noonX = arcCenterX;
+    final noonY = arcCenterY - arcRadius;
+    canvas.drawLine(
+      Offset(noonX, noonY - 3),
+      Offset(noonX, noonY + 3),
+      Paint()
+        ..color = AppColors.cream.withValues(alpha: 0.4)
+        ..strokeWidth = 1.5
+        ..strokeCap = StrokeCap.round,
+    );
+
+    if (isDay) {
+      // Sun position on the upward arc
+      final clampedFraction = fraction.clamp(0.0, 1.0);
+      final angle = math.pi + math.pi * clampedFraction;
+      final sunX = arcCenterX + arcRadius * math.cos(angle);
+      final sunY = arcCenterY + arcRadius * math.sin(angle);
+      // Glow
+      canvas.drawCircle(
+        Offset(sunX, sunY),
+        12,
+        Paint()
+          ..color = AppColors.cream.withValues(alpha: 0.12)
+          ..maskFilter = const MaskFilter.blur(BlurStyle.normal, 8),
+      );
+      // Sun dot
+      canvas.drawCircle(
+        Offset(sunX, sunY),
+        6,
+        Paint()..color = AppColors.cream.withValues(alpha: 0.9),
+      );
+    } else {
+      // Night: draw a small dim dot at the sunrise (left) endpoint of the
+      // arc to cue "this is what comes next". No lower-arc travel.
+      final sunriseDotX = arcCenterX - arcRadius;
+      final sunriseDotY = arcCenterY;
+      canvas.drawCircle(
+        Offset(sunriseDotX, sunriseDotY),
+        4.5,
+        Paint()..color = AppColors.cream.withValues(alpha: 0.75),
+      );
+    }
+  }
+
+  void _drawDashedPath(Canvas canvas, Path path, Paint paint) {
+    const dashLength = 4.0;
+    const dashGap = 3.0;
+    for (final metric in path.computeMetrics()) {
+      var distance = 0.0;
+      while (distance < metric.length) {
+        final end = math.min(distance + dashLength, metric.length);
+        final segment = metric.extractPath(distance, end);
+        canvas.drawPath(segment, paint);
+        distance += dashLength + dashGap;
+      }
+    }
+  }
+
+  @override
+  bool shouldRepaint(covariant _SunArcPainter old) =>
+      sunrise != old.sunrise ||
+      sunset != old.sunset ||
+      now != old.now;
+}
+
