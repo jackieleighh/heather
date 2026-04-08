@@ -12,7 +12,6 @@ import 'location_header.dart';
 import 'pulsing_dots.dart';
 import 'sassy_quip.dart';
 import 'temperature_display.dart';
-import 'weather_details.dart';
 
 class CurrentWeatherPage extends StatefulWidget {
   final Forecast forecast;
@@ -100,6 +99,13 @@ class _CurrentWeatherPageState extends State<CurrentWeatherPage> {
   @override
   Widget build(BuildContext context) {
     final weather = widget.forecast.current;
+    final hasDaily = widget.forecast.daily.isNotEmpty;
+    final todayHigh = hasDaily
+        ? math.max(widget.forecast.todayDaily.temperatureMax, weather.temperature)
+        : weather.temperature;
+    final todayLow = hasDaily
+        ? math.min(widget.forecast.todayDaily.temperatureMin, weather.temperature)
+        : weather.temperature;
     final textStyle = Theme.of(context).textTheme.bodySmall?.copyWith(
       color: AppColors.cream.withValues(alpha: 0.85),
     );
@@ -157,24 +163,12 @@ class _CurrentWeatherPageState extends State<CurrentWeatherPage> {
                       const SizedBox(height: 8),
                       TemperatureDisplay(
                         temperature: weather.temperature,
-                        high: math.max(widget.forecast.todayDaily.temperatureMax, weather.temperature),
-                        low: math.min(widget.forecast.todayDaily.temperatureMin, weather.temperature),
+                        high: todayHigh,
+                        low: todayLow,
                       ),
                       const Spacer(flex: 1),
                       SassyQuip(quip: widget.quip),
-                      const Spacer(flex: 1),
-                      WeatherDetails(
-                        weather: weather,
-                        hourly: widget.forecast.hourly,
-                        minutely15: widget.forecast.minutely15,
-                        daily: widget.forecast.daily,
-                        locationNow: widget.forecast.locationNow,
-                        latitude: widget.latitude,
-                        longitude: widget.longitude,
-                        utcOffsetSeconds: widget.forecast.utcOffsetSeconds,
-                        isDay: widget.forecast.isCurrentlyDay,
-                      ),
-                      const Spacer(flex: 4),
+                      const Spacer(flex: 5),
                     ],
                   ),
                 ),

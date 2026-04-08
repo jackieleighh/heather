@@ -10,6 +10,7 @@ import '../../features/weather/domain/entities/location_info.dart';
 import '../../features/weather/domain/entities/weather.dart';
 import '../../features/weather/domain/entities/weather_alert.dart';
 import '../../features/weather/domain/entities/weather_condition.dart';
+import '../../features/weather/presentation/providers/moon_data_provider.dart';
 import '../constants/persona.dart';
 import '../constants/weather_codes.dart';
 import 'widget_payload_builder.dart';
@@ -204,7 +205,8 @@ class WidgetService {
       alertSeverity = alert.severity.name;
     }
 
-    // Read cached USNO moon data
+    // Read cached USNO moon data and interpolate illumination for "now"
+    // so the widget value matches what's shown in-app.
     String? moonPhase;
     int? moonIllum;
     try {
@@ -213,13 +215,11 @@ class WidgetService {
           'cached_moon_${location.latitude}_${location.longitude}';
       final cachedJson = prefs.getString(cacheKey);
       if (cachedJson != null) {
-        final moonData =
-            jsonDecode(cachedJson) as Map<String, dynamic>;
-        moonPhase = moonData['curPhase'] as String?;
-        final fracStr = moonData['fracIllum'];
-        if (fracStr is num) {
-          moonIllum = fracStr.round();
-        }
+        final moonData = UsnoMoonData.fromJson(
+          jsonDecode(cachedJson) as Map<String, dynamic>,
+        );
+        moonPhase = moonData.curPhase;
+        moonIllum = moonData.illuminationForDate(DateTime.now()).round();
       }
     } catch (_) {}
 

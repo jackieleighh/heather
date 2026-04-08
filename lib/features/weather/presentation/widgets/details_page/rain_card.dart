@@ -48,6 +48,7 @@ class RainCard extends StatelessWidget {
   final double dewPoint;
   final List<int> hourlyHumidity;
   final List<double> hourlyDewPoint;
+  final bool flat;
 
   const RainCard({
     super.key,
@@ -63,6 +64,7 @@ class RainCard extends StatelessWidget {
     this.dewPoint = 0.0,
     this.hourlyHumidity = const [],
     this.hourlyDewPoint = const [],
+    this.flat = false,
   });
 
   @override
@@ -90,11 +92,7 @@ class RainCard extends StatelessWidget {
         padding: const EdgeInsets.symmetric(horizontal: 14),
         child: Row(
           children: [
-            Icon(
-              icon,
-              size: 14,
-              color: AppColors.cream.withValues(alpha: 0.9),
-            ),
+            Icon(icon, size: 14, color: AppColors.cream.withValues(alpha: 0.9)),
             const SizedBox(width: 4),
             Text(
               label,
@@ -152,10 +150,10 @@ class RainCard extends StatelessWidget {
                 ),
               ],
             ),
-            const SizedBox(height: 8),
+            const Spacer(),
             // 4-stat strip (no background)
             _buildStatStrip(precipLabel),
-            const SizedBox(height: 10),
+            const Spacer(),
             // Chance of precipitation bars chart
             Padding(
               padding: const EdgeInsets.only(bottom: 6),
@@ -168,8 +166,8 @@ class RainCard extends StatelessWidget {
                 ),
               ),
             ),
-            Expanded(
-              flex: 1,
+            SizedBox(
+              height: 110,
               child: CustomPaint(
                 size: Size.infinite,
                 painter: _PrecipBarPainter(
@@ -180,19 +178,9 @@ class RainCard extends StatelessWidget {
                 ),
               ),
             ),
-            // Divider
-            const SizedBox(height: 8),
-            Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 8),
-              child: Divider(
-                height: 0.5,
-                thickness: 0.5,
-                color: AppColors.cream.withValues(alpha: 0.15),
-              ),
-            ),
-            const SizedBox(height: 8),
             // Humidity chart (0–100% scale)
             if (hourlyHumidity.isNotEmpty) ...[
+              const Spacer(),
               Padding(
                 padding: const EdgeInsets.only(bottom: 6),
                 child: Text(
@@ -204,19 +192,20 @@ class RainCard extends StatelessWidget {
                   ),
                 ),
               ),
-              Expanded(
-                flex: 1,
+              SizedBox(
+                height: 110,
                 child: CustomPaint(
                   size: Size.infinite,
                   painter: _HumidityLinePainter(
                     humidities: hourlyHumidity,
                     hours: hours,
                     now: now,
+                    showHourLabels: hourlyDewPoint.length < 2,
                   ),
                 ),
               ),
               if (hourlyDewPoint.length >= 2) ...[
-                const SizedBox(height: 8),
+                const Spacer(),
                 Padding(
                   padding: const EdgeInsets.only(bottom: 6),
                   child: Text(
@@ -228,14 +217,15 @@ class RainCard extends StatelessWidget {
                     ),
                   ),
                 ),
-                Expanded(
-                  flex: 1,
+                SizedBox(
+                  height: 110,
                   child: CustomPaint(
                     size: Size.infinite,
                     painter: _DewPointLinePainter(
                       dewPoints: hourlyDewPoint,
                       hours: hours,
                       now: now,
+                      showHourLabels: true,
                     ),
                   ),
                 ),
@@ -249,6 +239,7 @@ class RainCard extends StatelessWidget {
     // Normal mode
     return CardContainer(
       backgroundIcon: bgIcon,
+      flat: flat,
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
@@ -293,10 +284,7 @@ class RainCard extends StatelessWidget {
             thickness: 0.5,
             color: AppColors.cream.withValues(alpha: 0.15),
           ),
-          _StatItem(
-            value: '$precipitationProbability%',
-            label: 'chance',
-          ),
+          _StatItem(value: '$precipitationProbability%', label: 'chance'),
           VerticalDivider(
             width: 1,
             thickness: 0.5,
@@ -308,10 +296,7 @@ class RainCard extends StatelessWidget {
             thickness: 0.5,
             color: AppColors.cream.withValues(alpha: 0.15),
           ),
-          _StatItem(
-            value: '${dewPoint.round()}°',
-            label: 'dew point',
-          ),
+          _StatItem(value: '${dewPoint.round()}°', label: 'dew point'),
         ],
       ),
     );
@@ -437,10 +422,11 @@ class _PrecipBarPainter extends CustomPainter {
       )..layout();
       tp.paint(canvas, Offset(0, y - tp.height / 2));
 
+      // Subtle grid line
       canvas.drawLine(
         Offset(padLeft, y),
         Offset(size.width, y),
-        Paint()..color = AppColors.cream.withValues(alpha: 0.25),
+        Paint()..color = AppColors.cream.withValues(alpha: 0.12),
       );
     }
 
@@ -514,67 +500,123 @@ class _HumidityLinePainter extends CustomPainter {
   final List<int> humidities;
   final List<DateTime> hours;
   final DateTime? now;
+  final bool showHourLabels;
 
   _HumidityLinePainter({
     required this.humidities,
     required this.hours,
     this.now,
+    this.showHourLabels = false,
   });
 
   @override
   void paint(Canvas canvas, Size size) {
     if (humidities.length < 2) return;
 
-    const padBottom = 2.0;
-    const padLeft = 28.0;
-    final graphH = size.height - padBottom;
+    const padTop = 2.0;
+    final padBottom = showHourLabels ? 14.0 : 2.0;
+    const padLeft = 20.0;
+    final graphH = size.height - padTop - padBottom;
     final graphW = size.width - padLeft;
     final stepX = graphW / (humidities.length - 1);
 
-    // Y-axis labels + grid lines
+    // Y-axis labels (no grid lines)
     final yLabelStyle = TextStyle(
-      color: AppColors.cream.withValues(alpha: 0.7),
-      fontSize: 9,
+      color: AppColors.cream.withValues(alpha: 0.95),
+      fontSize: 10,
       fontWeight: FontWeight.w600,
     );
     for (final pct in [100, 50, 0]) {
-      final y = graphH * (1 - pct / 100.0);
+      final y = padTop + graphH * (1 - pct / 100.0);
       final tp = TextPainter(
         text: TextSpan(text: '$pct%', style: yLabelStyle),
         textDirection: TextDirection.ltr,
       )..layout();
       tp.paint(canvas, Offset(0, y - tp.height / 2));
-
-      canvas.drawLine(
-        Offset(padLeft, y),
-        Offset(size.width, y),
-        Paint()..color = AppColors.cream.withValues(alpha: 0.1),
-      );
     }
 
-    // Humidity line
+    // Humidity curve points
     final points = <Offset>[];
     for (var i = 0; i < humidities.length; i++) {
       final x = padLeft + i * stepX;
-      final y = graphH * (1 - humidities[i] / 100.0);
+      final y = padTop + graphH * (1 - humidities[i] / 100.0);
       points.add(Offset(x, y));
     }
 
+    final linePath = _smoothPath(points);
+
+    // Gradient area fill under the curve
+    final fillPath = Path.from(linePath)
+      ..lineTo(points.last.dx, padTop + graphH)
+      ..lineTo(points.first.dx, padTop + graphH)
+      ..close();
+    final fillRect = Rect.fromLTRB(
+      points.first.dx,
+      padTop,
+      points.last.dx,
+      padTop + graphH,
+    );
+    final fillPaint = Paint()
+      ..shader = LinearGradient(
+        begin: Alignment.topCenter,
+        end: Alignment.bottomCenter,
+        colors: [
+          AppColors.cream.withValues(alpha: 0.15),
+          AppColors.cream.withValues(alpha: 0.03),
+        ],
+      ).createShader(fillRect);
+    canvas.drawPath(fillPath, fillPaint);
+
+    // Line
     canvas.drawPath(
-      _smoothPath(points),
+      linePath,
       Paint()
-        ..color = AppColors.cream.withValues(alpha: 0.6)
-        ..strokeWidth = 1.5
+        ..color = AppColors.cream.withValues(alpha: 0.5)
+        ..strokeWidth = 2
         ..style = PaintingStyle.stroke
         ..strokeCap = StrokeCap.round,
     );
 
-    _drawNowLine(canvas, graphH, padLeft, graphW, hours, now);
+    // "Now" dot
+    _drawNowDot(
+      canvas,
+      hours: hours,
+      now: now,
+      points: points,
+      valueAt: (i) => humidities[i].toDouble(),
+      yForValue: (v) => padTop + graphH * (1 - v / 100.0),
+    );
+
+    // Hour labels
+    if (showHourLabels) {
+      final labelStyle = TextStyle(
+        color: AppColors.cream.withValues(alpha: 0.9),
+        fontSize: 10,
+        fontWeight: FontWeight.w600,
+      );
+      for (var i = 0; i < hours.length; i++) {
+        if (i % 6 != 0 && i != hours.length - 1) continue;
+        final tp = TextPainter(
+          text: TextSpan(
+            text: DateFormat('ha').format(hours[i]).toLowerCase(),
+            style: labelStyle,
+          ),
+          textDirection: TextDirection.ltr,
+        )..layout();
+        final x = (padLeft + i * stepX - tp.width / 2).clamp(
+          padLeft,
+          size.width - tp.width,
+        );
+        tp.paint(canvas, Offset(x, size.height - padBottom + 2));
+      }
+    }
   }
 
   @override
   bool shouldRepaint(covariant _HumidityLinePainter old) =>
-      humidities != old.humidities || now != old.now;
+      humidities != old.humidities ||
+      now != old.now ||
+      showHourLabels != old.showHourLabels;
 }
 
 // ---------------------------------------------------------------------------
@@ -584,11 +626,13 @@ class _DewPointLinePainter extends CustomPainter {
   final List<double> dewPoints;
   final List<DateTime> hours;
   final DateTime? now;
+  final bool showHourLabels;
 
   _DewPointLinePainter({
     required this.dewPoints,
     required this.hours,
     this.now,
+    this.showHourLabels = false,
   });
 
   @override
@@ -610,21 +654,11 @@ class _DewPointLinePainter extends CustomPainter {
     final range = hi - lo;
 
     const padTop = 2.0;
-    const padBottom = 2.0;
-    const padLeft = 28.0;
+    final padBottom = showHourLabels ? 14.0 : 2.0;
+    const padLeft = 20.0;
     final graphH = size.height - padTop - padBottom;
     final graphW = size.width - padLeft;
     final stepX = graphW / (dewPoints.length - 1);
-
-    // Grid lines at hi / mid / lo
-    final gridPaint = Paint()
-      ..color = AppColors.cream.withValues(alpha: 0.1)
-      ..strokeWidth = 1.0;
-    final mid = (lo + hi) / 2;
-    for (final t in [hi, mid, lo]) {
-      final y = padTop + graphH * (1 - (t - lo) / range);
-      canvas.drawLine(Offset(padLeft, y), Offset(size.width, y), gridPaint);
-    }
 
     // Dew point curve points
     final points = <Offset>[];
@@ -636,7 +670,7 @@ class _DewPointLinePainter extends CustomPainter {
 
     final linePath = _smoothPath(points);
 
-    // Faint gradient fill under the line
+    // Gradient area fill under the curve
     final fillPath = Path.from(linePath)
       ..lineTo(points.last.dx, padTop + graphH)
       ..lineTo(points.first.dx, padTop + graphH)
@@ -652,26 +686,27 @@ class _DewPointLinePainter extends CustomPainter {
         begin: Alignment.topCenter,
         end: Alignment.bottomCenter,
         colors: [
-          AppColors.cream.withValues(alpha: 0.12),
-          AppColors.cream.withValues(alpha: 0.02),
+          AppColors.cream.withValues(alpha: 0.15),
+          AppColors.cream.withValues(alpha: 0.03),
         ],
       ).createShader(fillRect);
     canvas.drawPath(fillPath, fillPaint);
 
-    // Main stroke
+    // Line
     canvas.drawPath(
       linePath,
       Paint()
-        ..color = AppColors.cream.withValues(alpha: 0.6)
-        ..strokeWidth = 1.5
+        ..color = AppColors.cream.withValues(alpha: 0.5)
+        ..strokeWidth = 2
         ..style = PaintingStyle.stroke
         ..strokeCap = StrokeCap.round,
     );
 
-    // Y-axis labels (°)
+    // Y-axis labels (°) — no grid lines
+    final mid = (lo + hi) / 2;
     final yLabelStyle = TextStyle(
-      color: AppColors.cream.withValues(alpha: 0.7),
-      fontSize: 9,
+      color: AppColors.cream.withValues(alpha: 0.95),
+      fontSize: 10,
       fontWeight: FontWeight.w600,
     );
     for (final t in [hi, mid, lo]) {
@@ -683,12 +718,46 @@ class _DewPointLinePainter extends CustomPainter {
       tp.paint(canvas, Offset(0, y - tp.height / 2));
     }
 
-    _drawNowLine(canvas, graphH + padTop, padLeft, graphW, hours, now);
+    // "Now" dot
+    _drawNowDot(
+      canvas,
+      hours: hours,
+      now: now,
+      points: points,
+      valueAt: (i) => dewPoints[i],
+      yForValue: (v) => padTop + graphH * (1 - (v - lo) / range),
+    );
+
+    // Hour labels
+    if (showHourLabels) {
+      final labelStyle = TextStyle(
+        color: AppColors.cream.withValues(alpha: 0.9),
+        fontSize: 10,
+        fontWeight: FontWeight.w600,
+      );
+      for (var i = 0; i < hours.length; i++) {
+        if (i % 6 != 0 && i != hours.length - 1) continue;
+        final tp = TextPainter(
+          text: TextSpan(
+            text: DateFormat('ha').format(hours[i]).toLowerCase(),
+            style: labelStyle,
+          ),
+          textDirection: TextDirection.ltr,
+        )..layout();
+        final x = (padLeft + i * stepX - tp.width / 2).clamp(
+          padLeft,
+          size.width - tp.width,
+        );
+        tp.paint(canvas, Offset(x, size.height - padBottom + 2));
+      }
+    }
   }
 
   @override
   bool shouldRepaint(covariant _DewPointLinePainter old) =>
-      dewPoints != old.dewPoints || now != old.now;
+      dewPoints != old.dewPoints ||
+      now != old.now ||
+      showHourLabels != old.showHourLabels;
 }
 
 // ---------------------------------------------------------------------------
@@ -705,8 +774,7 @@ void _drawNowLine(
   if (now == null || hours.length < 2) return;
   if (now.isBefore(hours.first) || now.isAfter(hours.last)) return;
 
-  final totalMs =
-      hours.last.difference(hours.first).inMilliseconds.toDouble();
+  final totalMs = hours.last.difference(hours.first).inMilliseconds.toDouble();
   if (totalMs <= 0) return;
 
   final nowMs = now.difference(hours.first).inMilliseconds.toDouble();
@@ -718,4 +786,44 @@ void _drawNowLine(
       ..color = AppColors.cream.withValues(alpha: 0.9)
       ..strokeWidth = 1,
   );
+}
+
+// ---------------------------------------------------------------------------
+// Shared helper: draw "Now" dot on a line chart
+// ---------------------------------------------------------------------------
+void _drawNowDot(
+  Canvas canvas, {
+  required List<DateTime> hours,
+  required DateTime? now,
+  required List<Offset> points,
+  required double Function(int i) valueAt,
+  required double Function(double v) yForValue,
+}) {
+  if (now == null || hours.length < 2 || points.length != hours.length) return;
+  if (now.isBefore(hours.first) || now.isAfter(hours.last)) return;
+
+  var i = 0;
+  for (; i < hours.length - 1; i++) {
+    if (!now.isAfter(hours[i + 1])) break;
+  }
+  if (i >= hours.length - 1) i = hours.length - 2;
+
+  final bucketMs = hours[i + 1].difference(hours[i]).inMilliseconds.toDouble();
+  final t = bucketMs > 0
+      ? (now.difference(hours[i]).inMilliseconds.toDouble() / bucketMs).clamp(
+          0.0,
+          1.0,
+        )
+      : 0.0;
+
+  final v0 = valueAt(i);
+  final v1 = valueAt(i + 1);
+  final v = v0 + (v1 - v0) * t;
+
+  final x0 = points[i].dx;
+  final x1 = points[i + 1].dx;
+  final x = x0 + (x1 - x0) * t;
+  final y = yForValue(v);
+
+  canvas.drawCircle(Offset(x, y), 4, Paint()..color = AppColors.cream);
 }

@@ -12,6 +12,7 @@ import 'package:workmanager/workmanager.dart';
 
 import '../../features/weather/data/models/forecast_response_model.dart';
 import '../../features/weather/domain/entities/temperature_tier.dart';
+import '../../features/weather/presentation/providers/moon_data_provider.dart';
 import '../constants/api_endpoints.dart';
 import '../constants/persona.dart';
 import '../utils/geo_utils.dart';
@@ -98,33 +99,53 @@ Future<void> _refreshWidgetData() async {
     final cachedJson = prefs.getString(cacheKey);
     final cachedTs = prefs.getInt(cacheTsKey);
 
-    ForecastResponseModel forecastModel;
+    ForecastResponseModel? forecastModel;
+    final cacheAgeMs = cachedTs != null
+        ? DateTime.now().millisecondsSinceEpoch - cachedTs
+        : null;
+
     if (cachedJson != null &&
-        cachedTs != null &&
-        DateTime.now().millisecondsSinceEpoch - cachedTs <
-            const Duration(minutes: 5).inMilliseconds) {
-      // Cache is <5 min old — reuse foreground data
+        cacheAgeMs != null &&
+        cacheAgeMs < const Duration(minutes: 14).inMilliseconds) {
+      // Cache is <14 min old — reuse it. The widget refresh runs every
+      // 15 min so this avoids hammering the API when nothing has changed.
       forecastModel = ForecastResponseModel.fromJson(
           jsonDecode(cachedJson) as Map<String, dynamic>);
     } else {
-      // Cache is stale or missing — fetch from API
-      final dio = Dio();
-      final response = await dio.get(
-        ApiEndpoints.forecast(latitude: lat, longitude: lon),
-        options: Options(
-          receiveTimeout: const Duration(seconds: 15),
-          sendTimeout: const Duration(seconds: 15),
-        ),
-      );
-      dio.close();
-      forecastModel =
-          ForecastResponseModel.fromJson(response.data as Map<String, dynamic>);
+      // Cache is stale or missing — try to fetch from API.
+      try {
+        final dio = Dio();
+        final response = await dio.get(
+          ApiEndpoints.forecast(latitude: lat, longitude: lon),
+          options: Options(
+            receiveTimeout: const Duration(seconds: 15),
+            sendTimeout: const Duration(seconds: 15),
+          ),
+        );
+        dio.close();
+        forecastModel = ForecastResponseModel.fromJson(
+            response.data as Map<String, dynamic>);
 
-      // Write back to shared cache so foreground benefits too
-      await prefs.setString(cacheKey, jsonEncode(forecastModel.toJson()));
-      await prefs.setInt(
-          cacheTsKey, DateTime.now().millisecondsSinceEpoch);
+        // Write back to shared cache so foreground benefits too
+        await prefs.setString(cacheKey, jsonEncode(forecastModel.toJson()));
+        await prefs.setInt(
+            cacheTsKey, DateTime.now().millisecondsSinceEpoch);
+      } on DioException catch (e) {
+        // Rate-limited or transient failure — fall back to whatever cached
+        // forecast we have rather than letting the widget refresh fail.
+        if (kDebugMode) {
+          print('Widget refresh API fetch failed '
+              '(${e.response?.statusCode ?? e.type.name}); '
+              'using stale cache');
+        }
+        if (cachedJson != null) {
+          forecastModel = ForecastResponseModel.fromJson(
+              jsonDecode(cachedJson) as Map<String, dynamic>);
+        }
+      }
     }
+
+    if (forecastModel == null) return;
 
     // Update pointer keys so readCachedWeather() always finds the freshest
     // data, regardless of GPS coordinate drift between refreshes.
@@ -194,20 +215,19 @@ Future<void> _refreshWidgetData() async {
       }
     }
 
-    // Read cached USNO moon data
+    // Read cached USNO moon data and interpolate illumination for "now"
+    // so the widget value matches what's shown in-app.
     String? moonPhase;
     int? moonIllum;
     try {
       final moonCacheKey = 'cached_moon_${lat}_$lon';
       final cachedMoonJson = prefs.getString(moonCacheKey);
       if (cachedMoonJson != null) {
-        final moonData =
-            jsonDecode(cachedMoonJson) as Map<String, dynamic>;
-        moonPhase = moonData['curPhase'] as String?;
-        final fracVal = moonData['fracIllum'];
-        if (fracVal is num) {
-          moonIllum = fracVal.round();
-        }
+        final moonData = UsnoMoonData.fromJson(
+          jsonDecode(cachedMoonJson) as Map<String, dynamic>,
+        );
+        moonPhase = moonData.curPhase;
+        moonIllum = moonData.illuminationForDate(DateTime.now()).round();
       }
     } catch (_) {}
 

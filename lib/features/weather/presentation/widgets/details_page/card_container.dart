@@ -5,16 +5,21 @@ class CardContainer extends StatelessWidget {
   final IconData backgroundIcon;
   final Widget child;
   final bool compact;
+  final bool flat;
 
   const CardContainer({
     super.key,
     required this.backgroundIcon,
     required this.child,
     this.compact = false,
+    this.flat = false,
   });
 
   @override
   Widget build(BuildContext context) {
+    if (flat) {
+      return child;
+    }
     return Container(
       clipBehavior: Clip.hardEdge,
       decoration: BoxDecoration(

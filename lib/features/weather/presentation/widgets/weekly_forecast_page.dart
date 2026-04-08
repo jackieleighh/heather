@@ -1,3 +1,5 @@
+import 'dart:math' as math;
+
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:google_fonts/google_fonts.dart';
@@ -6,14 +8,15 @@ import 'package:weather_icons/weather_icons.dart';
 
 import '../../../../core/constants/app_colors.dart';
 import '../../../../core/utils/moon_phase.dart';
+import '../../../../core/utils/uv_index.dart';
 import '../../../../core/utils/weather_icon_mapper.dart';
+import '../../../../core/utils/wind_direction.dart';
 import '../../domain/entities/daily_weather.dart';
 import '../../domain/entities/forecast.dart';
+import '../../domain/entities/hourly_weather.dart';
 import '../providers/moon_data_provider.dart';
-import 'details_page/card_container.dart';
 import 'details_page/conditions_card.dart';
 import 'details_page/rain_card.dart';
-import 'details_page/temp_card.dart';
 
 class WeeklyForecastPage extends ConsumerStatefulWidget {
   final Forecast forecast;
@@ -139,6 +142,7 @@ class _WeeklyForecastPageState extends ConsumerState<WeeklyForecastPage> {
                                       daily: daily[i],
                                       dayDiff: dayDiff,
                                       isExpanded: isExpanded,
+                                      now: now,
                                       moonData: usno,
                                     ),
                             ),
@@ -171,11 +175,13 @@ class _CollapsedDayContent extends StatelessWidget {
   final int dayDiff;
   final bool isExpanded;
   final UsnoMoonData? moonData;
+  final DateTime now;
 
   const _CollapsedDayContent({
     required this.daily,
     required this.dayDiff,
     required this.isExpanded,
+    required this.now,
     this.moonData,
   });
 
@@ -235,10 +241,11 @@ class _CollapsedDayContent extends StatelessWidget {
     }
 
     // Equal-height card — two-row layout with background condition icon
-    final moonFrac = moonData?.fractionForDate(daily.date);
-    final illumination = dayDiff == 0
-        ? moonData?.fracIllum.round()
-        : moonData?.illuminationForDate(daily.date).round();
+    // For "today", reflect right-now's interpolated illumination so it
+    // matches what other surfaces (moon card, current details) display.
+    final moonRefDate = dayDiff == 0 ? now : daily.date;
+    final moonFrac = moonData?.fractionForDate(moonRefDate);
+    final illumination = moonData?.illuminationForDate(moonRefDate).round();
     return Stack(
       children: [
         Positioned(
@@ -409,7 +416,7 @@ class _CollapsedDayContent extends StatelessWidget {
   }
 }
 
-class _ExpandedDayContent extends StatefulWidget {
+class _ExpandedDayContent extends StatelessWidget {
   final DailyWeather daily;
   final int dayDiff;
   final Forecast forecast;
@@ -423,202 +430,336 @@ class _ExpandedDayContent extends StatefulWidget {
   });
 
   @override
-  State<_ExpandedDayContent> createState() => _ExpandedDayContentState();
-}
-
-class _ExpandedDayContentState extends State<_ExpandedDayContent> {
-  final _scrollController = ScrollController();
-  final _showTopFade = ValueNotifier(false);
-  final _showBottomFade = ValueNotifier(true);
-
-  @override
-  void initState() {
-    super.initState();
-    _scrollController.addListener(_onScroll);
-  }
-
-  @override
-  void dispose() {
-    _scrollController.removeListener(_onScroll);
-    _scrollController.dispose();
-    _showTopFade.dispose();
-    _showBottomFade.dispose();
-    super.dispose();
-  }
-
-  void _onScroll() {
-    final pos = _scrollController.position;
-    _showTopFade.value = pos.pixels > 0;
-    _showBottomFade.value = pos.pixels < pos.maxScrollExtent;
-  }
-
-  @override
   Widget build(BuildContext context) {
-    final daily = widget.daily;
-    final dayStr = switch (widget.dayDiff) {
+    final dayStr = switch (dayDiff) {
       0 => 'Today',
       1 => 'Tomorrow',
       _ => DateFormat('EEEE').format(daily.date),
     };
     final dateStr = '${daily.date.month}/${daily.date.day}';
 
-    final dayHourly = widget.forecast.hourlyForDay(daily.date);
-    final usno = widget.moonData;
-    final moonFrac = usno?.fractionForDate(daily.date);
+    final dayHourly = forecast.hourlyForDay(daily.date);
+    final usno = moonData;
+    // For today, use right-now so the value matches the moon card and the
+    // current-conditions chip. For future days, use the day's date.
+    final moonRefDate = dayDiff == 0 ? forecast.locationNow : daily.date;
+    final moonFrac = usno?.fractionForDate(moonRefDate);
     final MoonPhase? phase;
     final int? illumination;
-    if (usno != null && widget.dayDiff == 0) {
-      // Today: use direct API values
-      phase =
-          usnoPhaseToEnum(usno.curPhase) ??
-          phaseFromFraction(usno.fractionForDate(daily.date));
-      illumination = usno.fracIllum.round();
-    } else if (usno != null) {
-      // Future days: interpolate from transitions
-      phase = usno.phaseForDate(daily.date);
-      illumination = usno.illuminationForDate(daily.date).round();
+    if (usno != null) {
+      phase = dayDiff == 0
+          ? (usnoPhaseToEnum(usno.curPhase) ??
+                phaseFromFraction(usno.fractionForDate(moonRefDate)))
+          : usno.phaseForDate(moonRefDate);
+      illumination = usno.illuminationForDate(moonRefDate).round();
     } else {
       phase = null;
       illumination = null;
     }
 
-    return Column(
-      children: [
-        // Header row
-        Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
-          child: Row(
-            children: [
-              Text(
-                dayStr,
-                style: GoogleFonts.figtree(
-                  fontSize: 20,
-                  fontWeight: FontWeight.w400,
-                  color: AppColors.cream,
-                  shadows: [
-                    const Shadow(color: Color(0x28000000), blurRadius: 6),
-                  ],
-                ),
-              ),
-              const SizedBox(width: 6),
-              Text(
-                dateStr,
-                style: GoogleFonts.quicksand(
-                  fontSize: 13,
-                  fontWeight: FontWeight.w500,
-                  color: AppColors.cream.withValues(alpha: 0.95),
-                ),
-              ),
-              const SizedBox(width: 10),
-              Icon(
-                conditionIcon(
-                  daily.weatherCode,
-                  isDay: daily.hasSunnyPeriods ? true : null,
-                ),
-                color: AppColors.cream.withValues(alpha: 0.95),
-                size: 18,
-              ),
-              const Spacer(),
-              Text(
-                '${daily.temperatureMax.round()}° / ${daily.temperatureMin.round()}°',
-                style: GoogleFonts.quicksand(
-                  fontSize: 14,
-                  fontWeight: FontWeight.w700,
-                  color: AppColors.cream,
-                ),
-              ),
-            ],
-          ),
-        ),
-        // Detail cards with scroll fades
-        Expanded(
-          child: ListenableBuilder(
-            listenable: Listenable.merge([_showTopFade, _showBottomFade]),
-            builder: (context, child) => ShaderMask(
-              shaderCallback: (bounds) {
-                return LinearGradient(
-                  begin: Alignment.topCenter,
-                  end: Alignment.bottomCenter,
-                  colors: [
-                    if (_showTopFade.value) Colors.transparent else Colors.white,
-                    Colors.white,
-                    Colors.white,
-                    if (_showBottomFade.value) Colors.transparent else Colors.white,
-                  ],
-                  stops: const [0.0, 0.04, 0.94, 1.0],
-                ).createShader(bounds);
-              },
-              blendMode: BlendMode.dstIn,
-              child: child,
-            ),
-            child: ListView(
-              controller: _scrollController,
-              padding: const EdgeInsets.fromLTRB(10, 0, 10, 6),
+    final hasMoon = phase != null && illumination != null && moonFrac != null;
+
+    return Padding(
+      padding: const EdgeInsets.fromLTRB(10, 6, 10, 8),
+      child: Column(
+        children: [
+          // 1. Header row — sits flush at the top, no card chrome
+          Padding(
+            padding: const EdgeInsets.fromLTRB(4, 0, 4, 6),
+            child: Row(
               children: [
-                SizedBox(
-                  height: 96,
-                  child: ConditionsCard(
-                    hourly: dayHourly,
-                    compact: true,
-                    sunrise: daily.sunrise,
-                    sunset: daily.sunset,
+                Text(
+                  dayStr,
+                  style: GoogleFonts.figtree(
+                    fontSize: 20,
+                    fontWeight: FontWeight.w400,
+                    color: AppColors.cream,
+                    shadows: [
+                      const Shadow(color: Color(0x28000000), blurRadius: 6),
+                    ],
                   ),
                 ),
-                const SizedBox(height: 8),
-                SizedBox(
-                  height: 82,
-                  child: TemperatureCard(
-                    temps: dayHourly.map((h) => h.temperature).toList(),
-                    hours: dayHourly.map((h) => h.time).toList(),
-                    compact: true,
+                const SizedBox(width: 6),
+                Text(
+                  dateStr,
+                  style: GoogleFonts.quicksand(
+                    fontSize: 13,
+                    fontWeight: FontWeight.w500,
+                    color: AppColors.cream.withValues(alpha: 0.95),
                   ),
                 ),
-                const SizedBox(height: 8),
-                SizedBox(
-                  height: 82,
-                  child: RainCard(
-                    precipitationIn: daily.precipitationSum / 25.4,
-                    precipitationProbability: daily.precipitationProbabilityMax,
-                    hourlyPrecipProb: dayHourly
-                        .map((h) => h.precipitationProbability)
-                        .toList(),
-                    hours: dayHourly.map((h) => h.time).toList(),
-                    precipType: precipTypeFromConditions(
-                      dayHourly.map((h) => h.condition).toList(),
-                    ),
-                    compact: true,
+                const SizedBox(width: 10),
+                Icon(
+                  conditionIcon(
+                    daily.weatherCode,
+                    isDay: daily.hasSunnyPeriods ? true : null,
+                  ),
+                  color: AppColors.cream.withValues(alpha: 0.95),
+                  size: 18,
+                ),
+                const Spacer(),
+                Text(
+                  '${daily.temperatureMax.round()}° / ${daily.temperatureMin.round()}°',
+                  style: GoogleFonts.quicksand(
+                    fontSize: 14,
+                    fontWeight: FontWeight.w700,
+                    color: AppColors.cream,
                   ),
                 ),
-                const SizedBox(height: 8),
-                if (phase != null && illumination != null && moonFrac != null)
-                  SizedBox(
-                    height: 84,
-                    child: _SunMoonCard(
-                      sunrise: daily.sunrise,
-                      sunset: daily.sunset,
-                      moonPhaseLabel: moonPhaseLabel(phase),
-                      moonIcon: moonPhaseIcon(moonFrac),
-                      illumination: illumination,
-                    ),
-                  ),
               ],
             ),
           ),
+          // 2. Hourly conditions strip — full width, horizontally scrollable
+          _TileCard(
+            child: SizedBox(
+              height: 72,
+              child: ConditionsCard(
+                hourly: dayHourly,
+                compact: true,
+                flat: true,
+                showHeader: false,
+                sunrise: daily.sunrise,
+                sunset: daily.sunset,
+              ),
+            ),
+          ),
+          const SizedBox(height: 6),
+          // 3. 2x2 grid — absorbs remaining vertical space
+          Expanded(
+            child: Column(
+              children: [
+                Expanded(
+                  child: Row(
+                    children: [
+                      Expanded(
+                        child: _TileCard(
+                          child: _StatsTile(hourly: dayHourly, daily: daily),
+                        ),
+                      ),
+                      const SizedBox(width: 6),
+                      Expanded(
+                        child: _TileCard(
+                          child: _TempTile(hourly: dayHourly, daily: daily),
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+                const SizedBox(height: 6),
+                Expanded(
+                  child: Row(
+                    children: [
+                      Expanded(
+                        child: _TileCard(
+                          child: _RainTile(hourly: dayHourly, daily: daily),
+                        ),
+                      ),
+                      const SizedBox(width: 6),
+                      Expanded(
+                        child: _TileCard(
+                          child: hasMoon
+                              ? _SunMoonTile(
+                                  sunrise: daily.sunrise,
+                                  sunset: daily.sunset,
+                                  moonPhaseLabel: moonPhaseLabel(phase),
+                                  moonIcon: moonPhaseIcon(moonFrac),
+                                  illumination: illumination,
+                                )
+                              : _SunMoonTile(
+                                  sunrise: daily.sunrise,
+                                  sunset: daily.sunset,
+                                  moonPhaseLabel: null,
+                                  moonIcon: null,
+                                  illumination: null,
+                                ),
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+/// Soft mini-card wrapper used for every section inside an expanded day.
+/// Matches the styling of `InfoChip` so the expanded view feels like a
+/// gallery of small tiles instead of dividing-line panels.
+class _TileCard extends StatelessWidget {
+  final Widget child;
+
+  const _TileCard({required this.child});
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      padding: const EdgeInsets.all(8),
+      decoration: BoxDecoration(
+        color: AppColors.cream.withValues(alpha: 0.08),
+        borderRadius: BorderRadius.circular(10),
+      ),
+      child: child,
+    );
+  }
+}
+
+/// Shared header row used by every tile in the 2x2 grid.
+class _TileHeader extends StatelessWidget {
+  final IconData icon;
+  final String label;
+  final Widget? trailing;
+
+  const _TileHeader({
+    required this.icon,
+    required this.label,
+    this.trailing,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return Row(
+      crossAxisAlignment: CrossAxisAlignment.center,
+      children: [
+        Icon(icon, size: 11, color: AppColors.cream.withValues(alpha: 0.9)),
+        const SizedBox(width: 4),
+        Text(
+          label,
+          style: GoogleFonts.figtree(
+            fontSize: 13,
+            fontWeight: FontWeight.w400,
+            color: AppColors.cream,
+          ),
         ),
+        if (trailing != null) ...[
+          const Spacer(),
+          trailing!,
+        ],
       ],
     );
   }
 }
 
-/// Condensed sun/moon card showing sunrise, sunset, phase, and illumination.
-class _SunMoonCard extends StatelessWidget {
+/// Temperature tile with hi/lo header and a miniature edge-to-edge curve.
+class _TempTile extends StatelessWidget {
+  final List<HourlyWeather> hourly;
+  final DailyWeather daily;
+
+  const _TempTile({required this.hourly, required this.daily});
+
+  @override
+  Widget build(BuildContext context) {
+    final temps = hourly.map((h) => h.temperature).toList();
+
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        _TileHeader(
+          icon: WeatherIcons.thermometer,
+          label: 'Temp',
+          trailing: Text(
+            '${daily.temperatureMax.round()}° / ${daily.temperatureMin.round()}°',
+            style: GoogleFonts.poppins(
+              fontSize: 11,
+              fontWeight: FontWeight.w700,
+              color: AppColors.cream,
+            ),
+          ),
+        ),
+        const SizedBox(height: 4),
+        if (temps.length >= 2)
+          Expanded(
+            child: CustomPaint(
+              size: Size.infinite,
+              painter: _MiniTempPainter(temps),
+            ),
+          )
+        else
+          const Spacer(),
+      ],
+    );
+  }
+}
+
+/// Rain tile with amount + chance header and miniature precip-probability bars.
+class _RainTile extends StatelessWidget {
+  final List<HourlyWeather> hourly;
+  final DailyWeather daily;
+
+  const _RainTile({required this.hourly, required this.daily});
+
+  @override
+  Widget build(BuildContext context) {
+    final precipType = precipTypeFromConditions(
+      hourly.map((h) => h.condition).toList(),
+    );
+    final (label, icon) = switch (precipType) {
+      PrecipType.snow => ('Snow', WeatherIcons.snowflake_cold),
+      PrecipType.mixed => ('Slush', WeatherIcons.rain_mix),
+      PrecipType.rain => ('Rain', WeatherIcons.raindrop),
+    };
+    final amountIn = daily.precipitationSum / 25.4;
+    final amountLabel = amountIn < 0.01 ? '0"' : '${amountIn.toStringAsFixed(2)}"';
+    final probs = hourly.map((h) => h.precipitationProbability).toList();
+
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        _TileHeader(
+          icon: icon,
+          label: label,
+          trailing: Row(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Text(
+                amountLabel,
+                style: GoogleFonts.poppins(
+                  fontSize: 11,
+                  fontWeight: FontWeight.w700,
+                  color: AppColors.cream,
+                ),
+              ),
+              const SizedBox(width: 4),
+              Text(
+                '${daily.precipitationProbabilityMax}%',
+                style: GoogleFonts.poppins(
+                  fontSize: 11,
+                  fontWeight: FontWeight.w600,
+                  color: AppColors.cream.withValues(alpha: 0.9),
+                ),
+              ),
+            ],
+          ),
+        ),
+        const SizedBox(height: 4),
+        if (probs.isNotEmpty)
+          Expanded(
+            child: CustomPaint(
+              size: Size.infinite,
+              painter: _MiniPrecipPainter(probs),
+            ),
+          )
+        else
+          const Spacer(),
+      ],
+    );
+  }
+}
+
+/// Sun & moon tile shaped to fit a narrow ~150px column.
+/// If [moonPhaseLabel]/[moonIcon]/[illumination] are null the moon row is
+/// hidden and only the sunrise/sunset row renders.
+class _SunMoonTile extends StatelessWidget {
   final DateTime sunrise;
   final DateTime sunset;
-  final String moonPhaseLabel;
-  final IconData moonIcon;
-  final int illumination;
+  final String? moonPhaseLabel;
+  final IconData? moonIcon;
+  final int? illumination;
 
-  const _SunMoonCard({
+  const _SunMoonTile({
     required this.sunrise,
     required this.sunset,
     required this.moonPhaseLabel,
@@ -628,104 +769,291 @@ class _SunMoonCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final theme = Theme.of(context);
     final timeFmt = DateFormat('h:mm a');
+    final hasMoon =
+        moonPhaseLabel != null && moonIcon != null && illumination != null;
 
-    return CardContainer(
-      backgroundIcon: WeatherIcons.day_sunny,
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          // Header
-          Row(
-            crossAxisAlignment: CrossAxisAlignment.baseline,
-            textBaseline: TextBaseline.alphabetic,
-            children: [
-              Icon(
-                WeatherIcons.day_sunny,
-                size: 10,
-                color: AppColors.cream.withValues(alpha: 0.9),
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        const _TileHeader(
+          icon: WeatherIcons.day_sunny,
+          label: 'Sun & Moon',
+        ),
+        const SizedBox(height: 6),
+        // Sunrise (stacked above sunset to keep the tile narrow-friendly)
+        Row(
+          children: [
+            Icon(
+              WeatherIcons.sunrise,
+              size: 12,
+              color: AppColors.cream.withValues(alpha: 0.9),
+            ),
+            const SizedBox(width: 5),
+            Text(
+              timeFmt.format(sunrise),
+              style: GoogleFonts.poppins(
+                fontSize: 11,
+                fontWeight: FontWeight.w700,
+                color: AppColors.cream,
               ),
-              const SizedBox(width: 3),
-              Text(
-                'Sun & Moon',
-                style: GoogleFonts.figtree(
-                  fontSize: 14,
-                  fontWeight: FontWeight.w400,
-                  color: AppColors.cream,
-                  shadows: [
-                    const Shadow(color: Color(0x28000000), blurRadius: 6),
-                  ],
-                ),
+            ),
+          ],
+        ),
+        const SizedBox(height: 3),
+        Row(
+          children: [
+            Icon(
+              WeatherIcons.sunset,
+              size: 12,
+              color: AppColors.cream.withValues(alpha: 0.9),
+            ),
+            const SizedBox(width: 5),
+            Text(
+              timeFmt.format(sunset),
+              style: GoogleFonts.poppins(
+                fontSize: 11,
+                fontWeight: FontWeight.w700,
+                color: AppColors.cream,
               ),
-            ],
-          ),
+            ),
+          ],
+        ),
+        if (hasMoon) ...[
           const SizedBox(height: 4),
-          // Sunrise / Sunset row
-          Row(
-            children: [
-              Icon(
-                WeatherIcons.sunrise,
-                size: 13,
-                color: AppColors.cream.withValues(alpha: 0.9),
-              ),
-              const SizedBox(width: 5),
-              Text(
-                timeFmt.format(sunrise),
-                style: GoogleFonts.poppins(
-                  fontSize: 12,
-                  fontWeight: FontWeight.w700,
-                  color: AppColors.cream,
-                ),
-              ),
-              const SizedBox(width: 14),
-              Icon(
-                WeatherIcons.sunset,
-                size: 13,
-                color: AppColors.cream.withValues(alpha: 0.9),
-              ),
-              const SizedBox(width: 5),
-              Text(
-                timeFmt.format(sunset),
-                style: GoogleFonts.poppins(
-                  fontSize: 12,
-                  fontWeight: FontWeight.w700,
-                  color: AppColors.cream,
-                ),
-              ),
-            ],
-          ),
-          const SizedBox(height: 4),
-          // Moon phase row
           Row(
             children: [
               Icon(
                 moonIcon,
-                size: 13,
+                size: 12,
                 color: AppColors.cream.withValues(alpha: 0.9),
               ),
               const SizedBox(width: 5),
-              Text(
-                moonPhaseLabel,
-                style: GoogleFonts.poppins(
-                  fontSize: 12,
-                  fontWeight: FontWeight.w700,
-                  color: AppColors.cream,
+              Flexible(
+                child: Text(
+                  moonPhaseLabel!,
+                  overflow: TextOverflow.ellipsis,
+                  style: GoogleFonts.poppins(
+                    fontSize: 11,
+                    fontWeight: FontWeight.w600,
+                    color: AppColors.cream,
+                  ),
                 ),
               ),
-              const SizedBox(width: 6),
+              const SizedBox(width: 5),
               Text(
-                '$illumination% illuminated',
+                '$illumination%',
                 style: GoogleFonts.poppins(
                   fontSize: 11,
                   fontWeight: FontWeight.w500,
-                  color: AppColors.cream.withValues(alpha: 0.9),
+                  color: AppColors.cream.withValues(alpha: 0.85),
                 ),
               ),
             ],
           ),
         ],
-      ),
+      ],
     );
   }
+}
+
+/// Tile with the day's UV, humidity, and wind summary stats.
+class _StatsTile extends StatelessWidget {
+  final List<HourlyWeather> hourly;
+  final DailyWeather daily;
+
+  const _StatsTile({required this.hourly, required this.daily});
+
+  @override
+  Widget build(BuildContext context) {
+    // Humidity: prefer daily.humidityAvg; fall back to hourly mean.
+    int humidity = daily.humidityAvg;
+    if (humidity == 0 && hourly.isNotEmpty) {
+      final sum = hourly.fold<int>(0, (a, h) => a + h.humidity);
+      humidity = (sum / hourly.length).round();
+    }
+
+    // Wind: mean speed + circular-mean direction over the day's hourly data.
+    double? meanWind;
+    int? domDir;
+    if (hourly.isNotEmpty) {
+      meanWind =
+          hourly.fold<double>(0, (a, h) => a + h.windSpeed) / hourly.length;
+      var sinSum = 0.0;
+      var cosSum = 0.0;
+      for (final h in hourly) {
+        final rad = h.windDirection * math.pi / 180.0;
+        sinSum += math.sin(rad);
+        cosSum += math.cos(rad);
+      }
+      final meanRad = math.atan2(sinSum, cosSum);
+      var deg = (meanRad * 180.0 / math.pi).round();
+      if (deg < 0) deg += 360;
+      domDir = deg;
+    }
+
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        const _TileHeader(icon: Icons.bar_chart, label: 'Today'),
+        const SizedBox(height: 4),
+        _StatRow(
+          icon: WeatherIcons.day_sunny,
+          value: 'UV ${daily.uvIndexMax.round()}',
+          sub: uvLevelLabel(daily.uvIndexMax),
+        ),
+        if (humidity > 0) ...[
+          const SizedBox(height: 3),
+          _StatRow(
+            icon: WeatherIcons.humidity,
+            value: '$humidity%',
+            sub: 'humidity',
+          ),
+        ],
+        if (meanWind != null && domDir != null) ...[
+          const SizedBox(height: 3),
+          _StatRow(
+            icon: WeatherIcons.windy,
+            value: '${meanWind.round()} mph',
+            sub: windDirectionLabel(domDir),
+          ),
+        ],
+      ],
+    );
+  }
+}
+
+class _StatRow extends StatelessWidget {
+  final IconData icon;
+  final String value;
+  final String sub;
+
+  const _StatRow({required this.icon, required this.value, required this.sub});
+
+  @override
+  Widget build(BuildContext context) {
+    return Row(
+      children: [
+        Icon(icon, size: 12, color: AppColors.cream.withValues(alpha: 0.9)),
+        const SizedBox(width: 5),
+        Text(
+          value,
+          style: GoogleFonts.poppins(
+            fontSize: 11,
+            fontWeight: FontWeight.w700,
+            color: AppColors.cream,
+          ),
+        ),
+        const SizedBox(width: 4),
+        Flexible(
+          child: Text(
+            sub,
+            overflow: TextOverflow.ellipsis,
+            style: GoogleFonts.poppins(
+              fontSize: 11,
+              fontWeight: FontWeight.w500,
+              color: AppColors.cream.withValues(alpha: 0.85),
+            ),
+          ),
+        ),
+      ],
+    );
+  }
+}
+
+/// Edge-to-edge cubic-smoothed temperature curve with a subtle area fill.
+/// No axis labels, no padding gutters — fills the available rect entirely.
+class _MiniTempPainter extends CustomPainter {
+  final List<double> temps;
+
+  _MiniTempPainter(this.temps);
+
+  @override
+  void paint(Canvas canvas, Size size) {
+    if (temps.length < 2) return;
+
+    final lo = temps.reduce(math.min);
+    final hi = temps.reduce(math.max);
+    final range = hi - lo;
+    if (range == 0) return;
+
+    final w = size.width;
+    final h = size.height;
+    final stepX = w / (temps.length - 1);
+
+    final points = <Offset>[];
+    for (var i = 0; i < temps.length; i++) {
+      final x = i * stepX;
+      final y = h * (1 - (temps[i] - lo) / range);
+      points.add(Offset(x, y));
+    }
+
+    final linePath = Path()..moveTo(points.first.dx, points.first.dy);
+    for (var i = 1; i < points.length; i++) {
+      final prev = points[i - 1];
+      final curr = points[i];
+      final cpx = (prev.dx + curr.dx) / 2;
+      linePath.cubicTo(cpx, prev.dy, cpx, curr.dy, curr.dx, curr.dy);
+    }
+
+    final fillPath = Path.from(linePath)
+      ..lineTo(points.last.dx, h)
+      ..lineTo(points.first.dx, h)
+      ..close();
+    final fillPaint = Paint()
+      ..shader = LinearGradient(
+        begin: Alignment.topCenter,
+        end: Alignment.bottomCenter,
+        colors: [
+          AppColors.cream.withValues(alpha: 0.18),
+          AppColors.cream.withValues(alpha: 0.02),
+        ],
+      ).createShader(Rect.fromLTWH(0, 0, w, h));
+    canvas.drawPath(fillPath, fillPaint);
+
+    canvas.drawPath(
+      linePath,
+      Paint()
+        ..color = AppColors.cream.withValues(alpha: 0.55)
+        ..strokeWidth = 1.5
+        ..style = PaintingStyle.stroke
+        ..strokeCap = StrokeCap.round,
+    );
+  }
+
+  @override
+  bool shouldRepaint(covariant _MiniTempPainter old) => temps != old.temps;
+}
+
+/// Edge-to-edge precipitation-probability bars. No axis labels, no grid.
+class _MiniPrecipPainter extends CustomPainter {
+  final List<int> precipProb;
+
+  _MiniPrecipPainter(this.precipProb);
+
+  @override
+  void paint(Canvas canvas, Size size) {
+    if (precipProb.isEmpty) return;
+    final w = size.width;
+    final h = size.height;
+    final barW = w / precipProb.length;
+
+    for (var i = 0; i < precipProb.length; i++) {
+      final pct = precipProb[i] / 100.0;
+      final barH = math.max(h * pct, pct > 0 ? 1.5 : 0.0);
+      final x = i * barW;
+      final y = h - barH;
+      canvas.drawRRect(
+        RRect.fromRectAndRadius(
+          Rect.fromLTWH(x + 0.5, y, barW - 1, barH),
+          const Radius.circular(1.5),
+        ),
+        Paint()..color = AppColors.cream.withValues(alpha: 0.45 + 0.45 * pct),
+      );
+    }
+  }
+
+  @override
+  bool shouldRepaint(covariant _MiniPrecipPainter old) =>
+      precipProb != old.precipProb;
 }

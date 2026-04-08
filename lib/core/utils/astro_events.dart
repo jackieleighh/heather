@@ -216,7 +216,7 @@ AstroEvent? activeAstroEvent(DateTime date, {DateTime? nextFullMoonDate}) {
     final label = isPeak
         ? '${shower.name} peak tonight!'
         : '${shower.name} active';
-    return AstroEvent('\u2604 $label', zhr: shower.zhr);
+    return AstroEvent(label, zhr: shower.zhr);
   }
 
   // 3. Supermoon (check if next full moon is a supermoon)

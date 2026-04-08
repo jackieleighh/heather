@@ -17,6 +17,8 @@ class ConditionsCard extends StatefulWidget {
   final DateTime? sunset;
   final DateTime? now;
   final CardDisplayMode mode;
+  final bool flat;
+  final bool showHeader;
 
   const ConditionsCard({
     super.key,
@@ -26,6 +28,8 @@ class ConditionsCard extends StatefulWidget {
     this.sunset,
     this.now,
     this.mode = CardDisplayMode.normal,
+    this.flat = false,
+    this.showHeader = true,
   });
 
   @override
@@ -203,7 +207,7 @@ class _ConditionsCardState extends State<ConditionsCard> {
                           Icon(
                             conditionIcon(h.weatherCode, isDay: isDay),
                             color: AppColors.cream.withValues(alpha: 0.85),
-                            size: 36,
+                            size: 30,
                           ),
                           const SizedBox(height: 3),
                           Text(
@@ -211,7 +215,7 @@ class _ConditionsCardState extends State<ConditionsCard> {
                             style: GoogleFonts.poppins(
                               fontSize: 13,
                               fontWeight: FontWeight.w700,
-                              color: AppColors.cream.withValues(alpha: 0.85),
+                              color: AppColors.cream.withValues(alpha: 0.7),
                             ),
                           ),
                         ],
@@ -285,11 +289,14 @@ class _ConditionsCardState extends State<ConditionsCard> {
     // Normal mode
     return CardContainer(
       backgroundIcon: WeatherIcons.cloud,
+      flat: widget.flat,
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          _buildHeader(),
-          SizedBox(height: widget.compact ? 1 : 2),
+          if (widget.showHeader) ...[
+            _buildHeader(),
+            SizedBox(height: widget.compact ? 1 : 2),
+          ],
           _buildHorizontalScroller(),
         ],
       ),

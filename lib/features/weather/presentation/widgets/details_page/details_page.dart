@@ -36,6 +36,15 @@ class _DetailsPageState extends ConsumerState<DetailsPage> {
   @override
   Widget build(BuildContext context) {
     final forecast = widget.forecast;
+
+    // Defensive: when launched from a widget tap with no cached forecast,
+    // hourly/daily can be empty (standalone widget seed). Render a blank
+    // placeholder until the real forecast arrives instead of crashing on
+    // .first / firstWhere calls below.
+    if (forecast.hourly.isEmpty || forecast.daily.isEmpty) {
+      return const SizedBox.expand();
+    }
+
     final now = forecast.locationNow;
     final next24 = forecast.hourly.take(24).toList();
     final aqi = ref.watch(airQualityProvider((lat: widget.latitude, lon: widget.longitude)));
@@ -62,12 +71,13 @@ class _DetailsPageState extends ConsumerState<DetailsPage> {
               ? forecast.daily.indexOf(todayDaily) + 1
               : 0]
         : todayDaily;
-    final nextSunrise = now.isBefore(todayDaily.sunrise)
-        ? todayDaily.sunrise
-        : tomorrowDaily.sunrise;
-    final nextSunset = now.isBefore(todayDaily.sunset)
-        ? todayDaily.sunset
-        : tomorrowDaily.sunset;
+    // Coherent (sunrise, sunset) pair: today's pair while today's sunset is
+    // still ahead, otherwise tomorrow's pair. Keeping these matched ensures
+    // the sun arc, daylight length, and solar noon all compute against a
+    // single day.
+    final useToday = now.isBefore(todayDaily.sunset);
+    final nextSunrise = useToday ? todayDaily.sunrise : tomorrowDaily.sunrise;
+    final nextSunset = useToday ? todayDaily.sunset : tomorrowDaily.sunset;
 
     final isSunUp =
         now.isAfter(todayDaily.sunrise) && now.isBefore(todayDaily.sunset);
@@ -75,6 +85,27 @@ class _DetailsPageState extends ConsumerState<DetailsPage> {
     final todayDayLength = todayDaily.sunset.difference(todayDaily.sunrise);
     final tomorrowDayLength = tomorrowDaily.sunset.difference(tomorrowDaily.sunrise);
     final dayLengthDeltaMinutes = tomorrowDayLength.inMinutes - todayDayLength.inMinutes;
+
+    // Visibility to show on the expanded Sun card. During the day use the
+    // live current visibility; at night, average the next-24h hourly
+    // visibility across tomorrow's daytime window so the whole expanded card
+    // reads as "tomorrow".
+    final double expandedVisibility;
+    if (isSunUp) {
+      expandedVisibility = forecast.current.visibility;
+    } else {
+      final tomorrowDaytime = next24
+          .where(
+            (h) =>
+                !h.time.isBefore(tomorrowDaily.sunrise) &&
+                h.time.isBefore(tomorrowDaily.sunset),
+          )
+          .toList();
+      expandedVisibility = tomorrowDaytime.isEmpty
+          ? forecast.current.visibility
+          : tomorrowDaytime.map((h) => h.visibility).reduce((a, b) => a + b) /
+                tomorrowDaytime.length;
+    }
 
     // Build the list of card builders
     final cards = <Widget Function(CardDisplayMode mode)>[
@@ -93,6 +124,9 @@ class _DetailsPageState extends ConsumerState<DetailsPage> {
         now: now,
         averageHigh: historicalAvg.whenOrNull(data: (v) => v),
         todayHigh: forecast.todayDaily.temperatureMax,
+        currentTemp: forecast.current.temperature,
+        currentFeelsLike: forecast.current.feelsLike,
+        currentDewPoint: forecast.current.dewPoint,
         mode: mode,
         feelsLikeTemps: mode == CardDisplayMode.expanded
             ? next24.map((h) => h.feelsLike).toList()
@@ -153,7 +187,7 @@ class _DetailsPageState extends ConsumerState<DetailsPage> {
         hours: next24.map((h) => h.time).toList(),
         now: now,
         mode: mode,
-        visibility: forecast.current.visibility,
+        visibility: expandedVisibility,
         dayLengthDeltaMinutes: dayLengthDeltaMinutes,
         tomorrowSunrise: tomorrowDaily.sunrise,
         tomorrowSunset: tomorrowDaily.sunset,

@@ -6,19 +6,54 @@ import 'package:shared_preferences/shared_preferences.dart';
 
 import '../../../../core/constants/api_endpoints.dart';
 
-final visiblePlanetsProvider = FutureProvider.family<List<String>,
+class VisiblePlanet {
+  final String name;
+  final double altitude;
+  final double azimuth;
+  final double magnitude;
+  final String constellation;
+
+  const VisiblePlanet({
+    required this.name,
+    required this.altitude,
+    required this.azimuth,
+    required this.magnitude,
+    required this.constellation,
+  });
+
+  Map<String, dynamic> toJson() => {
+    'name': name,
+    'altitude': altitude,
+    'azimuth': azimuth,
+    'magnitude': magnitude,
+    'constellation': constellation,
+  };
+
+  factory VisiblePlanet.fromJson(Map<String, dynamic> json) => VisiblePlanet(
+    name: json['name'] as String,
+    altitude: (json['altitude'] as num).toDouble(),
+    azimuth: (json['azimuth'] as num).toDouble(),
+    magnitude: (json['magnitude'] as num).toDouble(),
+    constellation: json['constellation'] as String,
+  );
+}
+
+final visiblePlanetsProvider = FutureProvider.family<List<VisiblePlanet>,
     ({double lat, double lon})>((ref, coords) async {
   final prefs = await SharedPreferences.getInstance();
-  final cacheKey = 'cached_planets_${coords.lat}_${coords.lon}';
-  final cacheTsKey = 'cached_planets_ts_${coords.lat}_${coords.lon}';
+  final cacheKey = 'cached_planets_v2_${coords.lat}_${coords.lon}';
+  final cacheTsKey = 'cached_planets_v2_ts_${coords.lat}_${coords.lon}';
 
   final cachedJson = prefs.getString(cacheKey);
   final cachedTs = prefs.getInt(cacheTsKey);
 
-  List<String>? cachedPlanets;
+  List<VisiblePlanet>? cachedPlanets;
   if (cachedJson != null) {
-    cachedPlanets =
-        (jsonDecode(cachedJson) as List).cast<String>();
+    try {
+      cachedPlanets = (jsonDecode(cachedJson) as List)
+          .map((e) => VisiblePlanet.fromJson(e as Map<String, dynamic>))
+          .toList();
+    } catch (_) {}
   }
 
   // Return cached value if <30 min old
@@ -43,11 +78,18 @@ final visiblePlanetsProvider = FutureProvider.family<List<String>,
             b['nakedEyeObject'] == true &&
             b['name'] != 'Sun' &&
             b['name'] != 'Moon')
-        .map<String>((b) => b['name'] as String)
+        .map<VisiblePlanet>((b) => VisiblePlanet(
+              name: b['name'] as String,
+              altitude: (b['altitude'] as num).toDouble(),
+              azimuth: (b['azimuth'] as num).toDouble(),
+              magnitude: (b['magnitude'] as num).toDouble(),
+              constellation: b['constellation'] as String,
+            ))
         .toList();
 
     // Cache the result
-    await prefs.setString(cacheKey, jsonEncode(planets));
+    await prefs.setString(
+        cacheKey, jsonEncode(planets.map((p) => p.toJson()).toList()));
     await prefs.setInt(cacheTsKey, DateTime.now().millisecondsSinceEpoch);
 
     return planets;

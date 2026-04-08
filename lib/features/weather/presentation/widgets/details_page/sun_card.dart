@@ -3,6 +3,7 @@ import 'dart:math' as math;
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:heather/core/constants/app_colors.dart';
+import 'package:heather/core/utils/uv_index.dart';
 import 'package:intl/intl.dart' hide TextDirection;
 import 'package:weather_icons/weather_icons.dart';
 import './card_container.dart';
@@ -10,6 +11,14 @@ import './card_display_mode.dart';
 import './info_chip.dart';
 
 class SunCard extends StatelessWidget {
+  // Arc canvas geometry — kept here so the LayoutBuilder placing the
+  // sunrise/sunset labels and `_SunArcPainter` agree on the endpoints.
+  static const double _arcCanvasHeight = 102;
+  static const double _arcTopPad = 6;
+  static const double _arcBottomGutter = 4;
+  static const double _arcMaxRadius =
+      _arcCanvasHeight - _arcBottomGutter - _arcTopPad;
+
   final DateTime sunrise;
   final DateTime sunset;
   final bool isSunUp;
@@ -45,7 +54,6 @@ class SunCard extends StatelessWidget {
     final theme = Theme.of(context);
 
     if (mode == CardDisplayMode.collapsed) {
-      final currentUv = hourlyUv.isNotEmpty ? hourlyUv.first : uvIndex;
       return Padding(
         padding: const EdgeInsets.symmetric(horizontal: 14),
         child: Row(
@@ -67,20 +75,20 @@ class SunCard extends StatelessWidget {
             const Spacer(),
             if (isSunUp) ...[
               Text(
-                'UV ${currentUv.round()}',
+                'UV ${uvIndex.round()}',
                 style: GoogleFonts.poppins(
-                  fontSize: 12,
+                  fontSize: 13,
                   fontWeight: FontWeight.w700,
                   color: AppColors.cream,
                 ),
               ),
               const SizedBox(width: 4),
               Text(
-                _uvLabel(currentUv),
+                uvLevelLabel(uvIndex),
                 style: GoogleFonts.poppins(
-                  fontSize: 12,
-                  fontWeight: FontWeight.w600,
-                  color: AppColors.cream.withValues(alpha: 0.9),
+                  fontSize: 13,
+                  fontWeight: FontWeight.w400,
+                  color: AppColors.cream,
                 ),
               ),
             ] else ...[
@@ -141,19 +149,30 @@ class SunCard extends StatelessWidget {
                 ),
                 const SizedBox(width: 4),
                 Text(
-                  _uvLabel(uvIndex),
+                  uvLevelLabel(uvIndex),
                   style: GoogleFonts.poppins(
                     fontSize: 11,
                     fontWeight: FontWeight.w600,
                     color: AppColors.cream.withValues(alpha: 0.9),
                   ),
                 ),
+                if (!isSunUp) ...[
+                  const SizedBox(width: 4),
+                  Text(
+                    'tmrw',
+                    style: GoogleFonts.poppins(
+                      fontSize: 11,
+                      fontWeight: FontWeight.w400,
+                      color: AppColors.cream.withValues(alpha: 0.75),
+                    ),
+                  ),
+                ],
               ],
             ),
-            const SizedBox(height: 8),
+            const Spacer(),
             // 3. Sun Arc visualization
             SizedBox(
-              height: 140,
+              height: _arcCanvasHeight,
               child: CustomPaint(
                 size: Size.infinite,
                 painter: _SunArcPainter(
@@ -166,46 +185,82 @@ class SunCard extends StatelessWidget {
                 ),
               ),
             ),
-            Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 16),
-              child: Row(
-                children: [
-                  Icon(
-                    WeatherIcons.sunrise,
-                    size: 13,
-                    color: AppColors.cream.withValues(alpha: 0.95),
-                  ),
-                  const SizedBox(width: 4),
-                  Text(
-                    DateFormat('h:mm a').format(sunrise),
-                    style: GoogleFonts.poppins(
-                      fontSize: 12,
-                      fontWeight: FontWeight.w700,
-                      color: AppColors.cream.withValues(alpha: 0.95),
-                    ),
-                  ),
-                  const Spacer(),
-                  Text(
-                    DateFormat('h:mm a').format(sunset),
-                    style: GoogleFonts.poppins(
-                      fontSize: 12,
-                      fontWeight: FontWeight.w700,
-                      color: AppColors.cream.withValues(alpha: 0.95),
-                    ),
-                  ),
-                  const SizedBox(width: 4),
-                  Icon(
-                    WeatherIcons.sunset,
-                    size: 13,
-                    color: AppColors.cream.withValues(alpha: 0.95),
-                  ),
-                ],
+            // Sunrise / sunset labels — stacked under icons, centered exactly
+            // on the arc's left and right endpoints. The arc is normally
+            // height-limited on a phone, so we need to mirror the painter's
+            // arcRadius math to know where the endpoints actually land.
+            SizedBox(
+              height: 34,
+              child: LayoutBuilder(
+                builder: (context, constraints) {
+                  final w = constraints.maxWidth;
+                  final radius = math.min(_arcMaxRadius, (w - 32) / 2);
+                  final arcLeft = w / 2 - radius;
+                  final arcRight = w / 2 + radius;
+                  return Stack(
+                    clipBehavior: Clip.none,
+                    children: [
+                      Positioned(
+                        left: arcLeft,
+                        top: 0,
+                        child: FractionalTranslation(
+                          translation: const Offset(-0.5, 0),
+                          child: Column(
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              Icon(
+                                WeatherIcons.sunrise,
+                                size: 14,
+                                color: AppColors.cream.withValues(alpha: 0.95),
+                              ),
+                              const SizedBox(height: 1),
+                              Text(
+                                DateFormat('h:mm a').format(sunrise),
+                                style: GoogleFonts.poppins(
+                                  fontSize: 12,
+                                  fontWeight: FontWeight.w400,
+                                  color: AppColors.cream.withValues(alpha: 0.95),
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                      ),
+                      Positioned(
+                        left: arcRight,
+                        top: 0,
+                        child: FractionalTranslation(
+                          translation: const Offset(-0.5, 0),
+                          child: Column(
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              Icon(
+                                WeatherIcons.sunset,
+                                size: 14,
+                                color: AppColors.cream.withValues(alpha: 0.95),
+                              ),
+                              const SizedBox(height: 1),
+                              Text(
+                                DateFormat('h:mm a').format(sunset),
+                                style: GoogleFonts.poppins(
+                                  fontSize: 12,
+                                  fontWeight: FontWeight.w400,
+                                  color: AppColors.cream.withValues(alpha: 0.95),
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                      ),
+                    ],
+                  );
+                },
               ),
             ),
-            const SizedBox(height: 14),
+            const Spacer(),
             // 4. Daylight text + protection window
             Row(
-              mainAxisAlignment: MainAxisAlignment.end,
+              mainAxisAlignment: MainAxisAlignment.center,
               children: [
                 Icon(
                   WeatherIcons.time_3,
@@ -221,8 +276,18 @@ class SunCard extends StatelessWidget {
                       color: AppColors.cream.withValues(alpha: 0.95),
                     ),
                     children: [
+                      if (!isSunUp)
+                        TextSpan(
+                          text: 'Tomorrow  \u00B7  ',
+                          style: GoogleFonts.poppins(
+                            fontSize: 12,
+                            fontWeight: FontWeight.w400,
+                            color: AppColors.cream.withValues(alpha: 0.95),
+                          ),
+                        ),
                       TextSpan(text: '${dayH}h ${dayM}m daylight'),
-                      if (_formatDayDelta(dayLengthDeltaMinutes).isNotEmpty)
+                      if (isSunUp &&
+                          _formatDayDelta(dayLengthDeltaMinutes).isNotEmpty)
                         TextSpan(
                           text: _formatDayDelta(dayLengthDeltaMinutes),
                           style: GoogleFonts.poppins(
@@ -239,7 +304,7 @@ class SunCard extends StatelessWidget {
             if (protection != null) ...[
               const SizedBox(height: 4),
               Row(
-                mainAxisAlignment: MainAxisAlignment.end,
+                mainAxisAlignment: MainAxisAlignment.center,
                 children: [
                   Icon(
                     WeatherIcons.umbrella,
@@ -255,13 +320,15 @@ class SunCard extends StatelessWidget {
                         color: AppColors.cream.withValues(alpha: 0.9),
                       ),
                       children: [
-                        const TextSpan(
-                          text: 'SPF/shade ',
-                          style: TextStyle(fontWeight: FontWeight.w700),
-                        ),
+                        const TextSpan(text: 'SPF/shade '),
                         TextSpan(
                           text:
                               '${DateFormat('h a').format(protection.$1)} - ${DateFormat('h a').format(protection.$2)}',
+                          style: GoogleFonts.poppins(
+                            fontSize: 12,
+                            fontWeight: FontWeight.w700,
+                            color: AppColors.cream.withValues(alpha: 0.95),
+                          ),
                         ),
                       ],
                     ),
@@ -269,14 +336,15 @@ class SunCard extends StatelessWidget {
                 ],
               ),
             ],
-            const SizedBox(height: 18),
+            const Spacer(),
             // 5. 2x2 info grid
             _buildInfoGrid(),
             const Spacer(),
-            // 6. UV chart with area fill — bottom aligned
+            // 6. UV chart with area fill
             if (hourlyUv.length >= 2)
               SizedBox(
-                height: 70,
+                width: double.infinity,
+                height: 110,
                 child: CustomPaint(
                   size: Size.infinite,
                   painter: _UvLinePainter(
@@ -284,6 +352,7 @@ class SunCard extends StatelessWidget {
                     hours: hours,
                     now: now,
                     showAreaFill: true,
+                    showLabel: true,
                   ),
                 ),
               ),
@@ -322,7 +391,7 @@ class SunCard extends StatelessWidget {
               ),
               const SizedBox(width: 4),
               Text(
-                _uvLabel(uvIndex),
+                uvLevelLabel(uvIndex),
                 style: GoogleFonts.poppins(
                   fontSize: 11,
                   fontWeight: FontWeight.w600,
@@ -340,6 +409,7 @@ class SunCard extends StatelessWidget {
                   uvValues: hourlyUv,
                   hours: hours,
                   now: now,
+                  showAreaFill: true,
                 ),
               ),
             ),
@@ -392,7 +462,12 @@ class SunCard extends StatelessWidget {
             ),
             const SizedBox(width: 4),
             Text(
-              timeFmt.format(isSunUp ? sunrise : sunset),
+              // When the sun is currently up, `sunrise` is today's (already
+              // past). The "after the next event" slot should show the next
+              // morning's sunrise instead.
+              timeFmt.format(
+                isSunUp ? (tomorrowSunrise ?? sunrise) : sunset,
+              ),
               style: theme.textTheme.bodyMedium?.copyWith(
                 fontWeight: FontWeight.w800,
                 fontSize: 14,
@@ -439,9 +514,7 @@ class SunCard extends StatelessWidget {
               child: InfoChip(
                 icon: WeatherIcons.hot,
                 label: 'Peak UV',
-                value: peak != null
-                    ? '${hourFmt.format(peak.$1)} (${peak.$2.round()})'
-                    : '--',
+                value: peak != null ? hourFmt.format(peak.$1) : '--',
               ),
             ),
             const SizedBox(width: 8),
@@ -474,14 +547,6 @@ class SunCard extends StatelessWidget {
     final label = isSunUp ? 'light left' : 'darkness left';
     if (h > 0) return '${h}h ${m}m $label';
     return '${m}m $label';
-  }
-
-  static String _uvLabel(double uv) {
-    if (uv < 3) return 'Low';
-    if (uv < 6) return 'Moderate';
-    if (uv < 8) return 'High';
-    if (uv < 11) return 'Very High';
-    return 'Extreme';
   }
 
   static DateTime _solarNoon(DateTime sunrise, DateTime sunset) {
@@ -535,12 +600,14 @@ class _UvLinePainter extends CustomPainter {
   final List<DateTime> hours;
   final DateTime? now;
   final bool showAreaFill;
+  final bool showLabel;
 
   _UvLinePainter({
     required this.uvValues,
     required this.hours,
     this.now,
     this.showAreaFill = false,
+    this.showLabel = false,
   });
 
   @override
@@ -554,7 +621,7 @@ class _UvLinePainter extends CustomPainter {
     );
     if (maxY == 0) return;
 
-    const padTop = 24.0;
+    final padTop = showLabel ? 24.0 : 2.0;
     const padBottom = 14.0;
     const padLeft = 20.0;
     final graphH = size.height - padTop - padBottom;
@@ -569,19 +636,21 @@ class _UvLinePainter extends CustomPainter {
     }
 
     // "UV index" chart label (top-left)
-    final uvLabelPainter = TextPainter(
-      text: TextSpan(
-        text: 'UV index',
-        style: TextStyle(
-          color: AppColors.cream.withValues(alpha: 0.9),
-          fontSize: 10,
-          fontWeight: FontWeight.w700,
-          letterSpacing: 0.5,
+    if (showLabel) {
+      final uvLabelPainter = TextPainter(
+        text: TextSpan(
+          text: 'UV index',
+          style: TextStyle(
+            color: AppColors.cream.withValues(alpha: 0.9),
+            fontSize: 10,
+            fontWeight: FontWeight.w700,
+            letterSpacing: 0.5,
+          ),
         ),
-      ),
-      textDirection: TextDirection.ltr,
-    )..layout();
-    uvLabelPainter.paint(canvas, const Offset(0, 0));
+        textDirection: TextDirection.ltr,
+      )..layout();
+      uvLabelPainter.paint(canvas, const Offset(0, 0));
+    }
 
     // Y-axis labels
     final yLabelStyle = TextStyle(
@@ -705,7 +774,10 @@ class _UvLinePainter extends CustomPainter {
 
   @override
   bool shouldRepaint(covariant _UvLinePainter old) =>
-      uvValues != old.uvValues || now != old.now || showAreaFill != old.showAreaFill;
+      uvValues != old.uvValues ||
+      now != old.now ||
+      showAreaFill != old.showAreaFill ||
+      showLabel != old.showLabel;
 }
 
 // ---------------------------------------------------------------------------
@@ -733,9 +805,9 @@ class _SunArcPainter extends CustomPainter {
   void paint(Canvas canvas, Size size) {
     final w = size.width;
     final h = size.height;
-    const topPad = 6.0;
-    const bottomLabelGutter = 22.0; // room for sunrise/sunset baseline labels
-    final horizY = h - bottomLabelGutter;
+    const topPad = SunCard._arcTopPad;
+    const bottomGutter = SunCard._arcBottomGutter;
+    final horizY = h - bottomGutter;
     final maxRadiusFromHeight = horizY - topPad;
     final maxRadiusFromWidth = (w - 32) / 2; // 16px padding each side
     final arcRadius = math.min(maxRadiusFromHeight, maxRadiusFromWidth);
@@ -827,16 +899,6 @@ class _SunArcPainter extends CustomPainter {
         Offset(sunX, sunY),
         6,
         Paint()..color = AppColors.cream.withValues(alpha: 0.9),
-      );
-    } else {
-      // Night: draw a small dim dot at the sunrise (left) endpoint of the
-      // arc to cue "this is what comes next". No lower-arc travel.
-      final sunriseDotX = arcCenterX - arcRadius;
-      final sunriseDotY = arcCenterY;
-      canvas.drawCircle(
-        Offset(sunriseDotX, sunriseDotY),
-        4.5,
-        Paint()..color = AppColors.cream.withValues(alpha: 0.75),
       );
     }
   }

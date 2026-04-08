@@ -41,11 +41,53 @@ class MoonCard extends ConsumerWidget {
     required this.utcOffsetSeconds,
   });
 
-  static String _viewingCondition(int cloudCover) {
-    if (cloudCover <= 10) return 'Clear skies';
-    if (cloudCover <= 40) return 'Fair viewing';
-    if (cloudCover <= 70) return 'Hazy';
-    return 'Overcast';
+  // Returns ("Up" | "Down", "sets 9:42pm" | "rises 12:33am" | null)
+  static ({String state, String? next}) _moonVisibility(
+    DateTime now,
+    UsnoMoonRiseSet? riseSet,
+  ) {
+    if (riseSet == null) return (state: '—', next: null);
+    final rise = riseSet.moonrise;
+    final set = riseSet.moonset;
+
+    // No data at all from USNO for today (high latitude / API blip)
+    if (rise == null && set == null) return (state: '—', next: null);
+
+    final timeFmt = DateFormat('h:mma');
+    String fmt(DateTime d) => timeFmt.format(d).toLowerCase();
+
+    // Both events present — figure out current state from chronological order
+    if (rise != null && set != null) {
+      if (rise.isBefore(set)) {
+        // Standard day: down → rises → up → sets → down
+        if (now.isBefore(rise)) return (state: 'Down', next: 'rises ${fmt(rise)}');
+        if (now.isBefore(set)) return (state: 'Up', next: 'sets ${fmt(set)}');
+        return (state: 'Down', next: null); // already set for the night
+      } else {
+        // Set comes before rise: up at midnight → sets → down → rises → up
+        if (now.isBefore(set)) return (state: 'Up', next: 'sets ${fmt(set)}');
+        if (now.isBefore(rise)) return (state: 'Down', next: 'rises ${fmt(rise)}');
+        return (state: 'Up', next: null); // back up for the rest of the night
+      }
+    }
+
+    // Only one of the two — moon is up or down for the whole local day
+    if (rise != null) return (state: 'Up', next: 'rose ${fmt(rise)}');
+    return (state: 'Down', next: 'sets ${fmt(set!)}');
+  }
+
+  // Combines cloud cover (0–100) and moon illumination (0–100) into a label.
+  // Lower cloud cover and lower illumination both make stargazing better.
+  static String _stargazingRating(int cloudCover, double illumPercent) {
+    // 0–10 scale, 10 = pristine
+    final cloudScore = (10 - (cloudCover / 10)).clamp(0.0, 10.0);
+    final moonScore = (10 - (illumPercent / 10)).clamp(0.0, 10.0);
+    // Weight clouds 2× more than moon — clouds matter more for visibility
+    final score = (cloudScore * 2 + moonScore) / 3;
+    if (score >= 8) return 'Excellent';
+    if (score >= 6) return 'Good';
+    if (score >= 4) return 'Fair';
+    return 'Poor';
   }
 
   @override
@@ -100,7 +142,7 @@ class MoonCard extends ConsumerWidget {
     final phase =
         usnoPhaseToEnum(usno.curPhase) ??
         phaseFromFraction(usno.fractionForDate(now));
-    final illumination = usno.fracIllum.round();
+    final illumination = usno.illuminationForDate(now).round();
     final fraction = usno.fractionForDate(now);
 
     final nextFull = usno.nextFullMoon;
@@ -126,6 +168,7 @@ class MoonCard extends ConsumerWidget {
 
     if (mode == CardDisplayMode.expanded) {
       return _buildExpanded(
+        ref: ref,
         icon: icon,
         phase: phase,
         illumination: illumination,
@@ -173,9 +216,9 @@ class MoonCard extends ConsumerWidget {
           Text(
             '$illumination%',
             style: GoogleFonts.poppins(
-              fontSize: 11,
-              fontWeight: FontWeight.w500,
-              color: AppColors.cream.withValues(alpha: 0.7),
+              fontSize: 13,
+              fontWeight: FontWeight.w400,
+              color: AppColors.cream,
             ),
           ),
           const SizedBox(width: 6),
@@ -231,6 +274,7 @@ class MoonCard extends ConsumerWidget {
   }
 
   Widget _buildExpanded({
+    required WidgetRef ref,
     required IconData icon,
     required MoonPhase phase,
     required int illumination,
@@ -238,6 +282,37 @@ class MoonCard extends ConsumerWidget {
     required String phaseDatesText,
     required UsnoMoonData usno,
   }) {
+    final dateFmt = DateFormat('MMM d');
+    final lunarAge = usno.lunarAge(now);
+    final nextFull = usno.nextFullMoon;
+    final nextNew = usno.nextNewMoon;
+
+    // Pick the next phase event (whichever comes first) and split the
+    // label/date so we can bold the date in the rendered caption.
+    String? nextPrefix;
+    String? nextDate;
+    if (nextFull != null && nextNew != null) {
+      final fullFirst = nextFull.isBefore(nextNew);
+      nextPrefix = fullFirst ? 'Next full: ' : 'Next new: ';
+      nextDate = dateFmt.format(fullFirst ? nextFull : nextNew);
+    } else if (nextFull != null) {
+      nextPrefix = 'Next full: ';
+      nextDate = dateFmt.format(nextFull);
+    } else if (nextNew != null) {
+      nextPrefix = 'Next new: ';
+      nextDate = dateFmt.format(nextNew);
+    }
+
+    final hasCaption = lunarAge != null || nextPrefix != null;
+    final hasAstroEvent =
+        activeAstroEvent(now, nextFullMoonDate: usno.nextFullMoon) != null;
+
+    final riseSet = ref.watch(moonRiseSetProvider((
+      lat: latitude,
+      lon: longitude,
+      tzOffsetSeconds: utcOffsetSeconds,
+    ))).valueOrNull;
+
     return CardContainer(
       backgroundIcon: icon,
       child: Column(
@@ -245,58 +320,84 @@ class MoonCard extends ConsumerWidget {
         children: [
           // 1. Header row
           _buildHeader(icon, phase, illumination, phaseDatesText),
-          // 2. Subtitle row (phase dates · Day N)
-          _buildExpandedSubtitleRow(phaseDatesText, usno.lunarAge(now)),
-          const SizedBox(height: 10),
-          // 3. Phase-cycle chart hero
+          const Spacer(),
+          // 2. Phase-cycle chart hero
           SizedBox(
-            height: 200,
+            height: 90,
             child: CustomPaint(
               size: Size.infinite,
               painter: _MoonCycleChartPainter(usno: usno, now: now),
             ),
           ),
-          const SizedBox(height: 14),
-          // 4. Centered darkness text
-          _buildExpandedDarknessRow(),
-          const SizedBox(height: 18),
-          // 5. 2x2 InfoChip grid
-          _buildExpandedInfoGrid(usno),
           const Spacer(),
-          // 6. Astro footer (visible planets + active event)
-          _VisiblePlanetsRow(latitude: latitude, longitude: longitude),
-          _AstroEventRow(now: now, nextFullMoonDate: usno.nextFullMoon),
-        ],
-      ),
-    );
-  }
-
-  /// Subtitle row under the header: "New Apr 17 · Full May 1   ·   Day 12"
-  Widget _buildExpandedSubtitleRow(String phaseDatesText, double? lunarAge) {
-    final parts = <String>[];
-    if (phaseDatesText.isNotEmpty) parts.add(phaseDatesText);
-    if (lunarAge != null) parts.add('Day ${lunarAge.round()}');
-    if (parts.isEmpty) return const SizedBox(height: 18);
-    return SizedBox(
-      height: 18,
-      child: Row(
-        children: [
-          const Spacer(),
-          Text(
-            parts.join('   \u00B7   '),
-            style: GoogleFonts.poppins(
-              fontSize: 11,
-              fontWeight: FontWeight.w500,
-              color: AppColors.cream.withValues(alpha: 0.8),
+          // 3. Caption: Day N · Next <full|new>: <Mon D>
+          if (hasCaption) ...[
+            Center(
+              child: Text.rich(
+                TextSpan(
+                  style: GoogleFonts.poppins(
+                    fontSize: 11,
+                    fontWeight: FontWeight.w500,
+                    color: AppColors.cream.withValues(alpha: 0.8),
+                  ),
+                  children: [
+                    if (lunarAge != null) ...[
+                      const TextSpan(text: 'Day '),
+                      TextSpan(
+                        text: '${lunarAge.round()}',
+                        style: GoogleFonts.poppins(
+                          fontSize: 11,
+                          fontWeight: FontWeight.w700,
+                          color: AppColors.cream.withValues(alpha: 0.9),
+                        ),
+                      ),
+                    ],
+                    if (lunarAge != null && nextPrefix != null)
+                      const TextSpan(text: '  \u00B7  '),
+                    if (nextPrefix != null) ...[
+                      TextSpan(text: nextPrefix),
+                      TextSpan(
+                        text: nextDate,
+                        style: GoogleFonts.poppins(
+                          fontSize: 11,
+                          fontWeight: FontWeight.w700,
+                          color: AppColors.cream.withValues(alpha: 0.9),
+                        ),
+                      ),
+                    ],
+                  ],
+                ),
+              ),
             ),
+            const Spacer(),
+          ],
+          // 4. Tonight darkness + moonrise/moonset block
+          _buildExpandedDarknessRow(riseSet),
+          const Spacer(),
+          // 5. 2x2 InfoChip grid
+          _buildExpandedInfoGrid(usno, riseSet),
+          const Spacer(),
+          // 6. Visible planets rich block
+          _ExpandedVisiblePlanetsBlock(
+            latitude: latitude,
+            longitude: longitude,
           ),
+          // 7. Astro event footer (no season) — only when an event is active
+          if (hasAstroEvent) ...[
+            const Spacer(),
+            _AstroEventRow(
+              now: now,
+              nextFullMoonDate: usno.nextFullMoon,
+              showSeason: false,
+            ),
+          ],
         ],
       ),
     );
   }
 
-  /// Centered darkness row: "⏱  11h 6m darkness  (+2m tmrw)"
-  Widget _buildExpandedDarknessRow() {
+  /// Tonight darkness + moonrise/moonset row.
+  Widget _buildExpandedDarknessRow(UsnoMoonRiseSet? riseSet) {
     final todayNight =
         const Duration(hours: 24) - sunset.difference(sunrise);
     final tomorrowNight =
@@ -310,41 +411,90 @@ class MoonCard extends ConsumerWidget {
         ? ' (same tmrw)'
         : ' (${deltaMinutes > 0 ? '+' : ''}${deltaMinutes}m tmrw)';
 
-    return Row(
-      mainAxisAlignment: MainAxisAlignment.center,
+    final timeFmt = DateFormat('h:mma');
+    String formatTime(DateTime? d) =>
+        d == null ? '—' : timeFmt.format(d).toLowerCase();
+
+    final hasRiseSet =
+        riseSet != null && (riseSet.moonrise != null || riseSet.moonset != null);
+
+    final labelStyle = GoogleFonts.poppins(
+      fontSize: 11,
+      fontWeight: FontWeight.w400,
+      color: AppColors.cream.withValues(alpha: 0.75),
+    );
+    final timeStyle = GoogleFonts.poppins(
+      fontSize: 11,
+      fontWeight: FontWeight.w700,
+      color: AppColors.cream.withValues(alpha: 0.95),
+    );
+
+    return Column(
+      mainAxisSize: MainAxisSize.min,
       children: [
-        Icon(
-          WeatherIcons.time_3,
-          size: 12,
-          color: AppColors.cream.withValues(alpha: 0.95),
-        ),
-        const SizedBox(width: 5),
-        Text.rich(
-          TextSpan(
-            style: GoogleFonts.poppins(
-              fontSize: 12,
-              fontWeight: FontWeight.w700,
-              color: AppColors.cream.withValues(alpha: 0.95),
-            ),
-            children: [
-              TextSpan(text: '${nightH}h ${nightM}m darkness'),
+        Row(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Text.rich(
               TextSpan(
-                text: deltaStr,
                 style: GoogleFonts.poppins(
                   fontSize: 12,
-                  fontWeight: FontWeight.w400,
-                  color: AppColors.cream.withValues(alpha: 0.75),
+                  fontWeight: FontWeight.w700,
+                  color: AppColors.cream.withValues(alpha: 0.95),
+                ),
+                children: [
+                  TextSpan(
+                    text: 'Tonight  \u00B7  ',
+                    style: GoogleFonts.poppins(
+                      fontSize: 12,
+                      fontWeight: FontWeight.w400,
+                      color: AppColors.cream.withValues(alpha: 0.95),
+                    ),
+                  ),
+                  TextSpan(text: '${nightH}h ${nightM}m dark'),
+                  TextSpan(
+                    text: deltaStr,
+                    style: GoogleFonts.poppins(
+                      fontSize: 12,
+                      fontWeight: FontWeight.w400,
+                      color: AppColors.cream.withValues(alpha: 0.75),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ],
+        ),
+        if (hasRiseSet) ...[
+          const SizedBox(height: 4),
+          Row(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              Text.rich(
+                TextSpan(
+                  children: [
+                    TextSpan(text: 'Moonrise ', style: labelStyle),
+                    TextSpan(
+                      text: formatTime(riseSet.moonrise),
+                      style: timeStyle,
+                    ),
+                    TextSpan(text: '  \u00B7  Moonset ', style: labelStyle),
+                    TextSpan(
+                      text: formatTime(riseSet.moonset),
+                      style: timeStyle,
+                    ),
+                  ],
                 ),
               ),
             ],
           ),
-        ),
+        ],
       ],
     );
   }
 
-  /// 2x2 InfoChip grid: Illumination, Distance, Viewing, Zodiac.
-  Widget _buildExpandedInfoGrid(UsnoMoonData usno) {
+  /// 2x2 InfoChip grid: Visibility, Distance, Stargazing, Zodiac.
+  Widget _buildExpandedInfoGrid(UsnoMoonData usno, UsnoMoonRiseSet? riseSet) {
     final distKm = moonDistanceKm(now);
     final distMi = (distKm * 0.621371).round();
     final distLabel = moonDistanceLabel(now);
@@ -364,22 +514,27 @@ class MoonCard extends ConsumerWidget {
       ),
     );
 
+    final visibility = _moonVisibility(now, riseSet);
+    final visibilityValue = visibility.next == null
+        ? visibility.state
+        : '${visibility.state} · ${visibility.next}';
+
     return Column(
       children: [
         Row(
           children: [
             Expanded(
               child: InfoChip(
-                icon: WeatherIcons.moon_full,
-                label: 'Illumination',
-                value: '${usno.fracIllum.round()}%',
+                icon: WeatherIcons.moonrise,
+                label: 'Moon visibility',
+                value: visibilityValue,
               ),
             ),
             const SizedBox(width: 8),
             Expanded(
               child: InfoChip(
                 icon: WeatherIcons.earthquake,
-                label: 'Distance',
+                label: 'Moon distance',
                 value: distValue,
               ),
             ),
@@ -391,8 +546,11 @@ class MoonCard extends ConsumerWidget {
             Expanded(
               child: InfoChip(
                 icon: WeatherIcons.stars,
-                label: 'Viewing',
-                value: _viewingCondition(cloudCover),
+                label: 'Viewing rating',
+                value: _stargazingRating(
+                  cloudCover,
+                  usno.illuminationForDate(now),
+                ),
               ),
             ),
             const SizedBox(width: 8),
@@ -671,27 +829,27 @@ class _PhaseStrip extends StatelessWidget {
 // Supporting widgets
 // ---------------------------------------------------------------------------
 
+String _planetGlyph(String name) => switch (name) {
+  'Mercury' => '\u263F',
+  'Venus' => '\u2640',
+  'Mars' => '\u2642',
+  'Jupiter' => '\u2643',
+  'Saturn' => '\u2644',
+  'Uranus' => '\u2645',
+  'Neptune' => '\u2646',
+  _ => '',
+};
+
+String _formatPlanetName(String name) {
+  final glyph = _planetGlyph(name);
+  return glyph.isEmpty ? name : '$glyph $name';
+}
+
 class _VisiblePlanetsRow extends ConsumerWidget {
   final double latitude;
   final double longitude;
 
   const _VisiblePlanetsRow({required this.latitude, required this.longitude});
-
-  static String _planetGlyph(String name) => switch (name) {
-    'Mercury' => '\u263F',
-    'Venus' => '\u2640',
-    'Mars' => '\u2642',
-    'Jupiter' => '\u2643',
-    'Saturn' => '\u2644',
-    'Uranus' => '\u2645',
-    'Neptune' => '\u2646',
-    _ => '',
-  };
-
-  static String _formatName(String name) {
-    final glyph = _planetGlyph(name);
-    return glyph.isEmpty ? name : '$glyph $name';
-  }
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
@@ -700,8 +858,9 @@ class _VisiblePlanetsRow extends ConsumerWidget {
     );
 
     return planets.when(
-      data: (names) {
-        if (names.isEmpty) return const SizedBox.shrink();
+      data: (data) {
+        if (data.isEmpty) return const SizedBox.shrink();
+        final names = data.map((p) => p.name).toList();
         return Padding(
           padding: const EdgeInsets.only(bottom: 1),
           child: Row(
@@ -717,7 +876,7 @@ class _VisiblePlanetsRow extends ConsumerWidget {
               const SizedBox(width: 6),
               Flexible(
                 child: Text(
-                  names.map(_formatName).join(' \u00B7 '),
+                  names.map(_formatPlanetName).join(' \u00B7 '),
                   style: GoogleFonts.poppins(
                     fontSize: 11,
                     fontWeight: FontWeight.w400,
@@ -736,11 +895,134 @@ class _VisiblePlanetsRow extends ConsumerWidget {
   }
 }
 
+class _ExpandedVisiblePlanetsBlock extends ConsumerWidget {
+  final double latitude;
+  final double longitude;
+
+  const _ExpandedVisiblePlanetsBlock({
+    required this.latitude,
+    required this.longitude,
+  });
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final planets = ref.watch(
+      visiblePlanetsProvider((lat: latitude, lon: longitude)),
+    );
+
+    return planets.when(
+      data: (data) {
+        if (data.isEmpty) return const SizedBox.shrink();
+        return Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text(
+              'Visible tonight',
+              style: GoogleFonts.poppins(
+                fontSize: 11,
+                fontWeight: FontWeight.w800,
+                color: AppColors.cream.withValues(alpha: 0.85),
+              ),
+            ),
+            const SizedBox(height: 6),
+            Row(
+              children: [
+                for (var i = 0; i < data.length; i++) ...[
+                  if (i > 0) const SizedBox(width: 8),
+                  Expanded(child: _PlanetTile(planet: data[i])),
+                ],
+              ],
+            ),
+            const SizedBox(height: 8),
+          ],
+        );
+      },
+      loading: () => const SizedBox(height: 60),
+      error: (_, _) => const SizedBox.shrink(),
+    );
+  }
+}
+
+class _PlanetTile extends StatelessWidget {
+  final VisiblePlanet planet;
+
+  const _PlanetTile({required this.planet});
+
+  @override
+  Widget build(BuildContext context) {
+    final glyph = _planetGlyph(planet.name);
+    return Container(
+      padding: const EdgeInsets.all(8),
+      decoration: BoxDecoration(
+        color: AppColors.cream.withValues(alpha: 0.08),
+        borderRadius: BorderRadius.circular(10),
+      ),
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        crossAxisAlignment: CrossAxisAlignment.center,
+        children: [
+          if (glyph.isNotEmpty)
+            Text(
+              glyph,
+              style: GoogleFonts.poppins(
+                fontSize: 16,
+                fontWeight: FontWeight.w700,
+                color: AppColors.cream,
+              ),
+            ),
+          const SizedBox(height: 2),
+          Text(
+            planet.name,
+            style: GoogleFonts.poppins(
+              fontSize: 11,
+              fontWeight: FontWeight.w600,
+              color: AppColors.cream,
+            ),
+          ),
+          const SizedBox(height: 2),
+          Row(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Icon(
+                Icons.arrow_upward,
+                size: 10,
+                color: AppColors.cream.withValues(alpha: 0.9),
+              ),
+              const SizedBox(width: 2),
+              Text(
+                '${planet.altitude.round()}°',
+                style: GoogleFonts.poppins(
+                  fontSize: 11,
+                  fontWeight: FontWeight.w400,
+                  color: AppColors.cream,
+                ),
+              ),
+            ],
+          ),
+          Text(
+            'mag ${planet.magnitude.toStringAsFixed(1)}',
+            style: GoogleFonts.poppins(
+              fontSize: 10,
+              fontWeight: FontWeight.w500,
+              color: AppColors.cream.withValues(alpha: 0.9),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
 class _AstroEventRow extends StatelessWidget {
   final DateTime now;
   final DateTime? nextFullMoonDate;
+  final bool showSeason;
 
-  const _AstroEventRow({required this.now, this.nextFullMoonDate});
+  const _AstroEventRow({
+    required this.now,
+    this.nextFullMoonDate,
+    this.showSeason = true,
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -752,21 +1034,27 @@ class _AstroEventRow extends StatelessWidget {
       color: AppColors.cream.withValues(alpha: 0.9),
     );
 
+    if (!showSeason && event == null) {
+      return const SizedBox.shrink();
+    }
+
     return Row(
       children: [
-        SvgPicture.asset(
-          'assets/images/zodiac/${sign.toLowerCase()}.svg',
-          width: 13,
-          height: 13,
-          colorFilter: ColorFilter.mode(
-            AppColors.cream.withValues(alpha: 0.9),
-            BlendMode.srcIn,
+        if (showSeason) ...[
+          SvgPicture.asset(
+            'assets/images/zodiac/${sign.toLowerCase()}.svg',
+            width: 13,
+            height: 13,
+            colorFilter: ColorFilter.mode(
+              AppColors.cream.withValues(alpha: 0.9),
+              BlendMode.srcIn,
+            ),
           ),
-        ),
-        const SizedBox(width: 4),
-        Text('$sign season', style: style),
+          const SizedBox(width: 4),
+          Text('$sign season', style: style),
+        ],
         if (event != null) ...[
-          Text('  \u00B7  ', style: style),
+          if (showSeason) Text('  \u00B7  ', style: style),
           Flexible(
             child: _buildEventLabel(event, style),
           ),
@@ -783,8 +1071,28 @@ class _AstroEventRow extends StatelessWidget {
     );
     final label = event.label;
     final untilIndex = label.indexOf(' until ');
+    final isMeteorShower = event.zhr != null;
 
-    final spans = <TextSpan>[];
+    final spans = <InlineSpan>[];
+    if (isMeteorShower) {
+      spans.add(
+        WidgetSpan(
+          alignment: PlaceholderAlignment.middle,
+          child: Padding(
+            padding: const EdgeInsets.only(right: 4),
+            child: SvgPicture.asset(
+              'assets/images/meteor.svg',
+              width: 12,
+              height: 12,
+              colorFilter: ColorFilter.mode(
+                AppColors.cream.withValues(alpha: 0.9),
+                BlendMode.srcIn,
+              ),
+            ),
+          ),
+        ),
+      );
+    }
     if (untilIndex == -1) {
       spans.add(TextSpan(text: label, style: style));
     } else {
@@ -858,49 +1166,18 @@ class _MoonCycleChartPainter extends CustomPainter {
       return padLeft + graphW * f;
     }
 
-    // 3. Sample ~60 illumination values across the cycle
-    const sampleCount = 60;
-    final points = <Offset>[];
-    for (var i = 0; i < sampleCount; i++) {
-      final f = i / (sampleCount - 1);
-      final sampleDate = start.add(
-        Duration(seconds: (totalSec * f).round()),
-      );
-      final illum = usno.illuminationForDate(sampleDate); // 0..100
-      final x = padLeft + graphW * f;
-      final y = padTop + graphH * (1 - (illum / 100).clamp(0.0, 1.0));
-      points.add(Offset(x, y));
-    }
+    // 3. Straight horizontal baseline across the chart area
+    final lineY = padTop + graphH / 2;
+    const lineStartX = padLeft;
+    final lineEndX = padLeft + graphW;
 
-    // 4. Top-left chart title
-    final titlePainter = TextPainter(
-      text: TextSpan(
-        text: 'Phase cycle',
-        style: TextStyle(
-          color: AppColors.cream.withValues(alpha: 0.9),
-          fontSize: 10,
-          fontWeight: FontWeight.w700,
-          letterSpacing: 0.5,
-        ),
-      ),
-      textDirection: TextDirection.ltr,
-    )..layout();
-    titlePainter.paint(canvas, const Offset(0, 0));
-
-    // 5. Smoothed cubic illumination curve
-    final linePath = Path()..moveTo(points.first.dx, points.first.dy);
-    for (var i = 1; i < points.length; i++) {
-      final prev = points[i - 1];
-      final curr = points[i];
-      final cpx = (prev.dx + curr.dx) / 2;
-      linePath.cubicTo(cpx, prev.dy, cpx, curr.dy, curr.dx, curr.dy);
-    }
-
-    // 6. Area fill under the curve
-    final fillPath = Path()..addPath(linePath, Offset.zero);
-    fillPath.lineTo(points.last.dx, bottomY);
-    fillPath.lineTo(points.first.dx, bottomY);
-    fillPath.close();
+    // 4. Area fill under the line
+    final fillPath = Path()
+      ..moveTo(lineStartX, lineY)
+      ..lineTo(lineEndX, lineY)
+      ..lineTo(lineEndX, bottomY)
+      ..lineTo(lineStartX, bottomY)
+      ..close();
 
     final fillPaint = Paint()
       ..shader = LinearGradient(
@@ -919,9 +1196,10 @@ class _MoonCycleChartPainter extends CustomPainter {
       ..style = PaintingStyle.fill;
     canvas.drawPath(fillPath, fillPaint);
 
-    // 7. Curve stroke
-    canvas.drawPath(
-      linePath,
+    // 5. Straight line stroke
+    canvas.drawLine(
+      Offset(lineStartX, lineY),
+      Offset(lineEndX, lineY),
       Paint()
         ..color = AppColors.cream.withValues(alpha: 0.55)
         ..strokeWidth = 2
@@ -929,19 +1207,8 @@ class _MoonCycleChartPainter extends CustomPainter {
         ..strokeCap = StrokeCap.round,
     );
 
-    // 8. Vertical dashed "now" line
+    // 8. Today position on the line
     final nowX = xForDate(now);
-    final nowLinePath = Path()
-      ..moveTo(nowX, padTop)
-      ..lineTo(nowX, bottomY);
-    _drawDashedLine(
-      canvas,
-      nowLinePath,
-      Paint()
-        ..color = AppColors.cream.withValues(alpha: 0.6)
-        ..strokeWidth = 1.5
-        ..style = PaintingStyle.stroke,
-    );
 
     // 9. Phase-disc markers along the top of the chart area
     if (hasCycle) {
@@ -986,16 +1253,8 @@ class _MoonCycleChartPainter extends CustomPainter {
       }
     }
 
-    // 10. "Today" dot on the curve at now
-    final nowFracOnCycle =
-        (now.difference(start).inSeconds / totalSec).clamp(0.0, 1.0);
-    final nowSamplePos = nowFracOnCycle * (sampleCount - 1);
-    final lowerIdx = nowSamplePos.floor().clamp(0, sampleCount - 1);
-    final upperIdx = (lowerIdx + 1).clamp(0, sampleCount - 1);
-    final segFrac = nowSamplePos - lowerIdx;
-    final dotY = points[lowerIdx].dy +
-        (points[upperIdx].dy - points[lowerIdx].dy) * segFrac;
-    final dotCenter = Offset(nowX, dotY);
+    // 10. "Today" dot on the line at now
+    final dotCenter = Offset(nowX, lineY);
 
     canvas.drawCircle(
       dotCenter,
@@ -1005,11 +1264,10 @@ class _MoonCycleChartPainter extends CustomPainter {
         ..style = PaintingStyle.fill,
     );
 
-    // 11. "Today N%" label next to the dot
-    final todayIllum = usno.illuminationForDate(now).round();
+    // 11. "u r here" label centered below the dot
     final todayLabel = TextPainter(
       text: TextSpan(
-        text: 'Today $todayIllum%',
+        text: 'u r here',
         style: TextStyle(
           color: AppColors.cream.withValues(alpha: 0.95),
           fontSize: 10,
@@ -1019,33 +1277,13 @@ class _MoonCycleChartPainter extends CustomPainter {
       textDirection: TextDirection.ltr,
     )..layout();
 
-    // Place to the right of the dot, but flip to the left if it would clip.
-    var labelX = dotCenter.dx + 8;
-    if (labelX + todayLabel.width > size.width - 2) {
-      labelX = dotCenter.dx - todayLabel.width - 8;
-    }
+    var labelX = dotCenter.dx - todayLabel.width / 2;
     if (labelX < 0) labelX = 0;
-    var labelY = dotCenter.dy - todayLabel.height / 2;
-    // Keep the label inside the chart area vertically.
-    if (labelY < padTop) labelY = padTop;
-    if (labelY + todayLabel.height > bottomY) {
-      labelY = bottomY - todayLabel.height;
+    if (labelX + todayLabel.width > size.width) {
+      labelX = size.width - todayLabel.width;
     }
+    final labelY = dotCenter.dy + 6;
     todayLabel.paint(canvas, Offset(labelX, labelY));
-  }
-
-  void _drawDashedLine(Canvas canvas, Path path, Paint paint) {
-    const dashLength = 3.0;
-    const dashGap = 3.0;
-    for (final metric in path.computeMetrics()) {
-      var distance = 0.0;
-      while (distance < metric.length) {
-        final end = math.min(distance + dashLength, metric.length);
-        final segment = metric.extractPath(distance, end);
-        canvas.drawPath(segment, paint);
-        distance += dashLength + dashGap;
-      }
-    }
   }
 
   @override

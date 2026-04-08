@@ -4,10 +4,10 @@ import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:heather/core/constants/app_colors.dart';
 import 'package:heather/core/utils/wind_direction.dart';
+import 'package:intl/intl.dart' hide TextDirection;
 import 'package:weather_icons/weather_icons.dart';
 import './card_container.dart';
 import './card_display_mode.dart';
-import './info_chip.dart';
 
 class AirCard extends StatelessWidget {
   final int? aqi;
@@ -73,11 +73,38 @@ class AirCard extends StatelessWidget {
               ),
             ),
             const Spacer(),
+            if (aqi != null) ...[
+              Text(
+                'AQI ',
+                style: GoogleFonts.poppins(
+                  fontSize: 13,
+                  fontWeight: FontWeight.w400,
+                  color: AppColors.cream,
+                ),
+              ),
+              Text(
+                '${aqi!}',
+                style: GoogleFonts.poppins(
+                  fontSize: 13,
+                  fontWeight: FontWeight.w700,
+                  color: AppColors.cream,
+                ),
+              ),
+              const SizedBox(width: 8),
+            ],
             Text(
-              '${windDirectionLabel(windDirection)} ${windSpeed.round()} mph',
+              '${windDirectionLabel(windDirection)} ',
               style: GoogleFonts.poppins(
                 fontSize: 13,
                 fontWeight: FontWeight.w400,
+                color: AppColors.cream,
+              ),
+            ),
+            Text(
+              '${windSpeed.round()} mph',
+              style: GoogleFonts.poppins(
+                fontSize: 13,
+                fontWeight: FontWeight.w700,
                 color: AppColors.cream,
               ),
             ),
@@ -94,24 +121,12 @@ class AirCard extends StatelessWidget {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             _buildExpandedHeaderRow(),
-            const SizedBox(height: 8),
-            SizedBox(
-              height: 180,
-              child: CustomPaint(
-                size: Size.infinite,
-                painter: _WindCompassPainter(
-                  windDirection: windDirection,
-                  windSpeed: windSpeed,
-                  windGusts: windGusts,
-                ),
-              ),
-            ),
-            const SizedBox(height: 10),
-            _buildAqiStripRow(theme),
-            const SizedBox(height: 10),
-            _build2x2InfoGrid(pressureDelta),
             const Spacer(),
+            _buildHeroWindStrip(),
+            const Spacer(),
+            _buildAqiStripRow(theme),
             if (hasChartData) ...[
+              const Spacer(),
               Padding(
                 padding: const EdgeInsets.only(bottom: 4),
                 child: Row(
@@ -147,12 +162,47 @@ class AirCard extends StatelessWidget {
                 ),
               ),
               SizedBox(
-                height: 90,
+                height: 110,
                 child: CustomPaint(
                   size: Size.infinite,
                   painter: _WindLinePainter(
                     windSpeeds: hourlyWindSpeed,
                     windGusts: hourlyWindGusts,
+                    hours: hours,
+                    now: DateTime.now(),
+                  ),
+                ),
+              ),
+            ],
+            if (hasPressureData && hours.isNotEmpty) ...[
+              const Spacer(),
+              Padding(
+                padding: const EdgeInsets.only(bottom: 10),
+                child: Row(
+                  children: [
+                    Icon(
+                      WeatherIcons.barometer,
+                      size: 12,
+                      color: AppColors.cream.withValues(alpha: 0.8),
+                    ),
+                    const SizedBox(width: 4),
+                    Text(
+                      'Pressure (mb)',
+                      style: GoogleFonts.poppins(
+                        fontSize: 10,
+                        fontWeight: FontWeight.w600,
+                        color: AppColors.cream.withValues(alpha: 0.8),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+              SizedBox(
+                height: 110,
+                child: CustomPaint(
+                  size: Size.infinite,
+                  painter: _PressureLinePainter(
+                    pressures: hourlyPressure,
                     hours: hours,
                     now: DateTime.now(),
                   ),
@@ -392,6 +442,79 @@ class AirCard extends StatelessWidget {
     );
   }
 
+  Widget _buildHeroWindStrip() {
+    return SizedBox(
+      height: 64,
+      child: Row(
+        crossAxisAlignment: CrossAxisAlignment.center,
+        children: [
+          SizedBox(
+            width: 56,
+            height: 56,
+            child: CustomPaint(
+              painter: _WindArrowPainter(
+                windDirection: windDirection,
+                windSpeed: windSpeed,
+              ),
+            ),
+          ),
+          const SizedBox(width: 16),
+          Row(
+            crossAxisAlignment: CrossAxisAlignment.baseline,
+            textBaseline: TextBaseline.alphabetic,
+            children: [
+              Text(
+                '${windSpeed.round()}',
+                style: GoogleFonts.poppins(
+                  fontSize: 40,
+                  fontWeight: FontWeight.w700,
+                  color: AppColors.cream,
+                  height: 1,
+                ),
+              ),
+              const SizedBox(width: 4),
+              Text(
+                'mph',
+                style: GoogleFonts.poppins(
+                  fontSize: 14,
+                  fontWeight: FontWeight.w500,
+                  color: AppColors.cream.withValues(alpha: 0.7),
+                  height: 1,
+                ),
+              ),
+            ],
+          ),
+          const Spacer(),
+          Column(
+            crossAxisAlignment: CrossAxisAlignment.end,
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              Text(
+                '${windDirectionLabel(windDirection)} ($windDirection\u00B0)',
+                style: GoogleFonts.poppins(
+                  fontSize: 13,
+                  fontWeight: FontWeight.w600,
+                  color: AppColors.cream.withValues(alpha: 0.95),
+                ),
+              ),
+              if (windGusts > windSpeed + 0.5) ...[
+                const SizedBox(height: 2),
+                Text(
+                  'gusts to ${windGusts.round()} mph',
+                  style: GoogleFonts.poppins(
+                    fontSize: 12,
+                    fontWeight: FontWeight.w500,
+                    color: AppColors.cream.withValues(alpha: 0.6),
+                  ),
+                ),
+              ],
+            ],
+          ),
+        ],
+      ),
+    );
+  }
+
   Widget _buildAqiStripRow(ThemeData theme) {
     return Row(
       crossAxisAlignment: CrossAxisAlignment.center,
@@ -424,114 +547,6 @@ class AirCard extends StatelessWidget {
         ),
       ],
     );
-  }
-
-  Widget _build2x2InfoGrid(double? pressureDelta) {
-    final pressureValue = _formatPressureValue(pressureDelta);
-    final peakGust = _findPeakGust(hourlyWindGusts, hours);
-    final calmest = _findCalmest(hourlyWindSpeed, hours);
-    final dominantDir = _dominantDirection(hourlyWindDirection);
-
-    return Column(
-      children: [
-        Row(
-          children: [
-            Expanded(
-              child: InfoChip(
-                icon: WeatherIcons.barometer,
-                label: 'Pressure',
-                value: pressureValue,
-              ),
-            ),
-            const SizedBox(width: 8),
-            Expanded(
-              child: InfoChip(
-                icon: WeatherIcons.windy,
-                label: 'Peak Gust',
-                value: peakGust != null
-                    ? '${peakGust.$1} mph @ ${_formatHourShort(peakGust.$2)}'
-                    : '--',
-              ),
-            ),
-          ],
-        ),
-        const SizedBox(height: 8),
-        Row(
-          children: [
-            Expanded(
-              child: InfoChip(
-                icon: WeatherIcons.windy,
-                label: 'Calmest',
-                value: calmest != null
-                    ? '${calmest.$1} mph @ ${_formatHourShort(calmest.$2)}'
-                    : '--',
-              ),
-            ),
-            const SizedBox(width: 8),
-            Expanded(
-              child: InfoChip(
-                icon: WeatherIcons.windy,
-                label: 'Dominant Dir',
-                value: dominantDir,
-              ),
-            ),
-          ],
-        ),
-      ],
-    );
-  }
-
-  String _formatPressureValue(double? pressureDelta) {
-    if (pressure <= 0) return '--';
-    final base = '${pressure.round()} mb';
-    if (pressureDelta == null || pressureDelta.abs() < 0.5) return base;
-    final arrow = pressureDelta > 0 ? '\u2191' : '\u2193';
-    final sign = pressureDelta > 0 ? '+' : '';
-    return '$base $arrow $sign${pressureDelta.toStringAsFixed(1)}';
-  }
-
-  static (int, DateTime)? _findPeakGust(
-    List<double> gusts,
-    List<DateTime> hours,
-  ) {
-    if (gusts.isEmpty || hours.isEmpty || gusts.length != hours.length) {
-      return null;
-    }
-    var maxIdx = 0;
-    for (var i = 1; i < gusts.length; i++) {
-      if (gusts[i] > gusts[maxIdx]) maxIdx = i;
-    }
-    return (gusts[maxIdx].round(), hours[maxIdx]);
-  }
-
-  static (int, DateTime)? _findCalmest(
-    List<double> speeds,
-    List<DateTime> hours,
-  ) {
-    if (speeds.isEmpty || hours.isEmpty || speeds.length != hours.length) {
-      return null;
-    }
-    var minIdx = 0;
-    for (var i = 1; i < speeds.length; i++) {
-      if (speeds[i] < speeds[minIdx]) minIdx = i;
-    }
-    return (speeds[minIdx].round(), hours[minIdx]);
-  }
-
-  /// Buckets into 8 compass points (more meaningful than 16 over 24h).
-  static String _dominantDirection(List<int> directions) {
-    if (directions.isEmpty) return '--';
-    const labels = ['N', 'NE', 'E', 'SE', 'S', 'SW', 'W', 'NW'];
-    final counts = List<int>.filled(8, 0);
-    for (final deg in directions) {
-      final idx = ((deg % 360) / 45 + 0.5).floor() % 8;
-      counts[idx]++;
-    }
-    var maxIdx = 0;
-    for (var i = 1; i < 8; i++) {
-      if (counts[i] > counts[maxIdx]) maxIdx = i;
-    }
-    return labels[maxIdx];
   }
 
   Widget _buildDashedLegendLine() {
@@ -593,12 +608,6 @@ class _AqiScalePainter extends CustomPainter {
   bool shouldRepaint(covariant _AqiScalePainter old) => aqi != old.aqi;
 }
 
-String _formatHourShort(DateTime dt) {
-  final h = dt.hour % 12 == 0 ? 12 : dt.hour % 12;
-  final suffix = dt.hour >= 12 ? 'p' : 'a';
-  return '$h$suffix';
-}
-
 class _WindLinePainter extends CustomPainter {
   final List<double> windSpeeds;
   final List<double> windGusts;
@@ -620,55 +629,50 @@ class _WindLinePainter extends CustomPainter {
     final hi = allValues.reduce(math.max);
     final maxY = (math.max(hi, 5.0) / 5).ceil() * 5.0;
 
-    const padTop = 4.0;
+    const padTop = 2.0;
     const padBottom = 14.0;
-    const padLeft = 28.0;
-    const padRight = 8.0;
+    const padLeft = 20.0;
     final graphH = size.height - padTop - padBottom;
-    final graphW = size.width - padLeft - padRight;
+    final graphW = size.width - padLeft;
     final stepX = graphW / (windSpeeds.length - 1);
     final bottom = padTop + graphH;
 
-    final labelStyle = TextStyle(
-      color: AppColors.cream.withValues(alpha: 0.4),
-      fontSize: 9,
+    // Y-axis labels
+    final yLabelStyle = TextStyle(
+      color: AppColors.cream.withValues(alpha: 0.95),
+      fontSize: 10,
+      fontWeight: FontWeight.w600,
     );
-
-    // Y-axis labels and grid lines
     final midY = (maxY / 2).roundToDouble();
-    final yValues = [0.0, midY, maxY];
-    for (final val in yValues) {
+    for (final val in [maxY, midY, 0.0]) {
       final y = padTop + graphH * (1 - val / maxY);
-
-      canvas.drawLine(
-        Offset(padLeft, y),
-        Offset(size.width - padRight, y),
-        Paint()..color = AppColors.cream.withValues(alpha: 0.06),
-      );
-
       final tp = TextPainter(
-        text: TextSpan(text: '${val.round()}', style: labelStyle),
+        text: TextSpan(text: '${val.round()}', style: yLabelStyle),
         textDirection: TextDirection.ltr,
       )..layout();
-      tp.paint(canvas, Offset(padLeft - tp.width - 4, y - tp.height / 2));
+      tp.paint(canvas, Offset(0, y - tp.height / 2));
     }
 
-    // X-axis time labels
-    if (hours.isNotEmpty) {
-      final labelCount = math.min(6, hours.length);
-      final interval = (hours.length - 1) / (labelCount - 1);
-      for (var i = 0; i < labelCount; i++) {
-        final idx = (i * interval).round().clamp(0, hours.length - 1);
-        final hour = hours[idx];
-        final label = _formatHourShort(hour);
-        final x = padLeft + idx * stepX;
-
-        final tp = TextPainter(
-          text: TextSpan(text: label, style: labelStyle),
-          textDirection: TextDirection.ltr,
-        )..layout();
-        tp.paint(canvas, Offset(x - tp.width / 2, bottom + 2));
-      }
+    // X-axis hour labels (every 6 hours + last)
+    final hourLabelStyle = TextStyle(
+      color: AppColors.cream.withValues(alpha: 0.9),
+      fontSize: 10,
+      fontWeight: FontWeight.w600,
+    );
+    for (var i = 0; i < hours.length; i++) {
+      if (i % 6 != 0 && i != hours.length - 1) continue;
+      final tp = TextPainter(
+        text: TextSpan(
+          text: DateFormat('ha').format(hours[i]).toLowerCase(),
+          style: hourLabelStyle,
+        ),
+        textDirection: TextDirection.ltr,
+      )..layout();
+      final x = (padLeft + i * stepX - tp.width / 2).clamp(
+        padLeft,
+        size.width - tp.width,
+      );
+      tp.paint(canvas, Offset(x, size.height - padBottom + 2));
     }
 
     // Wind speed points
@@ -688,15 +692,29 @@ class _WindLinePainter extends CustomPainter {
       linePath.cubicTo(cpx, prev.dy, cpx, curr.dy, curr.dx, curr.dy);
     }
 
-    // Area fill under wind line
+    // Area fill under wind line (gradient)
     final fillPath = Path.from(linePath)
       ..lineTo(points.last.dx, bottom)
       ..lineTo(points.first.dx, bottom)
       ..close();
-
+    final fillRect = Rect.fromLTRB(
+      points.first.dx,
+      padTop,
+      points.last.dx,
+      bottom,
+    );
     canvas.drawPath(
       fillPath,
-      Paint()..color = AppColors.cream.withValues(alpha: 0.12),
+      Paint()
+        ..shader = LinearGradient(
+          begin: Alignment.topCenter,
+          end: Alignment.bottomCenter,
+          colors: [
+            AppColors.cream.withValues(alpha: 0.15),
+            AppColors.cream.withValues(alpha: 0.03),
+          ],
+        ).createShader(fillRect)
+        ..style = PaintingStyle.fill,
     );
 
     // Wind speed stroke
@@ -765,20 +783,27 @@ class _WindLinePainter extends CustomPainter {
           final nowY =
               padTop + graphH * (1 - (interpSpeed / maxY).clamp(0.0, 1.0));
 
-          // Vertical reference line
-          canvas.drawLine(
-            Offset(nowX, padTop),
-            Offset(nowX, bottom),
-            Paint()
-              ..color = AppColors.cream.withValues(alpha: 0.4)
-              ..strokeWidth = 0.5,
-          );
+          // "Now" outline dot on the gusts line
+          if (windGusts.length == windSpeeds.length) {
+            final interpGust =
+                windGusts[i0] + (windGusts[i0 + 1] - windGusts[i0]) * t;
+            final gustNowY =
+                padTop + graphH * (1 - (interpGust / maxY).clamp(0.0, 1.0));
+            canvas.drawCircle(
+              Offset(nowX, gustNowY),
+              3.5,
+              Paint()
+                ..color = AppColors.cream.withValues(alpha: 0.6)
+                ..style = PaintingStyle.stroke
+                ..strokeWidth = 1.5,
+            );
+          }
 
-          // Dot on the wind line
+          // "Now" dot on the wind line
           canvas.drawCircle(
             Offset(nowX, nowY),
             4,
-            Paint()..color = AppColors.cream.withValues(alpha: 0.9),
+            Paint()..color = AppColors.cream,
           );
         }
       }
@@ -792,184 +817,129 @@ class _WindLinePainter extends CustomPainter {
       now != old.now;
 }
 
-class _WindCompassPainter extends CustomPainter {
+class _WindArrowPainter extends CustomPainter {
   final int windDirection;
   final double windSpeed;
-  final double windGusts;
 
-  _WindCompassPainter({
+  _WindArrowPainter({
     required this.windDirection,
     required this.windSpeed,
-    required this.windGusts,
   });
 
   @override
   void paint(Canvas canvas, Size size) {
     final cx = size.width / 2;
     final cy = size.height / 2;
-    final radius = math.min(size.width, size.height) / 2 - 6;
+    final radius = math.min(size.width, size.height) / 2 - 5;
 
-    // Outer ring
+    // Soft outer ring
     canvas.drawCircle(
       Offset(cx, cy),
       radius,
       Paint()
-        ..color = AppColors.cream.withValues(alpha: 0.18)
-        ..strokeWidth = 1
+        ..color = AppColors.cream.withValues(alpha: 0.22)
+        ..strokeWidth = 1.2
         ..style = PaintingStyle.stroke,
     );
 
-    // Cardinal labels (N/E/S/W) and tick marks
-    final cardinalLabels = <(String, double)>[
-      ('N', -math.pi / 2),
-      ('E', 0),
-      ('S', math.pi / 2),
-      ('W', math.pi),
-    ];
-    final tickPaint = Paint()
-      ..color = AppColors.cream.withValues(alpha: 0.25)
-      ..strokeWidth = 1;
-    final labelStyle = TextStyle(
-      color: AppColors.cream.withValues(alpha: 0.45),
-      fontSize: 9,
-      fontWeight: FontWeight.w600,
+    // Inner faint ring for depth
+    canvas.drawCircle(
+      Offset(cx, cy),
+      radius - 3,
+      Paint()
+        ..color = AppColors.cream.withValues(alpha: 0.08)
+        ..strokeWidth = 0.8
+        ..style = PaintingStyle.stroke,
     );
-    for (final (label, angle) in cardinalLabels) {
-      final tickStart = Offset(
-        cx + math.cos(angle) * (radius - 3),
-        cy + math.sin(angle) * (radius - 3),
-      );
-      final tickEnd = Offset(
-        cx + math.cos(angle) * radius,
-        cy + math.sin(angle) * radius,
-      );
-      canvas.drawLine(tickStart, tickEnd, tickPaint);
 
-      final labelPos = Offset(
-        cx + math.cos(angle) * (radius - 12),
-        cy + math.sin(angle) * (radius - 12),
-      );
-      final tp = TextPainter(
-        text: TextSpan(text: label, style: labelStyle),
-        textDirection: TextDirection.ltr,
-      )..layout();
-      tp.paint(
-        canvas,
-        Offset(labelPos.dx - tp.width / 2, labelPos.dy - tp.height / 2),
+    // Cardinal tick dots at N / E / S / W
+    final tickPaint = Paint()
+      ..color = AppColors.cream.withValues(alpha: 0.4)
+      ..style = PaintingStyle.fill;
+    for (final angle in [-math.pi / 2, 0.0, math.pi / 2, math.pi]) {
+      canvas.drawCircle(
+        Offset(cx + math.cos(angle) * radius, cy + math.sin(angle) * radius),
+        1.2,
+        tickPaint,
       );
     }
 
-    // Wind arrow (or calm dot)
+    // Tiny "N" reference label just above the top tick
+    final nTp = TextPainter(
+      text: TextSpan(
+        text: 'N',
+        style: TextStyle(
+          color: AppColors.cream.withValues(alpha: 0.65),
+          fontSize: 8,
+          fontWeight: FontWeight.w700,
+          letterSpacing: 0.2,
+        ),
+      ),
+      textDirection: TextDirection.ltr,
+    )..layout();
+    nTp.paint(canvas, Offset(cx - nTp.width / 2, cy - radius - nTp.height));
+
+    // Compass needle (only when not calm)
     if (windSpeed >= 1) {
-      // Arrow points in the direction the wind is coming FROM, matching the
-      // cardinal label (e.g. SW label → arrow points to SW). 0° (from N) →
-      // arrow points N (up).
-      final arrowAngle = (windDirection - 90) * math.pi / 180;
-      final tip = Offset(
-        cx + math.cos(arrowAngle) * (radius - 14),
-        cy + math.sin(arrowAngle) * (radius - 14),
-      );
-      final arrowPaint = Paint()
-        ..color = AppColors.cream.withValues(alpha: 0.9)
-        ..strokeWidth = 2
-        ..style = PaintingStyle.stroke
-        ..strokeCap = StrokeCap.round;
+      final markerAngle = (windDirection - 90) * math.pi / 180;
+      final dx = math.cos(markerAngle);
+      final dy = math.sin(markerAngle);
+      final perpDx = -dy;
+      final perpDy = dx;
 
-      // Shaft
-      canvas.drawLine(Offset(cx, cy), tip, arrowPaint);
+      final tipLen = radius - 4;
+      final tailLen = radius - 6;
+      const halfWidth = 3.5;
 
-      // Arrowhead V (two short lines back from tip)
-      const headLen = 7.0;
-      final leftAngle = arrowAngle + math.pi - (math.pi / 6); // -150°
-      final rightAngle = arrowAngle + math.pi + (math.pi / 6); // +150°
-      canvas.drawLine(
-        tip,
-        Offset(
-          tip.dx + math.cos(leftAngle) * headLen,
-          tip.dy + math.sin(leftAngle) * headLen,
-        ),
-        arrowPaint,
+      final tip = Offset(cx + dx * tipLen, cy + dy * tipLen);
+      final tail = Offset(cx - dx * tailLen, cy - dy * tailLen);
+      final leftMid = Offset(
+        cx + perpDx * halfWidth,
+        cy + perpDy * halfWidth,
       );
-      canvas.drawLine(
-        tip,
-        Offset(
-          tip.dx + math.cos(rightAngle) * headLen,
-          tip.dy + math.sin(rightAngle) * headLen,
-        ),
-        arrowPaint,
+      final rightMid = Offset(
+        cx - perpDx * halfWidth,
+        cy - perpDy * halfWidth,
       );
-    } else {
+
+      // Bright forward half — points where wind is blowing toward
+      final forwardPath = Path()
+        ..moveTo(tip.dx, tip.dy)
+        ..lineTo(leftMid.dx, leftMid.dy)
+        ..lineTo(rightMid.dx, rightMid.dy)
+        ..close();
+      canvas.drawPath(
+        forwardPath,
+        Paint()
+          ..color = AppColors.cream.withValues(alpha: 0.95)
+          ..style = PaintingStyle.fill,
+      );
+
+      // Dim back half
+      final backPath = Path()
+        ..moveTo(tail.dx, tail.dy)
+        ..lineTo(rightMid.dx, rightMid.dy)
+        ..lineTo(leftMid.dx, leftMid.dy)
+        ..close();
+      canvas.drawPath(
+        backPath,
+        Paint()
+          ..color = AppColors.cream.withValues(alpha: 0.4)
+          ..style = PaintingStyle.fill,
+      );
+
+      // Center pivot dot
       canvas.drawCircle(
         Offset(cx, cy),
-        3,
-        Paint()..color = AppColors.cream.withValues(alpha: 0.4),
-      );
-    }
-
-    // Center text: big speed + mph + gusts subtitle
-    final speedTp = TextPainter(
-      text: TextSpan(
-        text: '${windSpeed.round()}',
-        style: GoogleFonts.poppins(
-          fontSize: 52,
-          fontWeight: FontWeight.w700,
-          color: AppColors.cream,
-          height: 1,
-        ),
-      ),
-      textDirection: TextDirection.ltr,
-    )..layout();
-
-    final mphTp = TextPainter(
-      text: TextSpan(
-        text: ' mph',
-        style: GoogleFonts.poppins(
-          fontSize: 14,
-          fontWeight: FontWeight.w500,
-          color: AppColors.cream.withValues(alpha: 0.7),
-          height: 1,
-        ),
-      ),
-      textDirection: TextDirection.ltr,
-    )..layout();
-
-    final centerY = cy - 14;
-    final totalW = speedTp.width + mphTp.width;
-    final speedX = cx - totalW / 2;
-    speedTp.paint(canvas, Offset(speedX, centerY - speedTp.height / 2));
-    mphTp.paint(
-      canvas,
-      Offset(
-        speedX + speedTp.width,
-        centerY - speedTp.height / 2 + (speedTp.height - mphTp.height),
-      ),
-    );
-
-    if (windGusts > windSpeed + 0.5) {
-      final gustTp = TextPainter(
-        text: TextSpan(
-          text: 'gusts to ${windGusts.round()}',
-          style: GoogleFonts.poppins(
-            fontSize: 12,
-            fontWeight: FontWeight.w500,
-            color: AppColors.cream.withValues(alpha: 0.6),
-            height: 1,
-          ),
-        ),
-        textDirection: TextDirection.ltr,
-      )..layout();
-      gustTp.paint(
-        canvas,
-        Offset(cx - gustTp.width / 2, cy + 28 - gustTp.height / 2),
+        1.8,
+        Paint()..color = AppColors.cream.withValues(alpha: 0.95),
       );
     }
   }
 
   @override
-  bool shouldRepaint(covariant _WindCompassPainter old) =>
-      windDirection != old.windDirection ||
-      windSpeed != old.windSpeed ||
-      windGusts != old.windGusts;
+  bool shouldRepaint(covariant _WindArrowPainter old) =>
+      windDirection != old.windDirection || windSpeed != old.windSpeed;
 }
 
 class _DashedLinePainter extends CustomPainter {
@@ -997,4 +967,169 @@ class _DashedLinePainter extends CustomPainter {
 
   @override
   bool shouldRepaint(covariant _DashedLinePainter old) => color != old.color;
+}
+
+class _PressureLinePainter extends CustomPainter {
+  final List<double> pressures;
+  final List<DateTime> hours;
+  final DateTime? now;
+
+  _PressureLinePainter({
+    required this.pressures,
+    required this.hours,
+    this.now,
+  });
+
+  @override
+  void paint(Canvas canvas, Size size) {
+    if (pressures.length < 2) return;
+
+    final dataLo = pressures.reduce(math.min);
+    final dataHi = pressures.reduce(math.max);
+
+    const step = 2.0; // y-axis snaps to 2 mb increments
+    const minHeadroom = 1.0; // minimum gap between data and chart edge
+
+    var lo = (dataLo / step).floor() * step;
+    var hi = (dataHi / step).ceil() * step;
+    if (dataLo - lo < minHeadroom) lo -= step;
+    if (hi - dataHi < minHeadroom) hi += step;
+    if (hi - lo == 0) hi = lo + step;
+
+    final range = hi - lo;
+
+    const padTop = 2.0;
+    const padBottom = 14.0;
+    const padLeft = 28.0;
+    final graphH = size.height - padTop - padBottom;
+    final graphW = size.width - padLeft;
+    final stepX = graphW / (pressures.length - 1);
+    final bottom = padTop + graphH;
+
+    // Y-axis labels (hi, mid, lo)
+    final yLabelStyle = TextStyle(
+      color: AppColors.cream.withValues(alpha: 0.95),
+      fontSize: 10,
+      fontWeight: FontWeight.w600,
+    );
+    final mid = (lo + hi) / 2;
+    for (final val in [hi, mid, lo]) {
+      final y = padTop + graphH * (1 - (val - lo) / range);
+      final tp = TextPainter(
+        text: TextSpan(text: '${val.round()}', style: yLabelStyle),
+        textDirection: TextDirection.ltr,
+      )..layout();
+      tp.paint(canvas, Offset(0, y - tp.height / 2));
+    }
+
+    // X-axis hour labels (every 6 hours + last)
+    final hourLabelStyle = TextStyle(
+      color: AppColors.cream.withValues(alpha: 0.9),
+      fontSize: 10,
+      fontWeight: FontWeight.w600,
+    );
+    for (var i = 0; i < hours.length; i++) {
+      if (i % 6 != 0 && i != hours.length - 1) continue;
+      final tp = TextPainter(
+        text: TextSpan(
+          text: DateFormat('ha').format(hours[i]).toLowerCase(),
+          style: hourLabelStyle,
+        ),
+        textDirection: TextDirection.ltr,
+      )..layout();
+      final x = (padLeft + i * stepX - tp.width / 2).clamp(
+        padLeft,
+        size.width - tp.width,
+      );
+      tp.paint(canvas, Offset(x, size.height - padBottom + 2));
+    }
+
+    // Pressure points
+    final points = <Offset>[];
+    for (var i = 0; i < pressures.length; i++) {
+      final x = padLeft + i * stepX;
+      final y = padTop + graphH * (1 - (pressures[i] - lo) / range);
+      points.add(Offset(x, y));
+    }
+
+    // Pressure curve path (cubic smoothing)
+    final linePath = Path()..moveTo(points.first.dx, points.first.dy);
+    for (var i = 1; i < points.length; i++) {
+      final prev = points[i - 1];
+      final curr = points[i];
+      final cpx = (prev.dx + curr.dx) / 2;
+      linePath.cubicTo(cpx, prev.dy, cpx, curr.dy, curr.dx, curr.dy);
+    }
+
+    // Area fill under pressure line (gradient)
+    final fillPath = Path.from(linePath)
+      ..lineTo(points.last.dx, bottom)
+      ..lineTo(points.first.dx, bottom)
+      ..close();
+    final fillRect = Rect.fromLTRB(
+      points.first.dx,
+      padTop,
+      points.last.dx,
+      bottom,
+    );
+    canvas.drawPath(
+      fillPath,
+      Paint()
+        ..shader = LinearGradient(
+          begin: Alignment.topCenter,
+          end: Alignment.bottomCenter,
+          colors: [
+            AppColors.cream.withValues(alpha: 0.15),
+            AppColors.cream.withValues(alpha: 0.03),
+          ],
+        ).createShader(fillRect)
+        ..style = PaintingStyle.fill,
+    );
+
+    // Pressure stroke
+    canvas.drawPath(
+      linePath,
+      Paint()
+        ..color = AppColors.cream.withValues(alpha: 0.5)
+        ..strokeWidth = 2
+        ..style = PaintingStyle.stroke
+        ..strokeCap = StrokeCap.round,
+    );
+
+    // "Now" indicator
+    final nowTime = now;
+    if (nowTime != null && hours.length >= 2) {
+      if (!nowTime.isBefore(hours.first) && !nowTime.isAfter(hours.last)) {
+        final totalMs = hours.last
+            .difference(hours.first)
+            .inMilliseconds
+            .toDouble();
+        if (totalMs > 0) {
+          final nowMs = nowTime
+              .difference(hours.first)
+              .inMilliseconds
+              .toDouble();
+          final frac = nowMs / totalMs;
+          final idx = frac * (pressures.length - 1);
+          final i0 = idx.floor().clamp(0, pressures.length - 2);
+          final t = idx - i0;
+          final interpPressure =
+              pressures[i0] + (pressures[i0 + 1] - pressures[i0]) * t;
+          final nowX = padLeft + graphW * frac;
+          final nowY =
+              padTop + graphH * (1 - (interpPressure - lo) / range);
+
+          canvas.drawCircle(
+            Offset(nowX, nowY),
+            4,
+            Paint()..color = AppColors.cream,
+          );
+        }
+      }
+    }
+  }
+
+  @override
+  bool shouldRepaint(covariant _PressureLinePainter old) =>
+      pressures != old.pressures || hours != old.hours || now != old.now;
 }
