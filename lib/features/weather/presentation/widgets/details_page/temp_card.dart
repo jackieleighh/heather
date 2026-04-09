@@ -99,7 +99,7 @@ class TemperatureCard extends StatelessWidget {
             const Spacer(),
             if (currentTemp != null) ...[
               _buildHeroNow(),
-              const SizedBox(height: 8),
+              const SizedBox(height: 2),
               _buildRangeGauge(lo, hi),
             ],
             const Spacer(),
@@ -108,7 +108,7 @@ class TemperatureCard extends StatelessWidget {
             // Legend
             if (feelsLikeTemps.isNotEmpty)
               Padding(
-                padding: const EdgeInsets.only(bottom: 4),
+                padding: const EdgeInsets.only(top: 10, bottom: 2),
                 child: Row(
                   children: [
                     Container(
@@ -141,7 +141,7 @@ class TemperatureCard extends StatelessWidget {
               ),
             SizedBox(
               width: double.infinity,
-              height: 110,
+              height: 106,
               child: CustomPaint(
                 size: Size.infinite,
                 painter: _TempLinePainter(
@@ -256,7 +256,7 @@ class TemperatureCard extends StatelessWidget {
         Text(
           '${temp.round()}°',
           style: GoogleFonts.poppins(
-            fontSize: 48,
+            fontSize: 42,
             fontWeight: FontWeight.w700,
             color: AppColors.cream,
             height: 1,
@@ -275,7 +275,7 @@ class TemperatureCard extends StatelessWidget {
       children: [
         SizedBox(
           width: double.infinity,
-          height: 20,
+          height: 36,
           child: CustomPaint(
             size: Size.infinite,
             painter: _RangeGaugePainter(
@@ -288,26 +288,29 @@ class TemperatureCard extends StatelessWidget {
           ),
         ),
         const SizedBox(height: 2),
-        Row(
-          children: [
-            Text(
-              '${todayLo.round()}°',
-              style: GoogleFonts.poppins(
-                fontSize: 10,
-                fontWeight: FontWeight.w600,
-                color: AppColors.cream.withValues(alpha: 0.7),
+        Transform.translate(
+          offset: const Offset(0, -10),
+          child: Row(
+            children: [
+              Text(
+                '${todayLo.round()}°',
+                style: GoogleFonts.poppins(
+                  fontSize: 10,
+                  fontWeight: FontWeight.w700,
+                  color: AppColors.cream.withValues(alpha: 0.7),
+                ),
               ),
-            ),
-            const Spacer(),
-            Text(
-              '${todayHi.round()}°',
-              style: GoogleFonts.poppins(
-                fontSize: 10,
-                fontWeight: FontWeight.w600,
-                color: AppColors.cream.withValues(alpha: 0.7),
+              const Spacer(),
+              Text(
+                '${todayHi.round()}°',
+                style: GoogleFonts.poppins(
+                  fontSize: 10,
+                  fontWeight: FontWeight.w700,
+                  color: AppColors.cream.withValues(alpha: 0.7),
+                ),
               ),
-            ),
-          ],
+            ],
+          ),
         ),
       ],
     );
@@ -782,7 +785,9 @@ class _RangeGaugePainter extends CustomPainter {
       );
     }
 
-    // Tiny labels above markers (with collision check). Now always wins.
+    // Labels: 'now' always below the bar; 'feels' and 'avg' above.
+    // If feels and avg would horizontally overlap, stack them: feels on top,
+    // avg immediately below (still above the bar).
     final labelStyle = TextStyle(
       color: AppColors.cream.withValues(alpha: 0.6),
       fontSize: 9,
@@ -793,40 +798,53 @@ class _RangeGaugePainter extends CustomPainter {
       color: AppColors.cream.withValues(alpha: 0.85),
     );
 
-    bool tooClose(double a, double b) => (a - b).abs() < 24;
-
-    final showFeelsLabel =
-        feelsX != null &&
-        (nowX == null || !tooClose(feelsX, nowX)) &&
-        (avgX == null || !tooClose(feelsX, avgX));
-    final showAvgLabel =
-        avgX != null && (nowX == null || !tooClose(avgX, nowX));
-
-    if (showAvgLabel) {
-      _paintLabel(canvas, 'avg', labelStyle, avgX, barY - 4, size.width);
-    }
-    if (showFeelsLabel) {
-      _paintLabel(canvas, 'feels', labelStyle, feelsX, barY - 4, size.width);
-    }
-    if (nowX != null) {
-      _paintLabel(canvas, 'now', nowLabelStyle, nowX, barY - 4, size.width);
-    }
-  }
-
-  void _paintLabel(
-    Canvas canvas,
-    String text,
-    TextStyle style,
-    double centerX,
-    double baselineY,
-    double maxWidth,
-  ) {
-    final tp = TextPainter(
+    TextPainter layoutLabel(String text, TextStyle style) => TextPainter(
       text: TextSpan(text: text, style: style),
       textDirection: TextDirection.ltr,
     )..layout();
+
+    final feelsTp = feelsX != null ? layoutLabel('feels', labelStyle) : null;
+    final avgTp = avgX != null ? layoutLabel('avg', labelStyle) : null;
+    final nowTp = nowX != null ? layoutLabel('now', nowLabelStyle) : null;
+
+    // Horizontal collision between feels and avg.
+    var feelsAvgOverlap = false;
+    if (feelsX != null && avgX != null) {
+      final minGap = (feelsTp!.width + avgTp!.width) / 2 + 4;
+      feelsAvgOverlap = (feelsX - avgX).abs() < minGap;
+    }
+
+    // Vertical slots. Labels are painted by their top-left corner.
+    final labelH = feelsTp?.height ?? avgTp?.height ?? nowTp?.height ?? 12.0;
+    final topLowerY = barY - 2 - labelH; // just above the bar
+    final topUpperY = topLowerY - labelH - 1; // stacked above lower
+    final bottomY = barY + barH + 2; // just below the bar
+
+    if (feelsAvgOverlap) {
+      _paintLabelAt(canvas, feelsTp!, feelsX!, topUpperY, size.width);
+      _paintLabelAt(canvas, avgTp!, avgX!, topLowerY, size.width);
+    } else {
+      if (feelsTp != null) {
+        _paintLabelAt(canvas, feelsTp, feelsX!, topLowerY, size.width);
+      }
+      if (avgTp != null) {
+        _paintLabelAt(canvas, avgTp, avgX!, topLowerY, size.width);
+      }
+    }
+    if (nowTp != null) {
+      _paintLabelAt(canvas, nowTp, nowX!, bottomY, size.width);
+    }
+  }
+
+  void _paintLabelAt(
+    Canvas canvas,
+    TextPainter tp,
+    double centerX,
+    double topY,
+    double maxWidth,
+  ) {
     final x = (centerX - tp.width / 2).clamp(0.0, maxWidth - tp.width);
-    tp.paint(canvas, Offset(x, baselineY - tp.height));
+    tp.paint(canvas, Offset(x, topY));
   }
 
   @override

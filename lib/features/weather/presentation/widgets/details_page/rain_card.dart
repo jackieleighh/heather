@@ -126,6 +126,9 @@ class RainCard extends StatelessWidget {
     }
 
     if (mode == CardDisplayMode.expanded) {
+      final hasHumidity = hourlyHumidity.isNotEmpty;
+      final hasDewPoint = hourlyDewPoint.length >= 2;
+
       return CardContainer(
         backgroundIcon: bgIcon,
         child: Column(
@@ -150,24 +153,13 @@ class RainCard extends StatelessWidget {
                 ),
               ],
             ),
-            const Spacer(),
+            const SizedBox(height: 8),
             // 4-stat strip (no background)
             _buildStatStrip(precipLabel),
-            const Spacer(),
+            const SizedBox(height: 10),
             // Chance of precipitation bars chart
-            Padding(
-              padding: const EdgeInsets.only(bottom: 6),
-              child: Text(
-                'Chance of $label',
-                style: GoogleFonts.poppins(
-                  fontSize: 10,
-                  fontWeight: FontWeight.w600,
-                  color: AppColors.cream.withValues(alpha: 0.8),
-                ),
-              ),
-            ),
-            SizedBox(
-              height: 110,
+            _ChartLabel(text: 'Chance of $label'),
+            Expanded(
               child: CustomPaint(
                 size: Size.infinite,
                 painter: _PrecipBarPainter(
@@ -178,47 +170,24 @@ class RainCard extends StatelessWidget {
                 ),
               ),
             ),
-            // Humidity chart (0–100% scale)
-            if (hourlyHumidity.isNotEmpty) ...[
-              const Spacer(),
-              Padding(
-                padding: const EdgeInsets.only(bottom: 6),
-                child: Text(
-                  'Humidity',
-                  style: GoogleFonts.poppins(
-                    fontSize: 10,
-                    fontWeight: FontWeight.w600,
-                    color: AppColors.cream.withValues(alpha: 0.8),
-                  ),
-                ),
-              ),
-              SizedBox(
-                height: 110,
+            if (hasHumidity) ...[
+              const SizedBox(height: 10),
+              const _ChartLabel(text: 'Humidity'),
+              Expanded(
                 child: CustomPaint(
                   size: Size.infinite,
                   painter: _HumidityLinePainter(
                     humidities: hourlyHumidity,
                     hours: hours,
                     now: now,
-                    showHourLabels: hourlyDewPoint.length < 2,
+                    showHourLabels: !hasDewPoint,
                   ),
                 ),
               ),
-              if (hourlyDewPoint.length >= 2) ...[
-                const Spacer(),
-                Padding(
-                  padding: const EdgeInsets.only(bottom: 6),
-                  child: Text(
-                    'Dew Point',
-                    style: GoogleFonts.poppins(
-                      fontSize: 10,
-                      fontWeight: FontWeight.w600,
-                      color: AppColors.cream.withValues(alpha: 0.8),
-                    ),
-                  ),
-                ),
-                SizedBox(
-                  height: 110,
+              if (hasDewPoint) ...[
+                const SizedBox(height: 10),
+                const _ChartLabel(text: 'Dew Point'),
+                Expanded(
                   child: CustomPaint(
                     size: Size.infinite,
                     painter: _DewPointLinePainter(
@@ -340,6 +309,30 @@ class RainCard extends StatelessWidget {
           ),
         ),
       ],
+    );
+  }
+}
+
+// ---------------------------------------------------------------------------
+// Chart label used above each graph in the expanded card
+// ---------------------------------------------------------------------------
+class _ChartLabel extends StatelessWidget {
+  final String text;
+
+  const _ChartLabel({required this.text});
+
+  @override
+  Widget build(BuildContext context) {
+    return Padding(
+      padding: const EdgeInsets.only(bottom: 4),
+      child: Text(
+        text,
+        style: GoogleFonts.poppins(
+          fontSize: 10,
+          fontWeight: FontWeight.w600,
+          color: AppColors.cream.withValues(alpha: 0.8),
+        ),
+      ),
     );
   }
 }

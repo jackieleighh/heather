@@ -127,8 +127,9 @@ class AirCard extends StatelessWidget {
             _buildAqiStripRow(theme),
             if (hasChartData) ...[
               const Spacer(),
+              const SizedBox(height: 10),
               Padding(
-                padding: const EdgeInsets.only(bottom: 4),
+                padding: const EdgeInsets.only(bottom: 6),
                 child: Row(
                   children: [
                     Container(
@@ -162,7 +163,7 @@ class AirCard extends StatelessWidget {
                 ),
               ),
               SizedBox(
-                height: 110,
+                height: 86,
                 child: CustomPaint(
                   size: Size.infinite,
                   painter: _WindLinePainter(
@@ -170,14 +171,17 @@ class AirCard extends StatelessWidget {
                     windGusts: hourlyWindGusts,
                     hours: hours,
                     now: DateTime.now(),
+                    showHourLabels: false,
                   ),
                 ),
               ),
+              const SizedBox(height: 10),
             ],
             if (hasPressureData && hours.isNotEmpty) ...[
               const Spacer(),
+              const SizedBox(height: 10),
               Padding(
-                padding: const EdgeInsets.only(bottom: 10),
+                padding: const EdgeInsets.only(bottom: 6),
                 child: Row(
                   children: [
                     Icon(
@@ -198,7 +202,7 @@ class AirCard extends StatelessWidget {
                 ),
               ),
               SizedBox(
-                height: 110,
+                height: 90,
                 child: CustomPaint(
                   size: Size.infinite,
                   painter: _PressureLinePainter(
@@ -208,6 +212,7 @@ class AirCard extends StatelessWidget {
                   ),
                 ),
               ),
+              const SizedBox(height: 10),
             ],
           ],
         ),
@@ -226,13 +231,12 @@ class AirCard extends StatelessWidget {
           const Spacer(),
           _buildAqiRow(theme),
           SizedBox(
-            height: 12,
+            height: 10,
             child: CustomPaint(
               size: Size.infinite,
               painter: _AqiScalePainter(aqi: aqi),
             ),
           ),
-          const SizedBox(height: 4),
         ],
       ),
     );
@@ -613,12 +617,14 @@ class _WindLinePainter extends CustomPainter {
   final List<double> windGusts;
   final List<DateTime> hours;
   final DateTime? now;
+  final bool showHourLabels;
 
   _WindLinePainter({
     required this.windSpeeds,
     required this.hours,
     this.windGusts = const [],
     this.now,
+    this.showHourLabels = false,
   });
 
   @override
@@ -630,7 +636,7 @@ class _WindLinePainter extends CustomPainter {
     final maxY = (math.max(hi, 5.0) / 5).ceil() * 5.0;
 
     const padTop = 2.0;
-    const padBottom = 14.0;
+    final padBottom = showHourLabels ? 14.0 : 2.0;
     const padLeft = 20.0;
     final graphH = size.height - padTop - padBottom;
     final graphW = size.width - padLeft;
@@ -654,25 +660,27 @@ class _WindLinePainter extends CustomPainter {
     }
 
     // X-axis hour labels (every 6 hours + last)
-    final hourLabelStyle = TextStyle(
-      color: AppColors.cream.withValues(alpha: 0.9),
-      fontSize: 10,
-      fontWeight: FontWeight.w600,
-    );
-    for (var i = 0; i < hours.length; i++) {
-      if (i % 6 != 0 && i != hours.length - 1) continue;
-      final tp = TextPainter(
-        text: TextSpan(
-          text: DateFormat('ha').format(hours[i]).toLowerCase(),
-          style: hourLabelStyle,
-        ),
-        textDirection: TextDirection.ltr,
-      )..layout();
-      final x = (padLeft + i * stepX - tp.width / 2).clamp(
-        padLeft,
-        size.width - tp.width,
+    if (showHourLabels) {
+      final hourLabelStyle = TextStyle(
+        color: AppColors.cream.withValues(alpha: 0.9),
+        fontSize: 10,
+        fontWeight: FontWeight.w600,
       );
-      tp.paint(canvas, Offset(x, size.height - padBottom + 2));
+      for (var i = 0; i < hours.length; i++) {
+        if (i % 6 != 0 && i != hours.length - 1) continue;
+        final tp = TextPainter(
+          text: TextSpan(
+            text: DateFormat('ha').format(hours[i]).toLowerCase(),
+            style: hourLabelStyle,
+          ),
+          textDirection: TextDirection.ltr,
+        )..layout();
+        final x = (padLeft + i * stepX - tp.width / 2).clamp(
+          padLeft,
+          size.width - tp.width,
+        );
+        tp.paint(canvas, Offset(x, size.height - padBottom + 2));
+      }
     }
 
     // Wind speed points
@@ -814,7 +822,8 @@ class _WindLinePainter extends CustomPainter {
   bool shouldRepaint(covariant _WindLinePainter old) =>
       windSpeeds != old.windSpeeds ||
       windGusts != old.windGusts ||
-      now != old.now;
+      now != old.now ||
+      showHourLabels != old.showHourLabels;
 }
 
 class _WindArrowPainter extends CustomPainter {

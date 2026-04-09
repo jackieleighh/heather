@@ -38,12 +38,12 @@ class AppColors {
   static const goldenAmber = Color(0xFFfcc500);
 
   // --- Sunny day gradients ---
-  static const sunnyAqua = Color(0xFF18CED2);
+  static const sunnyAqua = Color(0xFF5DBFC8);
   static const sunnyCrispBlue = Color(0xFF78C4FF);
   static const sunnyRichViolet = Color(0xFF9E80FF);
   static const sunnyCerulean = Color(0xFF60B4FF);
   static const sunnyBrightBlue = Color(0xFF88CCFF);
-  static const sunnyBrightTeal = Color(0xFF1CC8AA);
+  static const sunnyBrightTeal = Color(0xFF58B89E);
   static const sunnyVividGold = Color(0xFFF2CC00);
   static const sunnyBlazingOrange = Color(0xFFF87008);
   static const sunnyFireAmber = Color(0xFFFF8C18);

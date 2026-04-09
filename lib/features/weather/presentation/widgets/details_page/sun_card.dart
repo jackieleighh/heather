@@ -13,11 +13,14 @@ import './info_chip.dart';
 class SunCard extends StatelessWidget {
   // Arc canvas geometry — kept here so the LayoutBuilder placing the
   // sunrise/sunset labels and `_SunArcPainter` agree on the endpoints.
-  static const double _arcCanvasHeight = 102;
+  static const double _arcCanvasHeight = 90;
   static const double _arcTopPad = 6;
   static const double _arcBottomGutter = 4;
-  static const double _arcMaxRadius =
-      _arcCanvasHeight - _arcBottomGutter - _arcTopPad;
+  // Arc is intentionally flatter than a true semicircle: the vertical
+  // radius is scaled down relative to the horizontal span so the sun
+  // traces a gentler curve instead of a half-dome.
+  static const double _arcRadiusXMax = 200;
+  static const double _arcRadiusYRatio = 0.55;
 
   final DateTime sunrise;
   final DateTime sunset;
@@ -194,9 +197,9 @@ class SunCard extends StatelessWidget {
               child: LayoutBuilder(
                 builder: (context, constraints) {
                   final w = constraints.maxWidth;
-                  final radius = math.min(_arcMaxRadius, (w - 32) / 2);
-                  final arcLeft = w / 2 - radius;
-                  final arcRight = w / 2 + radius;
+                  final arcRadiusX = math.min(_arcRadiusXMax, (w - 32) / 2);
+                  final arcLeft = w / 2 - arcRadiusX;
+                  final arcRight = w / 2 + arcRadiusX;
                   return Stack(
                     clipBehavior: Clip.none,
                     children: [
@@ -335,16 +338,18 @@ class SunCard extends StatelessWidget {
                   ),
                 ],
               ),
+              const SizedBox(height: 4),
             ],
             const Spacer(),
             // 5. 2x2 info grid
             _buildInfoGrid(),
             const Spacer(),
             // 6. UV chart with area fill
-            if (hourlyUv.length >= 2)
+            if (hourlyUv.length >= 2) ...[
+              const SizedBox(height: 4),
               SizedBox(
                 width: double.infinity,
-                height: 110,
+                height: 60,
                 child: CustomPaint(
                   size: Size.infinite,
                   painter: _UvLinePainter(
@@ -356,6 +361,7 @@ class SunCard extends StatelessWidget {
                   ),
                 ),
               ),
+            ],
           ],
         ),
       );
@@ -808,18 +814,21 @@ class _SunArcPainter extends CustomPainter {
     const topPad = SunCard._arcTopPad;
     const bottomGutter = SunCard._arcBottomGutter;
     final horizY = h - bottomGutter;
-    final maxRadiusFromHeight = horizY - topPad;
-    final maxRadiusFromWidth = (w - 32) / 2; // 16px padding each side
-    final arcRadius = math.min(maxRadiusFromHeight, maxRadiusFromWidth);
+    final arcRadiusX = math.min(SunCard._arcRadiusXMax, (w - 32) / 2);
+    final maxRadiusY = horizY - topPad;
+    final arcRadiusY = math.min(
+      maxRadiusY,
+      arcRadiusX * SunCard._arcRadiusYRatio,
+    );
     final arcCenterX = w / 2;
     final arcCenterY = horizY;
     final arcRect = Rect.fromCenter(
       center: Offset(arcCenterX, arcCenterY),
-      width: arcRadius * 2,
-      height: arcRadius * 2, // equal → true circle
+      width: arcRadiusX * 2,
+      height: arcRadiusY * 2, // elongated → flatter arc
     );
-    final arcLeft = arcCenterX - arcRadius;
-    final arcRight = arcCenterX + arcRadius;
+    final arcLeft = arcCenterX - arcRadiusX;
+    final arcRight = arcCenterX + arcRadiusX;
 
     // Horizon line
     canvas.drawLine(
@@ -870,7 +879,7 @@ class _SunArcPainter extends CustomPainter {
 
     // Solar noon tick at top of arc
     final noonX = arcCenterX;
-    final noonY = arcCenterY - arcRadius;
+    final noonY = arcCenterY - arcRadiusY;
     canvas.drawLine(
       Offset(noonX, noonY - 3),
       Offset(noonX, noonY + 3),
@@ -884,8 +893,8 @@ class _SunArcPainter extends CustomPainter {
       // Sun position on the upward arc
       final clampedFraction = fraction.clamp(0.0, 1.0);
       final angle = math.pi + math.pi * clampedFraction;
-      final sunX = arcCenterX + arcRadius * math.cos(angle);
-      final sunY = arcCenterY + arcRadius * math.sin(angle);
+      final sunX = arcCenterX + arcRadiusX * math.cos(angle);
+      final sunY = arcCenterY + arcRadiusY * math.sin(angle);
       // Glow
       canvas.drawCircle(
         Offset(sunX, sunY),

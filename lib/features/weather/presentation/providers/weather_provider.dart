@@ -102,7 +102,14 @@ class WeatherNotifier extends StateNotifier<WeatherState> {
        super(
          _initialState(cachedSeed, quipRepo, explicit),
        ) {
-    if (cachedSeed != null) {
+    // A seed is only usable if it has full forecast data. The standalone
+    // widget seed (no cached forecast) carries just a current-conditions
+    // snapshot with empty daily/hourly, which can't render the full UI —
+    // treat it as no seed so we show LoadingScreen and call loadWeather().
+    final hasUsableSeed = cachedSeed != null &&
+        cachedSeed.$2.daily.isNotEmpty &&
+        cachedSeed.$2.hourly.isNotEmpty;
+    if (hasUsableSeed) {
       _lastQuipKey = _quipKeyFor(cachedSeed.$2);
       // Force-refresh when the native widget has fresher data than the
       // app's cache, or when cold-launched from a widget tap.
@@ -116,13 +123,17 @@ class WeatherNotifier extends StateNotifier<WeatherState> {
   }
 
   /// Compute the initial state for [super] so Riverpod never sees `loading`
-  /// when a cached seed is available.
+  /// when a usable cached seed is available.
   static WeatherState _initialState(
     (LocationInfo, Forecast)? seed,
     QuipRepositoryImpl quipRepo,
     bool explicit,
   ) {
-    if (seed == null) return const WeatherState.loading();
+    if (seed == null ||
+        seed.$2.daily.isEmpty ||
+        seed.$2.hourly.isEmpty) {
+      return const WeatherState.loading();
+    }
     final (location, forecast) = seed;
     return WeatherState.loaded(
       forecast: forecast,

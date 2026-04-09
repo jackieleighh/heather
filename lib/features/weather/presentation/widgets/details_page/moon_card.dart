@@ -323,58 +323,59 @@ class MoonCard extends ConsumerWidget {
           const Spacer(),
           // 2. Phase-cycle chart hero
           SizedBox(
-            height: 90,
+            height: 72,
             child: CustomPaint(
               size: Size.infinite,
               painter: _MoonCycleChartPainter(usno: usno, now: now),
             ),
           ),
-          const Spacer(),
-          // 3. Caption: Day N · Next <full|new>: <Mon D>
-          if (hasCaption) ...[
-            Center(
-              child: Text.rich(
-                TextSpan(
-                  style: GoogleFonts.poppins(
-                    fontSize: 11,
-                    fontWeight: FontWeight.w500,
-                    color: AppColors.cream.withValues(alpha: 0.8),
+          // 3. Caption: Day N · Next <full|new>: <Mon D> — directly under chart
+          if (hasCaption)
+            Padding(
+              padding: const EdgeInsets.only(top: 4),
+              child: Center(
+                child: Text.rich(
+                  TextSpan(
+                    style: GoogleFonts.poppins(
+                      fontSize: 11,
+                      fontWeight: FontWeight.w500,
+                      color: AppColors.cream.withValues(alpha: 0.8),
+                    ),
+                    children: [
+                      if (lunarAge != null) ...[
+                        const TextSpan(text: 'Day '),
+                        TextSpan(
+                          text: '${lunarAge.round()}',
+                          style: GoogleFonts.poppins(
+                            fontSize: 11,
+                            fontWeight: FontWeight.w700,
+                            color: AppColors.cream.withValues(alpha: 0.9),
+                          ),
+                        ),
+                      ],
+                      if (lunarAge != null && nextPrefix != null)
+                        const TextSpan(text: '  \u00B7  '),
+                      if (nextPrefix != null) ...[
+                        TextSpan(text: nextPrefix),
+                        TextSpan(
+                          text: nextDate,
+                          style: GoogleFonts.poppins(
+                            fontSize: 11,
+                            fontWeight: FontWeight.w700,
+                            color: AppColors.cream.withValues(alpha: 0.9),
+                          ),
+                        ),
+                      ],
+                    ],
                   ),
-                  children: [
-                    if (lunarAge != null) ...[
-                      const TextSpan(text: 'Day '),
-                      TextSpan(
-                        text: '${lunarAge.round()}',
-                        style: GoogleFonts.poppins(
-                          fontSize: 11,
-                          fontWeight: FontWeight.w700,
-                          color: AppColors.cream.withValues(alpha: 0.9),
-                        ),
-                      ),
-                    ],
-                    if (lunarAge != null && nextPrefix != null)
-                      const TextSpan(text: '  \u00B7  '),
-                    if (nextPrefix != null) ...[
-                      TextSpan(text: nextPrefix),
-                      TextSpan(
-                        text: nextDate,
-                        style: GoogleFonts.poppins(
-                          fontSize: 11,
-                          fontWeight: FontWeight.w700,
-                          color: AppColors.cream.withValues(alpha: 0.9),
-                        ),
-                      ),
-                    ],
-                  ],
                 ),
               ),
             ),
-            const Spacer(),
-          ],
-          // 4. Tonight darkness + moonrise/moonset block
+          const Spacer(),
+          // 4. Tonight darkness + moonrise/moonset block (2 text lines)
           _buildExpandedDarknessRow(riseSet),
           const Spacer(),
-          // 5. 2x2 InfoChip grid
+          // 5. 2x2 InfoChip grid (4 chips)
           _buildExpandedInfoGrid(usno, riseSet),
           const Spacer(),
           // 6. Visible planets rich block
@@ -793,31 +794,17 @@ class _PhaseStrip extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return SizedBox(
-      height: 14,
+      height: 9,
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceEvenly,
         children: List.generate(_phases.length, (i) {
           final isCurrent = _phases[i] == currentPhase;
-          return Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              Icon(
-                _phaseIcons[i],
-                size: 10,
-                color: AppColors.cream.withValues(
-                  alpha: isCurrent ? 0.95 : 0.3,
-                ),
-              ),
-              if (isCurrent)
-                Container(
-                  width: 3,
-                  height: 3,
-                  decoration: BoxDecoration(
-                    color: AppColors.cream.withValues(alpha: 0.9),
-                    shape: BoxShape.circle,
-                  ),
-                ),
-            ],
+          return Icon(
+            _phaseIcons[i],
+            size: 9,
+            color: AppColors.cream.withValues(
+              alpha: isCurrent ? 0.95 : 0.3,
+            ),
           );
         }),
       ),
@@ -861,32 +848,29 @@ class _VisiblePlanetsRow extends ConsumerWidget {
       data: (data) {
         if (data.isEmpty) return const SizedBox.shrink();
         final names = data.map((p) => p.name).toList();
-        return Padding(
-          padding: const EdgeInsets.only(bottom: 1),
-          child: Row(
-            children: [
-              Text(
-                'Visible planets',
+        return Row(
+          children: [
+            Text(
+              'Visible planets',
+              style: GoogleFonts.poppins(
+                fontSize: 11,
+                fontWeight: FontWeight.w800,
+                color: AppColors.cream.withValues(alpha: 0.85),
+              ),
+            ),
+            const SizedBox(width: 6),
+            Flexible(
+              child: Text(
+                names.map(_formatPlanetName).join(' \u00B7 '),
                 style: GoogleFonts.poppins(
                   fontSize: 11,
-                  fontWeight: FontWeight.w800,
+                  fontWeight: FontWeight.w400,
                   color: AppColors.cream.withValues(alpha: 0.85),
                 ),
+                overflow: TextOverflow.ellipsis,
               ),
-              const SizedBox(width: 6),
-              Flexible(
-                child: Text(
-                  names.map(_formatPlanetName).join(' \u00B7 '),
-                  style: GoogleFonts.poppins(
-                    fontSize: 11,
-                    fontWeight: FontWeight.w400,
-                    color: AppColors.cream.withValues(alpha: 0.85),
-                  ),
-                  overflow: TextOverflow.ellipsis,
-                ),
-              ),
-            ],
-          ),
+            ),
+          ],
         );
       },
       loading: () => const SizedBox(height: 15),
@@ -925,19 +909,22 @@ class _ExpandedVisiblePlanetsBlock extends ConsumerWidget {
               ),
             ),
             const SizedBox(height: 6),
-            Row(
-              children: [
-                for (var i = 0; i < data.length; i++) ...[
-                  if (i > 0) const SizedBox(width: 8),
-                  Expanded(child: _PlanetTile(planet: data[i])),
+            IntrinsicHeight(
+              child: Row(
+                crossAxisAlignment: CrossAxisAlignment.stretch,
+                children: [
+                  for (var i = 0; i < data.length; i++) ...[
+                    if (i > 0) const SizedBox(width: 6),
+                    Expanded(child: _PlanetTile(planet: data[i])),
+                  ],
                 ],
-              ],
+              ),
             ),
             const SizedBox(height: 8),
           ],
         );
       },
-      loading: () => const SizedBox(height: 60),
+      loading: () => const SizedBox(height: 83),
       error: (_, _) => const SizedBox.shrink(),
     );
   }
@@ -951,60 +938,124 @@ class _PlanetTile extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final glyph = _planetGlyph(planet.name);
+    final glyphStyle = GoogleFonts.poppins(
+      fontSize: 16,
+      fontWeight: FontWeight.w700,
+      color: AppColors.cream,
+    );
+    final nameStyle = GoogleFonts.poppins(
+      fontSize: 11,
+      fontWeight: FontWeight.w600,
+      color: AppColors.cream,
+    );
+    final altStyle = GoogleFonts.poppins(
+      fontSize: 11,
+      fontWeight: FontWeight.w400,
+      color: AppColors.cream,
+    );
+    final magStyle = GoogleFonts.poppins(
+      fontSize: 10,
+      fontWeight: FontWeight.w500,
+      color: AppColors.cream.withValues(alpha: 0.9),
+    );
+
     return Container(
-      padding: const EdgeInsets.all(8),
+      padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 8),
       decoration: BoxDecoration(
         color: AppColors.cream.withValues(alpha: 0.08),
         borderRadius: BorderRadius.circular(10),
       ),
       child: Column(
-        mainAxisSize: MainAxisSize.min,
+        mainAxisAlignment: MainAxisAlignment.center,
         crossAxisAlignment: CrossAxisAlignment.center,
         children: [
-          if (glyph.isNotEmpty)
-            Text(
-              glyph,
-              style: GoogleFonts.poppins(
-                fontSize: 16,
-                fontWeight: FontWeight.w700,
-                color: AppColors.cream,
-              ),
-            ),
-          const SizedBox(height: 2),
-          Text(
-            planet.name,
-            style: GoogleFonts.poppins(
-              fontSize: 11,
-              fontWeight: FontWeight.w600,
-              color: AppColors.cream,
-            ),
-          ),
-          const SizedBox(height: 2),
-          Row(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              Icon(
-                Icons.arrow_upward,
-                size: 10,
-                color: AppColors.cream.withValues(alpha: 0.9),
-              ),
-              const SizedBox(width: 2),
-              Text(
-                '${planet.altitude.round()}°',
-                style: GoogleFonts.poppins(
-                  fontSize: 11,
-                  fontWeight: FontWeight.w400,
-                  color: AppColors.cream,
+          SizedBox(
+            height: 20,
+            child: FittedBox(
+              fit: BoxFit.scaleDown,
+              alignment: Alignment.center,
+              child: Text(
+                glyph,
+                maxLines: 1,
+                softWrap: false,
+                overflow: TextOverflow.visible,
+                style: glyphStyle,
+                strutStyle: const StrutStyle(
+                  fontSize: 16,
+                  height: 1.3,
+                  forceStrutHeight: true,
                 ),
               ),
-            ],
+            ),
           ),
-          Text(
-            'mag ${planet.magnitude.toStringAsFixed(1)}',
-            style: GoogleFonts.poppins(
-              fontSize: 10,
-              fontWeight: FontWeight.w500,
-              color: AppColors.cream.withValues(alpha: 0.9),
+          const SizedBox(height: 2),
+          SizedBox(
+            height: 16,
+            child: FittedBox(
+              fit: BoxFit.scaleDown,
+              alignment: Alignment.center,
+              child: Text(
+                planet.name,
+                maxLines: 1,
+                softWrap: false,
+                overflow: TextOverflow.visible,
+                style: nameStyle,
+                strutStyle: const StrutStyle(
+                  fontSize: 11,
+                  height: 1.4,
+                  forceStrutHeight: true,
+                ),
+              ),
+            ),
+          ),
+          const SizedBox(height: 2),
+          SizedBox(
+            height: 14,
+            child: FittedBox(
+              fit: BoxFit.scaleDown,
+              alignment: Alignment.center,
+              child: Row(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Icon(
+                    Icons.arrow_upward,
+                    size: 10,
+                    color: AppColors.cream.withValues(alpha: 0.9),
+                  ),
+                  const SizedBox(width: 2),
+                  Text(
+                    '${planet.altitude.round()}°',
+                    maxLines: 1,
+                    softWrap: false,
+                    overflow: TextOverflow.visible,
+                    style: altStyle,
+                    strutStyle: const StrutStyle(
+                      fontSize: 11,
+                      height: 1.3,
+                      forceStrutHeight: true,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ),
+          SizedBox(
+            height: 13,
+            child: FittedBox(
+              fit: BoxFit.scaleDown,
+              alignment: Alignment.center,
+              child: Text(
+                'mag ${planet.magnitude.toStringAsFixed(1)}',
+                maxLines: 1,
+                softWrap: false,
+                overflow: TextOverflow.visible,
+                style: magStyle,
+                strutStyle: const StrutStyle(
+                  fontSize: 10,
+                  height: 1.3,
+                  forceStrutHeight: true,
+                ),
+              ),
             ),
           ),
         ],
@@ -1151,7 +1202,7 @@ class _MoonCycleChartPainter extends CustomPainter {
     if (totalSec <= 0) return;
 
     // 2. Geometry
-    const padTop = 44.0;
+    const padTop = 32.0;
     const padBottom = 6.0;
     const padLeft = 16.0;
     const padRight = 16.0;
