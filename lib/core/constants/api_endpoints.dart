@@ -58,7 +58,7 @@ class ApiEndpoints {
     required double longitude,
   }) =>
       '$airQualityBase?latitude=$latitude&longitude=$longitude'
-      '&current=us_aqi';
+      '&current=us_aqi,pm10,pm2_5,ozone,nitrogen_dioxide,sulphur_dioxide,carbon_monoxide';
 
   static const nwsAlertsBase = 'https://api.weather.gov/alerts/active';
 

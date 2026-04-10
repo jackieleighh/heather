@@ -147,6 +147,7 @@ class _DetailsPageState extends ConsumerState<DetailsPage> {
           next24.map((h) => h.condition).toList(),
         ),
         humidity: next24.isNotEmpty ? next24.first.humidity : 0,
+        cloudCover: next24.isNotEmpty ? next24.first.cloudCover : 0,
         dewPoint: next24.isNotEmpty ? next24.first.dewPoint : 0.0,
         mode: mode,
         hourlyHumidity: mode == CardDisplayMode.expanded
@@ -158,7 +159,7 @@ class _DetailsPageState extends ConsumerState<DetailsPage> {
       ),
       // 3: Air
       (mode) => AirCard(
-        aqi: aqi.whenOrNull(data: (v) => v),
+        airQuality: aqi.whenOrNull(data: (v) => v),
         isLoading: aqi.isLoading,
         windSpeed: forecast.current.windSpeed,
         pressure: forecast.current.pressure,
@@ -166,15 +167,9 @@ class _DetailsPageState extends ConsumerState<DetailsPage> {
         windDirection: forecast.current.windDirection,
         hourlyPressure: next24.map((h) => h.pressure).toList(),
         mode: mode,
-        hourlyWindSpeed: mode == CardDisplayMode.expanded
-            ? next24.map((h) => h.windSpeed).toList()
-            : const [],
-        hourlyWindGusts: mode == CardDisplayMode.expanded
-            ? next24.map((h) => h.windGusts).toList()
-            : const [],
-        hourlyWindDirection: mode == CardDisplayMode.expanded
-            ? next24.map((h) => h.windDirection).toList()
-            : const [],
+        hourlyWindSpeed: next24.map((h) => h.windSpeed).toList(),
+        hourlyWindGusts: next24.map((h) => h.windGusts).toList(),
+        hourlyWindDirection: next24.map((h) => h.windDirection).toList(),
         hours: next24.map((h) => h.time).toList(),
       ),
       // 4: Sun

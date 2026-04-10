@@ -8,6 +8,7 @@ import 'package:intl/intl.dart' hide TextDirection;
 import 'package:weather_icons/weather_icons.dart';
 import './card_container.dart';
 import './card_display_mode.dart';
+import './info_chip.dart';
 
 enum PrecipType { rain, snow, mixed }
 
@@ -44,6 +45,7 @@ class RainCard extends StatelessWidget {
   final bool compact;
   final PrecipType precipType;
   final int humidity;
+  final int cloudCover;
   final CardDisplayMode mode;
   final double dewPoint;
   final List<int> hourlyHumidity;
@@ -60,6 +62,7 @@ class RainCard extends StatelessWidget {
     this.compact = false,
     this.precipType = PrecipType.rain,
     this.humidity = 0,
+    this.cloudCover = 0,
     this.mode = CardDisplayMode.normal,
     this.dewPoint = 0.0,
     this.hourlyHumidity = const [],
@@ -126,40 +129,36 @@ class RainCard extends StatelessWidget {
     }
 
     if (mode == CardDisplayMode.expanded) {
-      final hasHumidity = hourlyHumidity.isNotEmpty;
-      final hasDewPoint = hourlyDewPoint.length >= 2;
-
       return CardContainer(
         backgroundIcon: bgIcon,
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            // Simplified header — just icon + label
-            Row(
-              children: [
-                Icon(
-                  icon,
-                  size: 15,
-                  color: AppColors.cream.withValues(alpha: 0.9),
-                ),
-                const SizedBox(width: 4),
-                Text(
-                  label,
-                  style: GoogleFonts.figtree(
-                    fontSize: 18,
-                    fontWeight: FontWeight.w400,
-                    color: AppColors.cream,
+            // Header row — same as normal mode
+            _buildHeaderRow(label, icon, precipLabel),
+            if (humidity > 0)
+              Row(
+                children: [
+                  const Spacer(),
+                  Text(
+                    '$humidity% humidity',
+                    style: GoogleFonts.poppins(
+                      fontSize: 11,
+                      fontWeight: FontWeight.w600,
+                      color: AppColors.cream.withValues(alpha: 0.8),
+                    ),
                   ),
-                ),
-              ],
-            ),
-            const SizedBox(height: 8),
-            // 4-stat strip (no background)
-            _buildStatStrip(precipLabel),
-            const SizedBox(height: 10),
-            // Chance of precipitation bars chart
-            _ChartLabel(text: 'Chance of $label'),
-            Expanded(
+                ],
+              ),
+            const SizedBox(height: 12),
+            _buildUmbrellaGauge(),
+            const Spacer(),
+            _build2x2InfoGrid(precipLabel, icon),
+            const Spacer(),
+            _ChartLabel(text: 'Chance of ${label.toLowerCase()}'),
+            SizedBox(
+              width: double.infinity,
+              height: 70,
               child: CustomPaint(
                 size: Size.infinite,
                 painter: _PrecipBarPainter(
@@ -170,35 +169,22 @@ class RainCard extends StatelessWidget {
                 ),
               ),
             ),
-            if (hasHumidity) ...[
-              const SizedBox(height: 10),
+            const Spacer(),
+            if (hourlyHumidity.isNotEmpty) ...[
               const _ChartLabel(text: 'Humidity'),
-              Expanded(
+              SizedBox(
+                width: double.infinity,
+                height: 70,
                 child: CustomPaint(
                   size: Size.infinite,
                   painter: _HumidityLinePainter(
                     humidities: hourlyHumidity,
                     hours: hours,
                     now: now,
-                    showHourLabels: !hasDewPoint,
+                    showHourLabels: true,
                   ),
                 ),
               ),
-              if (hasDewPoint) ...[
-                const SizedBox(height: 10),
-                const _ChartLabel(text: 'Dew Point'),
-                Expanded(
-                  child: CustomPaint(
-                    size: Size.infinite,
-                    painter: _DewPointLinePainter(
-                      dewPoints: hourlyDewPoint,
-                      hours: hours,
-                      now: now,
-                      showHourLabels: true,
-                    ),
-                  ),
-                ),
-              ],
             ],
           ],
         ),
@@ -243,31 +229,125 @@ class RainCard extends StatelessWidget {
     );
   }
 
-  Widget _buildStatStrip(String precipLabel) {
-    return IntrinsicHeight(
-      child: Row(
-        children: [
-          _StatItem(value: precipLabel, label: 'amount'),
-          VerticalDivider(
-            width: 1,
-            thickness: 0.5,
-            color: AppColors.cream.withValues(alpha: 0.15),
-          ),
-          _StatItem(value: '$precipitationProbability%', label: 'chance'),
-          VerticalDivider(
-            width: 1,
-            thickness: 0.5,
-            color: AppColors.cream.withValues(alpha: 0.15),
-          ),
-          _StatItem(value: '$humidity%', label: 'humidity'),
-          VerticalDivider(
-            width: 1,
-            thickness: 0.5,
-            color: AppColors.cream.withValues(alpha: 0.15),
-          ),
-          _StatItem(value: '${dewPoint.round()}°', label: 'dew point'),
-        ],
-      ),
+  Widget _buildUmbrellaGauge() {
+    final pct = precipitationProbability.clamp(0, 100);
+
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        const _ChartLabel(text: 'Umbrella Meter'),
+        Row(
+          crossAxisAlignment: CrossAxisAlignment.center,
+          children: [
+            Expanded(
+              child: SizedBox(
+                height: 10,
+                child: CustomPaint(
+                  size: Size.infinite,
+                  painter: _BarGaugePainter(probability: pct),
+                ),
+              ),
+            ),
+            const SizedBox(width: 10),
+            Icon(
+              WeatherIcons.umbrella,
+              size: 24,
+              color: AppColors.cream.withValues(alpha: 0.7),
+            ),
+          ],
+        ),
+      ],
+    );
+  }
+
+  Widget _build2x2InfoGrid(String precipLabel, IconData precipIcon) {
+    // Peak chance: find max in hourlyPrecipProb and its time
+    String peakChanceValue;
+    if (hourlyPrecipProb.isNotEmpty && hours.isNotEmpty) {
+      var maxIdx = 0;
+      for (var i = 1; i < hourlyPrecipProb.length; i++) {
+        if (hourlyPrecipProb[i] > hourlyPrecipProb[maxIdx]) maxIdx = i;
+      }
+      if (hourlyPrecipProb[maxIdx] == 0) {
+        peakChanceValue = 'None';
+      } else if (maxIdx < hours.length) {
+        final h = hours[maxIdx].hour % 12 == 0 ? 12 : hours[maxIdx].hour % 12;
+        final suffix = hours[maxIdx].hour >= 12 ? 'pm' : 'am';
+        peakChanceValue = '$h$suffix · ${hourlyPrecipProb[maxIdx]}%';
+      } else {
+        peakChanceValue = '${hourlyPrecipProb[maxIdx]}%';
+      }
+    } else {
+      peakChanceValue = precipitationProbability == 0
+          ? 'None'
+          : '$precipitationProbability%';
+    }
+
+    // Duration: total hours with >20% precip probability
+    final precipHours = hourlyPrecipProb.where((p) => p > 20).length;
+    final durationValue = precipHours == 0
+        ? 'None'
+        : precipHours == 1
+        ? '1 hour'
+        : '$precipHours hours';
+
+    // Dew point comfort label
+    String dewLabel;
+    if (dewPoint < 55) {
+      dewLabel = 'Dry';
+    } else if (dewPoint < 60) {
+      dewLabel = 'Comfy';
+    } else if (dewPoint < 65) {
+      dewLabel = 'Sticky';
+    } else if (dewPoint < 70) {
+      dewLabel = 'Muggy';
+    } else {
+      dewLabel = 'Oppressive';
+    }
+    final dewValue = '${dewPoint.round()}° $dewLabel';
+
+    return Column(
+      children: [
+        Row(
+          children: [
+            Expanded(
+              child: InfoChip(
+                icon: WeatherIcons.cloud,
+                label: 'Cloud cover',
+                value: '$cloudCover%',
+              ),
+            ),
+            const SizedBox(width: 8),
+            Expanded(
+              child: InfoChip(
+                icon: WeatherIcons.umbrella,
+                label: 'Peak chance',
+                value: peakChanceValue,
+              ),
+            ),
+          ],
+        ),
+        const SizedBox(height: 8),
+        Row(
+          children: [
+            Expanded(
+              child: InfoChip(
+                icon: Icons.schedule,
+                label: 'Duration',
+                value: durationValue,
+              ),
+            ),
+            const SizedBox(width: 8),
+            Expanded(
+              child: InfoChip(
+                icon: WeatherIcons.thermometer_exterior,
+                label: 'Dew point',
+                value: dewValue,
+              ),
+            ),
+          ],
+        ),
+      ],
     );
   }
 
@@ -332,43 +412,6 @@ class _ChartLabel extends StatelessWidget {
           fontWeight: FontWeight.w600,
           color: AppColors.cream.withValues(alpha: 0.8),
         ),
-      ),
-    );
-  }
-}
-
-// ---------------------------------------------------------------------------
-// Stat item for the 4-stat strip
-// ---------------------------------------------------------------------------
-class _StatItem extends StatelessWidget {
-  final String value;
-  final String label;
-
-  const _StatItem({required this.value, required this.label});
-
-  @override
-  Widget build(BuildContext context) {
-    return Expanded(
-      child: Column(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          Text(
-            value,
-            style: GoogleFonts.poppins(
-              fontSize: 16,
-              fontWeight: FontWeight.w700,
-              color: AppColors.cream,
-            ),
-          ),
-          Text(
-            label,
-            style: GoogleFonts.poppins(
-              fontSize: 9,
-              fontWeight: FontWeight.w500,
-              color: AppColors.cream.withValues(alpha: 0.6),
-            ),
-          ),
-        ],
       ),
     );
   }
@@ -473,7 +516,7 @@ class _PrecipBarPainter extends CustomPainter {
 }
 
 // ---------------------------------------------------------------------------
-// Smooth cubic path helper (shared by line painters)
+// Smooth cubic path helper
 // ---------------------------------------------------------------------------
 Path _smoothPath(List<Offset> points) {
   final path = Path()..moveTo(points.first.dx, points.first.dy);
@@ -513,7 +556,7 @@ class _HumidityLinePainter extends CustomPainter {
     final graphW = size.width - padLeft;
     final stepX = graphW / (humidities.length - 1);
 
-    // Y-axis labels (no grid lines)
+    // Y-axis labels
     final yLabelStyle = TextStyle(
       color: AppColors.cream.withValues(alpha: 0.95),
       fontSize: 10,
@@ -613,147 +656,6 @@ class _HumidityLinePainter extends CustomPainter {
 }
 
 // ---------------------------------------------------------------------------
-// Dew point line chart — solid line, auto-scaled °F y-axis
-// ---------------------------------------------------------------------------
-class _DewPointLinePainter extends CustomPainter {
-  final List<double> dewPoints;
-  final List<DateTime> hours;
-  final DateTime? now;
-  final bool showHourLabels;
-
-  _DewPointLinePainter({
-    required this.dewPoints,
-    required this.hours,
-    this.now,
-    this.showHourLabels = false,
-  });
-
-  @override
-  void paint(Canvas canvas, Size size) {
-    if (dewPoints.length < 2) return;
-
-    final dataLo = dewPoints.reduce(math.min);
-    final dataHi = dewPoints.reduce(math.max);
-
-    const step = 5.0; // y-axis snaps to 5° increments
-    const minHeadroom = 2.0;
-
-    var lo = (dataLo / step).floor() * step;
-    var hi = (dataHi / step).ceil() * step;
-    if (dataLo - lo < minHeadroom) lo -= step;
-    if (hi - dataHi < minHeadroom) hi += step;
-    if (hi - lo == 0) hi = lo + step;
-
-    final range = hi - lo;
-
-    const padTop = 2.0;
-    final padBottom = showHourLabels ? 14.0 : 2.0;
-    const padLeft = 20.0;
-    final graphH = size.height - padTop - padBottom;
-    final graphW = size.width - padLeft;
-    final stepX = graphW / (dewPoints.length - 1);
-
-    // Dew point curve points
-    final points = <Offset>[];
-    for (var i = 0; i < dewPoints.length; i++) {
-      final x = padLeft + i * stepX;
-      final y = padTop + graphH * (1 - (dewPoints[i] - lo) / range);
-      points.add(Offset(x, y));
-    }
-
-    final linePath = _smoothPath(points);
-
-    // Gradient area fill under the curve
-    final fillPath = Path.from(linePath)
-      ..lineTo(points.last.dx, padTop + graphH)
-      ..lineTo(points.first.dx, padTop + graphH)
-      ..close();
-    final fillRect = Rect.fromLTRB(
-      points.first.dx,
-      padTop,
-      points.last.dx,
-      padTop + graphH,
-    );
-    final fillPaint = Paint()
-      ..shader = LinearGradient(
-        begin: Alignment.topCenter,
-        end: Alignment.bottomCenter,
-        colors: [
-          AppColors.cream.withValues(alpha: 0.15),
-          AppColors.cream.withValues(alpha: 0.03),
-        ],
-      ).createShader(fillRect);
-    canvas.drawPath(fillPath, fillPaint);
-
-    // Line
-    canvas.drawPath(
-      linePath,
-      Paint()
-        ..color = AppColors.cream.withValues(alpha: 0.5)
-        ..strokeWidth = 2
-        ..style = PaintingStyle.stroke
-        ..strokeCap = StrokeCap.round,
-    );
-
-    // Y-axis labels (°) — no grid lines
-    final mid = (lo + hi) / 2;
-    final yLabelStyle = TextStyle(
-      color: AppColors.cream.withValues(alpha: 0.95),
-      fontSize: 10,
-      fontWeight: FontWeight.w600,
-    );
-    for (final t in [hi, mid, lo]) {
-      final y = padTop + graphH * (1 - (t - lo) / range);
-      final tp = TextPainter(
-        text: TextSpan(text: '${t.round()}°', style: yLabelStyle),
-        textDirection: TextDirection.ltr,
-      )..layout();
-      tp.paint(canvas, Offset(0, y - tp.height / 2));
-    }
-
-    // "Now" dot
-    _drawNowDot(
-      canvas,
-      hours: hours,
-      now: now,
-      points: points,
-      valueAt: (i) => dewPoints[i],
-      yForValue: (v) => padTop + graphH * (1 - (v - lo) / range),
-    );
-
-    // Hour labels
-    if (showHourLabels) {
-      final labelStyle = TextStyle(
-        color: AppColors.cream.withValues(alpha: 0.9),
-        fontSize: 10,
-        fontWeight: FontWeight.w600,
-      );
-      for (var i = 0; i < hours.length; i++) {
-        if (i % 6 != 0 && i != hours.length - 1) continue;
-        final tp = TextPainter(
-          text: TextSpan(
-            text: DateFormat('ha').format(hours[i]).toLowerCase(),
-            style: labelStyle,
-          ),
-          textDirection: TextDirection.ltr,
-        )..layout();
-        final x = (padLeft + i * stepX - tp.width / 2).clamp(
-          padLeft,
-          size.width - tp.width,
-        );
-        tp.paint(canvas, Offset(x, size.height - padBottom + 2));
-      }
-    }
-  }
-
-  @override
-  bool shouldRepaint(covariant _DewPointLinePainter old) =>
-      dewPoints != old.dewPoints ||
-      now != old.now ||
-      showHourLabels != old.showHourLabels;
-}
-
-// ---------------------------------------------------------------------------
 // Shared helper: draw "Now" vertical indicator line
 // ---------------------------------------------------------------------------
 void _drawNowLine(
@@ -784,6 +686,52 @@ void _drawNowLine(
 // ---------------------------------------------------------------------------
 // Shared helper: draw "Now" dot on a line chart
 // ---------------------------------------------------------------------------
+// ---------------------------------------------------------------------------
+// Bar Gauge — simple horizontal progress bar
+// ---------------------------------------------------------------------------
+class _BarGaugePainter extends CustomPainter {
+  final int probability;
+
+  _BarGaugePainter({required this.probability});
+
+  @override
+  void paint(Canvas canvas, Size size) {
+    final pct = probability.clamp(0, 100) / 100.0;
+    const barH = 6.0;
+    final barY = (size.height - barH) / 2;
+
+    // Track
+    canvas.drawRRect(
+      RRect.fromRectAndRadius(
+        Rect.fromLTWH(0, barY, size.width, barH),
+        const Radius.circular(barH / 2),
+      ),
+      Paint()..color = AppColors.cream.withValues(alpha: 0.12),
+    );
+
+    // Fill
+    if (pct > 0) {
+      final fillW = size.width * pct;
+      canvas.drawRRect(
+        RRect.fromRectAndRadius(
+          Rect.fromLTWH(0, barY, fillW, barH),
+          const Radius.circular(barH / 2),
+        ),
+        Paint()..color = AppColors.cream.withValues(alpha: 0.35 + 0.5 * pct),
+      );
+      canvas.drawCircle(
+        Offset(fillW, barY + barH / 2),
+        5,
+        Paint()..color = AppColors.cream,
+      );
+    }
+  }
+
+  @override
+  bool shouldRepaint(covariant _BarGaugePainter old) =>
+      probability != old.probability;
+}
+
 void _drawNowDot(
   Canvas canvas, {
   required List<DateTime> hours,

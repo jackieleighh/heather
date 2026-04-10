@@ -166,9 +166,7 @@ class TemperatureCard extends StatelessWidget {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           _buildHeaderRow(hi, lo),
-          if (averageHigh != null &&
-              todayHigh != null &&
-              !compact)
+          if (averageHigh != null && todayHigh != null && !compact)
             Row(
               children: [
                 const Spacer(),
@@ -235,7 +233,7 @@ class TemperatureCard extends StatelessWidget {
   Widget _buildHeroNow() {
     final temp = currentTemp!;
     final feels = currentFeelsLike;
-    final showFeels = feels != null && (feels - temp).abs() >= 3;
+    final showFeels = feels != null && (feels - temp).abs() >= 1;
 
     return Row(
       crossAxisAlignment: CrossAxisAlignment.baseline,
@@ -268,14 +266,14 @@ class TemperatureCard extends StatelessWidget {
 
   Widget _buildRangeGauge(double todayLo, double todayHi) {
     final feels = currentFeelsLike;
-    final showFeels = feels != null && (feels - currentTemp!).abs() >= 3;
+    final showFeels = feels != null && (feels - currentTemp!).abs() >= 1;
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         SizedBox(
           width: double.infinity,
-          height: 36,
+          height: 44,
           child: CustomPaint(
             size: Size.infinite,
             painter: _RangeGaugePainter(
@@ -365,7 +363,7 @@ class TemperatureCard extends StatelessWidget {
             Expanded(
               child: InfoChip(
                 icon: WeatherIcons.raindrop,
-                label: 'Dew Point',
+                label: 'Dew point',
                 value: dewValue,
               ),
             ),
@@ -465,8 +463,8 @@ class _TempLinePainter extends CustomPainter {
     final dataHi = allValues.reduce(math.max);
     if (dataHi - dataLo == 0) return;
 
-    const step = 5.0;          // y-axis snaps to 5° increments
-    const minHeadroom = 2.0;   // minimum gap between data and chart edge
+    const step = 5.0; // y-axis snaps to 5° increments
+    const minHeadroom = 2.0; // minimum gap between data and chart edge
 
     var lo = (dataLo / step).floor() * step;
     var hi = (dataHi / step).ceil() * step;
@@ -602,7 +600,8 @@ class _TempLinePainter extends CustomPainter {
             temps[idx] + (temps[idx + 1] - temps[idx]) * segFraction;
         dotY = padTop + graphH * (1 - (interpTemp - lo) / range);
         if (hasFeelsLine) {
-          final interpFeels = feelsLikeTemps[idx] +
+          final interpFeels =
+              feelsLikeTemps[idx] +
               (feelsLikeTemps[idx + 1] - feelsLikeTemps[idx]) * segFraction;
           feelsDotY = padTop + graphH * (1 - (interpFeels - lo) / range);
         }
@@ -816,9 +815,9 @@ class _RangeGaugePainter extends CustomPainter {
 
     // Vertical slots. Labels are painted by their top-left corner.
     final labelH = feelsTp?.height ?? avgTp?.height ?? nowTp?.height ?? 12.0;
-    final topLowerY = barY - 2 - labelH; // just above the bar
+    final topLowerY = barY - 6 - labelH; // just above the bar
     final topUpperY = topLowerY - labelH - 1; // stacked above lower
-    final bottomY = barY + barH + 2; // just below the bar
+    final bottomY = barY + barH + 6; // just below the bar
 
     if (feelsAvgOverlap) {
       _paintLabelAt(canvas, feelsTp!, feelsX!, topUpperY, size.width);
@@ -870,7 +869,11 @@ class _DashedLinePainter extends CustomPainter {
     final y = size.height / 2;
     var x = 0.0;
     while (x < size.width) {
-      canvas.drawLine(Offset(x, y), Offset(math.min(x + 3, size.width), y), paint);
+      canvas.drawLine(
+        Offset(x, y),
+        Offset(math.min(x + 3, size.width), y),
+        paint,
+      );
       x += 5;
     }
   }

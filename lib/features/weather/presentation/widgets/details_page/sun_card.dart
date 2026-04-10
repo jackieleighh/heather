@@ -13,14 +13,13 @@ import './info_chip.dart';
 class SunCard extends StatelessWidget {
   // Arc canvas geometry — kept here so the LayoutBuilder placing the
   // sunrise/sunset labels and `_SunArcPainter` agree on the endpoints.
-  static const double _arcCanvasHeight = 90;
+  static const double _arcCanvasHeight = 60;
   static const double _arcTopPad = 6;
   static const double _arcBottomGutter = 4;
-  // Arc is intentionally flatter than a true semicircle: the vertical
-  // radius is scaled down relative to the horizontal span so the sun
-  // traces a gentler curve instead of a half-dome.
+  // Arc is drawn as a true circular arc (not an ellipse). The visible
+  // height is capped by the canvas; the circle radius is computed via the
+  // sagitta formula so the curve always looks like the top of a circle.
   static const double _arcRadiusXMax = 200;
-  static const double _arcRadiusYRatio = 0.55;
 
   final DateTime sunrise;
   final DateTime sunset;
@@ -104,7 +103,7 @@ class SunCard extends StatelessWidget {
               Text(
                 timeFmt.format(sunrise),
                 style: GoogleFonts.poppins(
-                  fontSize: 12,
+                  fontSize: 13,
                   fontWeight: FontWeight.w700,
                   color: AppColors.cream,
                 ),
@@ -222,7 +221,9 @@ class SunCard extends StatelessWidget {
                                 style: GoogleFonts.poppins(
                                   fontSize: 12,
                                   fontWeight: FontWeight.w400,
-                                  color: AppColors.cream.withValues(alpha: 0.95),
+                                  color: AppColors.cream.withValues(
+                                    alpha: 0.95,
+                                  ),
                                 ),
                               ),
                             ],
@@ -248,7 +249,9 @@ class SunCard extends StatelessWidget {
                                 style: GoogleFonts.poppins(
                                   fontSize: 12,
                                   fontWeight: FontWeight.w400,
-                                  color: AppColors.cream.withValues(alpha: 0.95),
+                                  color: AppColors.cream.withValues(
+                                    alpha: 0.95,
+                                  ),
                                 ),
                               ),
                             ],
@@ -349,7 +352,7 @@ class SunCard extends StatelessWidget {
               const SizedBox(height: 4),
               SizedBox(
                 width: double.infinity,
-                height: 60,
+                height: 90,
                 child: CustomPaint(
                   size: Size.infinite,
                   painter: _UvLinePainter(
@@ -471,9 +474,7 @@ class SunCard extends StatelessWidget {
               // When the sun is currently up, `sunrise` is today's (already
               // past). The "after the next event" slot should show the next
               // morning's sunrise instead.
-              timeFmt.format(
-                isSunUp ? (tomorrowSunrise ?? sunrise) : sunset,
-              ),
+              timeFmt.format(isSunUp ? (tomorrowSunrise ?? sunrise) : sunset),
               style: theme.textTheme.bodyMedium?.copyWith(
                 fontWeight: FontWeight.w800,
                 fontSize: 14,
@@ -499,7 +500,7 @@ class SunCard extends StatelessWidget {
             Expanded(
               child: InfoChip(
                 icon: WeatherIcons.day_sunny,
-                label: 'Solar Noon',
+                label: 'Solar noon',
                 value: timeFmt.format(noon),
               ),
             ),
@@ -527,7 +528,7 @@ class SunCard extends StatelessWidget {
             Expanded(
               child: InfoChip(
                 icon: WeatherIcons.sunset,
-                label: 'Golden Hour',
+                label: 'Golden hour',
                 value: timeFmt.format(golden),
               ),
             ),
@@ -559,7 +560,10 @@ class SunCard extends StatelessWidget {
     return sunrise.add(sunset.difference(sunrise) ~/ 2);
   }
 
-  static (DateTime, double)? _peakUv(List<double> hourlyUv, List<DateTime> hours) {
+  static (DateTime, double)? _peakUv(
+    List<double> hourlyUv,
+    List<DateTime> hours,
+  ) {
     if (hourlyUv.isEmpty) return null;
     var maxIdx = 0;
     for (var i = 1; i < hourlyUv.length; i++) {
@@ -621,10 +625,7 @@ class _UvLinePainter extends CustomPainter {
     if (uvValues.length < 2) return;
 
     final hi = uvValues.reduce(math.max);
-    final maxY = math.max(
-      hi,
-      3.0,
-    );
+    final maxY = math.max(hi, 3.0);
     if (maxY == 0) return;
 
     final padTop = showLabel ? 24.0 : 2.0;
@@ -690,19 +691,17 @@ class _UvLinePainter extends CustomPainter {
       fillPath.close();
 
       final fillPaint = Paint()
-        ..shader = LinearGradient(
-          begin: Alignment.topCenter,
-          end: Alignment.bottomCenter,
-          colors: [
-            AppColors.cream.withValues(alpha: 0.15),
-            AppColors.cream.withValues(alpha: 0.03),
-          ],
-        ).createShader(Rect.fromLTRB(
-          padLeft,
-          padTop,
-          padLeft + graphW,
-          bottomY,
-        ))
+        ..shader =
+            LinearGradient(
+              begin: Alignment.topCenter,
+              end: Alignment.bottomCenter,
+              colors: [
+                AppColors.cream.withValues(alpha: 0.15),
+                AppColors.cream.withValues(alpha: 0.03),
+              ],
+            ).createShader(
+              Rect.fromLTRB(padLeft, padTop, padLeft + graphW, bottomY),
+            )
         ..style = PaintingStyle.fill;
       canvas.drawPath(fillPath, fillPaint);
     }
@@ -815,18 +814,24 @@ class _SunArcPainter extends CustomPainter {
     const bottomGutter = SunCard._arcBottomGutter;
     final horizY = h - bottomGutter;
     final arcRadiusX = math.min(SunCard._arcRadiusXMax, (w - 32) / 2);
-    final maxRadiusY = horizY - topPad;
-    final arcRadiusY = math.min(
-      maxRadiusY,
-      arcRadiusX * SunCard._arcRadiusYRatio,
-    );
+    final sagitta = horizY - topPad; // visible arc height
+    // True circular arc via sagitta formula: R = (c² + h²) / (2h)
+    // where c = half-chord (arcRadiusX) and h = sagitta.
+    final circleR =
+        (arcRadiusX * arcRadiusX + sagitta * sagitta) / (2 * sagitta);
     final arcCenterX = w / 2;
-    final arcCenterY = horizY;
-    final arcRect = Rect.fromCenter(
-      center: Offset(arcCenterX, arcCenterY),
-      width: arcRadiusX * 2,
-      height: arcRadiusY * 2, // elongated → flatter arc
+    // Circle center sits below the horizon since circleR > sagitta.
+    final circleCenterY = horizY + circleR - sagitta;
+    final circleRect = Rect.fromCenter(
+      center: Offset(arcCenterX, circleCenterY),
+      width: circleR * 2,
+      height: circleR * 2,
     );
+    // Half-angle from the top of the circle to each endpoint.
+    final halfAngle = math.asin(arcRadiusX / circleR);
+    // In Flutter, 3π/2 is 12 o'clock. Sweep clockwise through the top.
+    final arcStartAngle = 3 * math.pi / 2 - halfAngle;
+    final arcSweepAngle = 2 * halfAngle;
     final arcLeft = arcCenterX - arcRadiusX;
     final arcRight = arcCenterX + arcRadiusX;
 
@@ -846,7 +851,8 @@ class _SunArcPainter extends CustomPainter {
     final isDay = fraction >= 0 && fraction <= 1;
 
     // Upper dashed arc — full opacity during day, faded at night
-    final upperArcPath = Path()..addArc(arcRect, math.pi, math.pi);
+    final upperArcPath = Path()
+      ..addArc(circleRect, arcStartAngle, arcSweepAngle);
     _drawDashedPath(
       canvas,
       upperArcPath,
@@ -863,10 +869,11 @@ class _SunArcPainter extends CustomPainter {
     if (isDay) {
       final goldenFraction =
           goldenHour.difference(sunrise).inSeconds / totalDuration;
-      final goldenAngle = math.pi + math.pi * goldenFraction.clamp(0.0, 1.0);
-      const sunsetAngle = math.pi + math.pi; // 2*pi = right end
+      final goldenAngle =
+          arcStartAngle + arcSweepAngle * goldenFraction.clamp(0.0, 1.0);
+      final sunsetAngle = arcStartAngle + arcSweepAngle;
       final goldenPath = Path()
-        ..addArc(arcRect, goldenAngle, sunsetAngle - goldenAngle);
+        ..addArc(circleRect, goldenAngle, sunsetAngle - goldenAngle);
       canvas.drawPath(
         goldenPath,
         Paint()
@@ -879,7 +886,7 @@ class _SunArcPainter extends CustomPainter {
 
     // Solar noon tick at top of arc
     final noonX = arcCenterX;
-    final noonY = arcCenterY - arcRadiusY;
+    final noonY = circleCenterY - circleR;
     canvas.drawLine(
       Offset(noonX, noonY - 3),
       Offset(noonX, noonY + 3),
@@ -892,9 +899,9 @@ class _SunArcPainter extends CustomPainter {
     if (isDay) {
       // Sun position on the upward arc
       final clampedFraction = fraction.clamp(0.0, 1.0);
-      final angle = math.pi + math.pi * clampedFraction;
-      final sunX = arcCenterX + arcRadiusX * math.cos(angle);
-      final sunY = arcCenterY + arcRadiusY * math.sin(angle);
+      final angle = arcStartAngle + arcSweepAngle * clampedFraction;
+      final sunX = arcCenterX + circleR * math.cos(angle);
+      final sunY = circleCenterY + circleR * math.sin(angle);
       // Glow
       canvas.drawCircle(
         Offset(sunX, sunY),
@@ -928,8 +935,5 @@ class _SunArcPainter extends CustomPainter {
 
   @override
   bool shouldRepaint(covariant _SunArcPainter old) =>
-      sunrise != old.sunrise ||
-      sunset != old.sunset ||
-      now != old.now;
+      sunrise != old.sunrise || sunset != old.sunset || now != old.now;
 }
-

@@ -467,7 +467,7 @@ class MoonCard extends ConsumerWidget {
           ],
         ),
         if (hasRiseSet) ...[
-          const SizedBox(height: 4),
+          const SizedBox(height: 2),
           Row(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
@@ -644,7 +644,7 @@ class MoonCard extends ConsumerWidget {
                 ),
               ],
             ),
-            if (phaseDatesText.isNotEmpty && mode != CardDisplayMode.expanded)
+            if (phaseDatesText.isNotEmpty)
               Text(
                 phaseDatesText,
                 style: GoogleFonts.poppins(
@@ -794,7 +794,7 @@ class _PhaseStrip extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return SizedBox(
-      height: 9,
+      height: 8,
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceEvenly,
         children: List.generate(_phases.length, (i) {
@@ -900,6 +900,7 @@ class _ExpandedVisiblePlanetsBlock extends ConsumerWidget {
         return Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
+            const SizedBox(height: 4),
             Text(
               'Visible tonight',
               style: GoogleFonts.poppins(
@@ -960,7 +961,7 @@ class _PlanetTile extends StatelessWidget {
     );
 
     return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 8),
+      padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 5),
       decoration: BoxDecoration(
         color: AppColors.cream.withValues(alpha: 0.08),
         borderRadius: BorderRadius.circular(10),

@@ -345,34 +345,6 @@ class _WeatherScreenState extends ConsumerState<WeatherScreen>
     }
   }
 
-  List<WeatherAlert> _collectAllAlerts() {
-    final alerts = <WeatherAlert>[];
-    final seenIds = <String>{};
-
-    final state = ref.read(weatherStateProvider);
-    state.whenOrNull(
-      loaded: (forecast, location, quip, gpsAlerts) {
-        for (final a in gpsAlerts) {
-          if (seenIds.add(a.id)) alerts.add(a);
-        }
-      },
-    );
-
-    final savedState = ref.read(savedLocationsForecastProvider);
-    savedState.whenOrNull(
-      loaded: (forecasts) {
-        for (final entry in forecasts.values) {
-          for (final a in entry.alerts) {
-            if (seenIds.add(a.id)) alerts.add(a);
-          }
-        }
-      },
-    );
-
-    alerts.sort((a, b) => a.severity.sortOrder.compareTo(b.severity.sortOrder));
-    return alerts;
-  }
-
   /// Collect alerts for the specific location referenced by the pending notification.
   /// Reads from local [_pendingLocationId] instead of the FcmService singleton.
   List<WeatherAlert> _collectAlertsForPendingLocation() {

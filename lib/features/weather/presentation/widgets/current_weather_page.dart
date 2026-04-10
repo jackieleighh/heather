@@ -165,6 +165,7 @@ class _CurrentWeatherPageState extends State<CurrentWeatherPage> {
                         temperature: weather.temperature,
                         high: todayHigh,
                         low: todayLow,
+                        feelsLike: weather.feelsLike,
                       ),
                       const Spacer(flex: 1),
                       SassyQuip(quip: widget.quip),

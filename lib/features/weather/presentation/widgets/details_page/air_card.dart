@@ -4,13 +4,14 @@ import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:heather/core/constants/app_colors.dart';
 import 'package:heather/core/utils/wind_direction.dart';
+import 'package:heather/features/weather/domain/entities/air_quality.dart';
 import 'package:intl/intl.dart' hide TextDirection;
 import 'package:weather_icons/weather_icons.dart';
 import './card_container.dart';
 import './card_display_mode.dart';
 
 class AirCard extends StatelessWidget {
-  final int? aqi;
+  final AirQuality? airQuality;
   final bool isLoading;
   final double windSpeed;
   final double pressure;
@@ -25,7 +26,7 @@ class AirCard extends StatelessWidget {
 
   const AirCard({
     super.key,
-    required this.aqi,
+    required this.airQuality,
     required this.isLoading,
     required this.windSpeed,
     this.pressure = 0.0,
@@ -38,6 +39,8 @@ class AirCard extends StatelessWidget {
     this.hourlyWindDirection = const [],
     this.hours = const [],
   });
+
+  int? get aqi => airQuality?.aqi;
 
   @override
   Widget build(BuildContext context) {
@@ -115,21 +118,22 @@ class AirCard extends StatelessWidget {
 
     if (mode == CardDisplayMode.expanded) {
       final hasChartData = hourlyWindSpeed.length >= 2 && hours.isNotEmpty;
-      return CardContainer(
-        backgroundIcon: WeatherIcons.smoke,
-        child: Column(
+      final sections = <Widget>[
+        Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             _buildExpandedHeaderRow(),
-            const Spacer(),
-            _buildHeroWindStrip(),
-            const Spacer(),
-            _buildAqiStripRow(theme),
-            if (hasChartData) ...[
-              const Spacer(),
-              const SizedBox(height: 10),
+            if (pressure > 0) _buildPressureRow(pressureDelta),
+          ],
+        ),
+        _buildAqiStripRow(theme),
+        if (airQuality != null) _buildPollutantGrid(),
+        if (hasChartData)
+          Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
               Padding(
-                padding: const EdgeInsets.only(bottom: 6),
+                padding: const EdgeInsets.only(bottom: 4),
                 child: Row(
                   children: [
                     Container(
@@ -163,7 +167,7 @@ class AirCard extends StatelessWidget {
                 ),
               ),
               SizedBox(
-                height: 86,
+                height: 56,
                 child: CustomPaint(
                   size: Size.infinite,
                   painter: _WindLinePainter(
@@ -175,13 +179,14 @@ class AirCard extends StatelessWidget {
                   ),
                 ),
               ),
-              const SizedBox(height: 10),
             ],
-            if (hasPressureData && hours.isNotEmpty) ...[
-              const Spacer(),
-              const SizedBox(height: 10),
+          ),
+        if (hasPressureData && hours.isNotEmpty)
+          Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
               Padding(
-                padding: const EdgeInsets.only(bottom: 6),
+                padding: const EdgeInsets.only(bottom: 4),
                 child: Row(
                   children: [
                     Icon(
@@ -202,7 +207,7 @@ class AirCard extends StatelessWidget {
                 ),
               ),
               SizedBox(
-                height: 90,
+                height: 68,
                 child: CustomPaint(
                   size: Size.infinite,
                   painter: _PressureLinePainter(
@@ -212,7 +217,18 @@ class AirCard extends StatelessWidget {
                   ),
                 ),
               ),
-              const SizedBox(height: 10),
+            ],
+          ),
+      ];
+
+      return CardContainer(
+        backgroundIcon: WeatherIcons.smoke,
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            for (var i = 0; i < sections.length; i++) ...[
+              sections[i],
+              if (i < sections.length - 1) const Spacer(),
             ],
           ],
         ),
@@ -243,6 +259,9 @@ class AirCard extends StatelessWidget {
   }
 
   Widget _buildHeaderRow(double? pressureDelta) {
+    final maxGust = hourlyWindGusts.isNotEmpty
+        ? hourlyWindGusts.reduce(math.max)
+        : windGusts;
     return Row(
       crossAxisAlignment: CrossAxisAlignment.baseline,
       textBaseline: TextBaseline.alphabetic,
@@ -285,10 +304,10 @@ class AirCard extends StatelessWidget {
             color: AppColors.cream.withValues(alpha: 0.95),
           ),
         ),
-        if (windGusts > windSpeed) ...[
+        if (maxGust > windSpeed) ...[
           const SizedBox(width: 4),
           Text(
-            'up to ${windGusts.round()} mph',
+            'up to ${maxGust.round()} mph',
             style: GoogleFonts.poppins(
               fontSize: 11,
               fontWeight: FontWeight.w400,
@@ -390,16 +409,10 @@ class AirCard extends StatelessWidget {
     );
   }
 
-  static String _aqiLabel(int aqi) {
-    if (aqi <= 50) return 'Good';
-    if (aqi <= 100) return 'Moderate';
-    if (aqi <= 150) return 'Unhealthy (Sensitive)';
-    if (aqi <= 200) return 'Unhealthy';
-    if (aqi <= 300) return 'Very Unhealthy';
-    return 'Hazardous';
-  }
-
   Widget _buildExpandedHeaderRow() {
+    final maxGust = hourlyWindGusts.isNotEmpty
+        ? hourlyWindGusts.reduce(math.max)
+        : windGusts;
     return Row(
       crossAxisAlignment: CrossAxisAlignment.baseline,
       textBaseline: TextBaseline.alphabetic,
@@ -426,7 +439,7 @@ class AirCard extends StatelessWidget {
         ),
         const SizedBox(width: 6),
         Text(
-          windDirectionLabel(windDirection),
+          '${windDirectionLabel(windDirection)} ($windDirection\u00B0)',
           style: GoogleFonts.poppins(
             fontSize: 13,
             fontWeight: FontWeight.w600,
@@ -442,114 +455,117 @@ class AirCard extends StatelessWidget {
             color: AppColors.cream.withValues(alpha: 0.95),
           ),
         ),
+        if (maxGust > windSpeed) ...[
+          const SizedBox(width: 4),
+          Text(
+            'up to ${maxGust.round()} mph',
+            style: GoogleFonts.poppins(
+              fontSize: 11,
+              fontWeight: FontWeight.w400,
+              color: AppColors.cream.withValues(alpha: 0.8),
+            ),
+          ),
+        ],
       ],
     );
   }
 
-  Widget _buildHeroWindStrip() {
-    return SizedBox(
-      height: 64,
-      child: Row(
-        crossAxisAlignment: CrossAxisAlignment.center,
-        children: [
-          SizedBox(
-            width: 56,
-            height: 56,
-            child: CustomPaint(
-              painter: _WindArrowPainter(
-                windDirection: windDirection,
-                windSpeed: windSpeed,
-              ),
-            ),
-          ),
-          const SizedBox(width: 16),
-          Row(
-            crossAxisAlignment: CrossAxisAlignment.baseline,
-            textBaseline: TextBaseline.alphabetic,
-            children: [
-              Text(
-                '${windSpeed.round()}',
-                style: GoogleFonts.poppins(
-                  fontSize: 40,
-                  fontWeight: FontWeight.w700,
-                  color: AppColors.cream,
-                  height: 1,
-                ),
-              ),
-              const SizedBox(width: 4),
-              Text(
-                'mph',
-                style: GoogleFonts.poppins(
-                  fontSize: 14,
-                  fontWeight: FontWeight.w500,
-                  color: AppColors.cream.withValues(alpha: 0.7),
-                  height: 1,
-                ),
-              ),
-            ],
-          ),
-          const Spacer(),
-          Column(
-            crossAxisAlignment: CrossAxisAlignment.end,
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              Text(
-                '${windDirectionLabel(windDirection)} ($windDirection\u00B0)',
-                style: GoogleFonts.poppins(
-                  fontSize: 13,
-                  fontWeight: FontWeight.w600,
-                  color: AppColors.cream.withValues(alpha: 0.95),
-                ),
-              ),
-              if (windGusts > windSpeed + 0.5) ...[
-                const SizedBox(height: 2),
-                Text(
-                  'gusts to ${windGusts.round()} mph',
-                  style: GoogleFonts.poppins(
-                    fontSize: 12,
-                    fontWeight: FontWeight.w500,
-                    color: AppColors.cream.withValues(alpha: 0.6),
-                  ),
-                ),
-              ],
-            ],
-          ),
-        ],
-      ),
-    );
+  static String _aqiLabel(int aqi) {
+    if (aqi <= 50) return 'Good';
+    if (aqi <= 100) return 'Moderate';
+    if (aqi <= 150) return 'Unhealthy (Sensitive)';
+    if (aqi <= 200) return 'Unhealthy';
+    if (aqi <= 300) return 'Very Unhealthy';
+    return 'Hazardous';
   }
 
   Widget _buildAqiStripRow(ThemeData theme) {
-    return Row(
-      crossAxisAlignment: CrossAxisAlignment.center,
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.end,
       children: [
-        Text(
-          isLoading ? '...' : (aqi?.toString() ?? '--'),
-          style: theme.textTheme.bodyLarge?.copyWith(
-            fontWeight: FontWeight.w800,
-            fontSize: 22,
-          ),
-        ),
-        const SizedBox(width: 6),
-        Text(
-          aqi == null ? '' : _aqiLabel(aqi!),
-          style: GoogleFonts.poppins(
-            fontSize: 12,
-            fontWeight: FontWeight.w600,
-            color: AppColors.cream.withValues(alpha: 0.85),
-          ),
-        ),
-        const SizedBox(width: 12),
-        Expanded(
-          child: SizedBox(
-            height: 12,
-            child: CustomPaint(
-              size: Size.infinite,
-              painter: _AqiScalePainter(aqi: aqi),
+        Row(
+          mainAxisAlignment: MainAxisAlignment.end,
+          children: [
+            Text(
+              isLoading ? '...' : (aqi?.toString() ?? '--'),
+              style: theme.textTheme.bodyLarge?.copyWith(
+                fontWeight: FontWeight.w800,
+                fontSize: 22,
+              ),
             ),
+            const SizedBox(width: 6),
+            Text(
+              aqi == null ? '' : _aqiLabel(aqi!),
+              style: GoogleFonts.poppins(
+                fontSize: 12,
+                fontWeight: FontWeight.w600,
+                color: AppColors.cream.withValues(alpha: 0.85),
+              ),
+            ),
+          ],
+        ),
+        SizedBox(
+          height: 12,
+          child: CustomPaint(
+            size: Size.infinite,
+            painter: _AqiScalePainter(aqi: aqi),
           ),
         ),
       ],
+    );
+  }
+
+  Widget _buildPollutantGrid() {
+    final entries = <MapEntry<String, double>>[];
+    if (airQuality!.pm25 != null) entries.add(MapEntry('PM2.5', airQuality!.pm25!));
+    if (airQuality!.pm10 != null) entries.add(MapEntry('PM10', airQuality!.pm10!));
+    if (airQuality!.ozone != null) entries.add(MapEntry('O\u2083', airQuality!.ozone!));
+    if (airQuality!.no2 != null) entries.add(MapEntry('NO\u2082', airQuality!.no2!));
+    if (airQuality!.so2 != null) entries.add(MapEntry('SO\u2082', airQuality!.so2!));
+    if (airQuality!.co != null) entries.add(MapEntry('CO', airQuality!.co!));
+
+    if (entries.isEmpty) return const SizedBox.shrink();
+
+    return Padding(
+      padding: const EdgeInsets.only(top: 10),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            children: [
+              Text(
+                'Pollutants',
+                style: GoogleFonts.poppins(
+                  fontSize: 11,
+                  fontWeight: FontWeight.w800,
+                  color: AppColors.cream.withValues(alpha: 0.85),
+                ),
+              ),
+              const SizedBox(width: 6),
+              Text(
+                '\u00B5g/m\u00B3',
+                style: GoogleFonts.poppins(
+                  fontSize: 9,
+                  fontWeight: FontWeight.w400,
+                  color: AppColors.cream.withValues(alpha: 0.5),
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 6),
+          IntrinsicHeight(
+            child: Row(
+              crossAxisAlignment: CrossAxisAlignment.stretch,
+              children: [
+                for (var i = 0; i < entries.length; i++) ...[
+                  if (i > 0) const SizedBox(width: 6),
+                  Expanded(child: _PollutantTile(label: entries[i].key, value: entries[i].value)),
+                ],
+              ],
+            ),
+          ),
+        ],
+      ),
     );
   }
 
@@ -826,131 +842,6 @@ class _WindLinePainter extends CustomPainter {
       showHourLabels != old.showHourLabels;
 }
 
-class _WindArrowPainter extends CustomPainter {
-  final int windDirection;
-  final double windSpeed;
-
-  _WindArrowPainter({
-    required this.windDirection,
-    required this.windSpeed,
-  });
-
-  @override
-  void paint(Canvas canvas, Size size) {
-    final cx = size.width / 2;
-    final cy = size.height / 2;
-    final radius = math.min(size.width, size.height) / 2 - 5;
-
-    // Soft outer ring
-    canvas.drawCircle(
-      Offset(cx, cy),
-      radius,
-      Paint()
-        ..color = AppColors.cream.withValues(alpha: 0.22)
-        ..strokeWidth = 1.2
-        ..style = PaintingStyle.stroke,
-    );
-
-    // Inner faint ring for depth
-    canvas.drawCircle(
-      Offset(cx, cy),
-      radius - 3,
-      Paint()
-        ..color = AppColors.cream.withValues(alpha: 0.08)
-        ..strokeWidth = 0.8
-        ..style = PaintingStyle.stroke,
-    );
-
-    // Cardinal tick dots at N / E / S / W
-    final tickPaint = Paint()
-      ..color = AppColors.cream.withValues(alpha: 0.4)
-      ..style = PaintingStyle.fill;
-    for (final angle in [-math.pi / 2, 0.0, math.pi / 2, math.pi]) {
-      canvas.drawCircle(
-        Offset(cx + math.cos(angle) * radius, cy + math.sin(angle) * radius),
-        1.2,
-        tickPaint,
-      );
-    }
-
-    // Tiny "N" reference label just above the top tick
-    final nTp = TextPainter(
-      text: TextSpan(
-        text: 'N',
-        style: TextStyle(
-          color: AppColors.cream.withValues(alpha: 0.65),
-          fontSize: 8,
-          fontWeight: FontWeight.w700,
-          letterSpacing: 0.2,
-        ),
-      ),
-      textDirection: TextDirection.ltr,
-    )..layout();
-    nTp.paint(canvas, Offset(cx - nTp.width / 2, cy - radius - nTp.height));
-
-    // Compass needle (only when not calm)
-    if (windSpeed >= 1) {
-      final markerAngle = (windDirection - 90) * math.pi / 180;
-      final dx = math.cos(markerAngle);
-      final dy = math.sin(markerAngle);
-      final perpDx = -dy;
-      final perpDy = dx;
-
-      final tipLen = radius - 4;
-      final tailLen = radius - 6;
-      const halfWidth = 3.5;
-
-      final tip = Offset(cx + dx * tipLen, cy + dy * tipLen);
-      final tail = Offset(cx - dx * tailLen, cy - dy * tailLen);
-      final leftMid = Offset(
-        cx + perpDx * halfWidth,
-        cy + perpDy * halfWidth,
-      );
-      final rightMid = Offset(
-        cx - perpDx * halfWidth,
-        cy - perpDy * halfWidth,
-      );
-
-      // Bright forward half — points where wind is blowing toward
-      final forwardPath = Path()
-        ..moveTo(tip.dx, tip.dy)
-        ..lineTo(leftMid.dx, leftMid.dy)
-        ..lineTo(rightMid.dx, rightMid.dy)
-        ..close();
-      canvas.drawPath(
-        forwardPath,
-        Paint()
-          ..color = AppColors.cream.withValues(alpha: 0.95)
-          ..style = PaintingStyle.fill,
-      );
-
-      // Dim back half
-      final backPath = Path()
-        ..moveTo(tail.dx, tail.dy)
-        ..lineTo(rightMid.dx, rightMid.dy)
-        ..lineTo(leftMid.dx, leftMid.dy)
-        ..close();
-      canvas.drawPath(
-        backPath,
-        Paint()
-          ..color = AppColors.cream.withValues(alpha: 0.4)
-          ..style = PaintingStyle.fill,
-      );
-
-      // Center pivot dot
-      canvas.drawCircle(
-        Offset(cx, cy),
-        1.8,
-        Paint()..color = AppColors.cream.withValues(alpha: 0.95),
-      );
-    }
-  }
-
-  @override
-  bool shouldRepaint(covariant _WindArrowPainter old) =>
-      windDirection != old.windDirection || windSpeed != old.windSpeed;
-}
-
 class _DashedLinePainter extends CustomPainter {
   final Color color;
 
@@ -1141,4 +1032,78 @@ class _PressureLinePainter extends CustomPainter {
   @override
   bool shouldRepaint(covariant _PressureLinePainter old) =>
       pressures != old.pressures || hours != old.hours || now != old.now;
+}
+
+class _PollutantTile extends StatelessWidget {
+  final String label;
+  final double value;
+
+  const _PollutantTile({required this.label, required this.value});
+
+  @override
+  Widget build(BuildContext context) {
+    final valueStr =
+        value >= 100 ? value.round().toString() : value.toStringAsFixed(1);
+
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 8),
+      decoration: BoxDecoration(
+        color: AppColors.cream.withValues(alpha: 0.08),
+        borderRadius: BorderRadius.circular(10),
+      ),
+      child: Column(
+        mainAxisAlignment: MainAxisAlignment.center,
+        crossAxisAlignment: CrossAxisAlignment.center,
+        children: [
+          SizedBox(
+            height: 16,
+            child: FittedBox(
+              fit: BoxFit.scaleDown,
+              alignment: Alignment.center,
+              child: Text(
+                label,
+                maxLines: 1,
+                softWrap: false,
+                overflow: TextOverflow.visible,
+                style: GoogleFonts.poppins(
+                  fontSize: 11,
+                  fontWeight: FontWeight.w400,
+                  color: AppColors.cream,
+                ),
+                strutStyle: const StrutStyle(
+                  fontSize: 11,
+                  height: 1.4,
+                  forceStrutHeight: true,
+                ),
+              ),
+            ),
+          ),
+          const SizedBox(height: 2),
+          SizedBox(
+            height: 18,
+            child: FittedBox(
+              fit: BoxFit.scaleDown,
+              alignment: Alignment.center,
+              child: Text(
+                valueStr,
+                maxLines: 1,
+                softWrap: false,
+                overflow: TextOverflow.visible,
+                style: GoogleFonts.poppins(
+                  fontSize: 14,
+                  fontWeight: FontWeight.w700,
+                  color: AppColors.cream,
+                ),
+                strutStyle: const StrutStyle(
+                  fontSize: 14,
+                  height: 1.3,
+                  forceStrutHeight: true,
+                ),
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
 }

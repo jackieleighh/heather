@@ -831,10 +831,12 @@ class _SunMoonTile extends StatelessWidget {
             _StatChip(
               icon: WeatherIcons.sunrise,
               value: timeFmt.format(sunrise),
+              fontWeight: FontWeight.w400,
             ),
             _StatChip(
               icon: WeatherIcons.sunset,
               value: timeFmt.format(sunset),
+              fontWeight: FontWeight.w400,
             ),
           ],
         ),
@@ -908,11 +910,12 @@ class _StatsTile extends StatelessWidget {
           mainAxisAlignment: MainAxisAlignment.spaceBetween,
           children: [
             if (humidity > 0)
-              _StatChip(icon: WeatherIcons.humidity, value: '$humidity%'),
+              _StatChip(icon: WeatherIcons.humidity, value: '$humidity%', fontWeight: FontWeight.w400),
             if (meanWind != null && domDir != null)
               _StatChip(
                 icon: WeatherIcons.windy,
                 value: '${meanWind.round()} ${windDirectionLabel(domDir)}',
+                fontWeight: FontWeight.w400,
               ),
           ],
         ),
@@ -934,7 +937,7 @@ class _TileTimeAxis extends StatelessWidget {
   Widget build(BuildContext context) {
     final style = GoogleFonts.poppins(
       fontSize: 11,
-      fontWeight: FontWeight.w600,
+      fontWeight: FontWeight.w400,
       color: AppColors.cream.withValues(alpha: 0.7),
     );
     return Row(
@@ -951,8 +954,13 @@ class _TileTimeAxis extends StatelessWidget {
 class _StatChip extends StatelessWidget {
   final IconData icon;
   final String value;
+  final FontWeight fontWeight;
 
-  const _StatChip({required this.icon, required this.value});
+  const _StatChip({
+    required this.icon,
+    required this.value,
+    this.fontWeight = FontWeight.w700,
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -965,7 +973,7 @@ class _StatChip extends StatelessWidget {
           value,
           style: GoogleFonts.poppins(
             fontSize: 11,
-            fontWeight: FontWeight.w700,
+            fontWeight: fontWeight,
             color: AppColors.cream,
           ),
         ),
