@@ -1,3 +1,4 @@
+import 'dart:collection';
 import 'dart:io';
 import 'dart:ui' as ui;
 
@@ -5,12 +6,40 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter/painting.dart';
 import 'package:flutter_map/flutter_map.dart';
 
+/// LRU cache for radar tile image bytes. Evicts the least-recently-used entry
+/// when [maxEntries] is exceeded, preventing unbounded memory growth during
+/// long radar playback sessions.
+class LruTileCache {
+  final int maxEntries;
+  final LinkedHashMap<String, Uint8List> _map = LinkedHashMap();
+
+  LruTileCache({this.maxEntries = 50});
+
+  Uint8List? operator [](String key) {
+    final value = _map.remove(key);
+    if (value != null) {
+      _map[key] = value; // Move to end (most recently used)
+    }
+    return value;
+  }
+
+  void operator []=(String key, Uint8List value) {
+    _map.remove(key);
+    _map[key] = value;
+    while (_map.length > maxEntries) {
+      _map.remove(_map.keys.first);
+    }
+  }
+
+  void clear() => _map.clear();
+}
+
 /// A [TileProvider] backed by an external in-memory cache.
 ///
-/// The cache [Map] is owned by the caller (e.g. widget state) so it survives
-/// across [TileLayer] rebuilds when scrubbing between radar frames.
+/// The cache [LruTileCache] is owned by the caller (e.g. widget state) so it
+/// survives across [TileLayer] rebuilds when scrubbing between radar frames.
 class CachedRadarTileProvider extends TileProvider {
-  final Map<String, Uint8List> cache;
+  final LruTileCache cache;
   final HttpClient httpClient;
 
   CachedRadarTileProvider({
@@ -31,7 +60,7 @@ class CachedRadarTileProvider extends TileProvider {
 class _CachedRadarImageProvider
     extends ImageProvider<_CachedRadarImageProvider> {
   final String url;
-  final Map<String, Uint8List> cache;
+  final LruTileCache cache;
   final HttpClient httpClient;
 
   const _CachedRadarImageProvider({

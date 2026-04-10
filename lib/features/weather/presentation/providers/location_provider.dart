@@ -7,7 +7,7 @@ import '../../data/sources/saved_locations_local_source.dart';
 import '../../domain/entities/saved_location.dart';
 
 final locationRepositoryProvider = Provider<LocationRepositoryImpl>((ref) {
-  final apiClient = ApiClient();
+  final apiClient = ref.watch(apiClientProvider);
   return LocationRepositoryImpl(
     geocodingSource: GeocodingRemoteSource(dio: apiClient.weatherClient),
     localSource: SavedLocationsLocalSource(),
@@ -69,8 +69,17 @@ class SavedLocationsNotifier extends StateNotifier<List<SavedLocation>> {
 }
 
 final locationSearchProvider =
-    FutureProvider.family<List<SavedLocation>, String>((ref, query) async {
+    FutureProvider.autoDispose.family<List<SavedLocation>, String>((ref, query) async {
   if (query.trim().length < 2) return [];
+
+  // Debounce: wait 300ms. With autoDispose, if the query changes during
+  // this delay the old provider instance is disposed and this result is
+  // discarded automatically.
+  var cancelled = false;
+  ref.onDispose(() => cancelled = true);
+  await Future<void>.delayed(const Duration(milliseconds: 300));
+  if (cancelled) return [];
+
   final repository = ref.watch(locationRepositoryProvider);
   return repository.searchLocations(query);
 });

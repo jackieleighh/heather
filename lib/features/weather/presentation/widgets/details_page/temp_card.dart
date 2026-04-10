@@ -54,7 +54,7 @@ class TemperatureCard extends StatelessWidget {
             Icon(
               WeatherIcons.thermometer,
               size: 14,
-              color: AppColors.cream.withValues(alpha: 0.9),
+              color: AppColors.cream90,
             ),
             const SizedBox(width: 4),
             Text(
@@ -114,7 +114,7 @@ class TemperatureCard extends StatelessWidget {
                     Container(
                       width: 16,
                       height: 2,
-                      color: AppColors.cream.withValues(alpha: 0.5),
+                      color: AppColors.cream50,
                     ),
                     const SizedBox(width: 5),
                     Text(
@@ -122,7 +122,7 @@ class TemperatureCard extends StatelessWidget {
                       style: GoogleFonts.poppins(
                         fontSize: 10,
                         fontWeight: FontWeight.w600,
-                        color: AppColors.cream.withValues(alpha: 0.8),
+                        color: AppColors.cream80,
                       ),
                     ),
                     const SizedBox(width: 14),
@@ -133,7 +133,7 @@ class TemperatureCard extends StatelessWidget {
                       style: GoogleFonts.poppins(
                         fontSize: 10,
                         fontWeight: FontWeight.w600,
-                        color: AppColors.cream.withValues(alpha: 0.8),
+                        color: AppColors.cream80,
                       ),
                     ),
                   ],
@@ -198,7 +198,7 @@ class TemperatureCard extends StatelessWidget {
         Icon(
           WeatherIcons.thermometer,
           size: compact ? 10 : 15,
-          color: AppColors.cream.withValues(alpha: 0.9),
+          color: AppColors.cream90,
         ),
         SizedBox(width: compact ? 3 : 4),
         Text(
@@ -223,7 +223,7 @@ class TemperatureCard extends StatelessWidget {
           style: GoogleFonts.poppins(
             fontSize: compact ? 11 : 14,
             fontWeight: FontWeight.w600,
-            color: AppColors.cream.withValues(alpha: 0.9),
+            color: AppColors.cream90,
           ),
         ),
       ],
@@ -246,7 +246,7 @@ class TemperatureCard extends StatelessWidget {
             style: GoogleFonts.poppins(
               fontSize: 11,
               fontWeight: FontWeight.w500,
-              color: AppColors.cream.withValues(alpha: 0.85),
+              color: AppColors.cream85,
             ),
           ),
           const SizedBox(width: 8),
@@ -295,7 +295,7 @@ class TemperatureCard extends StatelessWidget {
                 style: GoogleFonts.poppins(
                   fontSize: 10,
                   fontWeight: FontWeight.w700,
-                  color: AppColors.cream.withValues(alpha: 0.7),
+                  color: AppColors.cream70,
                 ),
               ),
               const Spacer(),
@@ -304,7 +304,7 @@ class TemperatureCard extends StatelessWidget {
                 style: GoogleFonts.poppins(
                   fontSize: 10,
                   fontWeight: FontWeight.w700,
-                  color: AppColors.cream.withValues(alpha: 0.7),
+                  color: AppColors.cream70,
                 ),
               ),
             ],
@@ -407,7 +407,7 @@ class TemperatureCard extends StatelessWidget {
       height: 2,
       child: CustomPaint(
         painter: _DashedLinePainter(
-          color: AppColors.cream.withValues(alpha: 0.35),
+          color: AppColors.cream35,
         ),
       ),
     );
@@ -423,7 +423,7 @@ class TemperatureCard extends StatelessWidget {
         Icon(
           isAbove ? Icons.arrow_upward : Icons.arrow_downward,
           size: 12,
-          color: AppColors.cream.withValues(alpha: 0.8),
+          color: AppColors.cream80,
         ),
         const SizedBox(width: 2),
         Text(
@@ -431,7 +431,7 @@ class TemperatureCard extends StatelessWidget {
           style: GoogleFonts.poppins(
             fontSize: 11,
             fontWeight: FontWeight.w600,
-            color: AppColors.cream.withValues(alpha: 0.8),
+            color: AppColors.cream80,
           ),
         ),
       ],
@@ -445,6 +445,17 @@ class _TempLinePainter extends CustomPainter {
   final DateTime? now;
   final List<double> feelsLikeTemps;
   final bool showAreaFill;
+
+  static const _yLabelStyle = TextStyle(
+    color: AppColors.cream95,
+    fontSize: 10,
+    fontWeight: FontWeight.w600,
+  );
+  static const _labelStyle = TextStyle(
+    color: AppColors.cream90,
+    fontSize: 10,
+    fontWeight: FontWeight.w600,
+  );
 
   _TempLinePainter({
     required this.temps,
@@ -515,8 +526,8 @@ class _TempLinePainter extends CustomPainter {
           begin: Alignment.topCenter,
           end: Alignment.bottomCenter,
           colors: [
-            AppColors.cream.withValues(alpha: 0.15),
-            AppColors.cream.withValues(alpha: 0.03),
+            AppColors.cream15,
+            AppColors.cream03,
           ],
         ).createShader(fillRect);
       canvas.drawPath(fillPath, fillPaint);
@@ -540,7 +551,7 @@ class _TempLinePainter extends CustomPainter {
       }
 
       final dashPaint = Paint()
-        ..color = AppColors.cream.withValues(alpha: 0.35)
+        ..color = AppColors.cream35
         ..strokeWidth = 1.5
         ..style = PaintingStyle.stroke
         ..strokeCap = StrokeCap.round;
@@ -552,7 +563,7 @@ class _TempLinePainter extends CustomPainter {
     canvas.drawPath(
       linePath,
       Paint()
-        ..color = AppColors.cream.withValues(alpha: 0.5)
+        ..color = AppColors.cream50
         ..strokeWidth = 2
         ..style = PaintingStyle.stroke
         ..strokeCap = StrokeCap.round,
@@ -612,7 +623,7 @@ class _TempLinePainter extends CustomPainter {
           Offset(dotX, feelsDotY),
           3.5,
           Paint()
-            ..color = AppColors.cream.withValues(alpha: 0.6)
+            ..color = AppColors.cream60
             ..style = PaintingStyle.stroke
             ..strokeWidth = 1.5,
         );
@@ -626,32 +637,22 @@ class _TempLinePainter extends CustomPainter {
     }
 
     // 6. Y-axis temp labels (high, mid, low)
-    final yLabelStyle = TextStyle(
-      color: AppColors.cream.withValues(alpha: 0.95),
-      fontSize: 10,
-      fontWeight: FontWeight.w600,
-    );
     for (final temp in [hi, mid, lo]) {
       final y = padTop + graphH * (1 - (temp - lo) / range);
       final tp = TextPainter(
-        text: TextSpan(text: '${temp.round()}°', style: yLabelStyle),
+        text: TextSpan(text: '${temp.round()}°', style: _yLabelStyle),
         textDirection: TextDirection.ltr,
       )..layout();
       tp.paint(canvas, Offset(0, y - tp.height / 2));
     }
 
     // 7. Hour labels
-    final labelStyle = TextStyle(
-      color: AppColors.cream.withValues(alpha: 0.9),
-      fontSize: 10,
-      fontWeight: FontWeight.w600,
-    );
     for (var i = 0; i < hours.length; i++) {
       if (i % 6 != 0 && i != hours.length - 1) continue;
       final tp = TextPainter(
         text: TextSpan(
           text: DateFormat('ha').format(hours[i]).toLowerCase(),
-          style: labelStyle,
+          style: _labelStyle,
         ),
         textDirection: TextDirection.ltr,
       )..layout();
@@ -684,7 +685,7 @@ class _TempLinePainter extends CustomPainter {
   @override
   bool shouldRepaint(covariant _TempLinePainter old) =>
       temps != old.temps ||
-      now != old.now ||
+      now?.millisecondsSinceEpoch != old.now?.millisecondsSinceEpoch ||
       feelsLikeTemps != old.feelsLikeTemps ||
       showAreaFill != old.showAreaFill;
 }
@@ -695,6 +696,16 @@ class _RangeGaugePainter extends CustomPainter {
   final double? avg;
   final double todayLo;
   final double todayHi;
+
+  static final _labelStyle = TextStyle(
+    color: AppColors.cream60,
+    fontSize: 9,
+    fontWeight: FontWeight.w600,
+    fontFamily: GoogleFonts.poppins().fontFamily,
+  );
+  static final _nowLabelStyle = _labelStyle.copyWith(
+    color: AppColors.cream85,
+  );
 
   _RangeGaugePainter({
     required this.currentTemp,
@@ -716,7 +727,7 @@ class _RangeGaugePainter extends CustomPainter {
     // Track
     canvas.drawRRect(
       barRect,
-      Paint()..color = AppColors.cream.withValues(alpha: 0.12),
+      Paint()..color = AppColors.cream12,
     );
 
     // Compute scale window.
@@ -752,7 +763,7 @@ class _RangeGaugePainter extends CustomPainter {
     // Draw avg tick first (thin, low-alpha) so dots sit on top cleanly.
     if (avgX != null) {
       final tickPaint = Paint()
-        ..color = AppColors.cream.withValues(alpha: 0.55)
+        ..color = AppColors.cream55
         ..strokeWidth = 2;
       final tickTop = barY + barH / 2 - 6;
       final tickBottom = barY + barH / 2 + 6;
@@ -787,24 +798,14 @@ class _RangeGaugePainter extends CustomPainter {
     // Labels: 'now' always below the bar; 'feels' and 'avg' above.
     // If feels and avg would horizontally overlap, stack them: feels on top,
     // avg immediately below (still above the bar).
-    final labelStyle = TextStyle(
-      color: AppColors.cream.withValues(alpha: 0.6),
-      fontSize: 9,
-      fontWeight: FontWeight.w600,
-      fontFamily: GoogleFonts.poppins().fontFamily,
-    );
-    final nowLabelStyle = labelStyle.copyWith(
-      color: AppColors.cream.withValues(alpha: 0.85),
-    );
-
     TextPainter layoutLabel(String text, TextStyle style) => TextPainter(
       text: TextSpan(text: text, style: style),
       textDirection: TextDirection.ltr,
     )..layout();
 
-    final feelsTp = feelsX != null ? layoutLabel('feels', labelStyle) : null;
-    final avgTp = avgX != null ? layoutLabel('avg', labelStyle) : null;
-    final nowTp = nowX != null ? layoutLabel('now', nowLabelStyle) : null;
+    final feelsTp = feelsX != null ? layoutLabel('feels', _labelStyle) : null;
+    final avgTp = avgX != null ? layoutLabel('avg', _labelStyle) : null;
+    final nowTp = nowX != null ? layoutLabel('now', _nowLabelStyle) : null;
 
     // Horizontal collision between feels and avg.
     var feelsAvgOverlap = false;

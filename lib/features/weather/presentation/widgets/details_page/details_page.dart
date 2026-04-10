@@ -14,6 +14,21 @@ import '../../../domain/entities/forecast.dart';
 import '../../providers/air_quality_provider.dart';
 import '../../providers/historical_avg_provider.dart';
 
+/// Cached text style to avoid repeated GoogleFonts allocations.
+final _headerStyle = GoogleFonts.figtree(
+  fontSize: 22,
+  fontWeight: FontWeight.w700,
+  color: AppColors.cream,
+);
+
+/// Pre-computed decoration constants to avoid allocations during animation.
+final _collapsedDecoration = BoxDecoration(
+  color: AppColors.cream22,
+  borderRadius: BorderRadius.circular(20),
+  boxShadow: const [BoxShadow(color: AppColors.black12, blurRadius: 12)],
+);
+const _transparentDecoration = BoxDecoration(color: Colors.transparent);
+
 class DetailsPage extends ConsumerStatefulWidget {
   final Forecast forecast;
   final double latitude;
@@ -51,6 +66,17 @@ class _DetailsPageState extends ConsumerState<DetailsPage> {
     final historicalAvg =
         ref.watch(historicalAvgProvider((lat: widget.latitude, lon: widget.longitude)));
 
+    // --- Pre-compute derived lists once instead of per-card ---
+    final next24Temps = next24.map((h) => h.temperature).toList();
+    final next24Hours = next24.map((h) => h.time).toList();
+    final next24PrecipProb = next24.map((h) => h.precipitationProbability).toList();
+    final next24Conditions = next24.map((h) => h.condition).toList();
+    final next24Pressure = next24.map((h) => h.pressure).toList();
+    final next24WindSpeed = next24.map((h) => h.windSpeed).toList();
+    final next24WindGusts = next24.map((h) => h.windGusts).toList();
+    final next24WindDirection = next24.map((h) => h.windDirection).toList();
+    final next24UvIndex = next24.map((h) => h.uvIndex).toList();
+
     // Aggregate precipitation across the days the next 24 hours span
     final next24Start = next24.first.time;
     final next24End = next24.last.time;
@@ -65,11 +91,9 @@ class _DetailsPageState extends ConsumerState<DetailsPage> {
 
     // Pick sunrise/sunset relevant to the next 24 hours
     final todayDaily = forecast.todayDaily;
+    final todayIdx = forecast.daily.indexOf(todayDaily);
     final tomorrowDaily = forecast.daily.length > 1
-        ? forecast.daily[forecast.daily.indexOf(todayDaily) + 1 <
-                  forecast.daily.length
-              ? forecast.daily.indexOf(todayDaily) + 1
-              : 0]
+        ? forecast.daily[todayIdx + 1 < forecast.daily.length ? todayIdx + 1 : 0]
         : todayDaily;
     // Coherent (sunrise, sunset) pair: today's pair while today's sunset is
     // still ahead, otherwise tomorrow's pair. Keeping these matched ensures
@@ -107,6 +131,11 @@ class _DetailsPageState extends ConsumerState<DetailsPage> {
                 tomorrowDaytime.length;
     }
 
+    // Pre-compute max precip probability and max UV
+    final maxPrecipProb = next24PrecipProb.reduce((a, b) => a > b ? a : b);
+    final maxUvIndex = next24UvIndex.reduce((a, b) => a > b ? a : b);
+    final precipType = precipTypeFromConditions(next24Conditions);
+
     // Build the list of card builders
     final cards = <Widget Function(CardDisplayMode mode)>[
       // 0: Conditions
@@ -119,8 +148,8 @@ class _DetailsPageState extends ConsumerState<DetailsPage> {
       ),
       // 1: Temperature
       (mode) => TemperatureCard(
-        temps: next24.map((h) => h.temperature).toList(),
-        hours: next24.map((h) => h.time).toList(),
+        temps: next24Temps,
+        hours: next24Hours,
         now: now,
         averageHigh: historicalAvg.whenOrNull(data: (v) => v),
         todayHigh: forecast.todayDaily.temperatureMax,
@@ -135,17 +164,11 @@ class _DetailsPageState extends ConsumerState<DetailsPage> {
       // 2: Rain
       (mode) => RainCard(
         precipitationIn: precipSum / 25.4,
-        precipitationProbability: next24
-            .map((h) => h.precipitationProbability)
-            .reduce((a, b) => a > b ? a : b),
-        hourlyPrecipProb: next24
-            .map((h) => h.precipitationProbability)
-            .toList(),
-        hours: next24.map((h) => h.time).toList(),
+        precipitationProbability: maxPrecipProb,
+        hourlyPrecipProb: next24PrecipProb,
+        hours: next24Hours,
         now: now,
-        precipType: precipTypeFromConditions(
-          next24.map((h) => h.condition).toList(),
-        ),
+        precipType: precipType,
         humidity: next24.isNotEmpty ? next24.first.humidity : 0,
         cloudCover: next24.isNotEmpty ? next24.first.cloudCover : 0,
         dewPoint: next24.isNotEmpty ? next24.first.dewPoint : 0.0,
@@ -165,21 +188,22 @@ class _DetailsPageState extends ConsumerState<DetailsPage> {
         pressure: forecast.current.pressure,
         windGusts: forecast.current.windGusts,
         windDirection: forecast.current.windDirection,
-        hourlyPressure: next24.map((h) => h.pressure).toList(),
+        hourlyPressure: next24Pressure,
         mode: mode,
-        hourlyWindSpeed: next24.map((h) => h.windSpeed).toList(),
-        hourlyWindGusts: next24.map((h) => h.windGusts).toList(),
-        hourlyWindDirection: next24.map((h) => h.windDirection).toList(),
-        hours: next24.map((h) => h.time).toList(),
+        hourlyWindSpeed: next24WindSpeed,
+        hourlyWindGusts: next24WindGusts,
+        hourlyWindDirection: next24WindDirection,
+        hours: next24Hours,
+        now: now,
       ),
       // 4: Sun
       (mode) => SunCard(
         sunrise: nextSunrise,
         sunset: nextSunset,
         isSunUp: isSunUp,
-        uvIndex: next24.map((h) => h.uvIndex).reduce((a, b) => a > b ? a : b),
-        hourlyUv: next24.map((h) => h.uvIndex).toList(),
-        hours: next24.map((h) => h.time).toList(),
+        uvIndex: maxUvIndex,
+        hourlyUv: next24UvIndex,
+        hours: next24Hours,
         now: now,
         mode: mode,
         visibility: expandedVisibility,
@@ -216,14 +240,7 @@ class _DetailsPageState extends ConsumerState<DetailsPage> {
                 height: 62,
                 child: Align(
                   alignment: Alignment.centerRight,
-                  child: Text(
-                    'Next 24 hours',
-                    style: GoogleFonts.figtree(
-                      fontSize: 22,
-                      fontWeight: FontWeight.w700,
-                      color: AppColors.cream,
-                    ),
-                  ),
+                  child: Text('Next 24 hours', style: _headerStyle),
                 ),
               ),
             ),
@@ -243,64 +260,72 @@ class _DetailsPageState extends ConsumerState<DetailsPage> {
                       : 0.0;
 
                   return Column(
-                    children: List.generate(cardCount, (i) {
-                      final double targetHeight;
-                      final CardDisplayMode mode;
-                      if (!isExpanded) {
-                        targetHeight = equalHeight;
-                        mode = CardDisplayMode.normal;
-                      } else if (i == _expandedIndex) {
-                        targetHeight = expandedHeight;
-                        mode = CardDisplayMode.expanded;
-                      } else {
-                        targetHeight = collapsedHeight;
-                        mode = CardDisplayMode.collapsed;
-                      }
-
-                      return Padding(
-                        padding: EdgeInsets.only(
-                          bottom: i < cardCount - 1 ? spacing : 0,
+                    children: [
+                      for (var i = 0; i < cardCount; i++)
+                        _buildCardSlot(
+                          i,
+                          cardCount,
+                          isExpanded,
+                          equalHeight,
+                          expandedHeight,
+                          collapsedHeight,
+                          spacing,
+                          cards,
                         ),
-                        child: AnimatedContainer(
-                          duration: const Duration(milliseconds: 300),
-                          curve: Curves.easeInOut,
-                          height: targetHeight,
-                          clipBehavior: Clip.hardEdge,
-                          decoration: mode == CardDisplayMode.collapsed
-                              ? BoxDecoration(
-                                  color: AppColors.cream.withValues(alpha: 0.22),
-                                  borderRadius: BorderRadius.circular(20),
-                                  boxShadow: [
-                                    BoxShadow(
-                                      color: Colors.black.withValues(alpha: 0.12),
-                                      blurRadius: 12,
-                                    ),
-                                  ],
-                                )
-                              : const BoxDecoration(
-                                  color: Colors.transparent,
-                                ),
-                          child: Material(
-                            color: Colors.transparent,
-                            child: InkWell(
-                              borderRadius: BorderRadius.circular(20),
-                              onTap: () {
-                                setState(() {
-                                  _expandedIndex =
-                                      _expandedIndex == i ? null : i;
-                                });
-                              },
-                              child: cards[i](mode),
-                            ),
-                          ),
-                        ),
-                      );
-                    }),
+                    ],
                   );
                 },
               ),
             ),
           ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildCardSlot(
+    int i,
+    int cardCount,
+    bool isExpanded,
+    double equalHeight,
+    double expandedHeight,
+    double collapsedHeight,
+    double spacing,
+    List<Widget Function(CardDisplayMode mode)> cards,
+  ) {
+    final double targetHeight;
+    final CardDisplayMode mode;
+    if (!isExpanded) {
+      targetHeight = equalHeight;
+      mode = CardDisplayMode.normal;
+    } else if (i == _expandedIndex) {
+      targetHeight = expandedHeight;
+      mode = CardDisplayMode.expanded;
+    } else {
+      targetHeight = collapsedHeight;
+      mode = CardDisplayMode.collapsed;
+    }
+
+    return Padding(
+      padding: EdgeInsets.only(
+        bottom: i < cardCount - 1 ? spacing : 0,
+      ),
+      child: AnimatedContainer(
+        duration: const Duration(milliseconds: 300),
+        curve: Curves.easeInOut,
+        height: targetHeight,
+        clipBehavior: Clip.hardEdge,
+        decoration: mode == CardDisplayMode.collapsed
+            ? _collapsedDecoration
+            : _transparentDecoration,
+        child: GestureDetector(
+          behavior: HitTestBehavior.opaque,
+          onTap: () {
+            setState(() {
+              _expandedIndex = _expandedIndex == i ? null : i;
+            });
+          },
+          child: cards[i](mode),
         ),
       ),
     );

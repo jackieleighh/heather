@@ -7,6 +7,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 
 import 'app/app.dart';
 import 'app/router.dart';
+import 'core/network/api_client.dart';
 import 'core/services/background_alert_service.dart';
 import 'core/services/device_registration_service.dart';
 import 'core/services/fcm_service.dart';
@@ -88,6 +89,7 @@ Future<void> main() async {
   runApp(
     ProviderScope(
       overrides: [
+        sharedPreferencesProvider.overrideWithValue(prefs),
         if (cachedWeatherSeed != null)
           cachedWeatherSeedProvider.overrideWith((_) => cachedWeatherSeed),
         if (savedLocationsSeed != null)

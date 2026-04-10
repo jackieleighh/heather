@@ -1,6 +1,5 @@
 import 'dart:async';
 import 'dart:io';
-import 'dart:typed_data';
 import 'package:flutter/material.dart' hide Theme;
 import 'package:flutter_map/flutter_map.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -14,6 +13,23 @@ import '../../data/sources/nexrad_radar_source.dart';
 import '../providers/basemap_style_provider.dart';
 import '../providers/radar_provider.dart';
 import 'pulsing_dots.dart';
+
+/// Cached text styles.
+final _radarHeaderStyle = GoogleFonts.quicksand(
+  fontSize: 22,
+  fontWeight: FontWeight.w700,
+  color: AppColors.cream,
+);
+final _radarErrorStyle = GoogleFonts.quicksand(
+  fontSize: 16,
+  fontWeight: FontWeight.w600,
+  color: AppColors.cream70,
+);
+final _radarTimeLabelStyle = GoogleFonts.quicksand(
+  fontSize: 11,
+  fontWeight: FontWeight.w700,
+  color: AppColors.cream,
+);
 
 class RadarPage extends ConsumerStatefulWidget {
   final double latitude;
@@ -33,7 +49,7 @@ class _RadarPageState extends ConsumerState<RadarPage> {
   bool _initialized = false;
   bool _holdingOnLast = false;
 
-  final Map<String, Uint8List> _tileCache = {};
+  final LruTileCache _tileCache = LruTileCache(maxEntries: 50);
   final HttpClient _tileHttpClient = HttpClient();
 
   @override
@@ -55,7 +71,7 @@ class _RadarPageState extends ConsumerState<RadarPage> {
             shape: BoxShape.circle,
             boxShadow: [
               BoxShadow(
-                color: Colors.black.withValues(alpha: 0.3),
+                color: AppColors.black30,
                 blurRadius: 4,
                 spreadRadius: 1,
               ),
@@ -176,11 +192,7 @@ class _RadarPageState extends ConsumerState<RadarPage> {
                   alignment: Alignment.centerRight,
                   child: Text(
                     'Radar',
-                    style: GoogleFonts.quicksand(
-                      fontSize: 22,
-                      fontWeight: FontWeight.w700,
-                      color: AppColors.cream,
-                    ),
+                    style: _radarHeaderStyle,
                   ),
                 ),
               ),
@@ -199,11 +211,7 @@ class _RadarPageState extends ConsumerState<RadarPage> {
                       ? Center(
                           child: Text(
                             'Radar unavailable',
-                            style: GoogleFonts.quicksand(
-                              fontSize: 16,
-                              fontWeight: FontWeight.w600,
-                              color: AppColors.cream.withValues(alpha: 0.7),
-                            ),
+                            style: _radarErrorStyle,
                           ),
                         )
                       : Builder(builder: (context) {
@@ -325,17 +333,13 @@ class _ControlBar extends StatelessWidget {
     final timeLabel = formatRelativeTime(frame.time);
 
     return Container(
-      decoration: BoxDecoration(color: AppColors.cream.withValues(alpha: 0.25)),
+      decoration: BoxDecoration(color: AppColors.cream25),
       padding: const EdgeInsets.fromLTRB(12, 4, 6, 0),
       child: Row(
         children: [
           Text(
             timeLabel,
-            style: GoogleFonts.quicksand(
-              fontSize: 11,
-              fontWeight: FontWeight.w700,
-              color: AppColors.cream,
-            ),
+            style: _radarTimeLabelStyle,
           ),
           const SizedBox(width: 4),
           Expanded(
@@ -352,14 +356,10 @@ class _ControlBar extends StatelessWidget {
                   children: [
                     SliderTheme(
                       data: SliderThemeData(
-                        activeTrackColor: AppColors.cream.withValues(
-                          alpha: 0.8,
-                        ),
-                        inactiveTrackColor: AppColors.cream.withValues(
-                          alpha: 0.2,
-                        ),
+                        activeTrackColor: AppColors.cream80,
+                        inactiveTrackColor: AppColors.cream20,
                         thumbColor: AppColors.cream,
-                        overlayColor: AppColors.cream.withValues(alpha: 0.1),
+                        overlayColor: AppColors.cream10,
                         trackHeight: 1.5,
                         thumbShape: const RoundSliderThumbShape(
                           enabledThumbRadius: 4,
@@ -400,7 +400,7 @@ class _ControlBar extends StatelessWidget {
             onTap: onPlayPause,
             child: Icon(
               isPlaying ? Icons.pause_rounded : Icons.play_arrow_rounded,
-              color: AppColors.cream.withValues(alpha: 0.8),
+              color: AppColors.cream80,
               size: 20,
             ),
           ),
@@ -420,12 +420,12 @@ class _MapCard extends StatelessWidget {
     return Container(
       clipBehavior: Clip.hardEdge,
       decoration: BoxDecoration(
-        color: AppColors.cream.withValues(alpha: 0.06),
+        color: AppColors.cream06,
         borderRadius: BorderRadius.circular(20),
-        border: Border.all(color: AppColors.cream.withValues(alpha: 0.08)),
+        border: Border.all(color: AppColors.cream08),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withValues(alpha: 0.12),
+            color: AppColors.black12,
             blurRadius: 12,
           ),
         ],
@@ -438,7 +438,7 @@ class _MapCard extends StatelessWidget {
             child: IgnorePointer(
               child: DecoratedBox(
                 decoration: BoxDecoration(
-                  color: AppColors.cream.withValues(alpha: 0.06),
+                  color: AppColors.cream06,
                 ),
               ),
             ),

@@ -1,11 +1,10 @@
 import 'dart:convert';
 import 'dart:math' as math;
 
-import 'package:dio/dio.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:shared_preferences/shared_preferences.dart';
 
 import '../../../../core/constants/api_endpoints.dart';
+import '../../../../core/network/api_client.dart';
 import '../../../../core/utils/moon_phase.dart';
 
 class UsnoPhaseTransition {
@@ -152,8 +151,9 @@ class UsnoMoonData {
   );
 }
 
-final moonDataProvider = FutureProvider<UsnoMoonData?>((ref) async {
-  final prefs = await SharedPreferences.getInstance();
+final moonDataProvider = FutureProvider.autoDispose<UsnoMoonData?>((ref) async {
+  final prefs = ref.watch(sharedPreferencesProvider);
+  final dio = ref.watch(dioProvider);
   const cacheKey = 'cached_moon_global';
   const cacheTsKey = 'cached_moon_global_ts';
 
@@ -185,10 +185,6 @@ final moonDataProvider = FutureProvider<UsnoMoonData?>((ref) async {
     final phasesStart = nowUtc.subtract(const Duration(days: 35));
     final phasesDateStr =
         '${phasesStart.year}-${phasesStart.month}-${phasesStart.day}';
-
-    final dio = Dio()
-      ..options.connectTimeout = const Duration(seconds: 10)
-      ..options.receiveTimeout = const Duration(seconds: 10);
 
     final results = await Future.wait([
       dio.get(ApiEndpoints.usnoOneDay(
@@ -274,9 +270,18 @@ class UsnoMoonRiseSet {
 
 typedef MoonRiseSetKey = ({double lat, double lon, int tzOffsetSeconds});
 
-final moonRiseSetProvider =
-    FutureProvider.family<UsnoMoonRiseSet?, MoonRiseSetKey>((ref, key) async {
-  final prefs = await SharedPreferences.getInstance();
+/// Round to 3 decimal places for the family key to avoid GPS micro-drift.
+MoonRiseSetKey _roundMoonKey(MoonRiseSetKey k) => (
+  lat: (k.lat * 1000).roundToDouble() / 1000,
+  lon: (k.lon * 1000).roundToDouble() / 1000,
+  tzOffsetSeconds: k.tzOffsetSeconds,
+);
+
+final moonRiseSetProvider = FutureProvider.autoDispose
+    .family<UsnoMoonRiseSet?, MoonRiseSetKey>((ref, rawKey) async {
+  final key = _roundMoonKey(rawKey);
+  final prefs = ref.watch(sharedPreferencesProvider);
+  final dio = ref.watch(dioProvider);
   final cacheKey =
       'cached_moonriseset_${key.lat.toStringAsFixed(2)}_${key.lon.toStringAsFixed(2)}';
   final cacheTsKey = '${cacheKey}_ts';
@@ -307,10 +312,6 @@ final moonRiseSetProvider =
     final localNow = nowUtc.add(Duration(seconds: key.tzOffsetSeconds));
     final dateStr = '${localNow.year}-${localNow.month}-${localNow.day}';
     final tzHours = (key.tzOffsetSeconds / 3600).round();
-
-    final dio = Dio()
-      ..options.connectTimeout = const Duration(seconds: 10)
-      ..options.receiveTimeout = const Duration(seconds: 10);
 
     final response = await dio.get(ApiEndpoints.usnoOneDay(
       date: dateStr,

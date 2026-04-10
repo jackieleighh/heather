@@ -23,6 +23,7 @@ class AirCard extends StatelessWidget {
   final List<double> hourlyWindGusts;
   final List<int> hourlyWindDirection;
   final List<DateTime> hours;
+  final DateTime? now;
 
   const AirCard({
     super.key,
@@ -38,6 +39,7 @@ class AirCard extends StatelessWidget {
     this.hourlyWindGusts = const [],
     this.hourlyWindDirection = const [],
     this.hours = const [],
+    this.now,
   });
 
   int? get aqi => airQuality?.aqi;
@@ -64,7 +66,7 @@ class AirCard extends StatelessWidget {
             Icon(
               WeatherIcons.smoke,
               size: 14,
-              color: AppColors.cream.withValues(alpha: 0.9),
+              color: AppColors.cream90,
             ),
             const SizedBox(width: 4),
             Text(
@@ -139,7 +141,7 @@ class AirCard extends StatelessWidget {
                     Container(
                       width: 16,
                       height: 2,
-                      color: AppColors.cream.withValues(alpha: 0.5),
+                      color: AppColors.cream50,
                     ),
                     const SizedBox(width: 5),
                     Text(
@@ -147,7 +149,7 @@ class AirCard extends StatelessWidget {
                       style: GoogleFonts.poppins(
                         fontSize: 10,
                         fontWeight: FontWeight.w600,
-                        color: AppColors.cream.withValues(alpha: 0.8),
+                        color: AppColors.cream80,
                       ),
                     ),
                     if (hourlyWindGusts.isNotEmpty) ...[
@@ -159,7 +161,7 @@ class AirCard extends StatelessWidget {
                         style: GoogleFonts.poppins(
                           fontSize: 10,
                           fontWeight: FontWeight.w600,
-                          color: AppColors.cream.withValues(alpha: 0.8),
+                          color: AppColors.cream80,
                         ),
                       ),
                     ],
@@ -174,7 +176,7 @@ class AirCard extends StatelessWidget {
                     windSpeeds: hourlyWindSpeed,
                     windGusts: hourlyWindGusts,
                     hours: hours,
-                    now: DateTime.now(),
+                    now: now,
                     showHourLabels: false,
                   ),
                 ),
@@ -192,7 +194,7 @@ class AirCard extends StatelessWidget {
                     Icon(
                       WeatherIcons.barometer,
                       size: 12,
-                      color: AppColors.cream.withValues(alpha: 0.8),
+                      color: AppColors.cream80,
                     ),
                     const SizedBox(width: 4),
                     Text(
@@ -200,7 +202,7 @@ class AirCard extends StatelessWidget {
                       style: GoogleFonts.poppins(
                         fontSize: 10,
                         fontWeight: FontWeight.w600,
-                        color: AppColors.cream.withValues(alpha: 0.8),
+                        color: AppColors.cream80,
                       ),
                     ),
                   ],
@@ -213,7 +215,7 @@ class AirCard extends StatelessWidget {
                   painter: _PressureLinePainter(
                     pressures: hourlyPressure,
                     hours: hours,
-                    now: DateTime.now(),
+                    now: now,
                   ),
                 ),
               ),
@@ -269,7 +271,7 @@ class AirCard extends StatelessWidget {
         Icon(
           WeatherIcons.smoke,
           size: 15,
-          color: AppColors.cream.withValues(alpha: 0.9),
+          color: AppColors.cream90,
         ),
         const SizedBox(width: 4),
         Text(
@@ -284,7 +286,7 @@ class AirCard extends StatelessWidget {
         Icon(
           WeatherIcons.windy,
           size: 14,
-          color: AppColors.cream.withValues(alpha: 0.95),
+          color: AppColors.cream95,
         ),
         const SizedBox(width: 6),
         Text(
@@ -292,7 +294,7 @@ class AirCard extends StatelessWidget {
           style: GoogleFonts.poppins(
             fontSize: 13,
             fontWeight: FontWeight.w600,
-            color: AppColors.cream.withValues(alpha: 0.95),
+            color: AppColors.cream95,
           ),
         ),
         const SizedBox(width: 8),
@@ -301,7 +303,7 @@ class AirCard extends StatelessWidget {
           style: GoogleFonts.poppins(
             fontSize: 13,
             fontWeight: FontWeight.w700,
-            color: AppColors.cream.withValues(alpha: 0.95),
+            color: AppColors.cream95,
           ),
         ),
         if (maxGust > windSpeed) ...[
@@ -311,7 +313,7 @@ class AirCard extends StatelessWidget {
             style: GoogleFonts.poppins(
               fontSize: 11,
               fontWeight: FontWeight.w400,
-              color: AppColors.cream.withValues(alpha: 0.8),
+              color: AppColors.cream80,
             ),
           ),
         ],
@@ -326,7 +328,7 @@ class AirCard extends StatelessWidget {
         Icon(
           WeatherIcons.barometer,
           size: 14,
-          color: AppColors.cream.withValues(alpha: 0.8),
+          color: AppColors.cream80,
         ),
         const SizedBox(width: 4),
         Text(
@@ -334,7 +336,7 @@ class AirCard extends StatelessWidget {
           style: GoogleFonts.poppins(
             fontSize: 11,
             fontWeight: FontWeight.w600,
-            color: AppColors.cream.withValues(alpha: 0.8),
+            color: AppColors.cream80,
           ),
         ),
         if (pressureDelta != null) ...[
@@ -345,7 +347,7 @@ class AirCard extends StatelessWidget {
                 ? Icons.arrow_downward
                 : Icons.arrow_forward,
             size: 12,
-            color: AppColors.cream.withValues(alpha: 0.8),
+            color: AppColors.cream80,
           ),
           const SizedBox(width: 2),
           Text(
@@ -355,7 +357,7 @@ class AirCard extends StatelessWidget {
             style: GoogleFonts.poppins(
               fontSize: 11,
               fontWeight: FontWeight.w600,
-              color: AppColors.cream.withValues(alpha: 0.8),
+              color: AppColors.cream80,
             ),
           ),
         ],
@@ -392,7 +394,7 @@ class AirCard extends StatelessWidget {
                 style: GoogleFonts.poppins(
                   fontSize: 13,
                   fontWeight: FontWeight.w600,
-                  color: AppColors.cream.withValues(alpha: 0.9),
+                  color: AppColors.cream90,
                 ),
               ),
             ],
@@ -420,7 +422,7 @@ class AirCard extends StatelessWidget {
         Icon(
           WeatherIcons.smoke,
           size: 15,
-          color: AppColors.cream.withValues(alpha: 0.9),
+          color: AppColors.cream90,
         ),
         const SizedBox(width: 4),
         Text(
@@ -435,7 +437,7 @@ class AirCard extends StatelessWidget {
         Icon(
           WeatherIcons.windy,
           size: 14,
-          color: AppColors.cream.withValues(alpha: 0.95),
+          color: AppColors.cream95,
         ),
         const SizedBox(width: 6),
         Text(
@@ -443,7 +445,7 @@ class AirCard extends StatelessWidget {
           style: GoogleFonts.poppins(
             fontSize: 13,
             fontWeight: FontWeight.w600,
-            color: AppColors.cream.withValues(alpha: 0.95),
+            color: AppColors.cream95,
           ),
         ),
         const SizedBox(width: 8),
@@ -452,7 +454,7 @@ class AirCard extends StatelessWidget {
           style: GoogleFonts.poppins(
             fontSize: 13,
             fontWeight: FontWeight.w700,
-            color: AppColors.cream.withValues(alpha: 0.95),
+            color: AppColors.cream95,
           ),
         ),
         if (maxGust > windSpeed) ...[
@@ -462,7 +464,7 @@ class AirCard extends StatelessWidget {
             style: GoogleFonts.poppins(
               fontSize: 11,
               fontWeight: FontWeight.w400,
-              color: AppColors.cream.withValues(alpha: 0.8),
+              color: AppColors.cream80,
             ),
           ),
         ],
@@ -499,7 +501,7 @@ class AirCard extends StatelessWidget {
               style: GoogleFonts.poppins(
                 fontSize: 12,
                 fontWeight: FontWeight.w600,
-                color: AppColors.cream.withValues(alpha: 0.85),
+                color: AppColors.cream85,
               ),
             ),
           ],
@@ -538,7 +540,7 @@ class AirCard extends StatelessWidget {
                 style: GoogleFonts.poppins(
                   fontSize: 11,
                   fontWeight: FontWeight.w800,
-                  color: AppColors.cream.withValues(alpha: 0.85),
+                  color: AppColors.cream85,
                 ),
               ),
               const SizedBox(width: 6),
@@ -547,7 +549,7 @@ class AirCard extends StatelessWidget {
                 style: GoogleFonts.poppins(
                   fontSize: 9,
                   fontWeight: FontWeight.w400,
-                  color: AppColors.cream.withValues(alpha: 0.5),
+                  color: AppColors.cream50,
                 ),
               ),
             ],
@@ -575,7 +577,7 @@ class AirCard extends StatelessWidget {
       height: 2,
       child: CustomPaint(
         painter: _DashedLinePainter(
-          color: AppColors.cream.withValues(alpha: 0.3),
+          color: AppColors.cream30,
         ),
       ),
     );
@@ -629,6 +631,17 @@ class _AqiScalePainter extends CustomPainter {
 }
 
 class _WindLinePainter extends CustomPainter {
+  static const _yLabelStyle = TextStyle(
+    color: AppColors.cream95,
+    fontSize: 10,
+    fontWeight: FontWeight.w600,
+  );
+  static const _hourLabelStyle = TextStyle(
+    color: AppColors.cream90,
+    fontSize: 10,
+    fontWeight: FontWeight.w600,
+  );
+
   final List<double> windSpeeds;
   final List<double> windGusts;
   final List<DateTime> hours;
@@ -660,16 +673,11 @@ class _WindLinePainter extends CustomPainter {
     final bottom = padTop + graphH;
 
     // Y-axis labels
-    final yLabelStyle = TextStyle(
-      color: AppColors.cream.withValues(alpha: 0.95),
-      fontSize: 10,
-      fontWeight: FontWeight.w600,
-    );
     final midY = (maxY / 2).roundToDouble();
     for (final val in [maxY, midY, 0.0]) {
       final y = padTop + graphH * (1 - val / maxY);
       final tp = TextPainter(
-        text: TextSpan(text: '${val.round()}', style: yLabelStyle),
+        text: TextSpan(text: '${val.round()}', style: _yLabelStyle),
         textDirection: TextDirection.ltr,
       )..layout();
       tp.paint(canvas, Offset(0, y - tp.height / 2));
@@ -677,17 +685,12 @@ class _WindLinePainter extends CustomPainter {
 
     // X-axis hour labels (every 6 hours + last)
     if (showHourLabels) {
-      final hourLabelStyle = TextStyle(
-        color: AppColors.cream.withValues(alpha: 0.9),
-        fontSize: 10,
-        fontWeight: FontWeight.w600,
-      );
       for (var i = 0; i < hours.length; i++) {
         if (i % 6 != 0 && i != hours.length - 1) continue;
         final tp = TextPainter(
           text: TextSpan(
             text: DateFormat('ha').format(hours[i]).toLowerCase(),
-            style: hourLabelStyle,
+            style: _hourLabelStyle,
           ),
           textDirection: TextDirection.ltr,
         )..layout();
@@ -730,12 +733,12 @@ class _WindLinePainter extends CustomPainter {
     canvas.drawPath(
       fillPath,
       Paint()
-        ..shader = LinearGradient(
+        ..shader = const LinearGradient(
           begin: Alignment.topCenter,
           end: Alignment.bottomCenter,
           colors: [
-            AppColors.cream.withValues(alpha: 0.15),
-            AppColors.cream.withValues(alpha: 0.03),
+            AppColors.cream15,
+            AppColors.cream03,
           ],
         ).createShader(fillRect)
         ..style = PaintingStyle.fill,
@@ -745,7 +748,7 @@ class _WindLinePainter extends CustomPainter {
     canvas.drawPath(
       linePath,
       Paint()
-        ..color = AppColors.cream.withValues(alpha: 0.5)
+        ..color = AppColors.cream50
         ..strokeWidth = 2
         ..style = PaintingStyle.stroke
         ..strokeCap = StrokeCap.round,
@@ -769,7 +772,7 @@ class _WindLinePainter extends CustomPainter {
       }
 
       final dashPaint = Paint()
-        ..color = AppColors.cream.withValues(alpha: 0.3)
+        ..color = AppColors.cream30
         ..strokeWidth = 1.5
         ..style = PaintingStyle.stroke
         ..strokeCap = StrokeCap.round;
@@ -817,7 +820,7 @@ class _WindLinePainter extends CustomPainter {
               Offset(nowX, gustNowY),
               3.5,
               Paint()
-                ..color = AppColors.cream.withValues(alpha: 0.6)
+                ..color = AppColors.cream60
                 ..style = PaintingStyle.stroke
                 ..strokeWidth = 1.5,
             );
@@ -838,7 +841,7 @@ class _WindLinePainter extends CustomPainter {
   bool shouldRepaint(covariant _WindLinePainter old) =>
       windSpeeds != old.windSpeeds ||
       windGusts != old.windGusts ||
-      now != old.now ||
+      now?.millisecondsSinceEpoch != old.now?.millisecondsSinceEpoch ||
       showHourLabels != old.showHourLabels;
 }
 
@@ -870,6 +873,17 @@ class _DashedLinePainter extends CustomPainter {
 }
 
 class _PressureLinePainter extends CustomPainter {
+  static const _yLabelStyle = TextStyle(
+    color: AppColors.cream95,
+    fontSize: 10,
+    fontWeight: FontWeight.w600,
+  );
+  static const _hourLabelStyle = TextStyle(
+    color: AppColors.cream90,
+    fontSize: 10,
+    fontWeight: FontWeight.w600,
+  );
+
   final List<double> pressures;
   final List<DateTime> hours;
   final DateTime? now;
@@ -907,33 +921,23 @@ class _PressureLinePainter extends CustomPainter {
     final bottom = padTop + graphH;
 
     // Y-axis labels (hi, mid, lo)
-    final yLabelStyle = TextStyle(
-      color: AppColors.cream.withValues(alpha: 0.95),
-      fontSize: 10,
-      fontWeight: FontWeight.w600,
-    );
     final mid = (lo + hi) / 2;
     for (final val in [hi, mid, lo]) {
       final y = padTop + graphH * (1 - (val - lo) / range);
       final tp = TextPainter(
-        text: TextSpan(text: '${val.round()}', style: yLabelStyle),
+        text: TextSpan(text: '${val.round()}', style: _yLabelStyle),
         textDirection: TextDirection.ltr,
       )..layout();
       tp.paint(canvas, Offset(0, y - tp.height / 2));
     }
 
     // X-axis hour labels (every 6 hours + last)
-    final hourLabelStyle = TextStyle(
-      color: AppColors.cream.withValues(alpha: 0.9),
-      fontSize: 10,
-      fontWeight: FontWeight.w600,
-    );
     for (var i = 0; i < hours.length; i++) {
       if (i % 6 != 0 && i != hours.length - 1) continue;
       final tp = TextPainter(
         text: TextSpan(
           text: DateFormat('ha').format(hours[i]).toLowerCase(),
-          style: hourLabelStyle,
+          style: _hourLabelStyle,
         ),
         textDirection: TextDirection.ltr,
       )..layout();
@@ -975,12 +979,12 @@ class _PressureLinePainter extends CustomPainter {
     canvas.drawPath(
       fillPath,
       Paint()
-        ..shader = LinearGradient(
+        ..shader = const LinearGradient(
           begin: Alignment.topCenter,
           end: Alignment.bottomCenter,
           colors: [
-            AppColors.cream.withValues(alpha: 0.15),
-            AppColors.cream.withValues(alpha: 0.03),
+            AppColors.cream15,
+            AppColors.cream03,
           ],
         ).createShader(fillRect)
         ..style = PaintingStyle.fill,
@@ -990,7 +994,7 @@ class _PressureLinePainter extends CustomPainter {
     canvas.drawPath(
       linePath,
       Paint()
-        ..color = AppColors.cream.withValues(alpha: 0.5)
+        ..color = AppColors.cream50
         ..strokeWidth = 2
         ..style = PaintingStyle.stroke
         ..strokeCap = StrokeCap.round,
@@ -1031,7 +1035,9 @@ class _PressureLinePainter extends CustomPainter {
 
   @override
   bool shouldRepaint(covariant _PressureLinePainter old) =>
-      pressures != old.pressures || hours != old.hours || now != old.now;
+      pressures != old.pressures ||
+      hours != old.hours ||
+      now?.millisecondsSinceEpoch != old.now?.millisecondsSinceEpoch;
 }
 
 class _PollutantTile extends StatelessWidget {
@@ -1048,7 +1054,7 @@ class _PollutantTile extends StatelessWidget {
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 8),
       decoration: BoxDecoration(
-        color: AppColors.cream.withValues(alpha: 0.08),
+        color: AppColors.cream08,
         borderRadius: BorderRadius.circular(10),
       ),
       child: Column(

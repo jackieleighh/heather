@@ -38,15 +38,13 @@ class AppColors {
   static const goldenAmber = Color(0xFFfcc500);
 
   // --- Sunny day gradients ---
-  static const sunnyAqua = Color(0xFF5DBFC8);
-  static const sunnyCrispBlue = Color(0xFF78C4FF);
+  static const sunnyAqua = Color(0xFF48A8B0);
   static const sunnyRichViolet = Color(0xFF9E80FF);
-  static const sunnyCerulean = Color(0xFF60B4FF);
-  static const sunnyBrightBlue = Color(0xFF88CCFF);
+  static const sunnyCerulean = Color(0xFF4890C8);
+  static const sunnyBrightBlue = Color(0xFF5CA0D8);
   static const sunnyBrightTeal = Color(0xFF58B89E);
-  static const sunnyVividGold = Color(0xFFF2CC00);
-  static const sunnyBlazingOrange = Color(0xFFF87008);
-  static const sunnyFireAmber = Color(0xFFFF8C18);
+  static const sunnyVividGold = Color(0xFFC8A420);
+  static const sunnyBlazingOrange = Color(0xFFD07018);
   static const sunnyHotRose = Color(0xFFF03478);
 
   // --- Scorcher tier (night gradients) ---
@@ -91,4 +89,34 @@ class AppColors {
   static const brightIcyBlue = Color(0xFF68B8E8);
   static const brightWarmSkyBlue = Color(0xFF4088B8);
   static const brightAzure = Color(0xFF38A8D8);
+
+  // --- Pre-computed cream alpha variants (avoid per-frame allocations) ---
+  static const cream95 = Color(0xF2FAFAFA); // alpha 0.95
+  static const cream90 = Color(0xE6FAFAFA); // alpha 0.9
+  static const cream85 = Color(0xD9FAFAFA); // alpha 0.85
+  static const cream80 = Color(0xCCFAFAFA); // alpha 0.8
+  static const cream75 = Color(0xBFFAFAFA); // alpha 0.75
+  static const cream70 = Color(0xB3FAFAFA); // alpha 0.7
+  static const cream60 = Color(0x99FAFAFA); // alpha 0.6
+  static const cream55 = Color(0x8CFAFAFA); // alpha 0.55
+  static const cream50 = Color(0x80FAFAFA); // alpha 0.5
+  static const cream45 = Color(0x73FAFAFA); // alpha 0.45
+  static const cream40 = Color(0x66FAFAFA); // alpha 0.4
+  static const cream35 = Color(0x59FAFAFA); // alpha 0.35
+  static const cream30 = Color(0x4DFAFAFA); // alpha 0.3
+  static const cream25 = Color(0x40FAFAFA); // alpha 0.25
+  static const cream22 = Color(0x38FAFAFA); // alpha 0.22
+  static const cream20 = Color(0x33FAFAFA); // alpha 0.2
+  static const cream18 = Color(0x2EFAFAFA); // alpha 0.18
+  static const cream15 = Color(0x26FAFAFA); // alpha 0.15
+  static const cream12 = Color(0x1FFAFAFA); // alpha 0.12
+  static const cream10 = Color(0x1AFAFAFA); // alpha 0.1
+  static const cream08 = Color(0x14FAFAFA); // alpha 0.08
+  static const cream06 = Color(0x0FFAFAFA); // alpha 0.06
+  static const cream03 = Color(0x08FAFAFA); // alpha 0.03
+  static const cream02 = Color(0x05FAFAFA); // alpha 0.02
+
+  // --- Pre-computed black alpha variants ---
+  static const black30 = Color(0x4D000000); // alpha 0.3
+  static const black12 = Color(0x1F000000); // alpha 0.12
 }

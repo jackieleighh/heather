@@ -28,6 +28,7 @@ struct OpenMeteoResponse: Codable {
         let time: [String]
         let temperature_2m: [Double]
         let weather_code: [Int]
+        let precipitation_probability: [Int]?
     }
 }
 
@@ -38,7 +39,7 @@ struct WeatherFetcher {
             + "?latitude=\(latitude)&longitude=\(longitude)"
             + "&current=temperature_2m,relative_humidity_2m,apparent_temperature,is_day,weather_code,wind_speed_10m,uv_index"
             + "&daily=temperature_2m_max,temperature_2m_min,sunrise,sunset,uv_index_max"
-            + "&hourly=temperature_2m,weather_code"
+            + "&hourly=temperature_2m,weather_code,precipitation_probability"
             + "&temperature_unit=fahrenheit&wind_speed_unit=mph&timezone=auto&forecast_days=2"
 
         guard let url = URL(string: urlString) else { return nil }
@@ -78,6 +79,89 @@ struct WeatherFetcher {
         }
     }
 
+    /// WMO codes that represent precipitation conditions.
+    private static let precipCodes: Set<Int> = [
+        51, 53, 55, 56, 57, 61, 63, 65, 66, 67,
+        80, 81, 82, 71, 73, 75, 77, 85, 86, 95, 96, 99
+    ]
+
+    /// Builds timeline segments from fetched hourly data for the next 12 hours.
+    static func buildTimelineSegments(
+        hourly: OpenMeteoResponse.HourlyWeather,
+        utcOffsetSeconds: Int,
+        now: Date
+    ) -> [TimelineSegment] {
+        let tz = TimeZone(secondsFromGMT: utcOffsetSeconds) ?? .current
+        let fmt = DateFormatter()
+        fmt.dateFormat = "yyyy-MM-dd'T'HH:mm"
+        fmt.locale = Locale(identifier: "en_US_POSIX")
+        fmt.timeZone = tz
+
+        let endTime = now.addingTimeInterval(12 * 3600)
+        var segments: [TimelineSegment] = []
+
+        for i in 0..<hourly.time.count {
+            guard let hourDate = fmt.date(from: hourly.time[i]) else { continue }
+            if hourDate < now { continue }
+            if hourDate >= endTime { break }
+
+            let minuteOffset = Int(hourDate.timeIntervalSince(now) / 60)
+            let prob = hourly.precipitation_probability?[safe: i] ?? 0
+            let isPrecip = precipCodes.contains(hourly.weather_code[i])
+
+            segments.append(TimelineSegment(
+                minuteOffset: minuteOffset,
+                precipitation: isPrecip ? Double(prob) / 100.0 : 0.0,
+                precipProbability: prob,
+                temperature: Int(hourly.temperature_2m[i].rounded())
+            ))
+        }
+
+        // Ensure a "now" segment at offset 0
+        if segments.isEmpty || segments.first!.minuteOffset > 0 {
+            let currentTemp: Int
+            if let closest = hourly.temperature_2m.first {
+                currentTemp = Int(closest.rounded())
+            } else {
+                currentTemp = 0
+            }
+            segments.insert(TimelineSegment(
+                minuteOffset: 0,
+                precipitation: 0.0,
+                precipProbability: 0,
+                temperature: currentTemp
+            ), at: 0)
+        }
+
+        return segments
+    }
+
+    /// Whether any hour in the next 6 hours has precipitation with >= 60% probability.
+    static func hasPrecipInTimeline(
+        hourly: OpenMeteoResponse.HourlyWeather,
+        utcOffsetSeconds: Int,
+        now: Date
+    ) -> Bool {
+        let tz = TimeZone(secondsFromGMT: utcOffsetSeconds) ?? .current
+        let fmt = DateFormatter()
+        fmt.dateFormat = "yyyy-MM-dd'T'HH:mm"
+        fmt.locale = Locale(identifier: "en_US_POSIX")
+        fmt.timeZone = tz
+
+        let endTime = now.addingTimeInterval(6 * 3600)
+
+        for i in 0..<hourly.time.count {
+            guard let hourDate = fmt.date(from: hourly.time[i]) else { continue }
+            if hourDate < now { continue }
+            if hourDate >= endTime { break }
+
+            let prob = hourly.precipitation_probability?[safe: i] ?? 0
+            let isPrecip = precipCodes.contains(hourly.weather_code[i])
+            if isPrecip && prob >= 60 { return true }
+        }
+        return false
+    }
+
     static func description(from wmoCode: Int) -> String {
         switch wmoCode {
         case 0: return "Clear sky"
@@ -110,5 +194,13 @@ struct WeatherFetcher {
         case 99: return "Thunderstorm with heavy hail"
         default: return "Unknown"
         }
+    }
+}
+
+// MARK: - Safe Array Subscript
+
+extension Array {
+    subscript(safe index: Int) -> Element? {
+        indices.contains(index) ? self[index] : nil
     }
 }

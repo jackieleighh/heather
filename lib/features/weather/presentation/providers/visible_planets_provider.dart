@@ -1,10 +1,9 @@
 import 'dart:convert';
 
-import 'package:dio/dio.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:shared_preferences/shared_preferences.dart';
 
 import '../../../../core/constants/api_endpoints.dart';
+import '../../../../core/network/api_client.dart';
 
 class VisiblePlanet {
   final String name;
@@ -38,9 +37,18 @@ class VisiblePlanet {
   );
 }
 
-final visiblePlanetsProvider = FutureProvider.family<List<VisiblePlanet>,
-    ({double lat, double lon})>((ref, coords) async {
-  final prefs = await SharedPreferences.getInstance();
+/// Round to 3 decimal places (~111m precision) to avoid GPS micro-drift
+/// creating duplicate provider instances and cache entries.
+({double lat, double lon}) _roundCoords(({double lat, double lon}) c) => (
+  lat: (c.lat * 1000).roundToDouble() / 1000,
+  lon: (c.lon * 1000).roundToDouble() / 1000,
+);
+
+final visiblePlanetsProvider = FutureProvider.autoDispose.family<List<VisiblePlanet>,
+    ({double lat, double lon})>((ref, rawCoords) async {
+  final coords = _roundCoords(rawCoords);
+  final prefs = ref.watch(sharedPreferencesProvider);
+  final dio = ref.watch(dioProvider);
   final cacheKey = 'cached_planets_v2_${coords.lat}_${coords.lon}';
   final cacheTsKey = 'cached_planets_v2_ts_${coords.lat}_${coords.lon}';
 
@@ -65,7 +73,7 @@ final visiblePlanetsProvider = FutureProvider.family<List<VisiblePlanet>,
   }
 
   try {
-    final response = await Dio().get(
+    final response = await dio.get(
       ApiEndpoints.visiblePlanets(
         latitude: coords.lat,
         longitude: coords.lon,

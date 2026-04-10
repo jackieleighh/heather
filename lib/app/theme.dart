@@ -21,7 +21,7 @@ class HeatherTheme {
     scaffoldBackgroundColor: Colors.transparent,
   );
 
-  static TextTheme get _textTheme => TextTheme(
+  static final _textTheme = TextTheme(
     // Temperature
     displayLarge: GoogleFonts.poppins(
       fontSize: 160,

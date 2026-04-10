@@ -13,11 +13,13 @@ import '../sources/weather_remote_source.dart';
 class WeatherRepositoryImpl implements WeatherRepository {
   final WeatherRemoteSource remoteSource;
   final LocationSource locationSource;
+  final SharedPreferences? _prefs;
 
   WeatherRepositoryImpl({
     required this.remoteSource,
     required this.locationSource,
-  });
+    SharedPreferences? prefs,
+  }) : _prefs = prefs;
 
   @override
   Future<Forecast> getForecast({
@@ -33,7 +35,7 @@ class WeatherRepositoryImpl implements WeatherRepository {
       final fresh = await _getFreshCachedForecast(cacheKey, cacheTsKey);
       if (fresh != null) {
         // Track the key so readCachedWeather always points at the right entry
-        final prefs = await SharedPreferences.getInstance();
+        final prefs = await _getPrefs();
         await prefs.setString('last_forecast_cache_key', cacheKey);
         await prefs.setString('last_forecast_cache_ts_key', cacheTsKey);
         return fresh;
@@ -48,7 +50,7 @@ class WeatherRepositoryImpl implements WeatherRepository {
       await _cacheForecast(response, cacheKey, cacheTsKey);
       // Track the exact key so readCachedWeather can find it
       // regardless of GPS coordinate drift between refreshes.
-      final prefs = await SharedPreferences.getInstance();
+      final prefs = await _getPrefs();
       await prefs.setString('last_forecast_cache_key', cacheKey);
       await prefs.setString('last_forecast_cache_ts_key', cacheTsKey);
       return response.toEntity();
@@ -126,12 +128,16 @@ class WeatherRepositoryImpl implements WeatherRepository {
     return locationSource.getCurrentLocation();
   }
 
+  Future<SharedPreferences> _getPrefs() async {
+    return _prefs ?? await SharedPreferences.getInstance();
+  }
+
   Future<void> _cacheForecast(
     ForecastResponseModel model,
     String cacheKey,
     String cacheTsKey,
   ) async {
-    final prefs = await SharedPreferences.getInstance();
+    final prefs = await _getPrefs();
     await prefs.setString(cacheKey, jsonEncode(model.toJson()));
     await prefs.setInt(cacheTsKey, DateTime.now().millisecondsSinceEpoch);
   }
@@ -140,7 +146,7 @@ class WeatherRepositoryImpl implements WeatherRepository {
     String cacheKey,
     String cacheTsKey,
   ) async {
-    final prefs = await SharedPreferences.getInstance();
+    final prefs = await _getPrefs();
     final cached = prefs.getString(cacheKey);
     final ts = prefs.getInt(cacheTsKey);
 
@@ -243,7 +249,7 @@ class WeatherRepositoryImpl implements WeatherRepository {
     String cacheKey,
     String cacheTsKey,
   ) async {
-    final prefs = await SharedPreferences.getInstance();
+    final prefs = await _getPrefs();
     final cached = prefs.getString(cacheKey);
     final ts = prefs.getInt(cacheTsKey);
 

@@ -4,32 +4,24 @@ import '../../../../core/constants/api_endpoints.dart';
 import '../../../../core/utils/geo_utils.dart';
 import '../../domain/entities/weather_alert.dart';
 
-/// Cleans NWS alert text by replacing hard-wrapped single newlines with spaces
-/// while preserving paragraph breaks (double newlines).
-String _cleanAlertText(String text) {
-  return text
-      .replaceAll('\r\n', '\n')
-      .replaceAll(RegExp(r'\n\n+'), '\u0000')
-      .replaceAll('\n', ' ')
-      .replaceAll('\u0000', '\n\n')
-      .trim();
-}
-
 /// Fetches active NWS alerts for the given coordinates.
 /// Returns an empty list on failure or for non-US locations.
+/// Accepts an optional [dio] instance for connection pooling; falls back to
+/// a one-off instance when not provided (e.g. from non-Riverpod call sites).
 Future<List<WeatherAlert>> fetchAlerts({
   required double latitude,
   required double longitude,
+  Dio? dio,
 }) async {
   // NWS alerts only cover US territories
   if (!isInUSBounds(latitude, longitude)) return [];
 
   try {
-    final dio = Dio(BaseOptions(
+    final client = dio ?? Dio(BaseOptions(
       connectTimeout: const Duration(seconds: 10),
       receiveTimeout: const Duration(seconds: 10),
     ));
-    final response = await dio.get(
+    final response = await client.get(
       ApiEndpoints.nwsAlerts(
         latitude: latitude,
         longitude: longitude,
@@ -78,4 +70,15 @@ Future<List<WeatherAlert>> fetchAlerts({
   } catch (_) {
     return [];
   }
+}
+
+/// Cleans NWS alert text by replacing hard-wrapped single newlines with spaces
+/// while preserving paragraph breaks (double newlines).
+String _cleanAlertText(String text) {
+  return text
+      .replaceAll('\r\n', '\n')
+      .replaceAll(RegExp(r'\n\n+'), '\u0000')
+      .replaceAll('\n', ' ')
+      .replaceAll('\u0000', '\n\n')
+      .trim();
 }

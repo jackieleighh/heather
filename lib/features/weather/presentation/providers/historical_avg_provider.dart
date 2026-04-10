@@ -1,13 +1,21 @@
-import 'package:dio/dio.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:shared_preferences/shared_preferences.dart';
 
 import '../../../../core/constants/api_endpoints.dart';
+import '../../../../core/network/api_client.dart';
 
-final historicalAvgProvider =
-    FutureProvider.family<double?, ({double lat, double lon})>(
-        (ref, coords) async {
-  final prefs = await SharedPreferences.getInstance();
+/// Round to 3 decimal places (~111m precision) to avoid GPS micro-drift
+/// creating duplicate provider instances and cache entries.
+({double lat, double lon}) _roundCoords(({double lat, double lon}) c) => (
+  lat: (c.lat * 1000).roundToDouble() / 1000,
+  lon: (c.lon * 1000).roundToDouble() / 1000,
+);
+
+final historicalAvgProvider = FutureProvider.autoDispose
+    .family<double?, ({double lat, double lon})>(
+        (ref, rawCoords) async {
+  final coords = _roundCoords(rawCoords);
+  final prefs = ref.watch(sharedPreferencesProvider);
+  final dio = ref.watch(dioProvider);
   final cacheKey = 'cached_hist_avg_${coords.lat}_${coords.lon}';
   final cacheTsKey = 'cached_hist_avg_ts_${coords.lat}_${coords.lon}';
 
@@ -27,7 +35,7 @@ final historicalAvgProvider =
     final endDate = now.subtract(const Duration(days: 5));
     final startDate = DateTime(now.year - 10, now.month, now.day);
 
-    final response = await Dio().get(
+    final response = await dio.get(
       ApiEndpoints.historicalDaily(
         latitude: coords.lat,
         longitude: coords.lon,

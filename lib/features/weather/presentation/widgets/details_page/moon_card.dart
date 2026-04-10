@@ -109,10 +109,10 @@ class MoonCard extends ConsumerWidget {
               crossAxisAlignment: CrossAxisAlignment.baseline,
               textBaseline: TextBaseline.alphabetic,
               children: [
-                Icon(
+                const Icon(
                   WeatherIcons.moon_full,
                   size: 15,
-                  color: AppColors.cream.withValues(alpha: 0.9),
+                  color: AppColors.cream90,
                 ),
                 const SizedBox(width: 4),
                 Text(
@@ -201,7 +201,7 @@ class MoonCard extends ConsumerWidget {
           Icon(
             icon,
             size: 14,
-            color: AppColors.cream.withValues(alpha: 0.9),
+            color: AppColors.cream90,
           ),
           const SizedBox(width: 4),
           Text(
@@ -339,7 +339,7 @@ class MoonCard extends ConsumerWidget {
                     style: GoogleFonts.poppins(
                       fontSize: 11,
                       fontWeight: FontWeight.w500,
-                      color: AppColors.cream.withValues(alpha: 0.8),
+                      color: AppColors.cream80,
                     ),
                     children: [
                       if (lunarAge != null) ...[
@@ -349,7 +349,7 @@ class MoonCard extends ConsumerWidget {
                           style: GoogleFonts.poppins(
                             fontSize: 11,
                             fontWeight: FontWeight.w700,
-                            color: AppColors.cream.withValues(alpha: 0.9),
+                            color: AppColors.cream90,
                           ),
                         ),
                       ],
@@ -362,7 +362,7 @@ class MoonCard extends ConsumerWidget {
                           style: GoogleFonts.poppins(
                             fontSize: 11,
                             fontWeight: FontWeight.w700,
-                            color: AppColors.cream.withValues(alpha: 0.9),
+                            color: AppColors.cream90,
                           ),
                         ),
                       ],
@@ -422,12 +422,12 @@ class MoonCard extends ConsumerWidget {
     final labelStyle = GoogleFonts.poppins(
       fontSize: 11,
       fontWeight: FontWeight.w400,
-      color: AppColors.cream.withValues(alpha: 0.75),
+      color: AppColors.cream75,
     );
     final timeStyle = GoogleFonts.poppins(
       fontSize: 11,
       fontWeight: FontWeight.w700,
-      color: AppColors.cream.withValues(alpha: 0.95),
+      color: AppColors.cream95,
     );
 
     return Column(
@@ -441,7 +441,7 @@ class MoonCard extends ConsumerWidget {
                 style: GoogleFonts.poppins(
                   fontSize: 12,
                   fontWeight: FontWeight.w700,
-                  color: AppColors.cream.withValues(alpha: 0.95),
+                  color: AppColors.cream95,
                 ),
                 children: [
                   TextSpan(
@@ -449,7 +449,7 @@ class MoonCard extends ConsumerWidget {
                     style: GoogleFonts.poppins(
                       fontSize: 12,
                       fontWeight: FontWeight.w400,
-                      color: AppColors.cream.withValues(alpha: 0.95),
+                      color: AppColors.cream95,
                     ),
                   ),
                   TextSpan(text: '${nightH}h ${nightM}m dark'),
@@ -458,7 +458,7 @@ class MoonCard extends ConsumerWidget {
                     style: GoogleFonts.poppins(
                       fontSize: 12,
                       fontWeight: FontWeight.w400,
-                      color: AppColors.cream.withValues(alpha: 0.75),
+                      color: AppColors.cream75,
                     ),
                   ),
                 ],
@@ -509,8 +509,8 @@ class MoonCard extends ConsumerWidget {
       'assets/images/zodiac/${zodiac.toLowerCase()}.svg',
       width: 10,
       height: 10,
-      colorFilter: ColorFilter.mode(
-        AppColors.cream.withValues(alpha: 0.6),
+      colorFilter: const ColorFilter.mode(
+        AppColors.cream60,
         BlendMode.srcIn,
       ),
     );
@@ -573,10 +573,10 @@ class MoonCard extends ConsumerWidget {
       padding: const EdgeInsets.symmetric(horizontal: 14),
       child: Row(
         children: [
-          Icon(
+          const Icon(
             WeatherIcons.moon_full,
             size: 14,
-            color: AppColors.cream.withValues(alpha: 0.9),
+            color: AppColors.cream90,
           ),
           const SizedBox(width: 4),
           Text(
@@ -605,7 +605,7 @@ class MoonCard extends ConsumerWidget {
         Icon(
           icon,
           size: 15,
-          color: AppColors.cream.withValues(alpha: 0.9),
+          color: AppColors.cream90,
         ),
         const SizedBox(width: 4),
         Text(
@@ -630,7 +630,7 @@ class MoonCard extends ConsumerWidget {
                   style: GoogleFonts.poppins(
                     fontSize: 11,
                     fontWeight: FontWeight.w500,
-                    color: AppColors.cream.withValues(alpha: 0.7),
+                    color: AppColors.cream70,
                   ),
                 ),
                 const SizedBox(width: 6),
@@ -650,7 +650,7 @@ class MoonCard extends ConsumerWidget {
                 style: GoogleFonts.poppins(
                   fontSize: 11,
                   fontWeight: FontWeight.w500,
-                  color: AppColors.cream.withValues(alpha: 0.8),
+                  color: AppColors.cream80,
                 ),
               ),
           ],
@@ -694,7 +694,7 @@ class _MoonDiscPainter extends CustomPainter {
 
     // 1. Draw base lit circle
     final litPaint = Paint()
-      ..color = AppColors.cream.withValues(alpha: 0.85)
+      ..color = AppColors.cream85
       ..style = PaintingStyle.fill;
     canvas.drawCircle(center, radius, litPaint);
 
@@ -756,7 +756,7 @@ class _MoonDiscPainter extends CustomPainter {
 
     // 3. Subtle outline
     final outlinePaint = Paint()
-      ..color = AppColors.cream.withValues(alpha: 0.25)
+      ..color = AppColors.cream25
       ..style = PaintingStyle.stroke
       ..strokeWidth = 1;
     canvas.drawCircle(center, radius, outlinePaint);
@@ -802,9 +802,7 @@ class _PhaseStrip extends StatelessWidget {
           return Icon(
             _phaseIcons[i],
             size: 9,
-            color: AppColors.cream.withValues(
-              alpha: isCurrent ? 0.95 : 0.3,
-            ),
+            color: isCurrent ? AppColors.cream95 : AppColors.cream30,
           );
         }),
       ),
@@ -855,7 +853,7 @@ class _VisiblePlanetsRow extends ConsumerWidget {
               style: GoogleFonts.poppins(
                 fontSize: 11,
                 fontWeight: FontWeight.w800,
-                color: AppColors.cream.withValues(alpha: 0.85),
+                color: AppColors.cream85,
               ),
             ),
             const SizedBox(width: 6),
@@ -865,7 +863,7 @@ class _VisiblePlanetsRow extends ConsumerWidget {
                 style: GoogleFonts.poppins(
                   fontSize: 11,
                   fontWeight: FontWeight.w400,
-                  color: AppColors.cream.withValues(alpha: 0.85),
+                  color: AppColors.cream85,
                 ),
                 overflow: TextOverflow.ellipsis,
               ),
@@ -906,7 +904,7 @@ class _ExpandedVisiblePlanetsBlock extends ConsumerWidget {
               style: GoogleFonts.poppins(
                 fontSize: 11,
                 fontWeight: FontWeight.w800,
-                color: AppColors.cream.withValues(alpha: 0.85),
+                color: AppColors.cream85,
               ),
             ),
             const SizedBox(height: 6),
@@ -957,13 +955,13 @@ class _PlanetTile extends StatelessWidget {
     final magStyle = GoogleFonts.poppins(
       fontSize: 10,
       fontWeight: FontWeight.w500,
-      color: AppColors.cream.withValues(alpha: 0.9),
+      color: AppColors.cream90,
     );
 
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 5),
       decoration: BoxDecoration(
-        color: AppColors.cream.withValues(alpha: 0.08),
+        color: AppColors.cream08,
         borderRadius: BorderRadius.circular(10),
       ),
       child: Column(
@@ -1018,10 +1016,10 @@ class _PlanetTile extends StatelessWidget {
               child: Row(
                 mainAxisSize: MainAxisSize.min,
                 children: [
-                  Icon(
+                  const Icon(
                     Icons.arrow_upward,
                     size: 10,
-                    color: AppColors.cream.withValues(alpha: 0.9),
+                    color: AppColors.cream90,
                   ),
                   const SizedBox(width: 2),
                   Text(
@@ -1083,7 +1081,7 @@ class _AstroEventRow extends StatelessWidget {
     final style = GoogleFonts.poppins(
       fontSize: 11,
       fontWeight: FontWeight.w700,
-      color: AppColors.cream.withValues(alpha: 0.9),
+      color: AppColors.cream90,
     );
 
     if (!showSeason && event == null) {
@@ -1097,8 +1095,8 @@ class _AstroEventRow extends StatelessWidget {
             'assets/images/zodiac/${sign.toLowerCase()}.svg',
             width: 13,
             height: 13,
-            colorFilter: ColorFilter.mode(
-              AppColors.cream.withValues(alpha: 0.9),
+            colorFilter: const ColorFilter.mode(
+              AppColors.cream90,
               BlendMode.srcIn,
             ),
           ),
@@ -1119,7 +1117,7 @@ class _AstroEventRow extends StatelessWidget {
     final lightStyle = GoogleFonts.poppins(
       fontSize: 11,
       fontWeight: FontWeight.w400,
-      color: AppColors.cream.withValues(alpha: 0.9),
+      color: AppColors.cream90,
     );
     final label = event.label;
     final untilIndex = label.indexOf(' until ');
@@ -1136,8 +1134,8 @@ class _AstroEventRow extends StatelessWidget {
               'assets/images/meteor.svg',
               width: 12,
               height: 12,
-              colorFilter: ColorFilter.mode(
-                AppColors.cream.withValues(alpha: 0.9),
+              colorFilter: const ColorFilter.mode(
+                AppColors.cream90,
                 BlendMode.srcIn,
               ),
             ),
@@ -1171,6 +1169,18 @@ class _AstroEventRow extends StatelessWidget {
 class _MoonCycleChartPainter extends CustomPainter {
   final UsnoMoonData usno;
   final DateTime now;
+
+  static const _dateLabelStyle = TextStyle(
+    color: AppColors.cream75,
+    fontSize: 10,
+    fontWeight: FontWeight.w600,
+  );
+
+  static const _todayLabelStyle = TextStyle(
+    color: AppColors.cream95,
+    fontSize: 10,
+    fontWeight: FontWeight.w700,
+  );
 
   _MoonCycleChartPainter({required this.usno, required this.now});
 
@@ -1232,12 +1242,12 @@ class _MoonCycleChartPainter extends CustomPainter {
       ..close();
 
     final fillPaint = Paint()
-      ..shader = LinearGradient(
+      ..shader = const LinearGradient(
         begin: Alignment.topCenter,
         end: Alignment.bottomCenter,
         colors: [
-          AppColors.cream.withValues(alpha: 0.15),
-          AppColors.cream.withValues(alpha: 0.0),
+          AppColors.cream15,
+          Colors.transparent,
         ],
       ).createShader(Rect.fromLTRB(
         padLeft,
@@ -1253,7 +1263,7 @@ class _MoonCycleChartPainter extends CustomPainter {
       Offset(lineStartX, lineY),
       Offset(lineEndX, lineY),
       Paint()
-        ..color = AppColors.cream.withValues(alpha: 0.55)
+        ..color = AppColors.cream55
         ..strokeWidth = 2
         ..style = PaintingStyle.stroke
         ..strokeCap = StrokeCap.round,
@@ -1264,11 +1274,6 @@ class _MoonCycleChartPainter extends CustomPainter {
 
     // 9. Phase-disc markers along the top of the chart area
     if (hasCycle) {
-      final dateLabelStyle = TextStyle(
-        color: AppColors.cream.withValues(alpha: 0.75),
-        fontSize: 10,
-        fontWeight: FontWeight.w600,
-      );
       final dateFmt = DateFormat('MMM d');
       for (final t in usno.transitions) {
         if (t.date.isBefore(start) || t.date.isAfter(end)) continue;
@@ -1295,7 +1300,7 @@ class _MoonCycleChartPainter extends CustomPainter {
 
         final label = dateFmt.format(t.date);
         final tp = TextPainter(
-          text: TextSpan(text: label, style: dateLabelStyle),
+          text: TextSpan(text: label, style: _dateLabelStyle),
           textDirection: TextDirection.ltr,
         )..layout();
         final labelX = (cx - tp.width / 2)
@@ -1312,19 +1317,15 @@ class _MoonCycleChartPainter extends CustomPainter {
       dotCenter,
       4,
       Paint()
-        ..color = AppColors.cream.withValues(alpha: 0.95)
+        ..color = AppColors.cream95
         ..style = PaintingStyle.fill,
     );
 
     // 11. "u r here" label centered below the dot
     final todayLabel = TextPainter(
-      text: TextSpan(
+      text: const TextSpan(
         text: 'u r here',
-        style: TextStyle(
-          color: AppColors.cream.withValues(alpha: 0.95),
-          fontSize: 10,
-          fontWeight: FontWeight.w700,
-        ),
+        style: _todayLabelStyle,
       ),
       textDirection: TextDirection.ltr,
     )..layout();
@@ -1340,5 +1341,6 @@ class _MoonCycleChartPainter extends CustomPainter {
 
   @override
   bool shouldRepaint(covariant _MoonCycleChartPainter old) =>
-      now != old.now || usno != old.usno;
+      now.millisecondsSinceEpoch != old.now.millisecondsSinceEpoch ||
+      usno != old.usno;
 }

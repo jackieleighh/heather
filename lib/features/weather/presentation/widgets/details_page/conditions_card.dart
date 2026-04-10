@@ -70,7 +70,7 @@ class _ConditionsCardState extends State<ConditionsCard> {
         Icon(
           WeatherIcons.cloud,
           size: widget.compact ? 10 : 15,
-          color: AppColors.cream.withValues(alpha: 0.9),
+          color: AppColors.cream90,
         ),
         SizedBox(width: widget.compact ? 3 : 4),
         Text(
@@ -146,7 +146,7 @@ class _ConditionsCardState extends State<ConditionsCard> {
                   Text(
                     hourLabel,
                     style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                      color: AppColors.cream.withValues(alpha: 0.9),
+                      color: AppColors.cream90,
                       fontSize: widget.compact ? 9 : 10,
                     ),
                   ),
@@ -200,13 +200,13 @@ class _ConditionsCardState extends State<ConditionsCard> {
                             style: GoogleFonts.figtree(
                               fontSize: 11,
                               fontWeight: FontWeight.w600,
-                              color: AppColors.cream.withValues(alpha: 0.7),
+                              color: AppColors.cream70,
                             ),
                           ),
                           const SizedBox(height: 8),
                           Icon(
                             conditionIcon(h.weatherCode, isDay: isDay),
-                            color: AppColors.cream.withValues(alpha: 0.85),
+                            color: AppColors.cream85,
                             size: 30,
                           ),
                           const SizedBox(height: 3),
@@ -215,7 +215,7 @@ class _ConditionsCardState extends State<ConditionsCard> {
                             style: GoogleFonts.poppins(
                               fontSize: 13,
                               fontWeight: FontWeight.w700,
-                              color: AppColors.cream.withValues(alpha: 0.7),
+                              color: AppColors.cream70,
                             ),
                           ),
                         ],
@@ -242,7 +242,7 @@ class _ConditionsCardState extends State<ConditionsCard> {
             Icon(
               WeatherIcons.cloud,
               size: 14,
-              color: AppColors.cream.withValues(alpha: 0.9),
+              color: AppColors.cream90,
             ),
             const SizedBox(width: 4),
             Text(

@@ -17,6 +17,85 @@ import '../providers/moon_data_provider.dart';
 import 'details_page/conditions_card.dart';
 import 'details_page/rain_card.dart';
 
+/// Cached text styles to avoid repeated GoogleFonts allocations.
+final _headerStyle = GoogleFonts.figtree(
+  fontSize: 22,
+  fontWeight: FontWeight.w700,
+  color: AppColors.cream,
+);
+final _dayNameStyle = GoogleFonts.figtree(
+  fontSize: 20,
+  fontWeight: FontWeight.w400,
+  color: AppColors.cream,
+  shadows: [const Shadow(color: Color(0x28000000), blurRadius: 6)],
+);
+final _dayNameCompactStyle = GoogleFonts.figtree(
+  fontSize: 18,
+  fontWeight: FontWeight.w400,
+  color: AppColors.cream,
+);
+final _dateStyle = GoogleFonts.quicksand(
+  fontSize: 13,
+  fontWeight: FontWeight.w500,
+  color: AppColors.cream95,
+);
+final _tempCompactStyle = GoogleFonts.quicksand(
+  fontSize: 14,
+  fontWeight: FontWeight.w700,
+  color: AppColors.cream,
+);
+final _tempEqualStyle = GoogleFonts.quicksand(
+  fontSize: 18,
+  fontWeight: FontWeight.w700,
+  color: AppColors.cream,
+);
+final _statBoldStyle = GoogleFonts.poppins(
+  fontSize: 11,
+  fontWeight: FontWeight.w600,
+  color: AppColors.cream,
+);
+final _statSemiBoldStyle = GoogleFonts.poppins(
+  fontSize: 11,
+  fontWeight: FontWeight.w600,
+  color: AppColors.cream90,
+);
+final _statLightStyle = GoogleFonts.poppins(
+  fontSize: 11,
+  fontWeight: FontWeight.w500,
+  color: AppColors.cream90,
+);
+final _tileHeaderStyle = GoogleFonts.figtree(
+  fontSize: 13,
+  fontWeight: FontWeight.w400,
+  color: AppColors.cream,
+);
+final _tileBoldStyle = GoogleFonts.poppins(
+  fontSize: 11,
+  fontWeight: FontWeight.w700,
+  color: AppColors.cream,
+);
+final _tileTimeAxisStyle = GoogleFonts.poppins(
+  fontSize: 11,
+  fontWeight: FontWeight.w400,
+  color: AppColors.cream70,
+);
+final _statChipLightStyle = GoogleFonts.poppins(
+  fontSize: 11,
+  fontWeight: FontWeight.w400,
+  color: AppColors.cream,
+);
+
+/// Pre-computed decoration constants.
+final _weeklyCardDecoration = BoxDecoration(
+  color: AppColors.cream22,
+  borderRadius: BorderRadius.circular(20),
+  boxShadow: const [BoxShadow(color: AppColors.black12, blurRadius: 12)],
+);
+final _tileBoxDecoration = BoxDecoration(
+  color: AppColors.cream08,
+  borderRadius: BorderRadius.circular(10),
+);
+
 class WeeklyForecastPage extends ConsumerStatefulWidget {
   final Forecast forecast;
   final double latitude;
@@ -57,14 +136,7 @@ class _WeeklyForecastPageState extends ConsumerState<WeeklyForecastPage> {
                 height: 62,
                 child: Align(
                   alignment: Alignment.centerRight,
-                  child: Text(
-                    'Next 10 days',
-                    style: GoogleFonts.figtree(
-                      fontSize: 22,
-                      fontWeight: FontWeight.w700,
-                      color: AppColors.cream,
-                    ),
-                  ),
+                  child: Text('Next 10 days', style: _headerStyle),
                 ),
               ),
             ),
@@ -102,69 +174,87 @@ class _WeeklyForecastPageState extends ConsumerState<WeeklyForecastPage> {
                   final collapsedHeight = baseCollapsedHeight + compactExtra;
 
                   return Column(
-                    children: List.generate(cardCount, (i) {
-                      final double targetHeight;
-                      if (!isExpanded) {
-                        targetHeight = equalHeight;
-                      } else if (i == _expandedIndex) {
-                        targetHeight = expandedHeight;
-                      } else {
-                        targetHeight = collapsedHeight;
-                      }
-
-                      final dayDiff = daily[i].date.difference(today).inDays;
-
-                      return Padding(
-                        padding: EdgeInsets.only(
-                          bottom: i < cardCount - 1 ? spacing : 0,
+                    children: [
+                      for (var i = 0; i < cardCount; i++)
+                        _buildDaySlot(
+                          i,
+                          cardCount,
+                          isExpanded,
+                          equalHeight,
+                          expandedHeight,
+                          collapsedHeight,
+                          spacing,
+                          daily,
+                          today,
+                          forecast,
+                          now,
+                          usno,
                         ),
-                        child: AnimatedContainer(
-                          duration: const Duration(milliseconds: 300),
-                          curve: Curves.easeInOut,
-                          height: targetHeight,
-                          clipBehavior: Clip.hardEdge,
-                          decoration: BoxDecoration(
-                            color: AppColors.cream.withValues(alpha: 0.22),
-                            borderRadius: BorderRadius.circular(20),
-                            boxShadow: [
-                              BoxShadow(
-                                color: Colors.black.withValues(alpha: 0.12),
-                                blurRadius: 12,
-                              ),
-                            ],
-                          ),
-                          child: Material(
-                            color: Colors.transparent,
-                            child: InkWell(
-                              borderRadius: BorderRadius.circular(20),
-                              onTap: () => setState(() {
-                                _expandedIndex =
-                                    _expandedIndex == i ? null : i;
-                              }),
-                              child: _expandedIndex == i
-                                  ? _ExpandedDayContent(
-                                      daily: daily[i],
-                                      dayDiff: dayDiff,
-                                      forecast: forecast,
-                                      moonData: usno,
-                                    )
-                                  : _CollapsedDayContent(
-                                      daily: daily[i],
-                                      dayDiff: dayDiff,
-                                      isExpanded: isExpanded,
-                                      now: now,
-                                      moonData: usno,
-                                    ),
-                            ),
-                          ),
-                        ),
-                      );
-                    }),
+                    ],
                   );
                 },
               ),
             ),
           ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildDaySlot(
+    int i,
+    int cardCount,
+    bool isExpanded,
+    double equalHeight,
+    double expandedHeight,
+    double collapsedHeight,
+    double spacing,
+    List<DailyWeather> daily,
+    DateTime today,
+    Forecast forecast,
+    DateTime now,
+    UsnoMoonData? usno,
+  ) {
+    final double targetHeight;
+    if (!isExpanded) {
+      targetHeight = equalHeight;
+    } else if (i == _expandedIndex) {
+      targetHeight = expandedHeight;
+    } else {
+      targetHeight = collapsedHeight;
+    }
+
+    final dayDiff = daily[i].date.difference(today).inDays;
+
+    return Padding(
+      padding: EdgeInsets.only(
+        bottom: i < cardCount - 1 ? spacing : 0,
+      ),
+      child: AnimatedContainer(
+        duration: const Duration(milliseconds: 300),
+        curve: Curves.easeInOut,
+        height: targetHeight,
+        clipBehavior: Clip.hardEdge,
+        decoration: _weeklyCardDecoration,
+        child: GestureDetector(
+          behavior: HitTestBehavior.opaque,
+          onTap: () => setState(() {
+            _expandedIndex = _expandedIndex == i ? null : i;
+          }),
+          child: _expandedIndex == i
+                ? _ExpandedDayContent(
+                    daily: daily[i],
+                    dayDiff: dayDiff,
+                    forecast: forecast,
+                    moonData: usno,
+                  )
+                : _CollapsedDayContent(
+                    daily: daily[i],
+                    dayDiff: dayDiff,
+                    isExpanded: isExpanded,
+                    now: now,
+                    moonData: usno,
+                  ),
         ),
       ),
     );
@@ -210,40 +300,22 @@ class _CollapsedDayContent extends StatelessWidget {
         padding: const EdgeInsets.symmetric(horizontal: 12),
         child: Row(
           children: [
-            Text(
-              dayStr,
-              style: GoogleFonts.figtree(
-                fontSize: 18,
-                fontWeight: FontWeight.w400,
-                color: AppColors.cream,
-              ),
-            ),
+            Text(dayStr, style: _dayNameCompactStyle),
             const SizedBox(width: 6),
-            Text(
-              dateStr,
-              style: GoogleFonts.quicksand(
-                fontSize: 13,
-                fontWeight: FontWeight.w500,
-                color: AppColors.cream.withValues(alpha: 0.95),
-              ),
-            ),
+            Text(dateStr, style: _dateStyle),
             const SizedBox(width: 10),
             Icon(
               conditionIcon(
                 daily.weatherCode,
                 isDay: daily.hasSunnyPeriods ? true : null,
               ),
-              color: AppColors.cream.withValues(alpha: 0.95),
+              color: AppColors.cream95,
               size: 16,
             ),
             const Spacer(),
             Text(
               '${daily.temperatureMax.round()}° / ${daily.temperatureMin.round()}°',
-              style: GoogleFonts.quicksand(
-                fontSize: 14,
-                fontWeight: FontWeight.w700,
-                color: AppColors.cream,
-              ),
+              style: _tempCompactStyle,
             ),
           ],
         ),
@@ -269,7 +341,7 @@ class _CollapsedDayContent extends StatelessWidget {
                   daily.weatherCode,
                   isDay: daily.hasSunnyPeriods ? true : null,
                 ),
-                color: AppColors.cream.withValues(alpha: 0.25),
+                color: AppColors.cream25,
                 size: constraints.maxHeight * 0.8,
               );
             },
@@ -293,32 +365,18 @@ class _CollapsedDayContent extends StatelessWidget {
                     child: Text(
                       dayStr,
                       overflow: TextOverflow.ellipsis,
-                      style: GoogleFonts.figtree(
-                        fontSize: 20,
-                        fontWeight: FontWeight.w400,
-                        color: AppColors.cream,
-                        shadows: [
-                          const Shadow(color: Color(0x28000000), blurRadius: 6),
-                        ],
-                      ),
+                      style: _dayNameStyle,
                     ),
                   ),
                   const SizedBox(width: 6),
-                  Text(
-                    dateStr,
-                    style: GoogleFonts.quicksand(
-                      fontSize: 13,
-                      fontWeight: FontWeight.w500,
-                      color: AppColors.cream.withValues(alpha: 0.95),
-                    ),
-                  ),
+                  Text(dateStr, style: _dateStyle),
                   const SizedBox(width: 10),
                   Icon(
                     conditionIcon(
                       daily.weatherCode,
                       isDay: daily.hasSunnyPeriods ? true : null,
                     ),
-                    color: AppColors.cream.withValues(alpha: 0.95),
+                    color: AppColors.cream95,
                     size: 18,
                   ),
                 ],
@@ -330,27 +388,19 @@ class _CollapsedDayContent extends StatelessWidget {
                   Icon(
                     _precipIcon(daily),
                     size: 12,
-                    color: AppColors.cream.withValues(alpha: 0.95),
+                    color: AppColors.cream95,
                   ),
                   const SizedBox(width: 2),
                   Text(
                     '${daily.precipitationProbabilityMax}%',
-                    style: GoogleFonts.poppins(
-                      fontSize: 11,
-                      fontWeight: FontWeight.w600,
-                      color: AppColors.cream,
-                    ),
+                    style: _statBoldStyle,
                   ),
                   if (daily.precipitationSum > 0 &&
                       (daily.precipitationSum / 25.4) >= 0.01) ...[
                     const SizedBox(width: 2),
                     Text(
                       ' ${(daily.precipitationSum / 25.4).toStringAsFixed(2)}"',
-                      style: GoogleFonts.poppins(
-                        fontSize: 11,
-                        fontWeight: FontWeight.w600,
-                        color: AppColors.cream,
-                      ),
+                      style: _statBoldStyle,
                     ),
                   ],
                   if (daily.humidityAvg > 0) ...[
@@ -358,49 +408,28 @@ class _CollapsedDayContent extends StatelessWidget {
                     Icon(
                       WeatherIcons.humidity,
                       size: 10,
-                      color: AppColors.cream.withValues(alpha: 0.9),
+                      color: AppColors.cream90,
                     ),
                     const SizedBox(width: 2),
-                    Text(
-                      '${daily.humidityAvg}%',
-                      style: GoogleFonts.poppins(
-                        fontSize: 11,
-                        fontWeight: FontWeight.w500,
-                        color: AppColors.cream.withValues(alpha: 0.9),
-                      ),
-                    ),
+                    Text('${daily.humidityAvg}%', style: _statLightStyle),
                   ],
                   const SizedBox(width: 8),
                   Icon(
                     WeatherIcons.day_sunny,
                     size: 11,
-                    color: AppColors.cream.withValues(alpha: 0.9),
+                    color: AppColors.cream90,
                   ),
                   const SizedBox(width: 2),
-                  Text(
-                    '${daily.uvIndexMax.round()}',
-                    style: GoogleFonts.poppins(
-                      fontSize: 11,
-                      fontWeight: FontWeight.w500,
-                      color: AppColors.cream.withValues(alpha: 0.9),
-                    ),
-                  ),
+                  Text('${daily.uvIndexMax.round()}', style: _statLightStyle),
                   if (moonFrac != null && illumination != null) ...[
                     const SizedBox(width: 8),
                     Icon(
                       moonPhaseIcon(moonFrac),
                       size: 12,
-                      color: AppColors.cream.withValues(alpha: 0.9),
+                      color: AppColors.cream90,
                     ),
                     const SizedBox(width: 3),
-                    Text(
-                      '$illumination%',
-                      style: GoogleFonts.poppins(
-                        fontSize: 11,
-                        fontWeight: FontWeight.w500,
-                        color: AppColors.cream.withValues(alpha: 0.9),
-                      ),
-                    ),
+                    Text('$illumination%', style: _statLightStyle),
                   ],
                 ],
               ),
@@ -413,11 +442,7 @@ class _CollapsedDayContent extends StatelessWidget {
           child: Center(
             child: Text(
               '${daily.temperatureMax.round()}° / ${daily.temperatureMin.round()}°',
-              style: GoogleFonts.quicksand(
-                fontSize: 18,
-                fontWeight: FontWeight.w700,
-                color: AppColors.cream,
-              ),
+              style: _tempEqualStyle,
             ),
           ),
         ),
@@ -478,43 +503,22 @@ class _ExpandedDayContent extends StatelessWidget {
             padding: const EdgeInsets.fromLTRB(4, 0, 4, 4),
             child: Row(
               children: [
-                Text(
-                  dayStr,
-                  style: GoogleFonts.figtree(
-                    fontSize: 20,
-                    fontWeight: FontWeight.w400,
-                    color: AppColors.cream,
-                    shadows: [
-                      const Shadow(color: Color(0x28000000), blurRadius: 6),
-                    ],
-                  ),
-                ),
+                Text(dayStr, style: _dayNameStyle),
                 const SizedBox(width: 6),
-                Text(
-                  dateStr,
-                  style: GoogleFonts.quicksand(
-                    fontSize: 13,
-                    fontWeight: FontWeight.w500,
-                    color: AppColors.cream.withValues(alpha: 0.95),
-                  ),
-                ),
+                Text(dateStr, style: _dateStyle),
                 const SizedBox(width: 10),
                 Icon(
                   conditionIcon(
                     daily.weatherCode,
                     isDay: daily.hasSunnyPeriods ? true : null,
                   ),
-                  color: AppColors.cream.withValues(alpha: 0.95),
+                  color: AppColors.cream95,
                   size: 18,
                 ),
                 const Spacer(),
                 Text(
                   '${daily.temperatureMax.round()}° / ${daily.temperatureMin.round()}°',
-                  style: GoogleFonts.quicksand(
-                    fontSize: 14,
-                    fontWeight: FontWeight.w700,
-                    color: AppColors.cream,
-                  ),
+                  style: _tempCompactStyle,
                 ),
               ],
             ),
@@ -616,10 +620,7 @@ class _TileCard extends StatelessWidget {
   Widget build(BuildContext context) {
     return Container(
       padding: const EdgeInsets.all(6),
-      decoration: BoxDecoration(
-        color: AppColors.cream.withValues(alpha: 0.08),
-        borderRadius: BorderRadius.circular(10),
-      ),
+      decoration: _tileBoxDecoration,
       child: child,
     );
   }
@@ -642,16 +643,9 @@ class _TileHeader extends StatelessWidget {
     return Row(
       crossAxisAlignment: CrossAxisAlignment.center,
       children: [
-        Icon(icon, size: 11, color: AppColors.cream.withValues(alpha: 0.9)),
+        Icon(icon, size: 11, color: AppColors.cream90),
         const SizedBox(width: 4),
-        Text(
-          label,
-          style: GoogleFonts.figtree(
-            fontSize: 13,
-            fontWeight: FontWeight.w400,
-            color: AppColors.cream,
-          ),
-        ),
+        Text(label, style: _tileHeaderStyle),
         if (trailing != null) ...[
           const Spacer(),
           trailing!,
@@ -680,11 +674,7 @@ class _TempTile extends StatelessWidget {
           label: 'Temp',
           trailing: Text(
             '${daily.temperatureMax.round()}° / ${daily.temperatureMin.round()}°',
-            style: GoogleFonts.poppins(
-              fontSize: 11,
-              fontWeight: FontWeight.w700,
-              color: AppColors.cream,
-            ),
+            style: _tileBoldStyle,
           ),
         ),
         const SizedBox(height: 4),
@@ -734,22 +724,11 @@ class _RainTile extends StatelessWidget {
           trailing: Row(
             mainAxisSize: MainAxisSize.min,
             children: [
-              Text(
-                amountLabel,
-                style: GoogleFonts.poppins(
-                  fontSize: 11,
-                  fontWeight: FontWeight.w700,
-                  color: AppColors.cream,
-                ),
-              ),
+              Text(amountLabel, style: _tileBoldStyle),
               const SizedBox(width: 4),
               Text(
                 '${daily.precipitationProbabilityMax}%',
-                style: GoogleFonts.poppins(
-                  fontSize: 11,
-                  fontWeight: FontWeight.w600,
-                  color: AppColors.cream.withValues(alpha: 0.9),
-                ),
+                style: _statSemiBoldStyle,
               ),
             ],
           ),
@@ -935,16 +914,11 @@ class _TileTimeAxis extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final style = GoogleFonts.poppins(
-      fontSize: 11,
-      fontWeight: FontWeight.w400,
-      color: AppColors.cream.withValues(alpha: 0.7),
-    );
     return Row(
       mainAxisAlignment: MainAxisAlignment.spaceBetween,
       children: [
-        Text('AM', style: style),
-        Text('PM', style: style),
+        Text('AM', style: _tileTimeAxisStyle),
+        Text('PM', style: _tileTimeAxisStyle),
       ],
     );
   }
@@ -967,15 +941,13 @@ class _StatChip extends StatelessWidget {
     return Row(
       mainAxisSize: MainAxisSize.min,
       children: [
-        Icon(icon, size: 12, color: AppColors.cream.withValues(alpha: 0.9)),
+        Icon(icon, size: 12, color: AppColors.cream90),
         const SizedBox(width: 5),
         Text(
           value,
-          style: GoogleFonts.poppins(
-            fontSize: 11,
-            fontWeight: fontWeight,
-            color: AppColors.cream,
-          ),
+          style: fontWeight == FontWeight.w700
+              ? _tileBoldStyle
+              : _statChipLightStyle,
         ),
       ],
     );
@@ -1026,8 +998,8 @@ class _MiniTempPainter extends CustomPainter {
         begin: Alignment.topCenter,
         end: Alignment.bottomCenter,
         colors: [
-          AppColors.cream.withValues(alpha: 0.18),
-          AppColors.cream.withValues(alpha: 0.02),
+          AppColors.cream18,
+          AppColors.cream02,
         ],
       ).createShader(Rect.fromLTWH(0, 0, w, h));
     canvas.drawPath(fillPath, fillPaint);
@@ -1035,7 +1007,7 @@ class _MiniTempPainter extends CustomPainter {
     canvas.drawPath(
       linePath,
       Paint()
-        ..color = AppColors.cream.withValues(alpha: 0.55)
+        ..color = AppColors.cream55
         ..strokeWidth = 1.5
         ..style = PaintingStyle.stroke
         ..strokeCap = StrokeCap.round,
@@ -1088,8 +1060,8 @@ class _MiniUvPainter extends CustomPainter {
         begin: Alignment.topCenter,
         end: Alignment.bottomCenter,
         colors: [
-          AppColors.cream.withValues(alpha: 0.18),
-          AppColors.cream.withValues(alpha: 0.02),
+          AppColors.cream18,
+          AppColors.cream02,
         ],
       ).createShader(Rect.fromLTWH(0, 0, w, h));
     canvas.drawPath(fillPath, fillPaint);
@@ -1097,7 +1069,7 @@ class _MiniUvPainter extends CustomPainter {
     canvas.drawPath(
       linePath,
       Paint()
-        ..color = AppColors.cream.withValues(alpha: 0.55)
+        ..color = AppColors.cream55
         ..strokeWidth = 1.5
         ..style = PaintingStyle.stroke
         ..strokeCap = StrokeCap.round,
@@ -1176,7 +1148,7 @@ class _MiniSunArcPainter extends CustomPainter {
       Offset(left, bottom),
       Offset(right, bottom),
       Paint()
-        ..color = AppColors.cream.withValues(alpha: 0.35)
+        ..color = AppColors.cream35
         ..strokeWidth = 1,
     );
 
@@ -1192,7 +1164,7 @@ class _MiniSunArcPainter extends CustomPainter {
 
     // Dashed stroke of the arc
     final dashPaint = Paint()
-      ..color = AppColors.cream.withValues(alpha: 0.5)
+      ..color = AppColors.cream50
       ..strokeWidth = 1.3
       ..style = PaintingStyle.stroke
       ..strokeCap = StrokeCap.round;
@@ -1223,7 +1195,7 @@ class _MiniSunArcPainter extends CustomPainter {
           Offset(x, y),
           2.5,
           Paint()
-            ..color = AppColors.cream.withValues(alpha: 0.95)
+            ..color = AppColors.cream95
             ..style = PaintingStyle.fill,
         );
       }
@@ -1243,7 +1215,7 @@ class _MiniSunArcPainter extends CustomPainter {
         moonCenter,
         moonR,
         Paint()
-          ..color = AppColors.cream.withValues(alpha: 0.85)
+          ..color = AppColors.cream85
           ..style = PaintingStyle.fill,
       );
 
@@ -1310,7 +1282,7 @@ class _MiniSunArcPainter extends CustomPainter {
         moonCenter,
         moonR,
         Paint()
-          ..color = AppColors.cream.withValues(alpha: 0.5)
+          ..color = AppColors.cream50
           ..strokeWidth = 0.8
           ..style = PaintingStyle.stroke,
       );

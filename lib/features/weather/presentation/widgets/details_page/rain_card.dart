@@ -95,7 +95,7 @@ class RainCard extends StatelessWidget {
         padding: const EdgeInsets.symmetric(horizontal: 14),
         child: Row(
           children: [
-            Icon(icon, size: 14, color: AppColors.cream.withValues(alpha: 0.9)),
+            Icon(icon, size: 14, color: AppColors.cream90),
             const SizedBox(width: 4),
             Text(
               label,
@@ -120,7 +120,7 @@ class RainCard extends StatelessWidget {
               style: GoogleFonts.poppins(
                 fontSize: 13,
                 fontWeight: FontWeight.w400,
-                color: AppColors.cream.withValues(alpha: 0.9),
+                color: AppColors.cream90,
               ),
             ),
           ],
@@ -145,7 +145,7 @@ class RainCard extends StatelessWidget {
                     style: GoogleFonts.poppins(
                       fontSize: 11,
                       fontWeight: FontWeight.w600,
-                      color: AppColors.cream.withValues(alpha: 0.8),
+                      color: AppColors.cream80,
                     ),
                   ),
                 ],
@@ -208,7 +208,7 @@ class RainCard extends StatelessWidget {
                   style: GoogleFonts.poppins(
                     fontSize: 11,
                     fontWeight: FontWeight.w600,
-                    color: AppColors.cream.withValues(alpha: 0.8),
+                    color: AppColors.cream80,
                   ),
                 ),
               ],
@@ -252,7 +252,7 @@ class RainCard extends StatelessWidget {
             Icon(
               WeatherIcons.umbrella,
               size: 24,
-              color: AppColors.cream.withValues(alpha: 0.7),
+              color: AppColors.cream70,
             ),
           ],
         ),
@@ -359,7 +359,7 @@ class RainCard extends StatelessWidget {
         Icon(
           icon,
           size: compact ? 10 : 15,
-          color: AppColors.cream.withValues(alpha: 0.9),
+          color: AppColors.cream90,
         ),
         SizedBox(width: compact ? 3 : 4),
         Text(
@@ -385,7 +385,7 @@ class RainCard extends StatelessWidget {
           style: GoogleFonts.poppins(
             fontSize: compact ? 11 : 14,
             fontWeight: FontWeight.w600,
-            color: AppColors.cream.withValues(alpha: 0.9),
+            color: AppColors.cream90,
           ),
         ),
       ],
@@ -410,7 +410,7 @@ class _ChartLabel extends StatelessWidget {
         style: GoogleFonts.poppins(
           fontSize: 10,
           fontWeight: FontWeight.w600,
-          color: AppColors.cream.withValues(alpha: 0.8),
+          color: AppColors.cream80,
         ),
       ),
     );
@@ -421,6 +421,22 @@ class _ChartLabel extends StatelessWidget {
 // Precipitation Probability — vertical bars
 // ---------------------------------------------------------------------------
 class _PrecipBarPainter extends CustomPainter {
+  static const _yLabelStyleLarge = TextStyle(
+    color: AppColors.cream95,
+    fontSize: 10,
+    fontWeight: FontWeight.w600,
+  );
+  static const _yLabelStyleSmall = TextStyle(
+    color: AppColors.cream95,
+    fontSize: 9,
+    fontWeight: FontWeight.w600,
+  );
+  static const _hourLabelStyle = TextStyle(
+    color: AppColors.cream90,
+    fontSize: 10,
+    fontWeight: FontWeight.w600,
+  );
+
   final List<int> precipProb;
   final List<DateTime> hours;
   final DateTime? now;
@@ -445,11 +461,8 @@ class _PrecipBarPainter extends CustomPainter {
     final barW = graphW / barCount;
 
     // Y-axis percentage labels
-    final yLabelStyle = TextStyle(
-      color: AppColors.cream.withValues(alpha: 0.95),
-      fontSize: showHourLabels ? 10 : 9,
-      fontWeight: FontWeight.w600,
-    );
+    final yLabelStyle =
+        showHourLabels ? _yLabelStyleLarge : _yLabelStyleSmall;
     for (final pct in [100, 50, 0]) {
       final y = graphH * (1 - pct / 100.0);
       final tp = TextPainter(
@@ -462,7 +475,7 @@ class _PrecipBarPainter extends CustomPainter {
       canvas.drawLine(
         Offset(padLeft, y),
         Offset(size.width, y),
-        Paint()..color = AppColors.cream.withValues(alpha: 0.12),
+        Paint()..color = AppColors.cream12,
       );
     }
 
@@ -487,17 +500,12 @@ class _PrecipBarPainter extends CustomPainter {
 
     // Hour labels
     if (showHourLabels) {
-      final labelStyle = TextStyle(
-        color: AppColors.cream.withValues(alpha: 0.9),
-        fontSize: 10,
-        fontWeight: FontWeight.w600,
-      );
       for (var i = 0; i < hours.length; i++) {
         if (i % 6 != 0 && i != hours.length - 1) continue;
         final tp = TextPainter(
           text: TextSpan(
             text: DateFormat('ha').format(hours[i]).toLowerCase(),
-            style: labelStyle,
+            style: _hourLabelStyle,
           ),
           textDirection: TextDirection.ltr,
         )..layout();
@@ -512,7 +520,8 @@ class _PrecipBarPainter extends CustomPainter {
 
   @override
   bool shouldRepaint(covariant _PrecipBarPainter old) =>
-      precipProb != old.precipProb || now != old.now;
+      precipProb != old.precipProb ||
+      now?.millisecondsSinceEpoch != old.now?.millisecondsSinceEpoch;
 }
 
 // ---------------------------------------------------------------------------
@@ -533,6 +542,18 @@ Path _smoothPath(List<Offset> points) {
 // Humidity line chart — solid line on a fixed 0–100% scale
 // ---------------------------------------------------------------------------
 class _HumidityLinePainter extends CustomPainter {
+  static const _yLabelStyle = TextStyle(
+    color: AppColors.cream95,
+    fontSize: 10,
+    fontWeight: FontWeight.w600,
+  );
+  static const _hourLabelStyle = TextStyle(
+    color: AppColors.cream90,
+    fontSize: 10,
+    fontWeight: FontWeight.w600,
+  );
+  static const _gradientColors = [AppColors.cream15, AppColors.cream03];
+
   final List<int> humidities;
   final List<DateTime> hours;
   final DateTime? now;
@@ -557,15 +578,10 @@ class _HumidityLinePainter extends CustomPainter {
     final stepX = graphW / (humidities.length - 1);
 
     // Y-axis labels
-    final yLabelStyle = TextStyle(
-      color: AppColors.cream.withValues(alpha: 0.95),
-      fontSize: 10,
-      fontWeight: FontWeight.w600,
-    );
     for (final pct in [100, 50, 0]) {
       final y = padTop + graphH * (1 - pct / 100.0);
       final tp = TextPainter(
-        text: TextSpan(text: '$pct%', style: yLabelStyle),
+        text: TextSpan(text: '$pct%', style: _yLabelStyle),
         textDirection: TextDirection.ltr,
       )..layout();
       tp.paint(canvas, Offset(0, y - tp.height / 2));
@@ -593,13 +609,10 @@ class _HumidityLinePainter extends CustomPainter {
       padTop + graphH,
     );
     final fillPaint = Paint()
-      ..shader = LinearGradient(
+      ..shader = const LinearGradient(
         begin: Alignment.topCenter,
         end: Alignment.bottomCenter,
-        colors: [
-          AppColors.cream.withValues(alpha: 0.15),
-          AppColors.cream.withValues(alpha: 0.03),
-        ],
+        colors: _gradientColors,
       ).createShader(fillRect);
     canvas.drawPath(fillPath, fillPaint);
 
@@ -607,7 +620,7 @@ class _HumidityLinePainter extends CustomPainter {
     canvas.drawPath(
       linePath,
       Paint()
-        ..color = AppColors.cream.withValues(alpha: 0.5)
+        ..color = AppColors.cream50
         ..strokeWidth = 2
         ..style = PaintingStyle.stroke
         ..strokeCap = StrokeCap.round,
@@ -625,17 +638,12 @@ class _HumidityLinePainter extends CustomPainter {
 
     // Hour labels
     if (showHourLabels) {
-      final labelStyle = TextStyle(
-        color: AppColors.cream.withValues(alpha: 0.9),
-        fontSize: 10,
-        fontWeight: FontWeight.w600,
-      );
       for (var i = 0; i < hours.length; i++) {
         if (i % 6 != 0 && i != hours.length - 1) continue;
         final tp = TextPainter(
           text: TextSpan(
             text: DateFormat('ha').format(hours[i]).toLowerCase(),
-            style: labelStyle,
+            style: _hourLabelStyle,
           ),
           textDirection: TextDirection.ltr,
         )..layout();
@@ -651,7 +659,7 @@ class _HumidityLinePainter extends CustomPainter {
   @override
   bool shouldRepaint(covariant _HumidityLinePainter old) =>
       humidities != old.humidities ||
-      now != old.now ||
+      now?.millisecondsSinceEpoch != old.now?.millisecondsSinceEpoch ||
       showHourLabels != old.showHourLabels;
 }
 
@@ -678,7 +686,7 @@ void _drawNowLine(
     Offset(nowX, 0),
     Offset(nowX, graphH),
     Paint()
-      ..color = AppColors.cream.withValues(alpha: 0.9)
+      ..color = AppColors.cream90
       ..strokeWidth = 1,
   );
 }
@@ -706,7 +714,7 @@ class _BarGaugePainter extends CustomPainter {
         Rect.fromLTWH(0, barY, size.width, barH),
         const Radius.circular(barH / 2),
       ),
-      Paint()..color = AppColors.cream.withValues(alpha: 0.12),
+      Paint()..color = AppColors.cream12,
     );
 
     // Fill

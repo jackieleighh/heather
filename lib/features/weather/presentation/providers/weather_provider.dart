@@ -1,5 +1,6 @@
 import 'dart:convert';
 
+import 'package:dio/dio.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:freezed_annotation/freezed_annotation.dart';
 import 'package:shared_preferences/shared_preferences.dart';
@@ -32,10 +33,12 @@ _QuipKey _quipKeyFor(Forecast forecast) => (
 
 // Dependencies
 final weatherRepositoryProvider = Provider<WeatherRepositoryImpl>((ref) {
-  final apiClient = ApiClient();
+  final apiClient = ref.watch(apiClientProvider);
+  final prefs = ref.watch(sharedPreferencesProvider);
   return WeatherRepositoryImpl(
     remoteSource: WeatherRemoteSource(dio: apiClient.weatherClient),
     locationSource: LocationSource(),
+    prefs: prefs,
   );
 });
 
@@ -71,6 +74,7 @@ final weatherStateProvider =
       final notifier = WeatherNotifier(
         weatherRepo: ref.watch(weatherRepositoryProvider),
         quipRepo: ref.watch(quipRepositoryProvider),
+        dio: ref.watch(dioProvider),
         explicit: settings.explicitLanguage,
         cachedSeed: seed,
       );
@@ -87,6 +91,7 @@ final weatherStateProvider =
 class WeatherNotifier extends StateNotifier<WeatherState> {
   final WeatherRepositoryImpl weatherRepo;
   final QuipRepositoryImpl quipRepo;
+  final Dio dio;
   bool _explicit;
   _QuipKey? _lastQuipKey;
   bool isLocationPermissionError = false;
@@ -96,6 +101,7 @@ class WeatherNotifier extends StateNotifier<WeatherState> {
   WeatherNotifier({
     required this.weatherRepo,
     required this.quipRepo,
+    required this.dio,
     required bool explicit,
     (LocationInfo, Forecast)? cachedSeed,
   }) : _explicit = explicit,
@@ -233,6 +239,7 @@ class WeatherNotifier extends StateNotifier<WeatherState> {
           fetchAlerts(
             latitude: location.latitude,
             longitude: location.longitude,
+            dio: dio,
           ),
         ]);
         if (_loadGeneration != gen) return;
@@ -289,7 +296,7 @@ class WeatherNotifier extends StateNotifier<WeatherState> {
           longitude: location.longitude,
           forceRefresh: forceRefresh,
         ),
-        fetchAlerts(latitude: location.latitude, longitude: location.longitude),
+        fetchAlerts(latitude: location.latitude, longitude: location.longitude, dio: dio),
       ]);
       final forecast = results[0] as Forecast;
       final alerts = results[1] as List<WeatherAlert>;
@@ -353,6 +360,7 @@ final savedLocationsForecastProvider = StateNotifierProvider<
   final notifier = SavedLocationsForecastNotifier(
     weatherRepo: ref.watch(weatherRepositoryProvider),
     quipRepo: ref.watch(quipRepositoryProvider),
+    dio: ref.watch(dioProvider),
     explicit: settings.explicitLanguage,
     cachedSeed: seed,
   );
@@ -370,12 +378,14 @@ class SavedLocationsForecastNotifier
     extends StateNotifier<SavedLocationsForecastState> {
   final WeatherRepositoryImpl weatherRepo;
   final QuipRepositoryImpl quipRepo;
+  final Dio dio;
   bool _explicit;
   final Map<String, _QuipKey> _lastQuipKeys = {};
 
   SavedLocationsForecastNotifier({
     required this.weatherRepo,
     required this.quipRepo,
+    required this.dio,
     required bool explicit,
     Map<String, Forecast>? cachedSeed,
   }) : _explicit = explicit,
@@ -501,6 +511,7 @@ class SavedLocationsForecastNotifier
           (loc) => fetchAlerts(
             latitude: loc.latitude,
             longitude: loc.longitude,
+            dio: dio,
           ),
         ),
       );
@@ -544,6 +555,7 @@ class SavedLocationsForecastNotifier
           (loc) => fetchAlerts(
             latitude: loc.latitude,
             longitude: loc.longitude,
+            dio: dio,
           ),
         ),
       );

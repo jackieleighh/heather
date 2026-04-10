@@ -23,11 +23,11 @@ class CardContainer extends StatelessWidget {
     return Container(
       clipBehavior: Clip.hardEdge,
       decoration: BoxDecoration(
-        color: AppColors.cream.withValues(alpha: 0.22),
+        color: AppColors.cream22,
         borderRadius: BorderRadius.circular(20),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withValues(alpha: 0.12),
+            color: AppColors.black12,
             blurRadius: 12,
           ),
         ],
@@ -40,7 +40,7 @@ class CardContainer extends StatelessWidget {
               top: -10,
               child: Icon(
                 backgroundIcon,
-                color: AppColors.cream.withValues(alpha: 0.25),
+                color: AppColors.cream25,
                 size: 80,
               ),
             ),

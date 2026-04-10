@@ -63,7 +63,7 @@ class SunCard extends StatelessWidget {
             Icon(
               WeatherIcons.day_sunny,
               size: 14,
-              color: AppColors.cream.withValues(alpha: 0.9),
+              color: AppColors.cream90,
             ),
             const SizedBox(width: 4),
             Text(
@@ -97,7 +97,7 @@ class SunCard extends StatelessWidget {
               Icon(
                 WeatherIcons.sunrise,
                 size: 12,
-                color: AppColors.cream.withValues(alpha: 0.9),
+                color: AppColors.cream90,
               ),
               const SizedBox(width: 3),
               Text(
@@ -137,7 +137,7 @@ class SunCard extends StatelessWidget {
                   style: GoogleFonts.poppins(
                     fontSize: 11,
                     fontWeight: FontWeight.w500,
-                    color: AppColors.cream.withValues(alpha: 0.8),
+                    color: AppColors.cream80,
                   ),
                 ),
                 const SizedBox(width: 12),
@@ -155,7 +155,7 @@ class SunCard extends StatelessWidget {
                   style: GoogleFonts.poppins(
                     fontSize: 11,
                     fontWeight: FontWeight.w600,
-                    color: AppColors.cream.withValues(alpha: 0.9),
+                    color: AppColors.cream90,
                   ),
                 ),
                 if (!isSunUp) ...[
@@ -165,7 +165,7 @@ class SunCard extends StatelessWidget {
                     style: GoogleFonts.poppins(
                       fontSize: 11,
                       fontWeight: FontWeight.w400,
-                      color: AppColors.cream.withValues(alpha: 0.75),
+                      color: AppColors.cream75,
                     ),
                   ),
                 ],
@@ -213,7 +213,7 @@ class SunCard extends StatelessWidget {
                               Icon(
                                 WeatherIcons.sunrise,
                                 size: 14,
-                                color: AppColors.cream.withValues(alpha: 0.95),
+                                color: AppColors.cream95,
                               ),
                               const SizedBox(height: 1),
                               Text(
@@ -221,9 +221,7 @@ class SunCard extends StatelessWidget {
                                 style: GoogleFonts.poppins(
                                   fontSize: 12,
                                   fontWeight: FontWeight.w400,
-                                  color: AppColors.cream.withValues(
-                                    alpha: 0.95,
-                                  ),
+                                  color: AppColors.cream95,
                                 ),
                               ),
                             ],
@@ -241,7 +239,7 @@ class SunCard extends StatelessWidget {
                               Icon(
                                 WeatherIcons.sunset,
                                 size: 14,
-                                color: AppColors.cream.withValues(alpha: 0.95),
+                                color: AppColors.cream95,
                               ),
                               const SizedBox(height: 1),
                               Text(
@@ -249,9 +247,7 @@ class SunCard extends StatelessWidget {
                                 style: GoogleFonts.poppins(
                                   fontSize: 12,
                                   fontWeight: FontWeight.w400,
-                                  color: AppColors.cream.withValues(
-                                    alpha: 0.95,
-                                  ),
+                                  color: AppColors.cream95,
                                 ),
                               ),
                             ],
@@ -271,7 +267,7 @@ class SunCard extends StatelessWidget {
                 Icon(
                   WeatherIcons.time_3,
                   size: 12,
-                  color: AppColors.cream.withValues(alpha: 0.95),
+                  color: AppColors.cream95,
                 ),
                 const SizedBox(width: 5),
                 Text.rich(
@@ -279,7 +275,7 @@ class SunCard extends StatelessWidget {
                     style: GoogleFonts.poppins(
                       fontSize: 12,
                       fontWeight: FontWeight.w700,
-                      color: AppColors.cream.withValues(alpha: 0.95),
+                      color: AppColors.cream95,
                     ),
                     children: [
                       if (!isSunUp)
@@ -288,7 +284,7 @@ class SunCard extends StatelessWidget {
                           style: GoogleFonts.poppins(
                             fontSize: 12,
                             fontWeight: FontWeight.w400,
-                            color: AppColors.cream.withValues(alpha: 0.95),
+                            color: AppColors.cream95,
                           ),
                         ),
                       TextSpan(text: '${dayH}h ${dayM}m daylight'),
@@ -299,7 +295,7 @@ class SunCard extends StatelessWidget {
                           style: GoogleFonts.poppins(
                             fontSize: 12,
                             fontWeight: FontWeight.w400,
-                            color: AppColors.cream.withValues(alpha: 0.75),
+                            color: AppColors.cream75,
                           ),
                         ),
                     ],
@@ -315,7 +311,7 @@ class SunCard extends StatelessWidget {
                   Icon(
                     WeatherIcons.umbrella,
                     size: 12,
-                    color: AppColors.cream.withValues(alpha: 0.9),
+                    color: AppColors.cream90,
                   ),
                   const SizedBox(width: 5),
                   Text.rich(
@@ -323,7 +319,7 @@ class SunCard extends StatelessWidget {
                       style: GoogleFonts.poppins(
                         fontSize: 12,
                         fontWeight: FontWeight.w400,
-                        color: AppColors.cream.withValues(alpha: 0.9),
+                        color: AppColors.cream90,
                       ),
                       children: [
                         const TextSpan(text: 'SPF/shade '),
@@ -333,7 +329,7 @@ class SunCard extends StatelessWidget {
                           style: GoogleFonts.poppins(
                             fontSize: 12,
                             fontWeight: FontWeight.w700,
-                            color: AppColors.cream.withValues(alpha: 0.95),
+                            color: AppColors.cream95,
                           ),
                         ),
                       ],
@@ -386,7 +382,7 @@ class SunCard extends StatelessWidget {
                 style: GoogleFonts.poppins(
                   fontSize: 11,
                   fontWeight: FontWeight.w500,
-                  color: AppColors.cream.withValues(alpha: 0.8),
+                  color: AppColors.cream80,
                 ),
               ),
               const SizedBox(width: 12),
@@ -404,7 +400,7 @@ class SunCard extends StatelessWidget {
                 style: GoogleFonts.poppins(
                   fontSize: 11,
                   fontWeight: FontWeight.w600,
-                  color: AppColors.cream.withValues(alpha: 0.9),
+                  color: AppColors.cream90,
                 ),
               ),
             ],
@@ -436,7 +432,7 @@ class SunCard extends StatelessWidget {
         Icon(
           WeatherIcons.day_sunny,
           size: 15,
-          color: AppColors.cream.withValues(alpha: 0.9),
+          color: AppColors.cream90,
         ),
         const SizedBox(width: 4),
         Text(
@@ -453,7 +449,7 @@ class SunCard extends StatelessWidget {
             Icon(
               isSunUp ? WeatherIcons.sunset : WeatherIcons.sunrise,
               size: 13,
-              color: AppColors.cream.withValues(alpha: 0.95),
+              color: AppColors.cream95,
             ),
             const SizedBox(width: 4),
             Text(
@@ -467,7 +463,7 @@ class SunCard extends StatelessWidget {
             Icon(
               isSunUp ? WeatherIcons.sunrise : WeatherIcons.sunset,
               size: 13,
-              color: AppColors.cream.withValues(alpha: 0.95),
+              color: AppColors.cream95,
             ),
             const SizedBox(width: 4),
             Text(
@@ -606,6 +602,25 @@ class SunCard extends StatelessWidget {
 }
 
 class _UvLinePainter extends CustomPainter {
+  static const _uvLabelStyle = TextStyle(
+    color: AppColors.cream90,
+    fontSize: 10,
+    fontWeight: FontWeight.w700,
+    letterSpacing: 0.5,
+  );
+
+  static const _yLabelStyle = TextStyle(
+    color: AppColors.cream95,
+    fontSize: 10,
+    fontWeight: FontWeight.w600,
+  );
+
+  static const _hourLabelStyle = TextStyle(
+    color: AppColors.cream90,
+    fontSize: 10,
+    fontWeight: FontWeight.w600,
+  );
+
   final List<double> uvValues;
   final List<DateTime> hours;
   final DateTime? now;
@@ -645,14 +660,9 @@ class _UvLinePainter extends CustomPainter {
     // "UV index" chart label (top-left)
     if (showLabel) {
       final uvLabelPainter = TextPainter(
-        text: TextSpan(
+        text: const TextSpan(
           text: 'UV index',
-          style: TextStyle(
-            color: AppColors.cream.withValues(alpha: 0.9),
-            fontSize: 10,
-            fontWeight: FontWeight.w700,
-            letterSpacing: 0.5,
-          ),
+          style: _uvLabelStyle,
         ),
         textDirection: TextDirection.ltr,
       )..layout();
@@ -660,15 +670,10 @@ class _UvLinePainter extends CustomPainter {
     }
 
     // Y-axis labels
-    final yLabelStyle = TextStyle(
-      color: AppColors.cream.withValues(alpha: 0.95),
-      fontSize: 10,
-      fontWeight: FontWeight.w600,
-    );
     for (final val in [maxY, maxY / 2, 0.0]) {
       final y = padTop + graphH * (1 - val / maxY);
       final tp = TextPainter(
-        text: TextSpan(text: '${val.round()}', style: yLabelStyle),
+        text: TextSpan(text: '${val.round()}', style: _yLabelStyle),
         textDirection: TextDirection.ltr,
       )..layout();
       tp.paint(canvas, Offset(0, y - tp.height / 2));
@@ -696,8 +701,8 @@ class _UvLinePainter extends CustomPainter {
               begin: Alignment.topCenter,
               end: Alignment.bottomCenter,
               colors: [
-                AppColors.cream.withValues(alpha: 0.15),
-                AppColors.cream.withValues(alpha: 0.03),
+                AppColors.cream15,
+                AppColors.cream03,
               ],
             ).createShader(
               Rect.fromLTRB(padLeft, padTop, padLeft + graphW, bottomY),
@@ -709,7 +714,7 @@ class _UvLinePainter extends CustomPainter {
     canvas.drawPath(
       linePath,
       Paint()
-        ..color = AppColors.cream.withValues(alpha: 0.5)
+        ..color = AppColors.cream50
         ..strokeWidth = 2
         ..style = PaintingStyle.stroke
         ..strokeCap = StrokeCap.round,
@@ -755,17 +760,12 @@ class _UvLinePainter extends CustomPainter {
     }
 
     // Hour labels
-    final labelStyle = TextStyle(
-      color: AppColors.cream.withValues(alpha: 0.9),
-      fontSize: 10,
-      fontWeight: FontWeight.w600,
-    );
     for (var i = 0; i < hours.length; i++) {
       if (i % 6 != 0 && i != hours.length - 1) continue;
       final tp = TextPainter(
         text: TextSpan(
           text: DateFormat('ha').format(hours[i]).toLowerCase(),
-          style: labelStyle,
+          style: _hourLabelStyle,
         ),
         textDirection: TextDirection.ltr,
       )..layout();
@@ -780,7 +780,7 @@ class _UvLinePainter extends CustomPainter {
   @override
   bool shouldRepaint(covariant _UvLinePainter old) =>
       uvValues != old.uvValues ||
-      now != old.now ||
+      now?.millisecondsSinceEpoch != old.now?.millisecondsSinceEpoch ||
       showAreaFill != old.showAreaFill ||
       showLabel != old.showLabel;
 }
@@ -840,7 +840,7 @@ class _SunArcPainter extends CustomPainter {
       Offset(arcLeft, horizY),
       Offset(arcRight, horizY),
       Paint()
-        ..color = AppColors.cream.withValues(alpha: 0.15)
+        ..color = AppColors.cream15
         ..strokeWidth = 1,
     );
 
@@ -857,7 +857,7 @@ class _SunArcPainter extends CustomPainter {
       canvas,
       upperArcPath,
       Paint()
-        ..color = AppColors.cream.withValues(alpha: isDay ? 0.30 : 0.15)
+        ..color = isDay ? AppColors.cream30 : AppColors.cream15
         ..strokeWidth = 1.5
         ..style = PaintingStyle.stroke
         ..strokeCap = StrokeCap.round,
@@ -877,7 +877,7 @@ class _SunArcPainter extends CustomPainter {
       canvas.drawPath(
         goldenPath,
         Paint()
-          ..color = AppColors.cream.withValues(alpha: 0.15)
+          ..color = AppColors.cream15
           ..strokeWidth = 3
           ..style = PaintingStyle.stroke
           ..strokeCap = StrokeCap.round,
@@ -891,7 +891,7 @@ class _SunArcPainter extends CustomPainter {
       Offset(noonX, noonY - 3),
       Offset(noonX, noonY + 3),
       Paint()
-        ..color = AppColors.cream.withValues(alpha: 0.4)
+        ..color = AppColors.cream40
         ..strokeWidth = 1.5
         ..strokeCap = StrokeCap.round,
     );
@@ -907,14 +907,14 @@ class _SunArcPainter extends CustomPainter {
         Offset(sunX, sunY),
         12,
         Paint()
-          ..color = AppColors.cream.withValues(alpha: 0.12)
+          ..color = AppColors.cream12
           ..maskFilter = const MaskFilter.blur(BlurStyle.normal, 8),
       );
       // Sun dot
       canvas.drawCircle(
         Offset(sunX, sunY),
         6,
-        Paint()..color = AppColors.cream.withValues(alpha: 0.9),
+        Paint()..color = AppColors.cream90,
       );
     }
   }
@@ -935,5 +935,7 @@ class _SunArcPainter extends CustomPainter {
 
   @override
   bool shouldRepaint(covariant _SunArcPainter old) =>
-      sunrise != old.sunrise || sunset != old.sunset || now != old.now;
+      sunrise.millisecondsSinceEpoch != old.sunrise.millisecondsSinceEpoch ||
+      sunset.millisecondsSinceEpoch != old.sunset.millisecondsSinceEpoch ||
+      now.millisecondsSinceEpoch != old.now.millisecondsSinceEpoch;
 }

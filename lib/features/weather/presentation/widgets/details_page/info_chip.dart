@@ -23,7 +23,7 @@ class InfoChip extends StatelessWidget {
     return Container(
       padding: const EdgeInsets.all(8),
       decoration: BoxDecoration(
-        color: AppColors.cream.withValues(alpha: 0.08),
+        color: AppColors.cream08,
         borderRadius: BorderRadius.circular(10),
       ),
       child: Column(
@@ -35,7 +35,7 @@ class InfoChip extends StatelessWidget {
                   Icon(
                     icon,
                     size: 10,
-                    color: AppColors.cream.withValues(alpha: 0.6),
+                    color: AppColors.cream60,
                   ),
               const SizedBox(width: 4),
               Text(
@@ -43,7 +43,7 @@ class InfoChip extends StatelessWidget {
                 style: GoogleFonts.poppins(
                   fontSize: 10,
                   fontWeight: FontWeight.w500,
-                  color: AppColors.cream.withValues(alpha: 0.6),
+                  color: AppColors.cream60,
                 ),
               ),
             ],

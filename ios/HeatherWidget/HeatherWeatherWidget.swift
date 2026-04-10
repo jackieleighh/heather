@@ -200,6 +200,25 @@ struct HeatherWeatherProvider: TimelineProvider {
             let description = WeatherFetcher.description(from: fetched.current.weather_code)
             let temp = fetched.current.temperature_2m
 
+            // Build timeline segments from the freshly fetched hourly data
+            let fetchedSegments: [TimelineSegment]?
+            let fetchedHasPrecip: Bool?
+            if let hourly = fetched.hourly {
+                fetchedSegments = WeatherFetcher.buildTimelineSegments(
+                    hourly: hourly,
+                    utcOffsetSeconds: fetched.utc_offset_seconds,
+                    now: now
+                )
+                fetchedHasPrecip = WeatherFetcher.hasPrecipInTimeline(
+                    hourly: hourly,
+                    utcOffsetSeconds: fetched.utc_offset_seconds,
+                    now: now
+                )
+            } else {
+                fetchedSegments = cached.timelineSegments
+                fetchedHasPrecip = cached.hasPrecipInTimeline
+            }
+
             // Use the weather location's timezone for parsing local time strings
             let fetchedTZ = TimeZone(secondsFromGMT: fetched.utc_offset_seconds) ?? .current
 
@@ -319,8 +338,8 @@ struct HeatherWeatherProvider: TimelineProvider {
                     summaryIsDay: cached.summaryIsDay,
                     moonPhase: cached.moonPhase,
                     moonIllumination: cached.moonIllumination,
-                    timelineSegments: cached.timelineSegments,
-                    hasPrecipInTimeline: cached.hasPrecipInTimeline
+                    timelineSegments: fetchedSegments,
+                    hasPrecipInTimeline: fetchedHasPrecip
                 )
 
                 entries.append(WeatherEntry(date: entryDate, data: data, isPlaceholder: false))

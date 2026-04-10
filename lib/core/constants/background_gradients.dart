@@ -116,7 +116,7 @@ class BackgroundGradients {
       AppColors.softOrange,
     ],
     TemperatureTier.scorcher: [
-      AppColors.softOvercastOrange,
+      AppColors.overcastMauve,
       AppColors.softOrange,
       AppColors.softRose,
     ],
@@ -126,17 +126,17 @@ class BackgroundGradients {
 
   static const _drizzle = {
     TemperatureTier.singleDigits: [
-      AppColors.drizzleViolet,
       AppColors.drizzleSkyBlue,
+      AppColors.drizzleViolet,
       AppColors.drizzleLavenderPop,
     ],
     TemperatureTier.freezing: [
-      AppColors.drizzleSteel,
       AppColors.drizzleSkyBlue,
+      AppColors.drizzleSteel,
       AppColors.drizzleViolet,
     ],
     TemperatureTier.jacketWeather: [
-      AppColors.drizzleSteel,
+      AppColors.drizzleSkyBlue,
       AppColors.drizzleSkyBlue,
       AppColors.drizzleTealMint,
     ],
@@ -151,8 +151,8 @@ class BackgroundGradients {
       AppColors.drizzleTangerine,
     ],
     TemperatureTier.scorcher: [
+      AppColors.drizzleSkyBlue,
       AppColors.drizzleTangerine,
-      AppColors.softAmber,
       AppColors.drizzlePlumRose,
     ],
   };
@@ -178,11 +178,11 @@ class BackgroundGradients {
     TemperatureTier.flannelWeather: [
       AppColors.stormBlue,
       AppColors.overcastTeal,
-      AppColors.goldenAmber,
+      AppColors.softAmber,
     ],
     TemperatureTier.shortsWeather: [
       AppColors.stormBlue,
-      AppColors.goldenAmber,
+      AppColors.softAmber,
       AppColors.softDullOrange,
     ],
     TemperatureTier.scorcher: [
