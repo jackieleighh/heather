@@ -32,28 +32,23 @@ class AppColors {
   static const frostLavender = Color(0xFF7060D0);
   static const coldIndigo = Color(0xFF312E81);
 
-  // --- Sunny sky ---
-  static const lavenderBlue = Color(0xFF5E78B0);
-  static const warmSkyBlue = Color(0xFF3878A8);
-  static const goldenAmber = Color(0xFFfcc500);
-
-  // --- Sunny day gradients ---
-  static const sunnyAqua = Color(0xFF48A8B0);
-  static const sunnyRichViolet = Color(0xFF9E80FF);
-  static const sunnyCerulean = Color(0xFF4890C8);
-  static const sunnyBrightBlue = Color(0xFF5CA0D8);
-  static const sunnyBrightTeal = Color(0xFF58B89E);
-  static const sunnyVividGold = Color(0xFFC8A420);
-  static const sunnyBlazingOrange = Color(0xFFD07018);
-  static const sunnyHotRose = Color(0xFFF03478);
+  // --- Sunny day (Electric & Vivid) ---
+  static const sunnyElectricBlue = Color(0xFF70A8FF);
+  static const sunnyBrightCerulean = Color(0xFF80A8F8);
+  static const sunnyVividViolet = Color(0xFF9888F8);
+  static const sunnyElectricBlueWarm = Color(0xFF70B0FF);
+  static const sunnyCeruleanAqua = Color(0xFF70B8F8);
+  static const sunnyElectricAqua = Color(0xFF70D8F8);
+  static const sunnyVividTeal = Color(0xFF38C0A0);
+  static const sunnyElectricGold = Color(0xFFF0D838);
+  static const sunnyVividTangerine = Color(0xFFF08028);
+  static const sunnyHotMagenta = Color(0xFFD80070);
 
   // --- Scorcher tier (night gradients) ---
   static const burntOrange = Color(0xFFF06A0A);
   static const orangeRed = Color(0xFFB91C1C);
 
   // --- Overcast day ---
-  static const stormBlue = Color(0xFF405888);
-  static const overcastSlate = Color(0xFF6880A8);
   static const overcastTeal = Color(0xFF387898);
   static const overcastSage = Color(0xFF689A50);
   static const overcastMauve = Color(0xFF7454A2);
@@ -69,18 +64,45 @@ class AppColors {
   static const softOvercastOrange = Color(0xFFC07018);
   static const softOrange = Color(0xFFD87420);
   static const softRose = Color(0xFFC84068);
-  static const softDullOrange = Color(0xFFB85010);
 
-  // --- Drizzle day ---
-  static const drizzleViolet = Color(0xFF4C389F);
-  static const drizzleSkyBlue = Color(0xFF5093CE);
-  static const drizzleLavenderPop = Color(0xFF7D8ED4);
-  static const drizzleSteel = Color(0xFF3D5FA4);
-  static const drizzleTealMint = Color(0xFF49AB91);
-  static const drizzleHoney = Color(0xFFC19C33);
-  static const drizzleTangerine = Color(0xFFC75F23);
-  static const drizzlePlumRose = Color(0xFFA63A62);
-  static const softAmber = Color(0xFFD8B030);
+  // --- Drizzle day (Soft Cloud, Punchy Accent) ---
+  static const drizzleCloudBlue = Color(0xFF6888D0);
+  static const drizzleCloudViolet = Color(0xFF6878C0);
+  static const drizzlePunchyLavender = Color(0xFF8878D8);
+  static const drizzleCloudPeriwinkle = Color(0xFF5888C8);
+  static const drizzlePunchyCyan = Color(0xFF60A8E0);
+  static const drizzleCloudMid = Color(0xFF5090C0);
+  static const drizzlePunchyTeal = Color(0xFF48C0A8);
+  static const drizzleCloudTeal = Color(0xFF48A8B0);
+  static const drizzlePunchyGold = Color(0xFFE0C020);
+  static const drizzlePunchyTangerine = Color(0xFFF09030);
+  static const drizzlePunchyRose = Color(0xFFE84880);
+
+  // --- Rain day (between drizzle & storm) ---
+  static const rainBlue = Color(0xFF5878C4);
+  static const rainViolet = Color(0xFF5C70B8);
+  static const rainLavender = Color(0xFF8074D0);
+  static const rainPeriwinkle = Color(0xFF5080C0);
+  static const rainCyan = Color(0xFF5CA0DC);
+  static const rainMid = Color(0xFF4C88B8);
+  static const rainTeal = Color(0xFF44B8A0);
+  static const rainMidTeal = Color(0xFF489CA8);
+  static const rainGold = Color(0xFFDCBC20);
+  static const rainTangerine = Color(0xFFEC8830);
+  static const rainRose = Color(0xFFE4487C);
+
+  // --- Heavy rain day (Stormy Blue, Still Fun) ---
+  static const stormBlue = Color(0xFF3C5CB0);
+  static const stormViolet = Color(0xFF445CA8);
+  static const stormRichLavender = Color(0xFF6C64C0);
+  static const stormPeriwinkle = Color(0xFF3C6CB0);
+  static const stormRichCyan = Color(0xFF4C8CD0);
+  static const stormMid = Color(0xFF3C74A8);
+  static const stormRichTeal = Color(0xFF34A490);
+  static const stormTeal = Color(0xFF3C8498);
+  static const stormRichGold = Color(0xFFCCAC18);
+  static const stormRichTangerine = Color(0xFFDC7428);
+  static const stormRichRose = Color(0xFFD43C70);
 
   // --- Snow day ---
   static const brightSkyPeriwinkle = Color(0xFF7890D0);

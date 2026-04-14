@@ -31,52 +31,57 @@ struct WeatherEffectOverlay: View {
                 drawSunGlowRadial(ctx: ctx, size: size, time: t)
             } else {
                 drawStars(ctx: ctx, size: size, time: t, count: Int(50 * scale))
-                drawMoonGlow(ctx: ctx, size: size, time: t)
             }
         case "mostlySunny":
             if isDay {
-                drawSunRaysWedge(ctx: ctx, size: size, time: t, lengthScale: 0.78, alphaScale: 0.8)
-                drawSunGlowRadial(ctx: ctx, size: size, time: t, outerRadius: 80, innerRadius: 32, outerAlpha: 0.32, innerAlpha: 0.42)
+                drawMiniCloud(ctx: ctx, center: CGPoint(x: size.width * 0.22, y: size.height * 0.26), cloudScale: size.width * 0.24, alpha: 0.22)
+                drawMiniCloud(ctx: ctx, center: CGPoint(x: size.width * 0.80, y: size.height * 0.48), cloudScale: size.width * 0.22, alpha: 0.20)
+                drawMiniCloud(ctx: ctx, center: CGPoint(x: size.width * 0.48, y: size.height * 0.61), cloudScale: size.width * 0.20, alpha: 0.18)
             } else {
                 drawStars(ctx: ctx, size: size, time: t, count: Int(50 * scale))
-                drawMoonGlow(ctx: ctx, size: size, time: t)
+                drawMiniCloud(ctx: ctx, center: CGPoint(x: size.width * 0.22, y: size.height * 0.26), cloudScale: size.width * 0.24, alpha: 0.18)
+                drawMiniCloud(ctx: ctx, center: CGPoint(x: size.width * 0.80, y: size.height * 0.48), cloudScale: size.width * 0.22, alpha: 0.16)
+                drawMiniCloud(ctx: ctx, center: CGPoint(x: size.width * 0.48, y: size.height * 0.61), cloudScale: size.width * 0.20, alpha: 0.14)
             }
         case "partlyCloudy":
-            let pcCenter = CGPoint(x: size.width * 0.75, y: size.height * 0.12)
             if isDay {
-                drawSunRaysWedge(ctx: ctx, size: size, time: t, lengthScale: 0.54, alphaScale: 0.65, sunCenter: pcCenter)
-                drawSunGlowRadial(ctx: ctx, size: size, time: t, outerRadius: 65, innerRadius: 25, outerAlpha: 0.28, innerAlpha: 0.36, sunCenter: pcCenter)
+                drawMiniCloud(ctx: ctx, center: CGPoint(x: size.width * 0.18, y: size.height * 0.26), cloudScale: size.width * 0.26, alpha: 0.26)
+                drawMiniCloud(ctx: ctx, center: CGPoint(x: size.width * 0.72, y: size.height * 0.22), cloudScale: size.width * 0.28, alpha: 0.28)
+                drawMiniCloud(ctx: ctx, center: CGPoint(x: size.width * 0.51, y: size.height * 0.55), cloudScale: size.width * 0.24, alpha: 0.24)
+                drawMiniCloud(ctx: ctx, center: CGPoint(x: size.width * 0.82, y: size.height * 0.71), cloudScale: size.width * 0.26, alpha: 0.22)
             } else {
                 drawStars(ctx: ctx, size: size, time: t, count: Int(50 * scale))
-                drawMoonGlow(ctx: ctx, size: size, time: t, moonCenter: pcCenter)
+                drawMiniCloud(ctx: ctx, center: CGPoint(x: size.width * 0.18, y: size.height * 0.26), cloudScale: size.width * 0.26, alpha: 0.20)
+                drawMiniCloud(ctx: ctx, center: CGPoint(x: size.width * 0.72, y: size.height * 0.22), cloudScale: size.width * 0.28, alpha: 0.22)
+                drawMiniCloud(ctx: ctx, center: CGPoint(x: size.width * 0.51, y: size.height * 0.55), cloudScale: size.width * 0.24, alpha: 0.18)
+                drawMiniCloud(ctx: ctx, center: CGPoint(x: size.width * 0.82, y: size.height * 0.71), cloudScale: size.width * 0.26, alpha: 0.18)
             }
-            drawTopDarkeningBand(ctx: ctx, size: size)
         case "overcast":
             drawOvercast(ctx: ctx, size: size, time: t)
         case "foggy":
             drawFog(ctx: ctx, size: size, time: t)
         case "drizzle":
-            drawDrizzleDots(ctx: ctx, size: size, count: Int(12 * scale))
+            drawRainStreaks(ctx: ctx, size: size, count: Int(30 * scale), minAlpha: 0.25, maxAlpha: 0.45, strokeWidth: 1.2, angle: 0.22, lengthRange: 10...18)
         case "rain":
-            drawRainStreaks(ctx: ctx, size: size, count: Int(20 * scale), minAlpha: 0.10, maxAlpha: 0.20, strokeWidth: 0.5, angle: 0.22, lengthRange: 6...10)
+            drawRainStreaks(ctx: ctx, size: size, count: Int(55 * scale), minAlpha: 0.25, maxAlpha: 0.45, strokeWidth: 1.2, angle: 0.22, lengthRange: 10...18)
         case "heavyRain":
-            drawRainStreaks(ctx: ctx, size: size, count: Int(30 * scale), minAlpha: 0.10, maxAlpha: 0.20, strokeWidth: 0.6, angle: 0.28, lengthRange: 8...14)
-            drawBottomHaze(ctx: ctx, size: size, opacity: 0.05)
+            drawRainStreaks(ctx: ctx, size: size, count: Int(75 * scale), minAlpha: 0.30, maxAlpha: 0.50, strokeWidth: 1.4, angle: 0.28, lengthRange: 14...22)
+            drawBottomHaze(ctx: ctx, size: size, opacity: 0.08)
         case "freezingRain":
-            drawFreezingRain(ctx: ctx, size: size, count: Int(18 * scale))
+            drawRainStreaks(ctx: ctx, size: size, count: Int(55 * scale), minAlpha: 0.25, maxAlpha: 0.45, strokeWidth: 1.2, angle: 0.22, lengthRange: 10...18)
         case "snow":
-            drawSnowDots(ctx: ctx, size: size, count: Int(25 * scale), minAlpha: 0.14, maxAlpha: 0.22, radiusRange: 1.0...2.5)
+            drawSnowDots(ctx: ctx, size: size, count: Int(55 * scale), minAlpha: 0.35, maxAlpha: 0.60, radiusRange: 1.2...2.8)
             drawDarkOverlay(ctx: ctx, size: size, opacity: 0.10)
         case "blizzard":
-            drawSnowDots(ctx: ctx, size: size, count: Int(40 * scale), minAlpha: 0.16, maxAlpha: 0.35, radiusRange: 1.0...3.0)
-            drawWhiteHaze(ctx: ctx, size: size, opacity: 0.03)
+            drawSnowDots(ctx: ctx, size: size, count: Int(65 * scale), minAlpha: 0.25, maxAlpha: 0.45, radiusRange: 0.8...2.2)
+            drawWhiteHaze(ctx: ctx, size: size, opacity: 0.06)
             drawDarkOverlay(ctx: ctx, size: size, opacity: 0.10)
         case "thunderstorm":
-            drawRainStreaks(ctx: ctx, size: size, count: Int(25 * scale), minAlpha: 0.10, maxAlpha: 0.20, strokeWidth: 0.5, angle: 0.22, lengthRange: 6...10)
-            drawSubtleLightningGlow(ctx: ctx, size: size, opacity: 0.06)
+            drawRainStreaks(ctx: ctx, size: size, count: Int(35 * scale), minAlpha: 0.25, maxAlpha: 0.45, strokeWidth: 1.2, angle: 0.22, lengthRange: 10...18)
+            drawSubtleLightningGlow(ctx: ctx, size: size, opacity: 0.10)
         case "hail":
-            drawHailStones(ctx: ctx, size: size, count: Int(25 * scale))
-            drawSubtleLightningGlow(ctx: ctx, size: size, opacity: 0.05)
+            drawHailStones(ctx: ctx, size: size, count: Int(30 * scale))
+            drawSubtleLightningGlow(ctx: ctx, size: size, opacity: 0.08)
         default:
             break
         }
@@ -216,37 +221,6 @@ struct WeatherEffectOverlay: View {
         )
     }
 
-    // MARK: - Moon Glow (Mini)
-
-    private func drawMoonGlow(ctx: GraphicsContext, size: CGSize, time: Double, moonCenter: CGPoint? = nil) {
-        let center = moonCenter ?? CGPoint(x: size.width * 0.8, y: size.height * 0.12)
-        let szScale = min(size.width, size.height) / 400.0
-
-        var outerCtx = ctx
-        outerCtx.addFilter(.blur(radius: 18 * szScale))
-        outerCtx.fill(
-            Circle().path(in: CGRect(
-                x: center.x - 36 * szScale,
-                y: center.y - 36 * szScale,
-                width: 72 * szScale,
-                height: 72 * szScale
-            )),
-            with: .color(.white.opacity(0.12))
-        )
-
-        var innerCtx = ctx
-        innerCtx.addFilter(.blur(radius: 6 * szScale))
-        innerCtx.fill(
-            Circle().path(in: CGRect(
-                x: center.x - 18 * szScale,
-                y: center.y - 18 * szScale,
-                width: 36 * szScale,
-                height: 36 * szScale
-            )),
-            with: .color(.white.opacity(0.28))
-        )
-    }
-
     // MARK: - Stars (Fewer, fainter)
 
     private func drawStars(ctx: GraphicsContext, size: CGSize, time: Double, count: Int) {
@@ -274,20 +248,67 @@ struct WeatherEffectOverlay: View {
         }
     }
 
-    // MARK: - Top Darkening Band (Partly cloudy cloud hint)
+    // MARK: - Mini Cloud (Cumulus-style cluster of circles)
 
-    private func drawTopDarkeningBand(ctx: GraphicsContext, size: CGSize) {
-        let szScale = min(size.width, size.height) / 400.0
-        var bandCtx = ctx
-        bandCtx.addFilter(.blur(radius: 30 * szScale))
-        bandCtx.fill(
+    private func drawMiniCloud(
+        ctx: GraphicsContext,
+        center: CGPoint,
+        cloudScale: Double,
+        alpha: Double
+    ) {
+        var cloudCtx = ctx
+        cloudCtx.addFilter(.blur(radius: cloudScale * 0.06))
+
+        // Flat base oval
+        cloudCtx.fill(
             Ellipse().path(in: CGRect(
-                x: size.width * 0.5 - size.width * 0.7,
-                y: -size.height * 0.075,
-                width: size.width * 1.4,
-                height: size.height * 0.15
+                x: center.x - cloudScale * 0.65,
+                y: center.y + cloudScale * 0.10 - cloudScale * 0.14,
+                width: cloudScale * 1.3,
+                height: cloudScale * 0.28
             )),
-            with: .color(.black.opacity(0.06))
+            with: .color(.white.opacity(alpha * 0.7))
+        )
+
+        // Three main lobes
+        let lobeAlpha = alpha
+        cloudCtx.fill(
+            Circle().path(in: CGRect(
+                x: center.x - cloudScale * 0.25 - cloudScale * 0.24,
+                y: center.y - cloudScale * 0.24,
+                width: cloudScale * 0.48,
+                height: cloudScale * 0.48
+            )),
+            with: .color(.white.opacity(lobeAlpha))
+        )
+        cloudCtx.fill(
+            Circle().path(in: CGRect(
+                x: center.x - cloudScale * 0.30,
+                y: center.y - cloudScale * 0.08 - cloudScale * 0.30,
+                width: cloudScale * 0.60,
+                height: cloudScale * 0.60
+            )),
+            with: .color(.white.opacity(lobeAlpha))
+        )
+        cloudCtx.fill(
+            Circle().path(in: CGRect(
+                x: center.x + cloudScale * 0.28 - cloudScale * 0.22,
+                y: center.y + cloudScale * 0.02 - cloudScale * 0.22,
+                width: cloudScale * 0.44,
+                height: cloudScale * 0.44
+            )),
+            with: .color(.white.opacity(lobeAlpha))
+        )
+
+        // Top accent puff
+        cloudCtx.fill(
+            Circle().path(in: CGRect(
+                x: center.x + cloudScale * 0.04 - cloudScale * 0.18,
+                y: center.y - cloudScale * 0.20 - cloudScale * 0.18,
+                width: cloudScale * 0.36,
+                height: cloudScale * 0.36
+            )),
+            with: .color(.white.opacity(alpha * 0.8))
         )
     }
 
@@ -350,8 +371,8 @@ struct WeatherEffectOverlay: View {
         for _ in 0..<count {
             let x = rng.nextDouble() * size.width
             let y = rng.nextDouble() * size.height
-            let radius = 0.8 + rng.nextDouble() * 0.4
-            let alpha = 0.08 + rng.nextDouble() * 0.08
+            let radius = 1.2 + rng.nextDouble() * 1.0
+            let alpha = 0.20 + rng.nextDouble() * 0.15
 
             ctx.fill(
                 Circle().path(in: CGRect(
@@ -414,57 +435,92 @@ struct WeatherEffectOverlay: View {
         )
     }
 
-    // MARK: - Fog (Fewer wisps, fainter)
+    // MARK: - Fog (Wispy cloud layers matching Flutter app style)
 
     private func drawFog(ctx: GraphicsContext, size: CGSize, time: Double) {
         let w = size.width
         let h = size.height
         let szScale = min(w, h) / 400.0
 
+        // Base atmospheric haze
         var hazeCtx = ctx
-        hazeCtx.addFilter(.blur(radius: 100 * szScale))
+        hazeCtx.addFilter(.blur(radius: 60 * szScale))
         hazeCtx.fill(
             Ellipse().path(in: CGRect(
-                x: w * 0.5 - w * 0.8,
-                y: h * 0.25 - h * 0.2,
-                width: w * 1.6,
-                height: h * 0.4
+                x: -w * 0.2,
+                y: h * 0.1,
+                width: w * 1.4,
+                height: h * 0.5
             )),
-            with: .color(.white.opacity(0.022))
+            with: .color(.white.opacity(0.06))
         )
 
+        // 12 fog wisps — bottom-heavy distribution like the app
         var rng = SeededRNG(seed: 77)
 
-        for _ in 0..<5 {
+        for _ in 0..<12 {
             let yRaw = rng.nextDouble()
-            let yBiased = yRaw * yRaw
+            let yBiased = yRaw * yRaw // bottom-heavy
             let yFraction = 0.05 + yBiased * 0.85
-            let bandHeight = (50.0 + rng.nextDouble() * 70.0) * szScale
-            let speed = 0.08 + rng.nextDouble() * 0.14
-            let wispWidth = 0.3 + rng.nextDouble() * 0.3
-            let blur = bandHeight * 0.16 + rng.nextDouble() * 6
-            let baseAlpha = 0.04 + rng.nextDouble() * 0.04
-            let startX = rng.nextDouble() * 2.4
-            let wobblePhase = rng.nextDouble() * .pi * 2
+            let wispHeight = (30.0 + rng.nextDouble() * 50.0) * szScale
+            let wispWidth = 0.4 + rng.nextDouble() * 0.6
+            let blur = wispHeight * 0.3 + rng.nextDouble() * 4
+            let alpha = 0.08 + rng.nextDouble() * 0.10
+            let xPos = -0.2 + rng.nextDouble() * 1.4
 
-            let raw = startX + time * speed
-            let xNorm = (raw.truncatingRemainder(dividingBy: 2.4)) - 1.0
-            let x = xNorm * w
-            let wobble = sin(time * 0.7 + wobblePhase) * h * 0.008
-            let y = h * yFraction + wobble
+            let x = xPos * w
+            let y = h * yFraction
 
             var fogCtx = ctx
             fogCtx.addFilter(.blur(radius: blur))
             fogCtx.fill(
                 Ellipse().path(in: CGRect(
                     x: x - wispWidth * w / 2,
-                    y: y - bandHeight / 2,
+                    y: y - wispHeight / 2,
                     width: wispWidth * w,
-                    height: bandHeight
+                    height: wispHeight
                 )),
-                with: .color(.white.opacity(baseAlpha))
+                with: .color(.white.opacity(alpha))
             )
         }
+
+        // Extra wisps in bottom-right quadrant
+        var brCtx = ctx
+        brCtx.addFilter(.blur(radius: 12 * szScale))
+        brCtx.fill(
+            Ellipse().path(in: CGRect(
+                x: w * 0.35, y: h * 0.58,
+                width: w * 0.55, height: 35 * szScale
+            )),
+            with: .color(.white.opacity(0.12))
+        )
+        brCtx.fill(
+            Ellipse().path(in: CGRect(
+                x: w * 0.45, y: h * 0.72,
+                width: w * 0.50, height: 28 * szScale
+            )),
+            with: .color(.white.opacity(0.10))
+        )
+        brCtx.fill(
+            Ellipse().path(in: CGRect(
+                x: w * 0.30, y: h * 0.84,
+                width: w * 0.60, height: 32 * szScale
+            )),
+            with: .color(.white.opacity(0.09))
+        )
+
+        // Upper fog bank
+        var upperCtx = ctx
+        upperCtx.addFilter(.blur(radius: 40 * szScale))
+        upperCtx.fill(
+            Ellipse().path(in: CGRect(
+                x: -w * 0.1,
+                y: -h * 0.05,
+                width: w * 1.2,
+                height: h * 0.3
+            )),
+            with: .color(.white.opacity(0.05))
+        )
     }
 
     // MARK: - Rain Streaks (Static diagonal lines)
@@ -481,24 +537,35 @@ struct WeatherEffectOverlay: View {
     ) {
         var rng = SeededRNG(seed: 55)
 
-        for _ in 0..<count {
-            let x = rng.nextDouble() * size.width
-            let y = rng.nextDouble() * size.height
-            let length = lengthRange.lowerBound + rng.nextDouble() * (lengthRange.upperBound - lengthRange.lowerBound)
-            let alpha = minAlpha + rng.nextDouble() * (maxAlpha - minAlpha)
+        // Stratified grid placement for even distribution
+        let cols = Int(ceil(sqrt(Double(count) * (size.width / size.height))))
+        let rows = Int(ceil(Double(count) / Double(cols)))
+        let cellW = size.width / Double(cols)
+        let cellH = size.height / Double(rows)
+        var drawn = 0
 
-            let dx = sin(angle) * length
-            let dy = cos(angle) * length
+        for row in 0..<rows {
+            for col in 0..<cols {
+                if drawn >= count { break }
+                let x = (Double(col) + rng.nextDouble()) * cellW
+                let y = (Double(row) + rng.nextDouble()) * cellH
+                let length = lengthRange.lowerBound + rng.nextDouble() * (lengthRange.upperBound - lengthRange.lowerBound)
+                let alpha = minAlpha + rng.nextDouble() * (maxAlpha - minAlpha)
 
-            var path = Path()
-            path.move(to: CGPoint(x: x, y: y))
-            path.addLine(to: CGPoint(x: x + dx, y: y + dy))
+                let dx = sin(angle) * length
+                let dy = cos(angle) * length
 
-            ctx.stroke(
-                path,
-                with: .color(.white.opacity(alpha)),
-                lineWidth: strokeWidth
-            )
+                var path = Path()
+                path.move(to: CGPoint(x: x, y: y))
+                path.addLine(to: CGPoint(x: x + dx, y: y + dy))
+
+                ctx.stroke(
+                    path,
+                    with: .color(.white.opacity(alpha)),
+                    lineWidth: strokeWidth
+                )
+                drawn += 1
+            }
         }
     }
 
@@ -525,27 +592,37 @@ struct WeatherEffectOverlay: View {
         var rng = SeededRNG(seed: 63)
         let icyBlue = Color(red: 0.69, green: 0.88, blue: 1.0) // 0xB0E0FF
 
-        for i in 0..<count {
-            let x = rng.nextDouble() * size.width
-            let y = rng.nextDouble() * size.height
-            let length = 6.0 + rng.nextDouble() * 4.0
-            let alpha = 0.12 + rng.nextDouble() * 0.08
-            let angle = 0.20
+        let cols = Int(ceil(sqrt(Double(count) * (size.width / size.height))))
+        let rows = Int(ceil(Double(count) / Double(cols)))
+        let cellW = size.width / Double(cols)
+        let cellH = size.height / Double(rows)
+        var drawn = 0
 
-            let dx = sin(angle) * length
-            let dy = cos(angle) * length
+        for row in 0..<rows {
+            for col in 0..<cols {
+                if drawn >= count { break }
+                let x = (Double(col) + rng.nextDouble()) * cellW
+                let y = (Double(row) + rng.nextDouble()) * cellH
+                let length = 10.0 + rng.nextDouble() * 8.0
+                let alpha = 0.28 + rng.nextDouble() * 0.18
+                let angle = 0.20
 
-            let color = (i % 2 == 0) ? Color.white : icyBlue
+                let dx = sin(angle) * length
+                let dy = cos(angle) * length
 
-            var path = Path()
-            path.move(to: CGPoint(x: x, y: y))
-            path.addLine(to: CGPoint(x: x + dx, y: y + dy))
+                let color = (drawn % 2 == 0) ? Color.white : icyBlue
 
-            ctx.stroke(
-                path,
-                with: .color(color.opacity(alpha)),
-                lineWidth: 0.7
-            )
+                var path = Path()
+                path.move(to: CGPoint(x: x, y: y))
+                path.addLine(to: CGPoint(x: x + dx, y: y + dy))
+
+                ctx.stroke(
+                    path,
+                    with: .color(color.opacity(alpha)),
+                    lineWidth: 1.2
+                )
+                drawn += 1
+            }
         }
 
         // Icy sheen circle
@@ -559,7 +636,7 @@ struct WeatherEffectOverlay: View {
                 width: size.width * 0.4,
                 height: size.width * 0.4
             )),
-            with: .color(icyBlue.opacity(0.05))
+            with: .color(icyBlue.opacity(0.08))
         )
     }
 
@@ -575,11 +652,19 @@ struct WeatherEffectOverlay: View {
     ) {
         var rng = SeededRNG(seed: 71)
 
-        for _ in 0..<count {
-            let x = rng.nextDouble() * size.width
-            let y = rng.nextDouble() * size.height
-            let radius = radiusRange.lowerBound + rng.nextDouble() * (radiusRange.upperBound - radiusRange.lowerBound)
-            let alpha = minAlpha + rng.nextDouble() * (maxAlpha - minAlpha)
+        let cols = Int(ceil(sqrt(Double(count) * (size.width / size.height))))
+        let rows = Int(ceil(Double(count) / Double(cols)))
+        let cellW = size.width / Double(cols)
+        let cellH = size.height / Double(rows)
+        var drawn = 0
+
+        for row in 0..<rows {
+            for col in 0..<cols {
+                if drawn >= count { break }
+                let x = (Double(col) + rng.nextDouble()) * cellW
+                let y = (Double(row) + rng.nextDouble()) * cellH
+                let radius = radiusRange.lowerBound + rng.nextDouble() * (radiusRange.upperBound - radiusRange.lowerBound)
+                let alpha = minAlpha + rng.nextDouble() * (maxAlpha - minAlpha)
 
             ctx.fill(
                 Circle().path(in: CGRect(
@@ -590,6 +675,8 @@ struct WeatherEffectOverlay: View {
                 )),
                 with: .color(.white.opacity(alpha))
             )
+                drawn += 1
+            }
         }
     }
 
@@ -649,8 +736,8 @@ struct WeatherEffectOverlay: View {
         for _ in 0..<count {
             let x = rng.nextDouble() * size.width
             let y = rng.nextDouble() * size.height
-            let radius = 1.5 + rng.nextDouble() * 1.5
-            let alpha = 0.12 + rng.nextDouble() * 0.10
+            let radius = 2.0 + rng.nextDouble() * 2.0
+            let alpha = 0.28 + rng.nextDouble() * 0.18
 
             ctx.fill(
                 Circle().path(in: CGRect(

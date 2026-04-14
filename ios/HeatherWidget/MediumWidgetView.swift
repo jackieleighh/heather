@@ -98,13 +98,12 @@ struct MediumWidgetView: View {
                                                 value: sunriseLabel
                                             )
                                         }
-                                        if let sfSymbol = data.moonPhaseSFSymbol,
-                                           let illum = data.moonIllumination {
-                                            MediumDetailLabel(
-                                                icon: sfSymbol,
-                                                value: "\(illum)%"
-                                            )
-                                        }
+                                        let moonIcon = data.moonPhaseSFSymbol ?? getMoonPhase().sfSymbol
+                                        let moonIllum = data.moonIllumination ?? moonIllumination()
+                                        MediumDetailLabel(
+                                            icon: moonIcon,
+                                            value: "\(moonIllum)%"
+                                        )
                                     }
                                 }
                                 WidgetConditionIcon(
@@ -226,13 +225,12 @@ struct MediumWidgetView: View {
                                                 value: sunriseLabel
                                             )
                                         }
-                                        if let sfSymbol = data.moonPhaseSFSymbol,
-                                           let illum = data.moonIllumination {
-                                            MediumDetailLabel(
-                                                icon: sfSymbol,
-                                                value: "\(illum)%"
-                                            )
-                                        }
+                                        let moonIcon = data.moonPhaseSFSymbol ?? getMoonPhase().sfSymbol
+                                        let moonIllum = data.moonIllumination ?? moonIllumination()
+                                        MediumDetailLabel(
+                                            icon: moonIcon,
+                                            value: "\(moonIllum)%"
+                                        )
                                     }
                                 }
                                 WidgetConditionIcon(

@@ -75,13 +75,12 @@ struct LargeWidgetView: View {
                                         value: sunriseLabel
                                     )
                                 }
-                                if let sfSymbol = data.moonPhaseSFSymbol,
-                                   let illum = data.moonIllumination {
-                                    DetailLabel(
-                                        icon: sfSymbol,
-                                        value: "\(illum)%"
-                                    )
-                                }
+                                let moonIcon = data.moonPhaseSFSymbol ?? getMoonPhase().sfSymbol
+                                let moonIllum = data.moonIllumination ?? moonIllumination()
+                                DetailLabel(
+                                    icon: moonIcon,
+                                    value: "\(moonIllum)%"
+                                )
                             }
                             if let alertText = data.alertText {
                                 DetailLabel(

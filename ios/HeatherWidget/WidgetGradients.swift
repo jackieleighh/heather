@@ -75,12 +75,12 @@ struct WidgetGradients {
 
     private static let dayGradients: [String: [[String]]] = [
         "sunny": [
-            ["#FF88CCFF", "#FF60B4FF", "#FF9E80FF"],
-            ["#FF88CCFF", "#FF60B4FF", "#FF18CED2"],
-            ["#FF88CCFF", "#FF18CED2", "#FF1CC8AA"],
-            ["#FF18CED2", "#FF1CC8AA", "#FFF2CC00"],
-            ["#FF18CED2", "#FFF2CC00", "#FFF87008"],
-            ["#FF18CED2", "#FFF2CC00", "#FFF03478"],
+            ["#FF70A8FF", "#FF80A8F8", "#FF9888F8"],
+            ["#FF70B0FF", "#FF70B8F8", "#FF70D8F8"],
+            ["#FF70B8F8", "#FF70D8F8", "#FF38C0A0"],
+            ["#FF70D8F8", "#FF38C0A0", "#FFF0D838"],
+            ["#FF38C0A0", "#FFF0D838", "#FFF08028"],
+            ["#FFF0D838", "#FFF08028", "#FFD80070"],
         ],
         "overcast": [
             ["#FF5454B8", "#FF727AC0", "#FF9A8AC8"],
@@ -91,36 +91,36 @@ struct WidgetGradients {
             ["#FF7454A2", "#FFD87420", "#FFC84068"],
         ],
         "drizzle": [
-            ["#FF5093CE", "#FF4C389F", "#FF7D8ED4"],
-            ["#FF5093CE", "#FF3D5FA4", "#FF4C389F"],
-            ["#FF5093CE", "#FF5093CE", "#FF49AB91"],
-            ["#FF5093CE", "#FF49AB91", "#FFC19C33"],
-            ["#FF5093CE", "#FFC19C33", "#FFC75F23"],
-            ["#FF5093CE", "#FFC75F23", "#FFA63A62"],
+            ["#FF6888D0", "#FF6878C0", "#FF8878D8"],
+            ["#FF6888D0", "#FF5888C8", "#FF60A8E0"],
+            ["#FF6888D0", "#FF5090C0", "#FF48C0A8"],
+            ["#FF6888D0", "#FF48A8B0", "#FFE0C020"],
+            ["#FF6888D0", "#FF48A8B0", "#FFF09030"],
+            ["#FF6888D0", "#FF48A8B0", "#FFE84880"],
         ],
         "rain": [
-            ["#FF5093CE", "#FF4C389F", "#FF7D8ED4"],
-            ["#FF5093CE", "#FF3D5FA4", "#FF4C389F"],
-            ["#FF5093CE", "#FF5093CE", "#FF49AB91"],
-            ["#FF5093CE", "#FF49AB91", "#FFC19C33"],
-            ["#FF5093CE", "#FFC19C33", "#FFC75F23"],
-            ["#FF5093CE", "#FFC75F23", "#FFA63A62"],
+            ["#FF5878C4", "#FF5C70B8", "#FF8074D0"],
+            ["#FF5878C4", "#FF5080C0", "#FF5CA0DC"],
+            ["#FF5878C4", "#FF4C88B8", "#FF44B8A0"],
+            ["#FF5878C4", "#FF489CA8", "#FFDCBC20"],
+            ["#FF5878C4", "#FF489CA8", "#FFEC8830"],
+            ["#FF5878C4", "#FF489CA8", "#FFE4487C"],
         ],
         "heavyRain": [
-            ["#FF405888", "#FF2563EB", "#FF5E78B0"],
-            ["#FF405888", "#FF5E78B0", "#FF6880A8"],
-            ["#FF405888", "#FF3878A8", "#FF387898"],
-            ["#FF405888", "#FF387898", "#FFD8B030"],
-            ["#FF405888", "#FFD8B030", "#FFB85010"],
-            ["#FF405888", "#FFB85010", "#FFC84068"],
+            ["#FF3C5CB0", "#FF445CA8", "#FF6C64C0"],
+            ["#FF3C5CB0", "#FF3C6CB0", "#FF4C8CD0"],
+            ["#FF3C5CB0", "#FF3C74A8", "#FF34A490"],
+            ["#FF3C5CB0", "#FF3C8498", "#FFCCAC18"],
+            ["#FF3C5CB0", "#FF3C8498", "#FFDC7428"],
+            ["#FF3C5CB0", "#FF3C8498", "#FFD43C70"],
         ],
         "freezingRain": [
-            ["#FF405888", "#FF2563EB", "#FF5E78B0"],
-            ["#FF405888", "#FF5E78B0", "#FF6880A8"],
-            ["#FF405888", "#FF3878A8", "#FF387898"],
-            ["#FF405888", "#FF387898", "#FFD8B030"],
-            ["#FF405888", "#FFD8B030", "#FFB85010"],
-            ["#FF405888", "#FFB85010", "#FFC84068"],
+            ["#FF3C5CB0", "#FF445CA8", "#FF6C64C0"],
+            ["#FF3C5CB0", "#FF3C6CB0", "#FF4C8CD0"],
+            ["#FF3C5CB0", "#FF3C74A8", "#FF34A490"],
+            ["#FF3C5CB0", "#FF3C8498", "#FFCCAC18"],
+            ["#FF3C5CB0", "#FF3C8498", "#FFDC7428"],
+            ["#FF3C5CB0", "#FF3C8498", "#FFD43C70"],
         ],
         "snow": [
             ["#FFFAFAFA", "#FF7060D0", "#FF7890D0"],
@@ -139,20 +139,20 @@ struct WidgetGradients {
             ["#FFFAFAFA", "#FF387898", "#FFD87420"],
         ],
         "thunderstorm": [
-            ["#FF405888", "#FF2563EB", "#FF5E78B0"],
-            ["#FF405888", "#FF5E78B0", "#FF6880A8"],
-            ["#FF405888", "#FF3878A8", "#FF387898"],
-            ["#FF405888", "#FF387898", "#FFD8B030"],
-            ["#FF405888", "#FFD8B030", "#FFB85010"],
-            ["#FF405888", "#FFB85010", "#FFC84068"],
+            ["#FF3C5CB0", "#FF445CA8", "#FF6C64C0"],
+            ["#FF3C5CB0", "#FF3C6CB0", "#FF4C8CD0"],
+            ["#FF3C5CB0", "#FF3C74A8", "#FF34A490"],
+            ["#FF3C5CB0", "#FF3C8498", "#FFCCAC18"],
+            ["#FF3C5CB0", "#FF3C8498", "#FFDC7428"],
+            ["#FF3C5CB0", "#FF3C8498", "#FFD43C70"],
         ],
         "hail": [
-            ["#FF405888", "#FF2563EB", "#FF5E78B0"],
-            ["#FF405888", "#FF5E78B0", "#FF6880A8"],
-            ["#FF405888", "#FF3878A8", "#FF387898"],
-            ["#FF405888", "#FF387898", "#FFD8B030"],
-            ["#FF405888", "#FFD8B030", "#FFB85010"],
-            ["#FF405888", "#FFB85010", "#FFC84068"],
+            ["#FF3C5CB0", "#FF445CA8", "#FF6C64C0"],
+            ["#FF3C5CB0", "#FF3C6CB0", "#FF4C8CD0"],
+            ["#FF3C5CB0", "#FF3C74A8", "#FF34A490"],
+            ["#FF3C5CB0", "#FF3C8498", "#FFCCAC18"],
+            ["#FF3C5CB0", "#FF3C8498", "#FFDC7428"],
+            ["#FF3C5CB0", "#FF3C8498", "#FFD43C70"],
         ],
     ]
 
@@ -244,8 +244,7 @@ struct WidgetGradients {
 
 // MARK: - Gradient Background
 
-/// Radial gradient with the first color at the upper-right and the last color
-/// arcing up the left side, matching the Flutter app's visual feel.
+/// Linear gradient from top to bottom, matching the Flutter app's visual feel.
 struct WidgetGradientBackground: View {
     let hexColors: [String]
     let condition: String
@@ -253,20 +252,12 @@ struct WidgetGradientBackground: View {
     var family: WidgetFamily = .systemSmall
 
     var body: some View {
-        GeometryReader { geo in
-            let w = geo.size.width
-            let h = geo.size.height
-
-            let centerY: Double = 0.15
-
-            RadialGradient(
-                stops: WidgetGradients.gradientStops(
-                    from: hexColors, condition: condition, isDay: isDay, family: family
-                ),
-                center: UnitPoint(x: 0.75, y: centerY),
-                startRadius: 0,
-                endRadius: sqrt(w * w + h * h)
-            )
-        }
+        LinearGradient(
+            stops: WidgetGradients.gradientStops(
+                from: hexColors, condition: condition, isDay: isDay, family: family
+            ),
+            startPoint: .top,
+            endPoint: .bottom
+        )
     }
 }
