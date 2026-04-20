@@ -314,7 +314,7 @@ class _DetailsPageState extends ConsumerState<DetailsPage> {
         duration: const Duration(milliseconds: 300),
         curve: Curves.easeInOut,
         height: targetHeight,
-        clipBehavior: Clip.hardEdge,
+        clipBehavior: Clip.antiAlias,
         decoration: mode == CardDisplayMode.collapsed
             ? _collapsedDecoration
             : _transparentDecoration,

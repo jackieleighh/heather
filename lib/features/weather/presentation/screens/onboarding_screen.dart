@@ -9,6 +9,31 @@ import '../../../../core/services/fcm_service.dart';
 import '../providers/settings_provider.dart';
 import '../widgets/logo_overlay.dart';
 
+/// Cached text styles to avoid repeated GoogleFonts allocations.
+final _quicksandBold32_cream = GoogleFonts.quicksand(
+  fontSize: 32,
+  fontWeight: FontWeight.w700,
+  color: AppColors.cream,
+);
+final _poppinsW600_16_cream = GoogleFonts.poppins(
+  fontSize: 16,
+  fontWeight: FontWeight.w600,
+  color: AppColors.cream,
+);
+final _poppins12_cream = GoogleFonts.poppins(
+  fontSize: 12,
+  color: AppColors.cream,
+);
+final _poppinsW500_15_cream = GoogleFonts.poppins(
+  fontSize: 15,
+  fontWeight: FontWeight.w500,
+  color: AppColors.cream,
+);
+final _poppinsW600_16 = GoogleFonts.poppins(
+  fontSize: 16,
+  fontWeight: FontWeight.w600,
+);
+
 class OnboardingScreen extends ConsumerStatefulWidget {
   const OnboardingScreen({super.key});
 
@@ -57,16 +82,12 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
                     const Spacer(flex: 2),
                     Text(
                       "What's the vibe?",
-                      style: GoogleFonts.quicksand(
-                        fontSize: 32,
-                        fontWeight: FontWeight.w700,
-                        color: AppColors.cream,
-                      ),
+                      style: _quicksandBold32_cream,
                     ),
                     const SizedBox(height: 32),
                     Container(
                       decoration: BoxDecoration(
-                        color: AppColors.cream.withValues(alpha: 0.15),
+                        color: AppColors.cream15,
                         borderRadius: BorderRadius.circular(12),
                       ),
                       child: SwitchListTile(
@@ -76,32 +97,19 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
                         ),
                         title: Text(
                           'Keep it PG',
-                          style: GoogleFonts.poppins(
-                            fontSize: 16,
-                            fontWeight: FontWeight.w600,
-                            color: AppColors.cream,
-                          ),
+                          style: _poppinsW600_16_cream,
                         ),
                         subtitle: Text(
                           'No swearing.  Clean vibes only.',
-                          style: GoogleFonts.poppins(
-                            fontSize: 12,
-                            color: AppColors.cream,
-                          ),
+                          style: _poppins12_cream,
                         ),
                         value: _keepItPG,
-                        activeTrackColor: AppColors.cream.withValues(
-                          alpha: 0.3,
-                        ),
+                        activeTrackColor: AppColors.cream30,
                         activeThumbColor: AppColors.cream,
-                        inactiveTrackColor: AppColors.cream.withValues(
-                          alpha: 0.1,
-                        ),
-                        inactiveThumbColor: AppColors.cream.withValues(
-                          alpha: 0.4,
-                        ),
-                        trackOutlineColor: WidgetStatePropertyAll(
-                          AppColors.cream.withValues(alpha: 0.1),
+                        inactiveTrackColor: AppColors.cream10,
+                        inactiveThumbColor: AppColors.cream40,
+                        trackOutlineColor: const WidgetStatePropertyAll(
+                          AppColors.cream10,
                         ),
                         onChanged: (value) => setState(() => _keepItPG = value),
                       ),
@@ -109,7 +117,7 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
                     const SizedBox(height: 12),
                     Container(
                       decoration: BoxDecoration(
-                        color: AppColors.cream.withValues(alpha: 0.15),
+                        color: AppColors.cream15,
                         borderRadius: BorderRadius.circular(12),
                       ),
                       child: SwitchListTile(
@@ -119,32 +127,19 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
                         ),
                         title: Text(
                           'Severe weather alerts',
-                          style: GoogleFonts.poppins(
-                            fontSize: 15,
-                            fontWeight: FontWeight.w500,
-                            color: AppColors.cream,
-                          ),
+                          style: _poppinsW500_15_cream,
                         ),
                         subtitle: Text(
                           'Tornado warnings, severe thunderstorms, and other NWS alerts.',
-                          style: GoogleFonts.poppins(
-                            fontSize: 12,
-                            color: AppColors.cream,
-                          ),
+                          style: _poppins12_cream,
                         ),
                         value: _severeAlertsEnabled,
-                        activeTrackColor: AppColors.cream.withValues(
-                          alpha: 0.3,
-                        ),
+                        activeTrackColor: AppColors.cream30,
                         activeThumbColor: AppColors.cream,
-                        inactiveTrackColor: AppColors.cream.withValues(
-                          alpha: 0.1,
-                        ),
-                        inactiveThumbColor: AppColors.cream.withValues(
-                          alpha: 0.4,
-                        ),
-                        trackOutlineColor: WidgetStatePropertyAll(
-                          AppColors.cream.withValues(alpha: 0.1),
+                        inactiveTrackColor: AppColors.cream10,
+                        inactiveThumbColor: AppColors.cream40,
+                        trackOutlineColor: const WidgetStatePropertyAll(
+                          AppColors.cream10,
                         ),
                         onChanged: (value) async {
                           if (value) {
@@ -202,7 +197,7 @@ class _BottomButton extends StatelessWidget {
         ),
         child: Text(
           label,
-          style: GoogleFonts.poppins(fontSize: 16, fontWeight: FontWeight.w600),
+          style: _poppinsW600_16,
         ),
       ),
     );

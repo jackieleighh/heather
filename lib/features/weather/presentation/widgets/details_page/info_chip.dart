@@ -2,6 +2,18 @@ import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:heather/core/constants/app_colors.dart';
 
+/// Cached text styles to avoid repeated GoogleFonts allocations.
+final _poppinsW500_10_cream60 = GoogleFonts.poppins(
+  fontSize: 10,
+  fontWeight: FontWeight.w500,
+  color: AppColors.cream60,
+);
+final _poppinsBold12 = GoogleFonts.poppins(
+  fontSize: 12,
+  fontWeight: FontWeight.w700,
+  color: AppColors.cream,
+);
+
 /// Small card used in the 2x2 info grids on expanded detail cards.
 class InfoChip extends StatelessWidget {
   final IconData? icon;
@@ -40,11 +52,7 @@ class InfoChip extends StatelessWidget {
               const SizedBox(width: 4),
               Text(
                 label,
-                style: GoogleFonts.poppins(
-                  fontSize: 10,
-                  fontWeight: FontWeight.w500,
-                  color: AppColors.cream60,
-                ),
+                style: _poppinsW500_10_cream60,
               ),
             ],
           ),
@@ -53,11 +61,7 @@ class InfoChip extends StatelessWidget {
             value,
             overflow: TextOverflow.ellipsis,
             maxLines: 1,
-            style: GoogleFonts.poppins(
-              fontSize: 12,
-              fontWeight: FontWeight.w700,
-              color: AppColors.cream,
-            ),
+            style: _poppinsBold12,
           ),
         ],
       ),

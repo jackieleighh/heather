@@ -5,20 +5,35 @@ import WidgetKit
 struct WidgetGradients {
 
     static func gradientStops(from hexColors: [String], condition: String = "", isDay: Bool = true, family: WidgetFamily = .systemSmall) -> [Gradient.Stop] {
-        let colors = hexColors.map { Color(hex: $0) }
-        let count = colors.count
-        guard count > 1 else {
-            return [.init(color: colors.first ?? .clear, location: 0)]
+        guard hexColors.count > 1 else {
+            return [.init(color: Color(hex: hexColors.first ?? "FF000000"), location: 0)]
         }
 
-        // Slightly compress stops so the bottom color shows a bit more
-        // than pure even distribution.
-        let maxStop: Double = 0.82
+        let stepsPerSegment = 8 // intermediate colors between each pair
+        var stops: [Gradient.Stop] = []
+        let totalSegments = hexColors.count - 1
+        let totalStops = totalSegments * stepsPerSegment + 1
 
-        return colors.enumerated().map { index, color in
-            let location = (Double(index) / Double(count - 1)) * maxStop
-            return .init(color: color, location: location)
+        for i in 0..<totalSegments {
+            let c1 = parseRGB(hexColors[i])
+            let c2 = parseRGB(hexColors[i + 1])
+
+            for step in 0..<stepsPerSegment {
+                let t = Double(step) / Double(stepsPerSegment)
+                let r = c1.r + (c2.r - c1.r) * t
+                let g = c1.g + (c2.g - c1.g) * t
+                let b = c1.b + (c2.b - c1.b) * t
+                let stopIndex = i * stepsPerSegment + step
+                let location = Double(stopIndex) / Double(totalStops - 1)
+                stops.append(.init(color: Color(red: r, green: g, blue: b), location: location))
+            }
         }
+
+        // Add the final color
+        let last = parseRGB(hexColors.last!)
+        stops.append(.init(color: Color(red: last.r, green: last.g, blue: last.b), location: 1.0))
+
+        return stops
     }
 
     static func colors(for condition: String, tempF: Double, isDay: Bool) -> [String] {
@@ -65,6 +80,10 @@ struct WidgetGradients {
         case "partlyCloudy": return "sunny"
         case "foggy": return "overcast"
         case "unknown": return "overcast"
+        case "freezingRain": return "heavyRain"
+        case "thunderstorm": return "heavyRain"
+        case "hail": return "heavyRain"
+        case "blizzard": return "snow"
         default: return condition
         }
     }
@@ -114,14 +133,6 @@ struct WidgetGradients {
             ["#FF3C5CB0", "#FF3C8498", "#FFDC7428"],
             ["#FF3C5CB0", "#FF3C8498", "#FFD43C70"],
         ],
-        "freezingRain": [
-            ["#FF3C5CB0", "#FF445CA8", "#FF6C64C0"],
-            ["#FF3C5CB0", "#FF3C6CB0", "#FF4C8CD0"],
-            ["#FF3C5CB0", "#FF3C74A8", "#FF34A490"],
-            ["#FF3C5CB0", "#FF3C8498", "#FFCCAC18"],
-            ["#FF3C5CB0", "#FF3C8498", "#FFDC7428"],
-            ["#FF3C5CB0", "#FF3C8498", "#FFD43C70"],
-        ],
         "snow": [
             ["#FFFAFAFA", "#FF7060D0", "#FF7890D0"],
             ["#FFFAFAFA", "#FF7890D0", "#FF68B8E8"],
@@ -129,30 +140,6 @@ struct WidgetGradients {
             ["#FFFAFAFA", "#FF38A8D8", "#FF4088B8"],
             ["#FFFAFAFA", "#FF4088B8", "#FF387898"],
             ["#FFFAFAFA", "#FF387898", "#FFD87420"],
-        ],
-        "blizzard": [
-            ["#FFFAFAFA", "#FF7060D0", "#FF7890D0"],
-            ["#FFFAFAFA", "#FF7890D0", "#FF68B8E8"],
-            ["#FFFAFAFA", "#FF68B8E8", "#FF38A8D8"],
-            ["#FFFAFAFA", "#FF38A8D8", "#FF4088B8"],
-            ["#FFFAFAFA", "#FF4088B8", "#FF387898"],
-            ["#FFFAFAFA", "#FF387898", "#FFD87420"],
-        ],
-        "thunderstorm": [
-            ["#FF3C5CB0", "#FF445CA8", "#FF6C64C0"],
-            ["#FF3C5CB0", "#FF3C6CB0", "#FF4C8CD0"],
-            ["#FF3C5CB0", "#FF3C74A8", "#FF34A490"],
-            ["#FF3C5CB0", "#FF3C8498", "#FFCCAC18"],
-            ["#FF3C5CB0", "#FF3C8498", "#FFDC7428"],
-            ["#FF3C5CB0", "#FF3C8498", "#FFD43C70"],
-        ],
-        "hail": [
-            ["#FF3C5CB0", "#FF445CA8", "#FF6C64C0"],
-            ["#FF3C5CB0", "#FF3C6CB0", "#FF4C8CD0"],
-            ["#FF3C5CB0", "#FF3C74A8", "#FF34A490"],
-            ["#FF3C5CB0", "#FF3C8498", "#FFCCAC18"],
-            ["#FF3C5CB0", "#FF3C8498", "#FFDC7428"],
-            ["#FF3C5CB0", "#FF3C8498", "#FFD43C70"],
         ],
     ]
 
@@ -199,14 +186,6 @@ struct WidgetGradients {
             ["#FF050308", "#FF2E1065", "#FFB50060"],
             ["#FF050308", "#FF2E1065", "#FFB91C1C"],
         ],
-        "freezingRain": [
-            ["#FF050308", "#FF2E1065", "#FF400898"],
-            ["#FF050308", "#FF2E1065", "#FF1830A0"],
-            ["#FF050308", "#FF2E1065", "#FF186090"],
-            ["#FF050308", "#FF2E1065", "#FF086040"],
-            ["#FF050308", "#FF2E1065", "#FFB50060"],
-            ["#FF050308", "#FF2E1065", "#FFB91C1C"],
-        ],
         "snow": [
             ["#FF0F0716", "#FF2E1065", "#FFEDE9FE"],
             ["#FF0F0716", "#FF312E81", "#FF8070D8"],
@@ -214,30 +193,6 @@ struct WidgetGradients {
             ["#FF0F0716", "#FF186880", "#FF60B8C0"],
             ["#FF0F0716", "#FF960819", "#FFF06A0A"],
             ["#FF0F0716", "#FFF06A0A", "#FF96006b"],
-        ],
-        "blizzard": [
-            ["#FF0F0716", "#FF2E1065", "#FFEDE9FE"],
-            ["#FF0F0716", "#FF312E81", "#FF8070D8"],
-            ["#FF0F0716", "#FF186090", "#FF60A8D0"],
-            ["#FF0F0716", "#FF186880", "#FF60B8C0"],
-            ["#FF0F0716", "#FF960819", "#FFF06A0A"],
-            ["#FF0F0716", "#FFF06A0A", "#FF96006b"],
-        ],
-        "thunderstorm": [
-            ["#FF050308", "#FF2E1065", "#FF400898"],
-            ["#FF050308", "#FF2E1065", "#FF1830A0"],
-            ["#FF050308", "#FF2E1065", "#FF186090"],
-            ["#FF050308", "#FF2E1065", "#FF086040"],
-            ["#FF050308", "#FF2E1065", "#FFB50060"],
-            ["#FF050308", "#FF2E1065", "#FFB91C1C"],
-        ],
-        "hail": [
-            ["#FF050308", "#FF2E1065", "#FF400898"],
-            ["#FF050308", "#FF2E1065", "#FF1830A0"],
-            ["#FF050308", "#FF2E1065", "#FF186090"],
-            ["#FF050308", "#FF2E1065", "#FF086040"],
-            ["#FF050308", "#FF2E1065", "#FFB50060"],
-            ["#FF050308", "#FF2E1065", "#FFB91C1C"],
         ],
     ]
 }

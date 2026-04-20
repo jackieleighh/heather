@@ -117,7 +117,7 @@ class _HeavyRainPainter extends CustomPainter {
       if (drop.x > size.width) drop.x = 0;
 
       paint
-        ..color = Color.fromRGBO(255, 255, 255, drop.opacity)
+        ..color = (drop.cachedColor ??= Color.fromRGBO(255, 255, 255, drop.opacity))
         ..strokeWidth = drop.size;
 
       canvas.drawLine(

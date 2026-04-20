@@ -7,9 +7,8 @@ import '../../data/sources/saved_locations_local_source.dart';
 import '../../domain/entities/saved_location.dart';
 
 final locationRepositoryProvider = Provider<LocationRepositoryImpl>((ref) {
-  final apiClient = ref.watch(apiClientProvider);
   return LocationRepositoryImpl(
-    geocodingSource: GeocodingRemoteSource(dio: apiClient.weatherClient),
+    geocodingSource: GeocodingRemoteSource(dio: ref.watch(dioProvider)),
     localSource: SavedLocationsLocalSource(),
   );
 });

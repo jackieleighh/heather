@@ -152,7 +152,7 @@ class _HailPainter extends CustomPainter {
       }
       if (stone.x > size.width) stone.x = 0;
 
-      paint.color = Color.fromRGBO(255, 255, 255, stone.opacity);
+      paint.color = stone.cachedColor ??= Color.fromRGBO(255, 255, 255, stone.opacity);
       canvas.drawCircle(Offset(stone.x, stone.y), stone.size / 2, paint);
     }
 

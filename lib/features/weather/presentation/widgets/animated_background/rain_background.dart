@@ -119,7 +119,7 @@ class _RainPainter extends CustomPainter {
       }
 
       paint
-        ..color = Color.fromRGBO(255, 255, 255, drop.opacity)
+        ..color = (drop.cachedColor ??= Color.fromRGBO(255, 255, 255, drop.opacity))
         ..strokeWidth = drop.size;
 
       canvas.drawLine(

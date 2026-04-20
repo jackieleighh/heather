@@ -6,135 +6,133 @@ struct LargeWidgetView: View {
     var entryDate: Date = Date()
 
     var body: some View {
-        WidgetView() {
-            ZStack(alignment: .bottomTrailing) {
-                WeatherEffectOverlay(
-                    conditionName: data.conditionName,
-                    isDay: data.isDay,
-                    scale: 1.0
-                )
+        ZStack(alignment: .bottomTrailing) {
+            WeatherEffectOverlay(
+                conditionName: data.conditionName,
+                isDay: data.isDay,
+                scale: 1.0
+            )
 
-                // Logo overlay
-                Image("heather_logo")
-                    .renderingMode(.template)
-                    .resizable()
-                    .scaledToFit()
-                    .frame(height: 170)
-                    .foregroundStyle(.black)
-                    .opacity(data.isDay ? 0.15 : 0.4)
-                    .offset(x: 15, y: 20)
+            // Logo overlay
+            Image("heather_logo")
+                .renderingMode(.template)
+                .resizable()
+                .scaledToFit()
+                .frame(height: 170)
+                .foregroundStyle(.black)
+                .opacity(data.isDay ? 0.15 : 0.4)
+                .offset(x: 15, y: 20)
 
-                VStack(alignment: .leading, spacing: 2) {
-                    HStack(alignment: .top) {
-                        VStack(alignment: .leading, spacing: 2) {
-                            Text(data.cityName)
-                                .font(.custom("Quicksand-Bold", size: 15))
-                                .lineLimit(1)
+            VStack(alignment: .leading, spacing: 2) {
+                HStack(alignment: .top) {
+                    VStack(alignment: .leading, spacing: 2) {
+                        Text(data.cityName)
+                            .font(.custom("Quicksand-Bold", size: 15))
+                            .lineLimit(1)
 
-                            Text("\(data.temperature)°")
-                                .font(.custom("Poppins-Bold", size: 58))
-                                .minimumScaleFactor(0.7)
+                        Text("\(data.temperature)\u{00B0}")
+                            .font(.custom("Poppins-Bold", size: 58))
+                            .minimumScaleFactor(0.7)
 
-                            Text("\(data.high)°/\(data.low)°")
-                                .font(.custom("Quicksand-SemiBold", size: 13))
-                                .opacity(0.9)
+                        Text("\(data.high)\u{00B0}/\(data.low)\u{00B0}")
+                            .font(.custom("Quicksand-SemiBold", size: 13))
+                            .opacity(0.9)
 
-                            Text("Feels like \(data.feelsLike)°")
-                                .font(.custom("Quicksand-Medium", size: 12))
-                                .opacity(0.9)
+                        Text("Feels like \(data.feelsLike)\u{00B0}")
+                            .font(.custom("Quicksand-Medium", size: 12))
+                            .opacity(0.9)
 
-                            Text(data.description.capitalized)
-                                .font(.custom("Quicksand-Medium", size: 12))
-                                .opacity(0.9)
-                        }
-
-                        Spacer(minLength: 4)
-
-                        VStack(alignment: .trailing, spacing: 4) {
-                            WidgetConditionIcon(
-                                conditionName: data.conditionName,
-                                isDay: data.isDay,
-                                size: 48
-                            )
-
-                            if data.isDay {
-                                if let sunsetLabel = data.sunsetLabel {
-                                    DetailLabel(
-                                        icon: "sunset.fill",
-                                        value: sunsetLabel
-                                    )
-                                }
-                                DetailLabel(
-                                    icon: "sun.max.fill",
-                                    value: "UV \(data.uvIndexMax ?? data.uvIndex)"
-                                )
-                            } else {
-                                if let sunriseLabel = data.sunriseLabel {
-                                    DetailLabel(
-                                        icon: "sunrise.fill",
-                                        value: sunriseLabel
-                                    )
-                                }
-                                let moonIcon = data.moonPhaseSFSymbol ?? getMoonPhase().sfSymbol
-                                let moonIllum = data.moonIllumination ?? moonIllumination()
-                                DetailLabel(
-                                    icon: moonIcon,
-                                    value: "\(moonIllum)%"
-                                )
-                            }
-                            if let alertText = data.alertText {
-                                DetailLabel(
-                                    icon: data.alertIcon,
-                                    value: alertText,
-                                    iconTint: data.alertColor
-                                )
-                            } else if let precipLabel = data.precipLabel {
-                                DetailLabel(
-                                    icon: precipIcon(precipLabel),
-                                    value: precipLabel
-                                )
-                            } else {
-                                Spacer().frame(height: 16)
-                            }
-                            if let summary = data.widgetSummary,
-                               data.summaryIsDay == nil || data.summaryIsDay == data.isDay {
-                                Text(summary)
-                                    .font(.custom("Quicksand-Medium", size: 12))
-                                    .lineLimit(3)
-                                    .minimumScaleFactor(0.8)
-                                    .opacity(0.95)
-                                    .multilineTextAlignment(.trailing)
-                                    .frame(maxWidth: .infinity, alignment: .trailing)
-                            }
-                        }
+                        Text(data.description.capitalized)
+                            .font(.custom("Quicksand-Medium", size: 12))
+                            .opacity(0.9)
                     }
 
-                    Spacer()
+                    Spacer(minLength: 4)
 
-                    // Quip
-                    Text(data.quip)
-                        .font(.custom("Poppins", size: 16))
-                        .lineLimit(3)
-                        .opacity(0.95)
-
-                    Spacer()
-
-                    // Timeline graph
-                    if let segments = data.timelineSegments, !segments.isEmpty {
-                        TimelineBarView(
-                            segments: segments,
-                            hasPrecip: data.hasPrecipInTimeline ?? false,
+                    VStack(alignment: .trailing, spacing: 4) {
+                        WidgetConditionIcon(
+                            conditionName: data.conditionName,
                             isDay: data.isDay,
-                            entryDate: entryDate,
-                            utcOffsetSeconds: data.utcOffsetSeconds
+                            size: 48
                         )
+
+                        if data.isDay {
+                            if let sunsetLabel = data.sunsetLabel {
+                                DetailLabel(
+                                    icon: "sunset.fill",
+                                    value: sunsetLabel
+                                )
+                            }
+                            DetailLabel(
+                                icon: "sun.max.fill",
+                                value: "UV \(data.uvIndexMax ?? data.uvIndex)"
+                            )
+                        } else {
+                            if let sunriseLabel = data.sunriseLabel {
+                                DetailLabel(
+                                    icon: "sunrise.fill",
+                                    value: sunriseLabel
+                                )
+                            }
+                            let moonIcon = data.moonPhaseSFSymbol ?? getMoonPhase().sfSymbol
+                            let moonIllum = data.moonIllumination ?? moonIllumination()
+                            DetailLabel(
+                                icon: moonIcon,
+                                value: "\(moonIllum)%"
+                            )
+                        }
+                        if let alertText = data.alertText {
+                            DetailLabel(
+                                icon: data.alertIcon,
+                                value: alertText,
+                                iconTint: data.alertColor
+                            )
+                        } else if let precipLabel = data.precipLabel {
+                            DetailLabel(
+                                icon: precipIcon(precipLabel),
+                                value: precipLabel
+                            )
+                        } else {
+                            Spacer().frame(height: 16)
+                        }
+                        if let summary = data.widgetSummary,
+                           data.summaryIsDay == nil || data.summaryIsDay == data.isDay {
+                            Text(summary)
+                                .font(.custom("Quicksand-Medium", size: 12))
+                                .lineLimit(3)
+                                .minimumScaleFactor(0.8)
+                                .opacity(0.95)
+                                .multilineTextAlignment(.trailing)
+                                .frame(maxWidth: .infinity, alignment: .trailing)
+                        }
                     }
                 }
-                .padding(16)
-                .foregroundStyle(.white)
-                .shadow(color: .black.opacity(0.3), radius: 0.5, x: 0, y: 0.5)
-                .shadow(color: .black.opacity(0.15), radius: 2, x: 0, y: 1)
+
+                Spacer()
+
+                // Quip
+                Text(data.quip)
+                    .font(.custom("Poppins", size: 16))
+                    .lineLimit(3)
+                    .opacity(0.95)
+
+                Spacer()
+
+                // Timeline graph
+                if let segments = data.timelineSegments, !segments.isEmpty {
+                    TimelineBarView(
+                        segments: segments,
+                        hasPrecip: data.hasPrecipInTimeline ?? false,
+                        isDay: data.isDay,
+                        entryDate: entryDate,
+                        utcOffsetSeconds: data.utcOffsetSeconds
+                    )
+                }
             }
+            .padding(16)
+            .foregroundStyle(.white)
+            .shadow(color: .black.opacity(0.3), radius: 0.5, x: 0, y: 0.5)
+            .shadow(color: .black.opacity(0.15), radius: 2, x: 0, y: 1)
         }
         .containerBackground(for: .widget) {
             WidgetGradientBackground(
@@ -147,7 +145,7 @@ struct LargeWidgetView: View {
     }
 }
 
-private struct DetailLabel: View {
+struct DetailLabel: View {
     let icon: String
     let value: String
     var iconTint: Color? = nil

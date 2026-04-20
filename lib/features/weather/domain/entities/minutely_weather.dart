@@ -325,6 +325,20 @@ String? hourlyPrecipLabel({
     }
   }
 
+  // Probability-based onset: API may report high precipitation probability
+  // while keeping the condition code as overcast/cloudy
+  for (final h in hourly) {
+    if (!h.time.isAfter(locationNow)) continue;
+    if (h.time.isAfter(cutoff)) break;
+    if (h.precipitationProbability >= 50) {
+      final type = h.temperature <= 32 ? 'snow' : 'rain';
+      final hour = h.time.hour;
+      final h12 = hour == 0 ? 12 : (hour > 12 ? hour - 12 : hour);
+      final amPm = hour >= 12 ? 'pm' : 'am';
+      return '${h.precipitationProbability}% chance of $type ~ $h12$amPm';
+    }
+  }
+
   // Check rest of today — "60% chance of rain tonight"
   final endOfDay = DateTime(locationNow.year, locationNow.month, locationNow.day, 23, 59);
   int maxProb = 0;
@@ -348,6 +362,20 @@ String? hourlyPrecipLabel({
     final amPm = hour >= 12 ? 'pm' : 'am';
     return '$maxProb% chance of $type ~ $h12$amPm';
   }
+
+  // Probability-based rest of today: high probability without precip condition
+  for (final h in hourly) {
+    if (!h.time.isAfter(cutoff)) continue;
+    if (h.time.isAfter(endOfDay)) break;
+    if (h.precipitationProbability >= 50) {
+      final type = h.temperature <= 32 ? 'snow' : 'rain';
+      final hour = h.time.hour;
+      final h12 = hour == 0 ? 12 : (hour > 12 ? hour - 12 : hour);
+      final amPm = hour >= 12 ? 'pm' : 'am';
+      return '${h.precipitationProbability}% chance of $type ~ $h12$amPm';
+    }
+  }
+
   return null;
 }
 

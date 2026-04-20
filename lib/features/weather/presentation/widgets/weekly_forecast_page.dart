@@ -3,7 +3,7 @@ import 'dart:math' as math;
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:google_fonts/google_fonts.dart';
-import 'package:intl/intl.dart';
+import 'package:heather/core/utils/date_formats.dart';
 import 'package:weather_icons/weather_icons.dart';
 
 import '../../../../core/constants/app_colors.dart';
@@ -291,7 +291,7 @@ class _CollapsedDayContent extends StatelessWidget {
     final dayStr = switch (dayDiff) {
       0 => 'Today',
       1 => 'Tomorrow',
-      _ => DateFormat('EEEE').format(daily.date),
+      _ => AppDateFormats.eeee.format(daily.date),
     };
 
     if (isExpanded) {
@@ -469,7 +469,7 @@ class _ExpandedDayContent extends StatelessWidget {
     final dayStr = switch (dayDiff) {
       0 => 'Today',
       1 => 'Tomorrow',
-      _ => DateFormat('EEEE').format(daily.date),
+      _ => AppDateFormats.eeee.format(daily.date),
     };
     final dateStr = '${daily.date.month}/${daily.date.day}';
 
@@ -482,10 +482,7 @@ class _ExpandedDayContent extends StatelessWidget {
     final MoonPhase? phase;
     final int? illumination;
     if (usno != null) {
-      phase = dayDiff == 0
-          ? (usnoPhaseToEnum(usno.curPhase) ??
-                phaseFromFraction(usno.fractionForDate(moonRefDate)))
-          : usno.phaseForDate(moonRefDate);
+      phase = usno.phaseForDate(moonRefDate);
       illumination = usno.illuminationForDate(moonRefDate).round();
     } else {
       phase = null;
@@ -776,7 +773,7 @@ class _SunMoonTile extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final timeFmt = DateFormat('h:mm a');
+    final timeFmt = AppDateFormats.hmma;
     final hasMoon =
         moonPhaseLabel != null && moonIcon != null && illumination != null;
 

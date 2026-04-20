@@ -7,6 +7,7 @@ import 'package:google_fonts/google_fonts.dart';
 import 'package:heather/core/constants/app_colors.dart';
 import 'package:heather/core/utils/astro_events.dart';
 import 'package:heather/core/utils/moon_phase.dart';
+import 'package:heather/core/utils/date_formats.dart';
 import 'package:intl/intl.dart' hide TextDirection;
 import 'package:weather_icons/weather_icons.dart';
 import '../../providers/moon_data_provider.dart';
@@ -14,6 +15,113 @@ import '../../providers/visible_planets_provider.dart';
 import './card_container.dart';
 import './card_display_mode.dart';
 import './info_chip.dart';
+
+/// Cached text styles to avoid repeated GoogleFonts allocations.
+final _figtreeW400_18_cream = GoogleFonts.figtree(
+  fontSize: 18,
+  fontWeight: FontWeight.w400,
+  color: AppColors.cream,
+);
+final _figtreeW400_16_cream = GoogleFonts.figtree(
+  fontSize: 16,
+  fontWeight: FontWeight.w400,
+  color: AppColors.cream,
+);
+final _poppinsW400_13_cream = GoogleFonts.poppins(
+  fontSize: 13,
+  fontWeight: FontWeight.w400,
+  color: AppColors.cream,
+);
+final _poppinsBold13_cream = GoogleFonts.poppins(
+  fontSize: 13,
+  fontWeight: FontWeight.w700,
+  color: AppColors.cream,
+);
+final _poppinsW500_11_cream70 = GoogleFonts.poppins(
+  fontSize: 11,
+  fontWeight: FontWeight.w500,
+  color: AppColors.cream70,
+);
+final _poppinsBold14_cream = GoogleFonts.poppins(
+  fontSize: 14,
+  fontWeight: FontWeight.w700,
+  color: AppColors.cream,
+);
+final _poppinsW500_11_cream80 = GoogleFonts.poppins(
+  fontSize: 11,
+  fontWeight: FontWeight.w500,
+  color: AppColors.cream80,
+);
+final _poppinsBold11_cream90 = GoogleFonts.poppins(
+  fontSize: 11,
+  fontWeight: FontWeight.w700,
+  color: AppColors.cream90,
+);
+final _poppinsBold12_cream95 = GoogleFonts.poppins(
+  fontSize: 12,
+  fontWeight: FontWeight.w700,
+  color: AppColors.cream95,
+);
+final _poppinsW400_12_cream95 = GoogleFonts.poppins(
+  fontSize: 12,
+  fontWeight: FontWeight.w400,
+  color: AppColors.cream95,
+);
+final _poppinsW400_12_cream75 = GoogleFonts.poppins(
+  fontSize: 12,
+  fontWeight: FontWeight.w400,
+  color: AppColors.cream75,
+);
+final _poppinsW400_11_cream75 = GoogleFonts.poppins(
+  fontSize: 11,
+  fontWeight: FontWeight.w400,
+  color: AppColors.cream75,
+);
+final _poppinsBold11_cream95 = GoogleFonts.poppins(
+  fontSize: 11,
+  fontWeight: FontWeight.w700,
+  color: AppColors.cream95,
+);
+final _poppinsW800_11_cream85 = GoogleFonts.poppins(
+  fontSize: 11,
+  fontWeight: FontWeight.w800,
+  color: AppColors.cream85,
+);
+final _poppinsW400_11_cream85 = GoogleFonts.poppins(
+  fontSize: 11,
+  fontWeight: FontWeight.w400,
+  color: AppColors.cream85,
+);
+final _poppinsBold11_cream90Style = GoogleFonts.poppins(
+  fontSize: 11,
+  fontWeight: FontWeight.w700,
+  color: AppColors.cream90,
+);
+final _poppinsW400_11_cream90 = GoogleFonts.poppins(
+  fontSize: 11,
+  fontWeight: FontWeight.w400,
+  color: AppColors.cream90,
+);
+final _poppinsBold16_cream = GoogleFonts.poppins(
+  fontSize: 16,
+  fontWeight: FontWeight.w700,
+  color: AppColors.cream,
+);
+final _poppinsW600_11_cream = GoogleFonts.poppins(
+  fontSize: 11,
+  fontWeight: FontWeight.w600,
+  color: AppColors.cream,
+);
+final _poppinsW400_11_cream = GoogleFonts.poppins(
+  fontSize: 11,
+  fontWeight: FontWeight.w400,
+  color: AppColors.cream,
+);
+final _poppinsW500_10_cream90 = GoogleFonts.poppins(
+  fontSize: 10,
+  fontWeight: FontWeight.w500,
+  color: AppColors.cream90,
+);
 
 class MoonCard extends ConsumerWidget {
   final DateTime now;
@@ -53,7 +161,7 @@ class MoonCard extends ConsumerWidget {
     // No data at all from USNO for today (high latitude / API blip)
     if (rise == null && set == null) return (state: '—', next: null);
 
-    final timeFmt = DateFormat('h:mma');
+    final timeFmt = AppDateFormats.hmmaPeriod;
     String fmt(DateTime d) => timeFmt.format(d).toLowerCase();
 
     // Both events present — figure out current state from chronological order
@@ -92,7 +200,7 @@ class MoonCard extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final dateFmt = DateFormat('MMM d');
+    final dateFmt = AppDateFormats.mmmD;
 
     final usno = ref.watch(moonDataProvider).valueOrNull;
 
@@ -117,11 +225,7 @@ class MoonCard extends ConsumerWidget {
                 const SizedBox(width: 4),
                 Text(
                   'Sky',
-                  style: GoogleFonts.figtree(
-                    fontSize: 18,
-                    fontWeight: FontWeight.w400,
-                    color: AppColors.cream,
-                  ),
+                  style: _figtreeW400_18_cream,
                 ),
               ],
             ),
@@ -139,11 +243,16 @@ class MoonCard extends ConsumerWidget {
       );
     }
 
-    final phase =
-        usnoPhaseToEnum(usno.curPhase) ??
-        phaseFromFraction(usno.fractionForDate(now));
-    final illumination = usno.illuminationForDate(now).round();
-    final fraction = usno.fractionForDate(now);
+    // Lunar-cycle quantities (phase, illumination, fraction, age) are
+    // globally valid — they depend only on the true current instant, not
+    // on which location the user is viewing. `now` is epoch-shifted to
+    // the selected location's wall-clock time (see Forecast.locationNow),
+    // so feeding it into these methods would make the values drift per
+    // location. Use a real `DateTime.now()` for those computations.
+    final instantNow = DateTime.now();
+    final fraction = usno.fractionForDate(instantNow);
+    final phase = usno.phaseForDate(instantNow);
+    final illumination = usno.illuminationForDate(instantNow).round();
 
     final nextFull = usno.nextFullMoon;
     final nextNew = usno.nextNewMoon;
@@ -175,6 +284,7 @@ class MoonCard extends ConsumerWidget {
         fraction: fraction,
         phaseDatesText: phaseDatesText,
         usno: usno,
+        instantNow: instantNow,
       );
     }
 
@@ -206,29 +316,17 @@ class MoonCard extends ConsumerWidget {
           const SizedBox(width: 4),
           Text(
             'Sky',
-            style: GoogleFonts.figtree(
-              fontSize: 16,
-              fontWeight: FontWeight.w400,
-              color: AppColors.cream,
-            ),
+            style: _figtreeW400_16_cream,
           ),
           const Spacer(),
           Text(
             '$illumination%',
-            style: GoogleFonts.poppins(
-              fontSize: 13,
-              fontWeight: FontWeight.w400,
-              color: AppColors.cream,
-            ),
+            style: _poppinsW400_13_cream,
           ),
           const SizedBox(width: 6),
           Text(
             moonPhaseLabel(phase),
-            style: GoogleFonts.poppins(
-              fontSize: 13,
-              fontWeight: FontWeight.w700,
-              color: AppColors.cream,
-            ),
+            style: _poppinsBold13_cream,
           ),
         ],
       ),
@@ -281,9 +379,10 @@ class MoonCard extends ConsumerWidget {
     required double fraction,
     required String phaseDatesText,
     required UsnoMoonData usno,
+    required DateTime instantNow,
   }) {
-    final dateFmt = DateFormat('MMM d');
-    final lunarAge = usno.lunarAge(now);
+    final dateFmt = AppDateFormats.mmmD;
+    final lunarAge = usno.lunarAge(instantNow);
     final nextFull = usno.nextFullMoon;
     final nextNew = usno.nextNewMoon;
 
@@ -336,21 +435,13 @@ class MoonCard extends ConsumerWidget {
               child: Center(
                 child: Text.rich(
                   TextSpan(
-                    style: GoogleFonts.poppins(
-                      fontSize: 11,
-                      fontWeight: FontWeight.w500,
-                      color: AppColors.cream80,
-                    ),
+                    style: _poppinsW500_11_cream80,
                     children: [
                       if (lunarAge != null) ...[
                         const TextSpan(text: 'Day '),
                         TextSpan(
                           text: '${lunarAge.round()}',
-                          style: GoogleFonts.poppins(
-                            fontSize: 11,
-                            fontWeight: FontWeight.w700,
-                            color: AppColors.cream90,
-                          ),
+                          style: _poppinsBold11_cream90,
                         ),
                       ],
                       if (lunarAge != null && nextPrefix != null)
@@ -359,11 +450,7 @@ class MoonCard extends ConsumerWidget {
                         TextSpan(text: nextPrefix),
                         TextSpan(
                           text: nextDate,
-                          style: GoogleFonts.poppins(
-                            fontSize: 11,
-                            fontWeight: FontWeight.w700,
-                            color: AppColors.cream90,
-                          ),
+                          style: _poppinsBold11_cream90,
                         ),
                       ],
                     ],
@@ -412,23 +499,17 @@ class MoonCard extends ConsumerWidget {
         ? ' (same tmrw)'
         : ' (${deltaMinutes > 0 ? '+' : ''}${deltaMinutes}m tmrw)';
 
-    final timeFmt = DateFormat('h:mma');
+    final timeFmt = AppDateFormats.hmmaPeriod;
     String formatTime(DateTime? d) =>
         d == null ? '—' : timeFmt.format(d).toLowerCase();
 
     final hasRiseSet =
         riseSet != null && (riseSet.moonrise != null || riseSet.moonset != null);
 
-    final labelStyle = GoogleFonts.poppins(
-      fontSize: 11,
-      fontWeight: FontWeight.w400,
-      color: AppColors.cream75,
-    );
-    final timeStyle = GoogleFonts.poppins(
-      fontSize: 11,
-      fontWeight: FontWeight.w700,
-      color: AppColors.cream95,
-    );
+    final labelStyle = _poppinsW400_11_cream75;
+    final timeStyle = _poppinsBold11_cream95;
+
+    final distLabel = moonDistanceLabel(now);
 
     return Column(
       mainAxisSize: MainAxisSize.min,
@@ -438,28 +519,16 @@ class MoonCard extends ConsumerWidget {
           children: [
             Text.rich(
               TextSpan(
-                style: GoogleFonts.poppins(
-                  fontSize: 12,
-                  fontWeight: FontWeight.w700,
-                  color: AppColors.cream95,
-                ),
+                style: _poppinsBold12_cream95,
                 children: [
                   TextSpan(
                     text: 'Tonight  \u00B7  ',
-                    style: GoogleFonts.poppins(
-                      fontSize: 12,
-                      fontWeight: FontWeight.w400,
-                      color: AppColors.cream95,
-                    ),
+                    style: _poppinsW400_12_cream95,
                   ),
                   TextSpan(text: '${nightH}h ${nightM}m dark'),
                   TextSpan(
                     text: deltaStr,
-                    style: GoogleFonts.poppins(
-                      fontSize: 12,
-                      fontWeight: FontWeight.w400,
-                      color: AppColors.cream75,
-                    ),
+                    style: _poppinsW400_12_cream75,
                   ),
                 ],
               ),
@@ -484,9 +553,19 @@ class MoonCard extends ConsumerWidget {
                       text: formatTime(riseSet.moonset),
                       style: timeStyle,
                     ),
+                    if (distLabel != null)
+                      TextSpan(text: '  \u00B7  $distLabel', style: labelStyle),
                   ],
                 ),
               ),
+            ],
+          ),
+        ] else if (distLabel != null) ...[
+          const SizedBox(height: 2),
+          Row(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              Text(distLabel, style: labelStyle),
             ],
           ),
         ],
@@ -498,11 +577,8 @@ class MoonCard extends ConsumerWidget {
   Widget _buildExpandedInfoGrid(UsnoMoonData usno, UsnoMoonRiseSet? riseSet) {
     final distKm = moonDistanceKm(now);
     final distMi = (distKm * 0.621371).round();
-    final distLabel = moonDistanceLabel(now);
     final numberFmt = NumberFormat('#,###');
-    final distValue = distLabel != null
-        ? '${numberFmt.format(distMi)} mi · $distLabel'
-        : '${numberFmt.format(distMi)} mi';
+    final distValue = '${numberFmt.format(distMi)} mi';
 
     final zodiac = currentZodiac(now);
     final zodiacIcon = SvgPicture.asset(
@@ -581,11 +657,7 @@ class MoonCard extends ConsumerWidget {
           const SizedBox(width: 4),
           Text(
             'Sky',
-            style: GoogleFonts.figtree(
-              fontSize: 16,
-              fontWeight: FontWeight.w400,
-              color: AppColors.cream,
-            ),
+            style: _figtreeW400_16_cream,
           ),
         ],
       ),
@@ -610,11 +682,7 @@ class MoonCard extends ConsumerWidget {
         const SizedBox(width: 4),
         Text(
           'Sky',
-          style: GoogleFonts.figtree(
-            fontSize: 18,
-            fontWeight: FontWeight.w400,
-            color: AppColors.cream,
-          ),
+          style: _figtreeW400_18_cream,
         ),
         const Spacer(),
         Column(
@@ -627,31 +695,19 @@ class MoonCard extends ConsumerWidget {
                   phase == MoonPhase.fullMoon
                       ? fullMoonName(now)
                       : '$illumination%',
-                  style: GoogleFonts.poppins(
-                    fontSize: 11,
-                    fontWeight: FontWeight.w500,
-                    color: AppColors.cream70,
-                  ),
+                  style: _poppinsW500_11_cream70,
                 ),
                 const SizedBox(width: 6),
                 Text(
                   moonPhaseLabel(phase),
-                  style: GoogleFonts.poppins(
-                    fontSize: 14,
-                    fontWeight: FontWeight.w700,
-                    color: AppColors.cream,
-                  ),
+                  style: _poppinsBold14_cream,
                 ),
               ],
             ),
             if (phaseDatesText.isNotEmpty)
               Text(
                 phaseDatesText,
-                style: GoogleFonts.poppins(
-                  fontSize: 11,
-                  fontWeight: FontWeight.w500,
-                  color: AppColors.cream80,
-                ),
+                style: _poppinsW500_11_cream80,
               ),
           ],
         ),
@@ -814,21 +870,8 @@ class _PhaseStrip extends StatelessWidget {
 // Supporting widgets
 // ---------------------------------------------------------------------------
 
-String _planetGlyph(String name) => switch (name) {
-  'Mercury' => '\u263F',
-  'Venus' => '\u2640',
-  'Mars' => '\u2642',
-  'Jupiter' => '\u2643',
-  'Saturn' => '\u2644',
-  'Uranus' => '\u2645',
-  'Neptune' => '\u2646',
-  _ => '',
-};
-
-String _formatPlanetName(String name) {
-  final glyph = _planetGlyph(name);
-  return glyph.isEmpty ? name : '$glyph $name';
-}
+String _planetSvgPath(String name) =>
+    'assets/images/planets/${name.toLowerCase()}.svg';
 
 class _VisiblePlanetsRow extends ConsumerWidget {
   final double latitude;
@@ -850,20 +893,37 @@ class _VisiblePlanetsRow extends ConsumerWidget {
           children: [
             Text(
               'Visible planets',
-              style: GoogleFonts.poppins(
-                fontSize: 11,
-                fontWeight: FontWeight.w800,
-                color: AppColors.cream85,
-              ),
+              style: _poppinsW800_11_cream85,
             ),
             const SizedBox(width: 6),
             Flexible(
-              child: Text(
-                names.map(_formatPlanetName).join(' \u00B7 '),
-                style: GoogleFonts.poppins(
-                  fontSize: 11,
-                  fontWeight: FontWeight.w400,
-                  color: AppColors.cream85,
+              child: Text.rich(
+                TextSpan(
+                  children: [
+                    for (var i = 0; i < names.length; i++) ...[
+                      if (i > 0)
+                        TextSpan(
+                          text: ' \u00B7 ',
+                          style: _poppinsW400_11_cream85,
+                        ),
+                      WidgetSpan(
+                        alignment: PlaceholderAlignment.middle,
+                        child: SvgPicture.asset(
+                          _planetSvgPath(names[i]),
+                          width: 11,
+                          height: 11,
+                          colorFilter: const ColorFilter.mode(
+                            AppColors.cream85,
+                            BlendMode.srcIn,
+                          ),
+                        ),
+                      ),
+                      TextSpan(
+                        text: ' ${names[i]}',
+                        style: _poppinsW400_11_cream85,
+                      ),
+                    ],
+                  ],
                 ),
                 overflow: TextOverflow.ellipsis,
               ),
@@ -901,11 +961,7 @@ class _ExpandedVisiblePlanetsBlock extends ConsumerWidget {
             const SizedBox(height: 4),
             Text(
               'Visible tonight',
-              style: GoogleFonts.poppins(
-                fontSize: 11,
-                fontWeight: FontWeight.w800,
-                color: AppColors.cream85,
-              ),
+              style: _poppinsW800_11_cream85,
             ),
             const SizedBox(height: 6),
             IntrinsicHeight(
@@ -936,27 +992,9 @@ class _PlanetTile extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final glyph = _planetGlyph(planet.name);
-    final glyphStyle = GoogleFonts.poppins(
-      fontSize: 16,
-      fontWeight: FontWeight.w700,
-      color: AppColors.cream,
-    );
-    final nameStyle = GoogleFonts.poppins(
-      fontSize: 11,
-      fontWeight: FontWeight.w600,
-      color: AppColors.cream,
-    );
-    final altStyle = GoogleFonts.poppins(
-      fontSize: 11,
-      fontWeight: FontWeight.w400,
-      color: AppColors.cream,
-    );
-    final magStyle = GoogleFonts.poppins(
-      fontSize: 10,
-      fontWeight: FontWeight.w500,
-      color: AppColors.cream90,
-    );
+    final nameStyle = _poppinsW600_11_cream;
+    final altStyle = _poppinsW400_11_cream;
+    final magStyle = _poppinsW500_10_cream90;
 
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 5),
@@ -970,19 +1008,14 @@ class _PlanetTile extends StatelessWidget {
         children: [
           SizedBox(
             height: 20,
-            child: FittedBox(
-              fit: BoxFit.scaleDown,
-              alignment: Alignment.center,
-              child: Text(
-                glyph,
-                maxLines: 1,
-                softWrap: false,
-                overflow: TextOverflow.visible,
-                style: glyphStyle,
-                strutStyle: const StrutStyle(
-                  fontSize: 16,
-                  height: 1.3,
-                  forceStrutHeight: true,
+            child: Center(
+              child: SvgPicture.asset(
+                _planetSvgPath(planet.name),
+                width: 16,
+                height: 16,
+                colorFilter: const ColorFilter.mode(
+                  AppColors.cream,
+                  BlendMode.srcIn,
                 ),
               ),
             ),
@@ -1078,11 +1111,7 @@ class _AstroEventRow extends StatelessWidget {
   Widget build(BuildContext context) {
     final sign = currentZodiac(now);
     final event = activeAstroEvent(now, nextFullMoonDate: nextFullMoonDate);
-    final style = GoogleFonts.poppins(
-      fontSize: 11,
-      fontWeight: FontWeight.w700,
-      color: AppColors.cream90,
-    );
+    final style = _poppinsBold11_cream90Style;
 
     if (!showSeason && event == null) {
       return const SizedBox.shrink();
@@ -1114,11 +1143,7 @@ class _AstroEventRow extends StatelessWidget {
   }
 
   Widget _buildEventLabel(AstroEvent event, TextStyle style) {
-    final lightStyle = GoogleFonts.poppins(
-      fontSize: 11,
-      fontWeight: FontWeight.w400,
-      color: AppColors.cream90,
-    );
+    final lightStyle = _poppinsW400_11_cream90;
     final label = event.label;
     final untilIndex = label.indexOf(' until ');
     final isMeteorShower = event.zhr != null;
@@ -1274,7 +1299,7 @@ class _MoonCycleChartPainter extends CustomPainter {
 
     // 9. Phase-disc markers along the top of the chart area
     if (hasCycle) {
-      final dateFmt = DateFormat('MMM d');
+      final dateFmt = AppDateFormats.mmmD;
       for (final t in usno.transitions) {
         if (t.date.isBefore(start) || t.date.isAfter(end)) continue;
         final markerFraction = switch (t.phase) {

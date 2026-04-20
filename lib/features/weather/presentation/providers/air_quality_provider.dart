@@ -3,19 +3,14 @@ import 'dart:convert';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../../core/constants/api_endpoints.dart';
+import '../../../../core/constants/cache_constants.dart';
 import '../../../../core/network/api_client.dart';
+import '../../../../core/utils/coord_utils.dart';
 import '../../domain/entities/air_quality.dart';
-
-/// Round to 3 decimal places (~111m precision) to avoid GPS micro-drift
-/// creating duplicate provider instances and cache entries.
-({double lat, double lon}) _roundCoords(({double lat, double lon}) c) => (
-  lat: (c.lat * 1000).roundToDouble() / 1000,
-  lon: (c.lon * 1000).roundToDouble() / 1000,
-);
 
 final airQualityProvider = FutureProvider.autoDispose
     .family<AirQuality?, ({double lat, double lon})>((ref, rawCoords) async {
-  final coords = _roundCoords(rawCoords);
+  final coords = roundCoords(rawCoords);
   final prefs = ref.watch(sharedPreferencesProvider);
   final dio = ref.watch(dioProvider);
   final cacheKey = 'cached_aqi_json_${coords.lat}_${coords.lon}';
@@ -32,7 +27,7 @@ final airQualityProvider = FutureProvider.autoDispose
   // Return cached value if <30 min old
   if (fromCache != null && cachedTs != null) {
     final age = DateTime.now().millisecondsSinceEpoch - cachedTs;
-    if (age < const Duration(minutes: 30).inMilliseconds) {
+    if (age < airQualityCacheTtl.inMilliseconds) {
       return fromCache;
     }
   }

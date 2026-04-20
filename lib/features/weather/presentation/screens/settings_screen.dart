@@ -10,6 +10,53 @@ import '../../../../core/services/fcm_service.dart';
 import '../providers/location_provider.dart';
 import '../providers/settings_provider.dart';
 
+/// Cached text styles to avoid repeated GoogleFonts allocations.
+final _quicksandBold22_cream = GoogleFonts.quicksand(
+  fontSize: 22,
+  fontWeight: FontWeight.w700,
+  color: AppColors.cream,
+);
+final _poppinsW500_15_cream = GoogleFonts.poppins(
+  fontSize: 15,
+  fontWeight: FontWeight.w500,
+  color: AppColors.cream,
+);
+final _poppins12_cream = GoogleFonts.poppins(
+  fontSize: 12,
+  color: AppColors.cream,
+);
+final _poppins13_cream = GoogleFonts.poppins(
+  fontSize: 13,
+  color: AppColors.cream,
+);
+final _poppinsW600_13_cream = GoogleFonts.poppins(
+  fontSize: 13,
+  fontWeight: FontWeight.w600,
+  color: AppColors.cream,
+);
+final _poppinsW400_13_cream = GoogleFonts.poppins(
+  fontSize: 13,
+  fontWeight: FontWeight.w400,
+  color: AppColors.cream,
+);
+final _poppinsW600_13_ls05_cream = GoogleFonts.poppins(
+  fontSize: 13,
+  fontWeight: FontWeight.w600,
+  letterSpacing: 0.5,
+  color: AppColors.cream,
+);
+final _poppins12_cream60 = GoogleFonts.poppins(
+  fontSize: 12,
+  color: AppColors.cream60,
+);
+final _poppinsW600_12_cream = GoogleFonts.poppins(
+  fontSize: 12,
+  fontWeight: FontWeight.w600,
+  color: AppColors.cream,
+  decoration: TextDecoration.underline,
+  decorationColor: AppColors.cream,
+);
+
 const _kSuggestionPhone = '8564123991';
 
 class SettingsScreen extends ConsumerWidget {
@@ -52,11 +99,7 @@ class SettingsScreen extends ConsumerWidget {
                             child: Text(
                               'Settings',
                               textAlign: TextAlign.right,
-                              style: GoogleFonts.quicksand(
-                                fontSize: 22,
-                                fontWeight: FontWeight.w700,
-                                color: AppColors.cream,
-                              ),
+                              style: _quicksandBold22_cream,
                             ),
                           ),
                         ],
@@ -82,10 +125,7 @@ class SettingsScreen extends ConsumerWidget {
                             padding: const EdgeInsets.only(bottom: 16),
                             child: Text(
                               'Um... this is awkward.  No saved locations yet.',
-                              style: GoogleFonts.poppins(
-                                fontSize: 13,
-                                color: AppColors.cream,
-                              ),
+                              style: _poppins13_cream,
                             ),
                           )
                         else
@@ -149,11 +189,7 @@ class SettingsScreen extends ConsumerWidget {
                                     ),
                                     title: Text(
                                       loc.name,
-                                      style: GoogleFonts.poppins(
-                                        fontSize: 15,
-                                        fontWeight: FontWeight.w500,
-                                        color: AppColors.cream,
-                                      ),
+                                      style: _poppinsW500_15_cream,
                                     ),
                                     subtitle: loc.country.isNotEmpty
                                         ? Text(
@@ -163,10 +199,7 @@ class SettingsScreen extends ConsumerWidget {
                                                 loc.admin1!,
                                               loc.country,
                                             ].join(', '),
-                                            style: GoogleFonts.poppins(
-                                              fontSize: 12,
-                                              color: AppColors.cream,
-                                            ),
+                                            style: _poppins12_cream,
                                           )
                                         : null,
                                     trailing: IconButton(
@@ -196,7 +229,7 @@ class SettingsScreen extends ConsumerWidget {
                         const SizedBox(height: 4),
                         Container(
                           decoration: BoxDecoration(
-                            color: AppColors.cream.withValues(alpha: 0.15),
+                            color: AppColors.cream15,
                             borderRadius: BorderRadius.circular(12),
                           ),
                           child: SwitchListTile(
@@ -206,32 +239,19 @@ class SettingsScreen extends ConsumerWidget {
                             ),
                             title: Text(
                               'Keep it PG',
-                              style: GoogleFonts.poppins(
-                                fontSize: 15,
-                                fontWeight: FontWeight.w500,
-                                color: AppColors.cream,
-                              ),
+                              style: _poppinsW500_15_cream,
                             ),
                             subtitle: Text(
                               'No swearing.  Clean vibes only.',
-                              style: GoogleFonts.poppins(
-                                fontSize: 12,
-                                color: AppColors.cream,
-                              ),
+                              style: _poppins12_cream,
                             ),
                             value: !settings.explicitLanguage,
-                            activeTrackColor: AppColors.cream.withValues(
-                              alpha: 0.3,
-                            ),
+                            activeTrackColor: AppColors.cream30,
                             activeThumbColor: AppColors.cream,
-                            inactiveTrackColor: AppColors.cream.withValues(
-                              alpha: 0.1,
-                            ),
-                            inactiveThumbColor: AppColors.cream.withValues(
-                              alpha: 0.4,
-                            ),
-                            trackOutlineColor: WidgetStatePropertyAll(
-                              AppColors.cream.withValues(alpha: 0.1),
+                            inactiveTrackColor: AppColors.cream10,
+                            inactiveThumbColor: AppColors.cream40,
+                            trackOutlineColor: const WidgetStatePropertyAll(
+                              AppColors.cream10,
                             ),
                             onChanged: (value) {
                               ref
@@ -248,7 +268,7 @@ class SettingsScreen extends ConsumerWidget {
                         const SizedBox(height: 4),
                         Container(
                           decoration: BoxDecoration(
-                            color: AppColors.cream.withValues(alpha: 0.15),
+                            color: AppColors.cream15,
                             borderRadius: BorderRadius.circular(12),
                           ),
                           child: Column(
@@ -260,32 +280,19 @@ class SettingsScreen extends ConsumerWidget {
                                 ),
                                 title: Text(
                                   'Severe weather alerts',
-                                  style: GoogleFonts.poppins(
-                                    fontSize: 15,
-                                    fontWeight: FontWeight.w500,
-                                    color: AppColors.cream,
-                                  ),
+                                  style: _poppinsW500_15_cream,
                                 ),
                                 subtitle: Text(
                                   'Tornado warnings, severe thunderstorms, and other NWS alerts.',
-                                  style: GoogleFonts.poppins(
-                                    fontSize: 12,
-                                    color: AppColors.cream,
-                                  ),
+                                  style: _poppins12_cream,
                                 ),
                                 value: settings.severeAlertsEnabled,
-                                activeTrackColor: AppColors.cream.withValues(
-                                  alpha: 0.3,
-                                ),
+                                activeTrackColor: AppColors.cream30,
                                 activeThumbColor: AppColors.cream,
-                                inactiveTrackColor: AppColors.cream.withValues(
-                                  alpha: 0.1,
-                                ),
-                                inactiveThumbColor: AppColors.cream.withValues(
-                                  alpha: 0.4,
-                                ),
-                                trackOutlineColor: WidgetStatePropertyAll(
-                                  AppColors.cream.withValues(alpha: 0.1),
+                                inactiveTrackColor: AppColors.cream10,
+                                inactiveThumbColor: AppColors.cream40,
+                                trackOutlineColor: const WidgetStatePropertyAll(
+                                  AppColors.cream10,
                                 ),
                                 onChanged: (value) async {
                                   if (value) {
@@ -317,7 +324,7 @@ class SettingsScreen extends ConsumerWidget {
                           },
                           child: Container(
                             decoration: BoxDecoration(
-                              color: AppColors.cream.withValues(alpha: 0.15),
+                              color: AppColors.cream15,
                               borderRadius: BorderRadius.circular(12),
                             ),
                             padding: const EdgeInsets.symmetric(
@@ -329,10 +336,7 @@ class SettingsScreen extends ConsumerWidget {
                                 Expanded(
                                   child: Text(
                                     "Got a quip? Text Heather. She's bad with her phone but maybe she'll see it.",
-                                    style: GoogleFonts.poppins(
-                                      fontSize: 13,
-                                      color: AppColors.cream,
-                                    ),
+                                    style: _poppins13_cream,
                                   ),
                                 ),
                                 const SizedBox(width: 12),
@@ -353,7 +357,7 @@ class SettingsScreen extends ConsumerWidget {
                         const SizedBox(height: 4),
                         Container(
                           decoration: BoxDecoration(
-                            color: AppColors.cream.withValues(alpha: 0.15),
+                            color: AppColors.cream15,
                             borderRadius: BorderRadius.circular(12),
                           ),
                           child: Column(
@@ -363,9 +367,9 @@ class SettingsScreen extends ConsumerWidget {
                                 description: 'Weather data by Open-Meteo.com',
                                 url: 'https://open-meteo.com/',
                               ),
-                              Divider(
+                              const Divider(
                                 height: 1,
-                                color: AppColors.cream.withValues(alpha: 0.15),
+                                color: AppColors.cream15,
                               ),
                               const _DataSourceTile(
                                 name: 'OpenFreeMap',
@@ -373,24 +377,43 @@ class SettingsScreen extends ConsumerWidget {
                                     'Maps by OpenFreeMap & OpenStreetMap',
                                 url: 'https://openfreemap.org/',
                               ),
-                              Divider(
+                              const Divider(
                                 height: 1,
-                                color: AppColors.cream.withValues(alpha: 0.15),
+                                color: AppColors.cream15,
                               ),
                               const _DataSourceTile(
                                 name: 'National Weather Service',
                                 description: 'Weather alerts by NWS',
                                 url: 'https://www.weather.gov/',
                               ),
-                              Divider(
+                              const Divider(
                                 height: 1,
-                                color: AppColors.cream.withValues(alpha: 0.15),
+                                color: AppColors.cream15,
                               ),
                               const _DataSourceTile(
                                 name: 'Iowa Mesonet',
                                 description:
                                     'Radar data by Iowa Environmental Mesonet',
                                 url: 'https://mesonet.agron.iastate.edu/',
+                              ),
+                              const Divider(
+                                height: 1,
+                                color: AppColors.cream15,
+                              ),
+                              const _DataSourceTile(
+                                name: 'US Naval Observatory',
+                                description: 'Astronomical data by USNO',
+                                url: 'https://aa.usno.navy.mil/',
+                              ),
+                              const Divider(
+                                height: 1,
+                                color: AppColors.cream15,
+                              ),
+                              const _DataSourceTile(
+                                name: 'Visible Planets',
+                                description:
+                                    'Planet visibility by VisiblePlanets.dev',
+                                url: 'https://visibleplanets.dev/',
                               ),
                             ],
                           ),
@@ -407,20 +430,11 @@ class SettingsScreen extends ConsumerWidget {
                             child: Text.rich(
                               TextSpan(
                                 text: 'made with love by ',
-                                style: GoogleFonts.poppins(
-                                  fontSize: 12,
-                                  color: AppColors.cream.withValues(alpha: 0.6),
-                                ),
+                                style: _poppins12_cream60,
                                 children: [
                                   TextSpan(
                                     text: 'jackie',
-                                    style: GoogleFonts.poppins(
-                                      fontSize: 12,
-                                      fontWeight: FontWeight.w600,
-                                      color: AppColors.cream,
-                                      decoration: TextDecoration.underline,
-                                      decorationColor: AppColors.cream,
-                                    ),
+                                    style: _poppinsW600_12_cream,
                                   ),
                                 ],
                               ),
@@ -453,12 +467,7 @@ class _SectionHeader extends StatelessWidget {
       padding: const EdgeInsets.only(top: 8, bottom: 4),
       child: Text(
         title,
-        style: GoogleFonts.poppins(
-          fontSize: 13,
-          fontWeight: FontWeight.w600,
-          letterSpacing: 0.5,
-          color: AppColors.cream,
-        ),
+        style: _poppinsW600_13_ls05_cream,
       ),
     );
   }
@@ -490,19 +499,11 @@ class _DataSourceTile extends StatelessWidget {
               child: Text.rich(
                 TextSpan(
                   text: '$name  ',
-                  style: GoogleFonts.poppins(
-                    fontSize: 13,
-                    fontWeight: FontWeight.w600,
-                    color: AppColors.cream,
-                  ),
+                  style: _poppinsW600_13_cream,
                   children: [
                     TextSpan(
                       text: description,
-                      style: GoogleFonts.poppins(
-                        fontSize: 13,
-                        fontWeight: FontWeight.w400,
-                        color: AppColors.cream,
-                      ),
+                      style: _poppinsW400_13_cream,
                     ),
                   ],
                 ),
@@ -512,7 +513,7 @@ class _DataSourceTile extends StatelessWidget {
             Icon(
               Icons.open_in_new,
               size: 16,
-              color: AppColors.cream.withValues(alpha: 0.6),
+              color: AppColors.cream60,
             ),
           ],
         ),

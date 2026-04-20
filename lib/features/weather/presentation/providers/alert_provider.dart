@@ -38,6 +38,22 @@ Future<List<WeatherAlert>> fetchAlerts({
     final features = data['features'] as List<dynamic>? ?? [];
     final now = DateTime.now();
 
+    // Collect IDs of superseded alerts from the references field.
+    // When NWS updates/extends/continues an alert it issues a new one whose
+    // `references` array points back to the old alert IDs.
+    final supersededIds = <String>{};
+    for (final feature in features) {
+      final props = feature['properties'] as Map<String, dynamic>;
+      final refs = props['references'] as List<dynamic>? ?? [];
+      for (final ref in refs) {
+        if (ref is Map<String, dynamic>) {
+          final refId =
+              ref['@id'] as String? ?? ref['identifier'] as String? ?? '';
+          if (refId.isNotEmpty) supersededIds.add(refId);
+        }
+      }
+    }
+
     final alerts = features
         .map((feature) {
           final props = feature['properties'] as Map<String, dynamic>;
@@ -46,8 +62,12 @@ Future<List<WeatherAlert>> fetchAlerts({
           // Skip expired alerts
           if (expires != null && expires.isBefore(now)) return null;
 
+          // Skip alerts that have been superseded by a newer one
+          final alertId = props['id'] as String? ?? '';
+          if (supersededIds.contains(alertId)) return null;
+
           return WeatherAlert(
-            id: props['id'] as String? ?? '',
+            id: alertId,
             event: props['event'] as String? ?? 'Weather Alert',
             severity:
                 AlertSeverity.fromString(props['severity'] as String?),
@@ -63,10 +83,21 @@ Future<List<WeatherAlert>> fetchAlerts({
           );
         })
         .whereType<WeatherAlert>()
-        .toList()
-      ..sort((a, b) => a.severity.sortOrder.compareTo(b.severity.sortOrder));
+        .toList();
 
-    return alerts;
+    // Deduplicate by event name — when the same event (e.g. "Heat Advisory")
+    // covers multiple overlapping zones for one point, keep only the alert
+    // with the latest effective time.
+    final eventMap = <String, WeatherAlert>{};
+    for (final alert in alerts) {
+      final existing = eventMap[alert.event];
+      if (existing == null || alert.effective.isAfter(existing.effective)) {
+        eventMap[alert.event] = alert;
+      }
+    }
+
+    return eventMap.values.toList()
+      ..sort((a, b) => a.severity.sortOrder.compareTo(b.severity.sortOrder));
   } catch (_) {
     return [];
   }

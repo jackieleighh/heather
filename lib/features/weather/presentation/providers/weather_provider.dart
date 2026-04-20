@@ -12,6 +12,7 @@ import '../../data/repositories/quip_repository_impl.dart';
 import '../../data/repositories/weather_repository_impl.dart';
 import '../../data/sources/location_source.dart';
 import '../../data/sources/weather_remote_source.dart';
+import '../../../../core/constants/quips/alert_quips.dart';
 import '../../domain/entities/forecast.dart';
 import '../../domain/entities/location_info.dart';
 import '../../domain/entities/saved_location.dart';
@@ -23,20 +24,32 @@ import 'settings_provider.dart';
 
 part 'weather_provider.freezed.dart';
 
-typedef _QuipKey = ({WeatherCondition condition, TemperatureTier tier, bool isDay});
+typedef _QuipKey = ({
+  WeatherCondition condition,
+  TemperatureTier tier,
+  bool isDay,
+  AlertQuipCategory? alertCategory,
+});
 
-_QuipKey _quipKeyFor(Forecast forecast) => (
-  condition: forecast.current.condition,
-  tier: TemperatureTier.fromTemperature(forecast.current.temperature),
-  isDay: forecast.isCurrentlyDay,
-);
+_QuipKey _quipKeyFor(Forecast forecast, {List<WeatherAlert> alerts = const []}) {
+  AlertQuipCategory? alertCategory;
+  for (final alert in alerts) {
+    alertCategory = AlertQuipCategory.fromEvent(alert.event, alert.severity);
+    if (alertCategory != null) break;
+  }
+  return (
+    condition: forecast.current.condition,
+    tier: TemperatureTier.fromTemperature(forecast.current.temperature),
+    isDay: forecast.isCurrentlyDay,
+    alertCategory: alertCategory,
+  );
+}
 
 // Dependencies
 final weatherRepositoryProvider = Provider<WeatherRepositoryImpl>((ref) {
-  final apiClient = ref.watch(apiClientProvider);
   final prefs = ref.watch(sharedPreferencesProvider);
   return WeatherRepositoryImpl(
-    remoteSource: WeatherRemoteSource(dio: apiClient.weatherClient),
+    remoteSource: WeatherRemoteSource(dio: ref.watch(dioProvider)),
     locationSource: LocationSource(),
     prefs: prefs,
   );
@@ -75,6 +88,7 @@ final weatherStateProvider =
         weatherRepo: ref.watch(weatherRepositoryProvider),
         quipRepo: ref.watch(quipRepositoryProvider),
         dio: ref.watch(dioProvider),
+        prefs: ref.watch(sharedPreferencesProvider),
         explicit: settings.explicitLanguage,
         cachedSeed: seed,
       );
@@ -92,6 +106,7 @@ class WeatherNotifier extends StateNotifier<WeatherState> {
   final WeatherRepositoryImpl weatherRepo;
   final QuipRepositoryImpl quipRepo;
   final Dio dio;
+  final SharedPreferences prefs;
   bool _explicit;
   _QuipKey? _lastQuipKey;
   bool isLocationPermissionError = false;
@@ -102,6 +117,7 @@ class WeatherNotifier extends StateNotifier<WeatherState> {
     required this.weatherRepo,
     required this.quipRepo,
     required this.dio,
+    required this.prefs,
     required bool explicit,
     (LocationInfo, Forecast)? cachedSeed,
   }) : _explicit = explicit,
@@ -144,7 +160,10 @@ class WeatherNotifier extends StateNotifier<WeatherState> {
     return WeatherState.loaded(
       forecast: forecast,
       location: location,
-      quip: quipRepo.getLocalQuip(weather: forecast.current, explicit: explicit),
+      quip: quipRepo.getLocalQuip(
+        weather: forecast.current,
+        explicit: explicit,
+      ),
     );
   }
 
@@ -157,11 +176,15 @@ class WeatherNotifier extends StateNotifier<WeatherState> {
     final current = state;
     current.whenOrNull(
       loaded: (forecast, location, _, alerts) {
-        final quip = quipRepo.getLocalQuip(
-          weather: forecast.current,
-          explicit: _explicit,
-        );
-        _lastQuipKey = _quipKeyFor(forecast);
+        final quip = quipRepo.getAlertQuip(
+              alerts: alerts,
+              explicit: _explicit,
+            ) ??
+            quipRepo.getLocalQuip(
+              weather: forecast.current,
+              explicit: _explicit,
+            );
+        _lastQuipKey = _quipKeyFor(forecast, alerts: alerts);
         state = WeatherState.loaded(
           forecast: forecast,
           location: location,
@@ -187,14 +210,13 @@ class WeatherNotifier extends StateNotifier<WeatherState> {
     );
   }
 
-  Future<void> _pushToWidget() async {
+  void _pushToWidget() {
     final current = state;
     if (current is! _Loaded) return;
 
     // Read cached visible planets from SharedPreferences
     List<String> planets = const [];
     try {
-      final prefs = await SharedPreferences.getInstance();
       final lat = current.location.latitude;
       final lon = current.location.longitude;
       final cachedJson = prefs.getString('cached_planets_${lat}_$lon');
@@ -245,11 +267,15 @@ class WeatherNotifier extends StateNotifier<WeatherState> {
         if (_loadGeneration != gen) return;
         final forecast = results[0] as Forecast;
         final alerts = results[1] as List<WeatherAlert>;
-        final quip = quipRepo.getLocalQuip(
-          weather: forecast.current,
-          explicit: _explicit,
-        );
-        _lastQuipKey = _quipKeyFor(forecast);
+        final quip = quipRepo.getAlertQuip(
+              alerts: alerts,
+              explicit: _explicit,
+            ) ??
+            quipRepo.getLocalQuip(
+              weather: forecast.current,
+              explicit: _explicit,
+            );
+        _lastQuipKey = _quipKeyFor(forecast, alerts: alerts);
         if (!mounted) return;
         state = WeatherState.loaded(
           forecast: forecast,
@@ -300,15 +326,19 @@ class WeatherNotifier extends StateNotifier<WeatherState> {
       ]);
       final forecast = results[0] as Forecast;
       final alerts = results[1] as List<WeatherAlert>;
-      final newKey = _quipKeyFor(forecast);
+      final newKey = _quipKeyFor(forecast, alerts: alerts);
       final String quip;
       if (newKey == _lastQuipKey && state is _Loaded) {
         quip = (state as _Loaded).quip;
       } else {
-        quip = quipRepo.getLocalQuip(
-          weather: forecast.current,
-          explicit: _explicit,
-        );
+        quip = quipRepo.getAlertQuip(
+              alerts: alerts,
+              explicit: _explicit,
+            ) ??
+            quipRepo.getLocalQuip(
+              weather: forecast.current,
+              explicit: _explicit,
+            );
         _lastQuipKey = newKey;
       }
       if (!mounted) return false;
@@ -430,15 +460,20 @@ class SavedLocationsForecastNotifier
     final updated = <String, LocationForecastData>{};
     for (final entry in current.forecasts.entries) {
       final forecast = entry.value.forecast;
-      final quip = quipRepo.getLocalQuip(
-        weather: forecast.current,
-        explicit: _explicit,
-      );
-      _lastQuipKeys[entry.key] = _quipKeyFor(forecast);
+      final alerts = entry.value.alerts;
+      final quip = quipRepo.getAlertQuip(
+            alerts: alerts,
+            explicit: _explicit,
+          ) ??
+          quipRepo.getLocalQuip(
+            weather: forecast.current,
+            explicit: _explicit,
+          );
+      _lastQuipKeys[entry.key] = _quipKeyFor(forecast, alerts: alerts);
       updated[entry.key] = (
         forecast: forecast,
         quip: quip,
-        alerts: entry.value.alerts,
+        alerts: alerts,
       );
     }
     state = SavedLocationsForecastState.loaded(forecasts: updated);
@@ -456,17 +491,21 @@ class SavedLocationsForecastNotifier
       if (forecast == null) continue;
       final alerts = alertResults[i];
 
-      final newKey = _quipKeyFor(forecast);
+      final newKey = _quipKeyFor(forecast, alerts: alerts);
       final String quip;
       if (newKey == _lastQuipKeys[loc.id] &&
           state is _SavedLoaded &&
           (state as _SavedLoaded).forecasts.containsKey(loc.id)) {
         quip = (state as _SavedLoaded).forecasts[loc.id]!.quip;
       } else {
-        quip = quipRepo.getLocalQuip(
-          weather: forecast.current,
-          explicit: _explicit,
-        );
+        quip = quipRepo.getAlertQuip(
+              alerts: alerts,
+              explicit: _explicit,
+            ) ??
+            quipRepo.getLocalQuip(
+              weather: forecast.current,
+              explicit: _explicit,
+            );
         _lastQuipKeys[loc.id] = newKey;
       }
 

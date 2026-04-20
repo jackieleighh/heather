@@ -1,8 +1,10 @@
 import 'dart:async';
 import 'dart:io' show Platform;
+import 'dart:math' as math;
 
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_native_splash/flutter_native_splash.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:geolocator/geolocator.dart';
@@ -17,6 +19,7 @@ import '../../../../core/services/background_alert_service.dart';
 import '../../../../core/services/device_registration_service.dart';
 import '../../../../core/services/fcm_service.dart';
 import '../../../../core/services/widget_service.dart';
+import '../../domain/entities/forecast.dart';
 import '../../domain/entities/weather_alert.dart';
 import '../providers/location_provider.dart';
 import '../providers/settings_provider.dart';
@@ -35,26 +38,7 @@ class WeatherScreen extends ConsumerStatefulWidget {
 }
 
 class _WeatherScreenState extends ConsumerState<WeatherScreen>
-    with WidgetsBindingObserver {
-  static const _dayScrim = LinearGradient(
-    begin: Alignment.topCenter,
-    end: Alignment.bottomCenter,
-    colors: [
-      Color.fromRGBO(0, 0, 0, 0.12),
-      Color.fromRGBO(0, 0, 0, 0.05),
-      Color.fromRGBO(0, 0, 0, 0.15),
-    ],
-  );
-  static const _nightScrim = LinearGradient(
-    begin: Alignment.topCenter,
-    end: Alignment.bottomCenter,
-    colors: [
-      Color.fromRGBO(0, 0, 0, 0.03),
-      Color.fromRGBO(0, 0, 0, 0.0),
-      Color.fromRGBO(0, 0, 0, 0.05),
-    ],
-  );
-
+    with WidgetsBindingObserver, SingleTickerProviderStateMixin {
   late PageController _horizontalController;
   final _verticalPagerKey = GlobalKey<VerticalForecastPagerState>();
   StreamSubscription<void>? _widgetTapSub;
@@ -78,11 +62,45 @@ class _WeatherScreenState extends ConsumerState<WeatherScreen>
   String? _pendingLocationId;
   String? _pendingLocationName;
   final _currentHorizontalPage = ValueNotifier<int>(0);
+  late final AnimationController _feedbackController;
+  late final Animation<double> _feedbackOpacity;
+  String _feedbackMessage = '';
+  bool _feedbackSuccess = true;
+
+  static const _successMessages = [
+    'fresh data, babe',
+    'all caught up',
+    'updated just for you',
+    "you're current",
+  ];
+  static const _failMessages = [
+    "couldn't reach the sky",
+    'no dice, try again',
+    "the clouds aren't talking",
+  ];
+  static final _random = math.Random();
 
   @override
   void initState() {
     super.initState();
     WidgetsBinding.instance.addObserver(this);
+    _feedbackController = AnimationController(
+      vsync: this,
+      duration: const Duration(milliseconds: 2000),
+    );
+    _feedbackOpacity = TweenSequence<double>([
+      TweenSequenceItem(
+        tween: Tween(begin: 0.0, end: 1.0)
+            .chain(CurveTween(curve: Curves.easeOut)),
+        weight: 15,
+      ),
+      TweenSequenceItem(tween: ConstantTween(1.0), weight: 55),
+      TweenSequenceItem(
+        tween: Tween(begin: 1.0, end: 0.0)
+            .chain(CurveTween(curve: Curves.easeIn)),
+        weight: 30,
+      ),
+    ]).animate(_feedbackController);
     _horizontalController = PageController(initialPage: 0);
     _horizontalController.addListener(_onHorizontalPageChanged);
     _widgetTapSub = WidgetService.widgetTapped.stream.listen((_) {
@@ -142,6 +160,7 @@ class _WeatherScreenState extends ConsumerState<WeatherScreen>
     _horizontalController.removeListener(_onHorizontalPageChanged);
     _horizontalController.dispose();
     _currentHorizontalPage.dispose();
+    _feedbackController.dispose();
     super.dispose();
   }
 
@@ -222,6 +241,10 @@ class _WeatherScreenState extends ConsumerState<WeatherScreen>
     context.push('/settings');
   }
 
+  void _openGallery() {
+    context.push('/gallery');
+  }
+
   /// Single idempotent entry point for handling pending notification taps.
   /// Called from: stream listener, 3s timer, lifecycle resume, and build callback.
   /// Safe to call multiple times — each call re-checks FcmService and local state.
@@ -266,14 +289,22 @@ class _WeatherScreenState extends ConsumerState<WeatherScreen>
       return;
     }
 
-    // Navigate to the correct page
-    if (!_pendingAlertNavigated && _horizontalController.hasClients) {
-      _navigateToAlertLocation();
-      _pendingAlertNavigated = true;
-      if (kDebugMode) debugPrint('[ALERT] navigated to page');
+    // Navigate to the correct page — must succeed before showing sheet
+    if (!_pendingAlertNavigated) {
+      if (_horizontalController.hasClients && _navigateToAlertLocation()) {
+        _pendingAlertNavigated = true;
+        if (kDebugMode) debugPrint('[ALERT] navigated to page');
+      } else {
+        // Page controller not ready or saved location not found yet — retry
+        _pendingAlertRetryTimer ??= Timer.periodic(
+          const Duration(seconds: 1),
+          (_) => _handlePendingAlert(),
+        );
+        return;
+      }
     }
 
-    // Try to show alert sheet
+    // Only collect/show alerts after confirmed on the right page
     if (!_pendingAlertSheetShown) {
       final alerts = _collectAlertsForPendingLocation();
       if (alerts.isNotEmpty) {
@@ -305,8 +336,8 @@ class _WeatherScreenState extends ConsumerState<WeatherScreen>
     _pendingAlertRetryTimer = null;
   }
 
-  void _navigateToAlertLocation() {
-    if (!_horizontalController.hasClients) return;
+  bool _navigateToAlertLocation() {
+    if (!_horizontalController.hasClients) return false;
 
     final locationId = _pendingLocationId;
     final locationName = _pendingLocationName;
@@ -319,7 +350,7 @@ class _WeatherScreenState extends ConsumerState<WeatherScreen>
       if (_horizontalController.page?.round() != 0) {
         _horizontalController.jumpToPage(0);
       }
-      return;
+      return true;
     }
 
     final savedLocations = ref.read(savedLocationsProvider);
@@ -342,7 +373,9 @@ class _WeatherScreenState extends ConsumerState<WeatherScreen>
 
     if (index >= 0 && _horizontalController.hasClients) {
       _horizontalController.jumpToPage(index + 1);
+      return true;
     }
+    return false;
   }
 
   /// Collect alerts for the specific location referenced by the pending notification.
@@ -415,6 +448,21 @@ class _WeatherScreenState extends ConsumerState<WeatherScreen>
     );
   }
 
+  void _showRefreshFeedback(bool success) {
+    if (!mounted) return;
+    if (success) {
+      HapticFeedback.lightImpact();
+    } else {
+      HapticFeedback.heavyImpact();
+    }
+    setState(() {
+      _feedbackSuccess = success;
+      final messages = success ? _successMessages : _failMessages;
+      _feedbackMessage = messages[_random.nextInt(messages.length)];
+    });
+    _feedbackController.forward(from: 0);
+  }
+
   void _resetPollTimer() {
     _pollTimer?.cancel();
     _pollTimer = Timer.periodic(const Duration(minutes: 15), (_) {
@@ -453,7 +501,35 @@ class _WeatherScreenState extends ConsumerState<WeatherScreen>
   Widget build(BuildContext context) {
     final state = ref.watch(weatherStateProvider);
     final savedLocations = ref.watch(savedLocationsProvider);
-    final savedForecastState = ref.watch(savedLocationsForecastProvider);
+
+    // Listen for saved-location and settings changes at the top of build()
+    // (outside state.when) so they are registered on every rebuild and don't
+    // cause a second cascade through ref.watch(savedLocationsForecastProvider).
+    ref.listen<List<SavedLocation>>(savedLocationsProvider, (prev, next) {
+      final weatherState = ref.read(weatherStateProvider);
+      weatherState.whenOrNull(
+        loaded: (forecast, location, quip, alerts) {
+          _registerAllLocations(
+            gpsLatitude: location.latitude,
+            gpsLongitude: location.longitude,
+          );
+          ref.read(savedLocationsForecastProvider.notifier).load(next);
+        },
+      );
+    });
+    ref.listen<SettingsState>(settingsProvider, (prev, next) {
+      if (prev?.severeAlertsEnabled != next.severeAlertsEnabled) {
+        final weatherState = ref.read(weatherStateProvider);
+        weatherState.whenOrNull(
+          loaded: (forecast, location, quip, alerts) {
+            _registerAllLocations(
+              gpsLatitude: location.latitude,
+              gpsLongitude: location.longitude,
+            );
+          },
+        );
+      }
+    });
 
     final content = state.when(
       loading: () => const LoadingScreen(),
@@ -525,26 +601,6 @@ class _WeatherScreenState extends ConsumerState<WeatherScreen>
           );
         }
 
-        // Re-register and re-fetch whenever saved locations change (add/remove).
-        // Must be outside the guard — ref.listen in build() is cleaned up on
-        // every rebuild, so it needs to be re-registered each time.
-        ref.listen<List<SavedLocation>>(savedLocationsProvider, (prev, next) {
-          _registerAllLocations(
-            gpsLatitude: location.latitude,
-            gpsLongitude: location.longitude,
-          );
-          ref.read(savedLocationsForecastProvider.notifier).load(next);
-        });
-        // Re-register or unregister when alert setting is toggled
-        ref.listen<SettingsState>(settingsProvider, (prev, next) {
-          if (prev?.severeAlertsEnabled != next.severeAlertsEnabled) {
-            _registerAllLocations(
-              gpsLatitude: location.latitude,
-              gpsLongitude: location.longitude,
-            );
-          }
-        });
-
         final pages = <Widget>[
           VerticalForecastPager(
             key: _verticalPagerKey,
@@ -555,63 +611,41 @@ class _WeatherScreenState extends ConsumerState<WeatherScreen>
             longitude: location.longitude,
             isUs: location.countryCode == 'US',
             alerts: alerts,
-            onRefresh: () => _refreshAll(force: true),
+            onRefresh: () async {
+              final debounced = _lastForceRefreshTime != null &&
+                  DateTime.now()
+                          .difference(_lastForceRefreshTime!)
+                          .inSeconds <
+                      30;
+              final success = await _refreshAll(force: true);
+              if (!debounced) _showRefreshFeedback(success);
+              return success;
+            },
             onSettings: _showSettings,
           ),
           ...savedLocations.map(
-            (loc) =>
-                SavedLocationsPage(location: loc, onSettings: _showSettings),
+            (loc) => SavedLocationsPage(
+              location: loc,
+              onSettings: _showSettings,
+              onRefresh: () async {
+                final savedLocs = ref.read(savedLocationsProvider);
+                final success = await ref
+                    .read(savedLocationsForecastProvider.notifier)
+                    .refresh(savedLocs, forceRefresh: true);
+                _showRefreshFeedback(success);
+                return success;
+              },
+            ),
           ),
         ];
 
         return Stack(
           children: [
-            // Background, scrim, and logo — only rebuild on page change
-            ValueListenableBuilder<int>(
-              valueListenable: _currentHorizontalPage,
-              builder: (context, currentPage, _) {
-                var bgCondition = forecast.current.condition;
-                var bgIsDay = forecast.isCurrentlyDay;
-                var bgTemperature = forecast.current.temperature;
-
-                if (currentPage > 0) {
-                  final locIndex = currentPage - 1;
-                  if (locIndex < savedLocations.length) {
-                    final locId = savedLocations[locIndex].id;
-                    savedForecastState.whenOrNull(
-                      loaded: (forecasts) {
-                        final data = forecasts[locId];
-                        if (data != null) {
-                          bgCondition = data.forecast.current.condition;
-                          bgIsDay = data.forecast.isCurrentlyDay;
-                          bgTemperature = data.forecast.current.temperature;
-                        }
-                      },
-                    );
-                  }
-                }
-
-                return Stack(
-                  children: [
-                    RepaintBoundary(
-                      child: WeatherBackground(
-                        condition: bgCondition,
-                        isDay: bgIsDay,
-                        temperature: bgTemperature,
-                        isActive: _isAppActive,
-                      ),
-                    ),
-                    Positioned.fill(
-                      child: DecoratedBox(
-                        decoration: BoxDecoration(
-                          gradient: bgIsDay ? _dayScrim : _nightScrim,
-                        ),
-                      ),
-                    ),
-                    LogoOverlay(isDay: bgIsDay),
-                  ],
-                );
-              },
+            _WeatherBackgroundLayer(
+              gpsForecast: forecast,
+              savedLocations: savedLocations,
+              currentHorizontalPage: _currentHorizontalPage,
+              isAppActive: _isAppActive,
             ),
             RepaintBoundary(
               child: PageView.builder(
@@ -644,15 +678,15 @@ class _WeatherScreenState extends ConsumerState<WeatherScreen>
                     onPressed: _openLocationSearch,
                     icon: Icon(
                       Icons.add_location_alt_outlined,
-                      color: AppColors.cream.withValues(alpha: 0.6),
+                      color: AppColors.cream60,
                       size: 24,
                     ),
                   ),
                   // IconButton(
-                  //   onPressed: () => context.push('/gallery'),
+                  //   onPressed: _openGallery,
                   //   icon: Icon(
                   //     Icons.grid_view_rounded,
-                  //     color: AppColors.cream.withValues(alpha: 0.6),
+                  //     color: AppColors.cream60,
                   //     size: 24,
                   //   ),
                   // ),
@@ -660,11 +694,46 @@ class _WeatherScreenState extends ConsumerState<WeatherScreen>
                     onPressed: _showSettings,
                     icon: Icon(
                       Icons.settings_outlined,
-                      color: AppColors.cream.withValues(alpha: 0.85),
+                      color: AppColors.cream85,
                       size: 24,
                     ),
                   ),
                 ],
+              ),
+            ),
+            Positioned(
+              top: MediaQuery.paddingOf(context).top + 48,
+              left: 0,
+              right: 0,
+              child: IgnorePointer(
+                child: FadeTransition(
+                  opacity: _feedbackOpacity,
+                  child: Center(
+                    child: Row(
+                      mainAxisSize: MainAxisSize.min,
+                      crossAxisAlignment: CrossAxisAlignment.center,
+                      children: [
+                        Icon(
+                          _feedbackSuccess
+                              ? Icons.check
+                              : Icons.close,
+                          color: AppColors.cream80,
+                          size: 18,
+                        ),
+                        const SizedBox(width: 6),
+                        Text(
+                          _feedbackMessage,
+                          style: const TextStyle(
+                            color: AppColors.cream80,
+                            fontSize: 13,
+                            fontWeight: FontWeight.w400,
+                            letterSpacing: 0.3,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                ),
               ),
             ),
           ],
@@ -673,6 +742,91 @@ class _WeatherScreenState extends ConsumerState<WeatherScreen>
     );
 
     return Scaffold(backgroundColor: Colors.transparent, body: content);
+  }
+}
+
+class _WeatherBackgroundLayer extends ConsumerWidget {
+  static const _dayScrim = LinearGradient(
+    begin: Alignment.topCenter,
+    end: Alignment.bottomCenter,
+    colors: [
+      Color.fromRGBO(0, 0, 0, 0.12),
+      Color.fromRGBO(0, 0, 0, 0.05),
+      Color.fromRGBO(0, 0, 0, 0.15),
+    ],
+  );
+  static const _nightScrim = LinearGradient(
+    begin: Alignment.topCenter,
+    end: Alignment.bottomCenter,
+    colors: [
+      Color.fromRGBO(0, 0, 0, 0.03),
+      Color.fromRGBO(0, 0, 0, 0.0),
+      Color.fromRGBO(0, 0, 0, 0.05),
+    ],
+  );
+
+  final Forecast gpsForecast;
+  final List<SavedLocation> savedLocations;
+  final ValueNotifier<int> currentHorizontalPage;
+  final bool isAppActive;
+
+  const _WeatherBackgroundLayer({
+    required this.gpsForecast,
+    required this.savedLocations,
+    required this.currentHorizontalPage,
+    required this.isAppActive,
+  });
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final savedForecastState = ref.watch(savedLocationsForecastProvider);
+
+    return ValueListenableBuilder<int>(
+      valueListenable: currentHorizontalPage,
+      builder: (context, currentPage, _) {
+        var bgCondition = gpsForecast.current.condition;
+        var bgIsDay = gpsForecast.isCurrentlyDay;
+        var bgTemperature = gpsForecast.current.temperature;
+
+        if (currentPage > 0) {
+          final locIndex = currentPage - 1;
+          if (locIndex < savedLocations.length) {
+            final locId = savedLocations[locIndex].id;
+            savedForecastState.whenOrNull(
+              loaded: (forecasts) {
+                final data = forecasts[locId];
+                if (data != null) {
+                  bgCondition = data.forecast.current.condition;
+                  bgIsDay = data.forecast.isCurrentlyDay;
+                  bgTemperature = data.forecast.current.temperature;
+                }
+              },
+            );
+          }
+        }
+
+        return Stack(
+          children: [
+            RepaintBoundary(
+              child: WeatherBackground(
+                condition: bgCondition,
+                isDay: bgIsDay,
+                temperature: bgTemperature,
+                isActive: isAppActive,
+              ),
+            ),
+            Positioned.fill(
+              child: DecoratedBox(
+                decoration: BoxDecoration(
+                  gradient: bgIsDay ? _dayScrim : _nightScrim,
+                ),
+              ),
+            ),
+            LogoOverlay(isDay: bgIsDay),
+          ],
+        );
+      },
+    );
   }
 }
 
@@ -728,20 +882,20 @@ class _HorizontalPageIndicatorState extends State<_HorizontalPageIndicator> {
             decoration: BoxDecoration(
               shape: BoxShape.circle,
               color: isActive
-                  ? AppColors.cream.withValues(alpha: 0.9)
-                  : AppColors.cream.withValues(alpha: 0.35),
+                  ? AppColors.cream90
+                  : AppColors.cream35,
             ),
             child: isFirst && !isActive
                 ? Icon(
                     Icons.add,
                     size: 4,
-                    color: AppColors.cream.withValues(alpha: 0.54),
+                    color: AppColors.cream54,
                   )
                 : index == 1 && !isActive
                 ? Icon(
                     Icons.my_location,
                     size: 4,
-                    color: AppColors.cream.withValues(alpha: 0.54),
+                    color: AppColors.cream54,
                   )
                 : null,
           ),

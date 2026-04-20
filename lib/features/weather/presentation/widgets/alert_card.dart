@@ -5,6 +5,22 @@ import '../../../../core/constants/app_colors.dart';
 import '../../domain/entities/weather_alert.dart';
 import '../screens/alert_detail_sheet.dart';
 
+/// Cached text styles to avoid repeated GoogleFonts allocations.
+final _poppinsW600_14_cream = GoogleFonts.poppins(
+  fontSize: 14,
+  fontWeight: FontWeight.w600,
+  color: AppColors.cream,
+);
+final _quicksand12_cream85 = GoogleFonts.quicksand(
+  fontSize: 12,
+  color: AppColors.cream85,
+);
+final _quicksandW500_11_cream70 = GoogleFonts.quicksand(
+  fontSize: 11,
+  fontWeight: FontWeight.w500,
+  color: AppColors.cream70,
+);
+
 class AlertCard extends StatelessWidget {
   final List<WeatherAlert> alerts;
   final Color heroColor;
@@ -32,7 +48,7 @@ class AlertCard extends StatelessWidget {
           ),
           boxShadow: [
             BoxShadow(
-              color: Colors.black.withValues(alpha: 0.12),
+              color: AppColors.black12,
               blurRadius: 12,
             ),
           ],
@@ -51,32 +67,21 @@ class AlertCard extends StatelessWidget {
                 children: [
                   Text(
                     primary.event,
-                    style: GoogleFonts.poppins(
-                      fontSize: 14,
-                      fontWeight: FontWeight.w600,
-                      color: AppColors.cream,
-                    ),
+                    style: _poppinsW600_14_cream,
                   ),
                   if (primary.headline.isNotEmpty)
                     Text(
                       primary.headline,
                       maxLines: 1,
                       overflow: TextOverflow.ellipsis,
-                      style: GoogleFonts.quicksand(
-                        fontSize: 12,
-                        color: AppColors.cream.withValues(alpha: 0.85),
-                      ),
+                      style: _quicksand12_cream85,
                     ),
                   if (moreCount > 0)
                     Padding(
                       padding: const EdgeInsets.only(top: 2),
                       child: Text(
                         '+$moreCount more alert${moreCount == 1 ? '' : 's'}',
-                        style: GoogleFonts.quicksand(
-                          fontSize: 11,
-                          fontWeight: FontWeight.w500,
-                          color: AppColors.cream.withValues(alpha: 0.7),
-                        ),
+                        style: _quicksandW500_11_cream70,
                       ),
                     ),
                 ],
@@ -84,7 +89,7 @@ class AlertCard extends StatelessWidget {
             ),
             Icon(
               Icons.chevron_right,
-              color: AppColors.cream.withValues(alpha: 0.7),
+              color: AppColors.cream70,
               size: 20,
             ),
           ],

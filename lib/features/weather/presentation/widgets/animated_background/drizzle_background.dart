@@ -94,7 +94,7 @@ class _DrizzlePainter extends CustomPainter {
           Particle(
             x: random.nextDouble() * size.width,
             y: random.nextDouble() * size.height,
-            speed: 1.8 + random.nextDouble() * 2.7,
+            speed: 3.0 + random.nextDouble() * 3.5,
             size: 0.5 + random.nextDouble() * 0.9,
             opacity: 0.08 + random.nextDouble() * 0.18,
           ),
@@ -108,7 +108,7 @@ class _DrizzlePainter extends CustomPainter {
 
     for (final drop in drops) {
       drop.y += drop.speed;
-      drop.x += 0.2;
+      drop.x += 0.3;
 
       if (drop.y > size.height) {
         drop.y = -10;
@@ -117,12 +117,12 @@ class _DrizzlePainter extends CustomPainter {
       if (drop.x > size.width) drop.x = 0;
 
       paint
-        ..color = Color.fromRGBO(255, 255, 255, drop.opacity)
+        ..color = (drop.cachedColor ??= Color.fromRGBO(255, 255, 255, drop.opacity))
         ..strokeWidth = drop.size;
 
       canvas.drawLine(
         Offset(drop.x, drop.y),
-        Offset(drop.x + 0.2, drop.y + 6 + drop.speed),
+        Offset(drop.x + 0.3, drop.y + 8 + drop.speed),
         paint,
       );
     }

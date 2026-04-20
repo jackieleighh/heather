@@ -5,10 +5,88 @@ import 'package:google_fonts/google_fonts.dart';
 import 'package:heather/core/constants/app_colors.dart';
 import 'package:heather/core/utils/wind_direction.dart';
 import 'package:heather/features/weather/domain/entities/air_quality.dart';
+import 'package:heather/core/utils/date_formats.dart';
 import 'package:intl/intl.dart' hide TextDirection;
 import 'package:weather_icons/weather_icons.dart';
 import './card_container.dart';
 import './card_display_mode.dart';
+
+/// Cached text styles to avoid repeated GoogleFonts allocations.
+final _figtreeW400_16_cream = GoogleFonts.figtree(
+  fontSize: 16,
+  fontWeight: FontWeight.w400,
+  color: AppColors.cream,
+);
+final _figtreeW400_18_cream = GoogleFonts.figtree(
+  fontSize: 18,
+  fontWeight: FontWeight.w400,
+  color: AppColors.cream,
+);
+final _poppinsW400_13_cream = GoogleFonts.poppins(
+  fontSize: 13,
+  fontWeight: FontWeight.w400,
+  color: AppColors.cream,
+);
+final _poppinsBold13_cream = GoogleFonts.poppins(
+  fontSize: 13,
+  fontWeight: FontWeight.w700,
+  color: AppColors.cream,
+);
+final _poppinsW600_13_cream95 = GoogleFonts.poppins(
+  fontSize: 13,
+  fontWeight: FontWeight.w600,
+  color: AppColors.cream95,
+);
+final _poppinsBold13_cream95 = GoogleFonts.poppins(
+  fontSize: 13,
+  fontWeight: FontWeight.w700,
+  color: AppColors.cream95,
+);
+final _poppinsW400_11_cream80 = GoogleFonts.poppins(
+  fontSize: 11,
+  fontWeight: FontWeight.w400,
+  color: AppColors.cream80,
+);
+final _poppinsW600_11_cream80 = GoogleFonts.poppins(
+  fontSize: 11,
+  fontWeight: FontWeight.w600,
+  color: AppColors.cream80,
+);
+final _poppinsW600_13_cream90 = GoogleFonts.poppins(
+  fontSize: 13,
+  fontWeight: FontWeight.w600,
+  color: AppColors.cream90,
+);
+final _poppinsW600_12_cream85 = GoogleFonts.poppins(
+  fontSize: 12,
+  fontWeight: FontWeight.w600,
+  color: AppColors.cream85,
+);
+final _poppinsW600_10_cream80 = GoogleFonts.poppins(
+  fontSize: 10,
+  fontWeight: FontWeight.w600,
+  color: AppColors.cream80,
+);
+final _poppinsW800_11_cream85 = GoogleFonts.poppins(
+  fontSize: 11,
+  fontWeight: FontWeight.w800,
+  color: AppColors.cream85,
+);
+final _poppinsW400_9_cream50 = GoogleFonts.poppins(
+  fontSize: 9,
+  fontWeight: FontWeight.w400,
+  color: AppColors.cream50,
+);
+final _poppinsW400_11_cream = GoogleFonts.poppins(
+  fontSize: 11,
+  fontWeight: FontWeight.w400,
+  color: AppColors.cream,
+);
+final _poppinsBold14_cream = GoogleFonts.poppins(
+  fontSize: 14,
+  fontWeight: FontWeight.w700,
+  color: AppColors.cream,
+);
 
 class AirCard extends StatelessWidget {
   final AirQuality? airQuality;
@@ -71,47 +149,27 @@ class AirCard extends StatelessWidget {
             const SizedBox(width: 4),
             Text(
               'Air',
-              style: GoogleFonts.figtree(
-                fontSize: 16,
-                fontWeight: FontWeight.w400,
-                color: AppColors.cream,
-              ),
+              style: _figtreeW400_16_cream,
             ),
             const Spacer(),
             if (aqi != null) ...[
               Text(
                 'AQI ',
-                style: GoogleFonts.poppins(
-                  fontSize: 13,
-                  fontWeight: FontWeight.w400,
-                  color: AppColors.cream,
-                ),
+                style: _poppinsW400_13_cream,
               ),
               Text(
                 '${aqi!}',
-                style: GoogleFonts.poppins(
-                  fontSize: 13,
-                  fontWeight: FontWeight.w700,
-                  color: AppColors.cream,
-                ),
+                style: _poppinsBold13_cream,
               ),
               const SizedBox(width: 8),
             ],
             Text(
               '${windDirectionLabel(windDirection)} ',
-              style: GoogleFonts.poppins(
-                fontSize: 13,
-                fontWeight: FontWeight.w400,
-                color: AppColors.cream,
-              ),
+              style: _poppinsW400_13_cream,
             ),
             Text(
               '${windSpeed.round()} mph',
-              style: GoogleFonts.poppins(
-                fontSize: 13,
-                fontWeight: FontWeight.w700,
-                color: AppColors.cream,
-              ),
+              style: _poppinsBold13_cream,
             ),
           ],
         ),
@@ -146,11 +204,7 @@ class AirCard extends StatelessWidget {
                     const SizedBox(width: 5),
                     Text(
                       'Wind',
-                      style: GoogleFonts.poppins(
-                        fontSize: 10,
-                        fontWeight: FontWeight.w600,
-                        color: AppColors.cream80,
-                      ),
+                      style: _poppinsW600_10_cream80,
                     ),
                     if (hourlyWindGusts.isNotEmpty) ...[
                       const SizedBox(width: 14),
@@ -158,11 +212,7 @@ class AirCard extends StatelessWidget {
                       const SizedBox(width: 5),
                       Text(
                         'Gusts',
-                        style: GoogleFonts.poppins(
-                          fontSize: 10,
-                          fontWeight: FontWeight.w600,
-                          color: AppColors.cream80,
-                        ),
+                        style: _poppinsW600_10_cream80,
                       ),
                     ],
                   ],
@@ -199,11 +249,7 @@ class AirCard extends StatelessWidget {
                     const SizedBox(width: 4),
                     Text(
                       'Pressure (mb)',
-                      style: GoogleFonts.poppins(
-                        fontSize: 10,
-                        fontWeight: FontWeight.w600,
-                        color: AppColors.cream80,
-                      ),
+                      style: _poppinsW600_10_cream80,
                     ),
                   ],
                 ),
@@ -276,11 +322,7 @@ class AirCard extends StatelessWidget {
         const SizedBox(width: 4),
         Text(
           'Air',
-          style: GoogleFonts.figtree(
-            fontSize: 18,
-            fontWeight: FontWeight.w400,
-            color: AppColors.cream,
-          ),
+          style: _figtreeW400_18_cream,
         ),
         const Spacer(),
         Icon(
@@ -291,30 +333,18 @@ class AirCard extends StatelessWidget {
         const SizedBox(width: 6),
         Text(
           '${windDirectionLabel(windDirection)} ($windDirection\u00B0)',
-          style: GoogleFonts.poppins(
-            fontSize: 13,
-            fontWeight: FontWeight.w600,
-            color: AppColors.cream95,
-          ),
+          style: _poppinsW600_13_cream95,
         ),
         const SizedBox(width: 8),
         Text(
           '${windSpeed.round()} mph',
-          style: GoogleFonts.poppins(
-            fontSize: 13,
-            fontWeight: FontWeight.w700,
-            color: AppColors.cream95,
-          ),
+          style: _poppinsBold13_cream95,
         ),
         if (maxGust > windSpeed) ...[
           const SizedBox(width: 4),
           Text(
             'up to ${maxGust.round()} mph',
-            style: GoogleFonts.poppins(
-              fontSize: 11,
-              fontWeight: FontWeight.w400,
-              color: AppColors.cream80,
-            ),
+            style: _poppinsW400_11_cream80,
           ),
         ],
       ],
@@ -333,11 +363,7 @@ class AirCard extends StatelessWidget {
         const SizedBox(width: 4),
         Text(
           '${pressure.round()} mb',
-          style: GoogleFonts.poppins(
-            fontSize: 11,
-            fontWeight: FontWeight.w600,
-            color: AppColors.cream80,
-          ),
+          style: _poppinsW600_11_cream80,
         ),
         if (pressureDelta != null) ...[
           Icon(
@@ -354,11 +380,7 @@ class AirCard extends StatelessWidget {
             pressureDelta.abs() < 0.5
                 ? 'steady'
                 : '${pressureDelta > 0 ? '+' : ''}${pressureDelta.toStringAsFixed(1)} mb',
-            style: GoogleFonts.poppins(
-              fontSize: 11,
-              fontWeight: FontWeight.w600,
-              color: AppColors.cream80,
-            ),
+            style: _poppinsW600_11_cream80,
           ),
         ],
       ],
@@ -391,11 +413,7 @@ class AirCard extends StatelessWidget {
               const SizedBox(width: 6),
               Text(
                 _aqiLabel(aqi!),
-                style: GoogleFonts.poppins(
-                  fontSize: 13,
-                  fontWeight: FontWeight.w600,
-                  color: AppColors.cream90,
-                ),
+                style: _poppinsW600_13_cream90,
               ),
             ],
           )
@@ -427,11 +445,7 @@ class AirCard extends StatelessWidget {
         const SizedBox(width: 4),
         Text(
           'Air',
-          style: GoogleFonts.figtree(
-            fontSize: 18,
-            fontWeight: FontWeight.w400,
-            color: AppColors.cream,
-          ),
+          style: _figtreeW400_18_cream,
         ),
         const Spacer(),
         Icon(
@@ -442,30 +456,18 @@ class AirCard extends StatelessWidget {
         const SizedBox(width: 6),
         Text(
           '${windDirectionLabel(windDirection)} ($windDirection\u00B0)',
-          style: GoogleFonts.poppins(
-            fontSize: 13,
-            fontWeight: FontWeight.w600,
-            color: AppColors.cream95,
-          ),
+          style: _poppinsW600_13_cream95,
         ),
         const SizedBox(width: 8),
         Text(
           '${windSpeed.round()} mph',
-          style: GoogleFonts.poppins(
-            fontSize: 13,
-            fontWeight: FontWeight.w700,
-            color: AppColors.cream95,
-          ),
+          style: _poppinsBold13_cream95,
         ),
         if (maxGust > windSpeed) ...[
           const SizedBox(width: 4),
           Text(
             'up to ${maxGust.round()} mph',
-            style: GoogleFonts.poppins(
-              fontSize: 11,
-              fontWeight: FontWeight.w400,
-              color: AppColors.cream80,
-            ),
+            style: _poppinsW400_11_cream80,
           ),
         ],
       ],
@@ -498,11 +500,7 @@ class AirCard extends StatelessWidget {
             const SizedBox(width: 6),
             Text(
               aqi == null ? '' : _aqiLabel(aqi!),
-              style: GoogleFonts.poppins(
-                fontSize: 12,
-                fontWeight: FontWeight.w600,
-                color: AppColors.cream85,
-              ),
+              style: _poppinsW600_12_cream85,
             ),
           ],
         ),
@@ -537,20 +535,12 @@ class AirCard extends StatelessWidget {
             children: [
               Text(
                 'Pollutants',
-                style: GoogleFonts.poppins(
-                  fontSize: 11,
-                  fontWeight: FontWeight.w800,
-                  color: AppColors.cream85,
-                ),
+                style: _poppinsW800_11_cream85,
               ),
               const SizedBox(width: 6),
               Text(
                 '\u00B5g/m\u00B3',
-                style: GoogleFonts.poppins(
-                  fontSize: 9,
-                  fontWeight: FontWeight.w400,
-                  color: AppColors.cream50,
-                ),
+                style: _poppinsW400_9_cream50,
               ),
             ],
           ),
@@ -689,7 +679,7 @@ class _WindLinePainter extends CustomPainter {
         if (i % 6 != 0 && i != hours.length - 1) continue;
         final tp = TextPainter(
           text: TextSpan(
-            text: DateFormat('ha').format(hours[i]).toLowerCase(),
+            text: AppDateFormats.ha.format(hours[i]).toLowerCase(),
             style: _hourLabelStyle,
           ),
           textDirection: TextDirection.ltr,
@@ -1071,11 +1061,7 @@ class _PollutantTile extends StatelessWidget {
                 maxLines: 1,
                 softWrap: false,
                 overflow: TextOverflow.visible,
-                style: GoogleFonts.poppins(
-                  fontSize: 11,
-                  fontWeight: FontWeight.w400,
-                  color: AppColors.cream,
-                ),
+                style: _poppinsW400_11_cream,
                 strutStyle: const StrutStyle(
                   fontSize: 11,
                   height: 1.4,
@@ -1095,11 +1081,7 @@ class _PollutantTile extends StatelessWidget {
                 maxLines: 1,
                 softWrap: false,
                 overflow: TextOverflow.visible,
-                style: GoogleFonts.poppins(
-                  fontSize: 14,
-                  fontWeight: FontWeight.w700,
-                  color: AppColors.cream,
-                ),
+                style: _poppinsBold14_cream,
                 strutStyle: const StrutStyle(
                   fontSize: 14,
                   height: 1.3,

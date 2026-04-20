@@ -212,6 +212,35 @@ class ForecastResponseModel {
       description = WeatherCodes.description(currentSlot.weatherCode);
     }
 
+    // Cross-reference: if recent minutely15 data shows precipitation
+    // but current condition doesn't reflect it, override
+    if (!WeatherCodes.isPrecipitation(condition) && minutelyEntities.isNotEmpty) {
+      final recentMinutely = minutelyEntities
+          .where((m) => !m.time.isAfter(now) && m.time.isAfter(now.subtract(const Duration(minutes: 30))))
+          .toList();
+      if (recentMinutely.isNotEmpty) {
+        final maxRain = recentMinutely.map((m) => m.rain).reduce((a, b) => a > b ? a : b);
+        final maxSnow = recentMinutely.map((m) => m.snowfall).reduce((a, b) => a > b ? a : b);
+        if (maxSnow > 0) {
+          condition = WeatherCondition.snow;
+          weatherCode = 71;
+          description = WeatherCodes.description(71);
+        } else if (maxRain > 2.0) {
+          condition = WeatherCondition.heavyRain;
+          weatherCode = 65;
+          description = WeatherCodes.description(65);
+        } else if (maxRain > 0.5) {
+          condition = WeatherCondition.rain;
+          weatherCode = 61;
+          description = WeatherCodes.description(61);
+        } else if (maxRain > 0) {
+          condition = WeatherCondition.drizzle;
+          weatherCode = 51;
+          description = WeatherCodes.description(51);
+        }
+      }
+    }
+
     return Forecast(
       minutely15: minutelyEntities,
       current: Weather(

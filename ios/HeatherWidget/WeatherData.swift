@@ -92,6 +92,7 @@ struct WeatherData: Codable {
     let precipLabel: String?
     let alertLabel: String?
     let alertSeverity: String?
+    let alertExpires: Int?
     let widgetSummary: String?
     let summaryIsDay: Bool?
     let moonPhase: String?
@@ -105,9 +106,19 @@ struct WeatherData: Codable {
         return "moon.fill"
     }
 
+    /// True when an `alertExpires` timestamp is present and has passed.
+    /// Lets the widget self-suppress stale alerts even when the Dart side
+    /// hasn't pushed a fresh payload yet.
+    private var alertIsExpired: Bool {
+        guard let alertExpires else { return false }
+        return TimeInterval(alertExpires) <= Date().timeIntervalSince1970
+    }
+
     /// Alert label with the leading ⚠ prefix stripped (the widget uses its own SF Symbol icon).
+    /// Returns nil when the underlying alert has expired so view-layer `data.alertText != nil`
+    /// gates naturally suppress the banner.
     var alertText: String? {
-        guard let alertLabel else { return nil }
+        guard let alertLabel, !alertIsExpired else { return nil }
         return alertLabel.replacingOccurrences(of: "\u{26A0} ", with: "")
     }
 
@@ -178,6 +189,7 @@ struct WeatherData: Codable {
         precipLabel: nil,
         alertLabel: nil,
         alertSeverity: nil,
+        alertExpires: nil,
         widgetSummary: nil,
         summaryIsDay: nil,
         moonPhase: nil,

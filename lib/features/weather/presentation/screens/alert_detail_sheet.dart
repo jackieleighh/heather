@@ -1,10 +1,53 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:google_fonts/google_fonts.dart';
-import 'package:intl/intl.dart';
+import 'package:heather/core/utils/date_formats.dart';
 
 import '../../../../core/constants/app_colors.dart';
 import '../../domain/entities/weather_alert.dart';
+
+/// Cached text styles to avoid repeated GoogleFonts allocations.
+final _poppinsW600_20_cream = GoogleFonts.poppins(
+  fontSize: 20,
+  fontWeight: FontWeight.w600,
+  color: AppColors.cream,
+);
+final _quicksandW600_13_cream80 = GoogleFonts.quicksand(
+  fontSize: 13,
+  fontWeight: FontWeight.w600,
+  color: AppColors.cream80,
+);
+final _poppinsW600_16_cream = GoogleFonts.poppins(
+  fontSize: 16,
+  fontWeight: FontWeight.w600,
+  color: AppColors.cream,
+);
+final _quicksand13_cream85 = GoogleFonts.quicksand(
+  fontSize: 13,
+  color: AppColors.cream85,
+);
+final _quicksand12_cream70 = GoogleFonts.quicksand(
+  fontSize: 12,
+  color: AppColors.cream70,
+);
+final _quicksand12_cream60 = GoogleFonts.quicksand(
+  fontSize: 12,
+  color: AppColors.cream60,
+);
+final _quicksand13_h15_cream80 = GoogleFonts.quicksand(
+  fontSize: 13,
+  height: 1.5,
+  color: AppColors.cream80,
+);
+final _poppinsW600_12_cream70 = GoogleFonts.poppins(
+  fontSize: 12,
+  fontWeight: FontWeight.w600,
+  color: AppColors.cream70,
+);
+final _quicksand11_cream60 = GoogleFonts.quicksand(
+  fontSize: 11,
+  color: AppColors.cream60,
+);
 
 void showAlertDetailSheet(BuildContext context, List<WeatherAlert> alerts) {
   showModalBottomSheet(
@@ -42,7 +85,7 @@ class AlertDetailSheet extends ConsumerWidget {
                   width: 40,
                   height: 4,
                   decoration: BoxDecoration(
-                    color: AppColors.cream.withValues(alpha: 0.3),
+                    color: AppColors.cream30,
                     borderRadius: BorderRadius.circular(2),
                   ),
                 ),
@@ -57,11 +100,7 @@ class AlertDetailSheet extends ConsumerWidget {
                   children: [
                     Text(
                       'Active Alerts',
-                      style: GoogleFonts.poppins(
-                        fontSize: 20,
-                        fontWeight: FontWeight.w600,
-                        color: AppColors.cream,
-                      ),
+                      style: _poppinsW600_20_cream,
                     ),
                     const SizedBox(width: 8),
                     Container(
@@ -70,16 +109,12 @@ class AlertDetailSheet extends ConsumerWidget {
                         vertical: 2,
                       ),
                       decoration: BoxDecoration(
-                        color: AppColors.cream.withValues(alpha: 0.15),
+                        color: AppColors.cream15,
                         borderRadius: BorderRadius.circular(12),
                       ),
                       child: Text(
                         '${alerts.length}',
-                        style: GoogleFonts.quicksand(
-                          fontSize: 13,
-                          fontWeight: FontWeight.w600,
-                          color: AppColors.cream.withValues(alpha: 0.8),
-                        ),
+                        style: _quicksandW600_13_cream80,
                       ),
                     ),
                   ],
@@ -114,7 +149,7 @@ class _AlertDetailCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final timeFormat = DateFormat('MMM d, h:mm a');
+    final timeFormat = AppDateFormats.mmmDhmma;
 
     return Container(
       padding: const EdgeInsets.all(16),
@@ -164,20 +199,13 @@ class _AlertDetailCard extends StatelessWidget {
           const SizedBox(height: 10),
           Text(
             alert.event,
-            style: GoogleFonts.poppins(
-              fontSize: 16,
-              fontWeight: FontWeight.w600,
-              color: AppColors.cream,
-            ),
+            style: _poppinsW600_16_cream,
           ),
           if (alert.headline.isNotEmpty) ...[
             const SizedBox(height: 4),
             Text(
               alert.headline,
-              style: GoogleFonts.quicksand(
-                fontSize: 13,
-                color: AppColors.cream.withValues(alpha: 0.85),
-              ),
+              style: _quicksand13_cream85,
             ),
           ],
           const SizedBox(height: 10),
@@ -187,16 +215,13 @@ class _AlertDetailCard extends StatelessWidget {
               Icon(
                 Icons.schedule,
                 size: 14,
-                color: AppColors.cream.withValues(alpha: 0.7),
+                color: AppColors.cream70,
               ),
               const SizedBox(width: 4),
               Expanded(
                 child: Text(
                   '${timeFormat.format(alert.effective.toLocal())} - ${timeFormat.format(alert.expires.toLocal())}',
-                  style: GoogleFonts.quicksand(
-                    fontSize: 12,
-                    color: AppColors.cream.withValues(alpha: 0.7),
-                  ),
+                  style: _quicksand12_cream70,
                 ),
               ),
             ],
@@ -205,21 +230,14 @@ class _AlertDetailCard extends StatelessWidget {
             const SizedBox(height: 4),
             Text(
               alert.senderName,
-              style: GoogleFonts.quicksand(
-                fontSize: 12,
-                color: AppColors.cream.withValues(alpha: 0.6),
-              ),
+              style: _quicksand12_cream60,
             ),
           ],
           if (alert.description.isNotEmpty) ...[
             const SizedBox(height: 12),
             Text(
               alert.description,
-              style: GoogleFonts.quicksand(
-                fontSize: 13,
-                height: 1.5,
-                color: AppColors.cream.withValues(alpha: 0.8),
-              ),
+              style: _quicksand13_h15_cream80,
             ),
           ],
           if (alert.instruction.isNotEmpty) ...[
@@ -228,7 +246,7 @@ class _AlertDetailCard extends StatelessWidget {
               width: double.infinity,
               padding: const EdgeInsets.all(12),
               decoration: BoxDecoration(
-                color: AppColors.cream.withValues(alpha: 0.06),
+                color: AppColors.cream06,
                 borderRadius: BorderRadius.circular(12),
               ),
               child: Column(
@@ -236,20 +254,12 @@ class _AlertDetailCard extends StatelessWidget {
                 children: [
                   Text(
                     'Instructions',
-                    style: GoogleFonts.poppins(
-                      fontSize: 12,
-                      fontWeight: FontWeight.w600,
-                      color: AppColors.cream.withValues(alpha: 0.7),
-                    ),
+                    style: _poppinsW600_12_cream70,
                   ),
                   const SizedBox(height: 4),
                   Text(
                     alert.instruction,
-                    style: GoogleFonts.quicksand(
-                      fontSize: 13,
-                      height: 1.5,
-                      color: AppColors.cream.withValues(alpha: 0.8),
-                    ),
+                    style: _quicksand13_h15_cream80,
                   ),
                 ],
               ),
@@ -259,10 +269,7 @@ class _AlertDetailCard extends StatelessWidget {
             const SizedBox(height: 8),
             Text(
               'Areas: ${alert.areaDesc}',
-              style: GoogleFonts.quicksand(
-                fontSize: 11,
-                color: AppColors.cream.withValues(alpha: 0.6),
-              ),
+              style: _quicksand11_cream60,
             ),
           ],
         ],

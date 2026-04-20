@@ -3,11 +3,24 @@ import 'package:google_fonts/google_fonts.dart';
 
 import '../../../../core/constants/app_colors.dart';
 
+/// Cached text styles to avoid repeated GoogleFonts allocations.
+final _quicksandBold22 = GoogleFonts.quicksand(
+  fontSize: 22,
+  fontWeight: FontWeight.w700,
+  color: AppColors.cream,
+);
+final _quicksandW500_15_cream90 = GoogleFonts.quicksand(
+  fontSize: 15,
+  fontWeight: FontWeight.w500,
+  color: AppColors.cream90,
+);
+
 class TemperatureDisplay extends StatelessWidget {
   final double temperature;
   final double high;
   final double low;
   final double? feelsLike;
+  final String? precipLabel;
 
   const TemperatureDisplay({
     super.key,
@@ -15,6 +28,7 @@ class TemperatureDisplay extends StatelessWidget {
     required this.high,
     required this.low,
     this.feelsLike,
+    this.precipLabel,
   });
 
   @override
@@ -46,22 +60,22 @@ class TemperatureDisplay extends StatelessWidget {
           offset: const Offset(0, -6),
           child: Text(
           '${high.round()}° / ${low.round()}°',
-          style: GoogleFonts.quicksand(
-            fontSize: 22,
-            fontWeight: FontWeight.w700,
-            color: AppColors.cream,
-          ),
+          style: _quicksandBold22,
         )),
         if (showFeels)
           Transform.translate(
             offset: const Offset(0, -8),
             child: Text(
               'feels ${feelsLike!.round()}°',
-              style: GoogleFonts.quicksand(
-                fontSize: 15,
-                fontWeight: FontWeight.w500,
-                color: AppColors.cream.withValues(alpha: 0.9),
-              ),
+              style: _quicksandW500_15_cream90,
+            ),
+          ),
+        if (precipLabel != null)
+          Transform.translate(
+            offset: const Offset(0, 0),
+            child: Text(
+              precipLabel!,
+              style: _quicksandW500_15_cream90,
             ),
           ),
       ],

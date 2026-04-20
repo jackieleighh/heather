@@ -162,8 +162,8 @@ class _VerticalPageIndicatorState extends State<_VerticalPageIndicator> {
               height: isActive ? 18 : 6,
               decoration: BoxDecoration(
                 color: isActive
-                    ? AppColors.cream.withValues(alpha: 0.9)
-                    : AppColors.cream.withValues(alpha: 0.5),
+                    ? AppColors.cream90
+                    : AppColors.cream50,
                 borderRadius: BorderRadius.circular(3),
               ),
             ),

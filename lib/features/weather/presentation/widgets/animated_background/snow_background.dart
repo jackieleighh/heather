@@ -2,6 +2,7 @@ import 'dart:math';
 
 import 'package:flutter/material.dart';
 
+import '../../../../../core/constants/app_colors.dart';
 import 'particle.dart';
 
 class SnowBackground extends StatefulWidget {
@@ -75,7 +76,7 @@ class _SnowBackgroundState extends State<SnowBackground>
           ),
         ),
         foregroundDecoration: BoxDecoration(
-          color: Colors.black.withValues(alpha: 0.18),
+          color: AppColors.black18,
         ),
       ),
     );
@@ -119,7 +120,7 @@ class _SnowPainter extends CustomPainter {
       if (flake.x < 0) flake.x = size.width;
       if (flake.x > size.width) flake.x = 0;
 
-      paint.color = Color.fromRGBO(255, 255, 255, flake.opacity);
+      paint.color = flake.cachedColor ??= Color.fromRGBO(255, 255, 255, flake.opacity);
       canvas.drawCircle(Offset(flake.x, flake.y), flake.size / 2, paint);
     }
   }

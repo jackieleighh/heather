@@ -1,4 +1,5 @@
 import 'dart:math';
+import 'dart:ui';
 
 class Particle {
   double x;
@@ -7,6 +8,7 @@ class Particle {
   double size;
   double opacity;
   double wobble;
+  Color? cachedColor;
 
   Particle({
     required this.x,

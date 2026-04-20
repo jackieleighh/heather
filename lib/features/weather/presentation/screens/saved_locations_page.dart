@@ -10,11 +10,13 @@ import '../widgets/vertical_forecast_pager.dart';
 class SavedLocationsPage extends ConsumerWidget {
   final SavedLocation location;
   final VoidCallback onSettings;
+  final Future<bool> Function()? onRefresh;
 
   const SavedLocationsPage({
     super.key,
     required this.location,
     required this.onSettings,
+    this.onRefresh,
   });
 
   @override
@@ -42,7 +44,7 @@ class SavedLocationsPage extends ConsumerWidget {
           longitude: location.longitude,
           isUs: location.country == 'United States',
           alerts: data.alerts,
-          onRefresh: () {
+          onRefresh: onRefresh ?? () {
             final savedLocations = ref.read(savedLocationsProvider);
             return ref
                 .read(savedLocationsForecastProvider.notifier)
@@ -93,7 +95,7 @@ class _MiniErrorView extends StatelessWidget {
             Icon(
               Icons.cloud_off,
               size: 48,
-              color: AppColors.cream.withValues(alpha: 0.54),
+              color: AppColors.cream54,
             ),
             const SizedBox(height: 16),
             Text(

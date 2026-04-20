@@ -265,7 +265,7 @@ List<String> _clearDayTemplates(
     ],
     _ => [
       '${_conditionPhrase(condition)}. ${_tempVibe(tier)}',
-      '${_tempVibe(tier)} ${_conditionPhrase(condition).toLowerCase()} today.',
+      '${_tempVibe(tier)} ${_conditionPhrase(condition)} today.',
     ],
   };
 }
@@ -362,7 +362,7 @@ String _buildNightSummary({
   // Cloudy/foggy night
   return _pickRandom(rng, [
     '${_conditionPhrase(condition)} tonight. ${_nightTempVibe(tier)}',
-    '${_nightTempVibe(tier)} ${_conditionPhrase(condition).toLowerCase()} tonight.',
+    '${_nightTempVibe(tier)} ${_conditionPhrase(condition)} tonight.',
   ]);
 }
 

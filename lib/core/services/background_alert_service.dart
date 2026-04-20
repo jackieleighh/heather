@@ -12,9 +12,12 @@ import 'package:workmanager/workmanager.dart';
 
 import '../../features/weather/data/models/forecast_response_model.dart';
 import '../../features/weather/domain/entities/temperature_tier.dart';
+import '../../features/weather/domain/entities/weather_alert.dart';
 import '../../features/weather/presentation/providers/moon_data_provider.dart';
 import '../constants/api_endpoints.dart';
+import '../constants/cache_constants.dart';
 import '../constants/persona.dart';
+import '../constants/quips/alert_quips.dart';
 import '../utils/geo_utils.dart';
 import 'widget_payload_builder.dart';
 
@@ -104,9 +107,14 @@ Future<void> _refreshWidgetData() async {
         ? DateTime.now().millisecondsSinceEpoch - cachedTs
         : null;
 
+    // Single Dio instance for all background network calls
+    final dio = Dio()
+      ..options.receiveTimeout = const Duration(seconds: 15)
+      ..options.sendTimeout = const Duration(seconds: 15);
+
     if (cachedJson != null &&
         cacheAgeMs != null &&
-        cacheAgeMs < const Duration(minutes: 14).inMilliseconds) {
+        cacheAgeMs < freshCacheTtl.inMilliseconds) {
       // Cache is <14 min old — reuse it. The widget refresh runs every
       // 15 min so this avoids hammering the API when nothing has changed.
       forecastModel = ForecastResponseModel.fromJson(
@@ -114,15 +122,9 @@ Future<void> _refreshWidgetData() async {
     } else {
       // Cache is stale or missing — try to fetch from API.
       try {
-        final dio = Dio();
         final response = await dio.get(
           ApiEndpoints.forecast(latitude: lat, longitude: lon),
-          options: Options(
-            receiveTimeout: const Duration(seconds: 15),
-            sendTimeout: const Duration(seconds: 15),
-          ),
         );
-        dio.close();
         forecastModel = ForecastResponseModel.fromJson(
             response.data as Map<String, dynamic>);
 
@@ -161,18 +163,14 @@ Future<void> _refreshWidgetData() async {
     final isDay = forecast.isCurrentlyDay;
     final tier = TemperatureTier.fromTemperature(current.temperature);
 
-    // Pick a random quip
-    final quipMap = heatherQuipMap(altTone: explicit, isDay: isDay);
-    final quips = quipMap[current.condition]?[tier] ?? ['Stay cozy.'];
-    final quip = quips[Random().nextInt(quips.length)];
-
     // Compute alert label and severity from NWS alerts (all severities)
     String? alertLabel;
     String? alertSeverity;
+    String? alertEvent;
+    int? alertExpires;
     if (isInUSBounds(lat, lon)) {
       try {
-        final alertDio = Dio();
-        final alertResponse = await alertDio.get(
+        final alertResponse = await dio.get(
           ApiEndpoints.nwsAlerts(latitude: lat, longitude: lon),
           options: Options(
             headers: {
@@ -183,7 +181,6 @@ Future<void> _refreshWidgetData() async {
             sendTimeout: const Duration(seconds: 10),
           ),
         );
-        alertDio.close();
         final alertData = alertResponse.data as Map<String, dynamic>;
         final features = alertData['features'] as List<dynamic>? ?? [];
         final now = DateTime.now();
@@ -205,14 +202,39 @@ Future<void> _refreshWidgetData() async {
 
           if (sortOrder < bestSortOrder) {
             bestSortOrder = sortOrder;
-            alertLabel = '\u26A0 ${props['event'] as String? ?? 'Weather Alert'}';
+            alertEvent = props['event'] as String? ?? 'Weather Alert';
+            alertLabel = '\u26A0 $alertEvent';
             alertSeverity = severityStr;
+            alertExpires =
+                expires != null ? expires.toUtc().millisecondsSinceEpoch ~/ 1000 : null;
             if (sortOrder == 0) break; // can't get more severe
           }
         }
       } catch (e) {
         if (kDebugMode) print('Widget alert fetch failed: $e');
       }
+    }
+
+    // Pick a quip — use alert-aware quip for extreme/severe alerts
+    final String quip;
+    final rng = Random();
+    if (alertSeverity != null && alertEvent != null) {
+      final severity = AlertSeverity.fromString(alertSeverity);
+      final category = AlertQuipCategory.fromEvent(alertEvent, severity);
+      if (category != null) {
+        final alertQuips = explicit
+            ? alertExplicitQuips[category]!
+            : alertCleanQuips[category]!;
+        quip = alertQuips[rng.nextInt(alertQuips.length)];
+      } else {
+        final quipMap = heatherQuipMap(altTone: explicit, isDay: isDay);
+        final quips = quipMap[current.condition]?[tier] ?? ['Stay cozy.'];
+        quip = quips[rng.nextInt(quips.length)];
+      }
+    } else {
+      final quipMap = heatherQuipMap(altTone: explicit, isDay: isDay);
+      final quips = quipMap[current.condition]?[tier] ?? ['Stay cozy.'];
+      quip = quips[rng.nextInt(quips.length)];
     }
 
     // Read cached USNO moon data and interpolate illumination for "now"
@@ -239,6 +261,7 @@ Future<void> _refreshWidgetData() async {
       quip: quip,
       alertLabel: alertLabel,
       alertSeverity: alertSeverity,
+      alertExpires: alertExpires,
       moonPhase: moonPhase,
       moonIllumination: moonIllum,
     );
@@ -260,6 +283,8 @@ Future<void> _refreshWidgetData() async {
       iOSName: _iOSWidgetName,
       androidName: _androidWidgetName,
     );
+
+    dio.close();
   } catch (e) {
     if (kDebugMode) print('Widget refresh failed: $e');
   }

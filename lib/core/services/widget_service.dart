@@ -199,10 +199,12 @@ class WidgetService {
     // Compute alert label and severity from the most severe alert
     String? alertLabel;
     String? alertSeverity;
+    int? alertExpires;
     if (alerts.isNotEmpty) {
       final alert = alerts.first; // alerts are pre-sorted by severity
       alertLabel = '\u26A0 ${alert.event}';
       alertSeverity = alert.severity.name;
+      alertExpires = alert.expires.toUtc().millisecondsSinceEpoch ~/ 1000;
     }
 
     // Read cached USNO moon data and interpolate illumination for "now"
@@ -231,6 +233,7 @@ class WidgetService {
       quip: quip,
       alertLabel: alertLabel,
       alertSeverity: alertSeverity,
+      alertExpires: alertExpires,
       visiblePlanets: visiblePlanets,
       moonPhase: moonPhase,
       moonIllumination: moonIllum,

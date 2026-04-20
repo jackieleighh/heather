@@ -21,7 +21,7 @@ class CardContainer extends StatelessWidget {
       return child;
     }
     return Container(
-      clipBehavior: Clip.hardEdge,
+      clipBehavior: Clip.antiAlias,
       decoration: BoxDecoration(
         color: AppColors.cream22,
         borderRadius: BorderRadius.circular(20),

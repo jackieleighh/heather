@@ -27,7 +27,7 @@ class LoadingScreen extends StatelessWidget {
             Text(
               'Getting your forecast...',
               style: Theme.of(context).textTheme.headlineSmall?.copyWith(
-                    color: AppColors.cream.withValues(alpha: 0.7),
+                    color: AppColors.cream70,
                     fontSize: 14,
                   ),
             ),

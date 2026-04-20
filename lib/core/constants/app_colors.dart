@@ -121,6 +121,7 @@ class AppColors {
   static const cream70 = Color(0xB3FAFAFA); // alpha 0.7
   static const cream60 = Color(0x99FAFAFA); // alpha 0.6
   static const cream55 = Color(0x8CFAFAFA); // alpha 0.55
+  static const cream54 = Color(0x8AFAFAFA); // alpha 0.54
   static const cream50 = Color(0x80FAFAFA); // alpha 0.5
   static const cream45 = Color(0x73FAFAFA); // alpha 0.45
   static const cream40 = Color(0x66FAFAFA); // alpha 0.4
@@ -140,5 +141,6 @@ class AppColors {
 
   // --- Pre-computed black alpha variants ---
   static const black30 = Color(0x4D000000); // alpha 0.3
+  static const black18 = Color(0x2E000000); // alpha 0.18
   static const black12 = Color(0x1F000000); // alpha 0.12
 }

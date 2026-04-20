@@ -116,11 +116,11 @@ class _FreezingRainPainter extends CustomPainter {
       }
       if (drop.x > size.width) drop.x = 0;
 
-      // Alternate between icy blue and white drops
+      // Alternate between icy blue and white drops (size is fixed per particle)
       paint
-        ..color = drop.size > 2.0
+        ..color = (drop.cachedColor ??= drop.size > 2.0
             ? Color.fromRGBO(176, 224, 255, drop.opacity)
-            : Color.fromRGBO(255, 255, 255, drop.opacity)
+            : Color.fromRGBO(255, 255, 255, drop.opacity))
         ..strokeWidth = drop.size;
 
       canvas.drawLine(

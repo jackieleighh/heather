@@ -1,19 +1,14 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../../core/constants/api_endpoints.dart';
+import '../../../../core/constants/cache_constants.dart';
 import '../../../../core/network/api_client.dart';
-
-/// Round to 3 decimal places (~111m precision) to avoid GPS micro-drift
-/// creating duplicate provider instances and cache entries.
-({double lat, double lon}) _roundCoords(({double lat, double lon}) c) => (
-  lat: (c.lat * 1000).roundToDouble() / 1000,
-  lon: (c.lon * 1000).roundToDouble() / 1000,
-);
+import '../../../../core/utils/coord_utils.dart';
 
 final historicalAvgProvider = FutureProvider.autoDispose
     .family<double?, ({double lat, double lon})>(
         (ref, rawCoords) async {
-  final coords = _roundCoords(rawCoords);
+  final coords = roundCoords(rawCoords);
   final prefs = ref.watch(sharedPreferencesProvider);
   final dio = ref.watch(dioProvider);
   final cacheKey = 'cached_hist_avg_${coords.lat}_${coords.lon}';
@@ -25,7 +20,7 @@ final historicalAvgProvider = FutureProvider.autoDispose
   // Return cached value if <24 hours old
   if (cachedAvg != null && cachedTs != null) {
     final age = DateTime.now().millisecondsSinceEpoch - cachedTs;
-    if (age < const Duration(hours: 24).inMilliseconds) {
+    if (age < historicalAvgCacheTtl.inMilliseconds) {
       return cachedAvg;
     }
   }

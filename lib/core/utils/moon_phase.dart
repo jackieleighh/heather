@@ -39,15 +39,17 @@ MoonPhase? usnoPhaseToEnum(String usnoPhase) => switch (usnoPhase) {
 };
 
 /// Returns the [MoonPhase] for a given cycle [fraction] (0.0–1.0).
+/// Principal phases (New Moon, Full Moon, quarters) use narrow windows
+/// (~1 day) so the label only appears on the day of the actual event.
 MoonPhase phaseFromFraction(double fraction) {
   final f = fraction % 1.0;
   if (f < 0.04) return MoonPhase.newMoon;
-  if (f < 0.21) return MoonPhase.waxingCrescent;
-  if (f < 0.29) return MoonPhase.firstQuarter;
-  if (f < 0.46) return MoonPhase.waxingGibbous;
-  if (f < 0.54) return MoonPhase.fullMoon;
-  if (f < 0.71) return MoonPhase.waningGibbous;
-  if (f < 0.79) return MoonPhase.thirdQuarter;
+  if (f < 0.23) return MoonPhase.waxingCrescent;
+  if (f < 0.27) return MoonPhase.firstQuarter;
+  if (f < 0.48) return MoonPhase.waxingGibbous;
+  if (f < 0.52) return MoonPhase.fullMoon;
+  if (f < 0.73) return MoonPhase.waningGibbous;
+  if (f < 0.77) return MoonPhase.thirdQuarter;
   if (f < 0.96) return MoonPhase.waningCrescent;
   return MoonPhase.newMoon;
 }
@@ -58,23 +60,23 @@ IconData moonPhaseIcon(double fraction) {
   final f = fraction % 1.0;
 
   if (f < 0.04) return WeatherIcons.moon_new;
-  if (f < 0.21) {
-    final sub = _subIndex(f, 0.04, 0.21);
+  if (f < 0.23) {
+    final sub = _subIndex(f, 0.04, 0.23);
     return _waxingCrescentIcons[sub];
   }
-  if (f < 0.29) return WeatherIcons.moon_first_quarter;
-  if (f < 0.46) {
-    final sub = _subIndex(f, 0.29, 0.46);
+  if (f < 0.27) return WeatherIcons.moon_first_quarter;
+  if (f < 0.48) {
+    final sub = _subIndex(f, 0.27, 0.48);
     return _waxingGibbousIcons[sub];
   }
-  if (f < 0.54) return WeatherIcons.moon_full;
-  if (f < 0.71) {
-    final sub = _subIndex(f, 0.54, 0.71);
+  if (f < 0.52) return WeatherIcons.moon_full;
+  if (f < 0.73) {
+    final sub = _subIndex(f, 0.52, 0.73);
     return _waningGibbousIcons[sub];
   }
-  if (f < 0.79) return WeatherIcons.moon_third_quarter;
+  if (f < 0.77) return WeatherIcons.moon_third_quarter;
   if (f < 0.96) {
-    final sub = _subIndex(f, 0.79, 0.96);
+    final sub = _subIndex(f, 0.77, 0.96);
     return _waningCrescentIcons[sub];
   }
   return WeatherIcons.moon_new;

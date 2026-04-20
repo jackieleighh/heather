@@ -47,6 +47,7 @@ private func ge(_ condition: String, _ tempF: Int, _ isDay: Bool, _ tierName: St
         precipLabel: nil,
         alertLabel: nil,
         alertSeverity: nil,
+        alertExpires: nil,
         widgetSummary: nil,
         summaryIsDay: nil,
         moonPhase: nil,

@@ -4,11 +4,68 @@ import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:heather/core/constants/app_colors.dart';
 import 'package:heather/features/weather/domain/entities/weather_condition.dart';
-import 'package:intl/intl.dart' hide TextDirection;
+import 'package:heather/core/utils/date_formats.dart';
 import 'package:weather_icons/weather_icons.dart';
 import './card_container.dart';
 import './card_display_mode.dart';
 import './info_chip.dart';
+
+/// Cached text styles to avoid repeated GoogleFonts allocations.
+final _figtreeW400_16_cream = GoogleFonts.figtree(
+  fontSize: 16,
+  fontWeight: FontWeight.w400,
+  color: AppColors.cream,
+);
+final _poppinsBold13_cream = GoogleFonts.poppins(
+  fontSize: 13,
+  fontWeight: FontWeight.w700,
+  color: AppColors.cream,
+);
+final _poppinsW400_13_cream90 = GoogleFonts.poppins(
+  fontSize: 13,
+  fontWeight: FontWeight.w400,
+  color: AppColors.cream90,
+);
+final _poppinsW600_11_cream80 = GoogleFonts.poppins(
+  fontSize: 11,
+  fontWeight: FontWeight.w600,
+  color: AppColors.cream80,
+);
+final _poppinsW600_10_cream80 = GoogleFonts.poppins(
+  fontSize: 10,
+  fontWeight: FontWeight.w600,
+  color: AppColors.cream80,
+);
+final _figtreeW400_18_cream = GoogleFonts.figtree(
+  fontSize: 18,
+  fontWeight: FontWeight.w400,
+  color: AppColors.cream,
+);
+final _figtreeW400_14_cream = GoogleFonts.figtree(
+  fontSize: 14,
+  fontWeight: FontWeight.w400,
+  color: AppColors.cream,
+);
+final _poppinsBold14_cream = GoogleFonts.poppins(
+  fontSize: 14,
+  fontWeight: FontWeight.w700,
+  color: AppColors.cream,
+);
+final _poppinsBold11_cream = GoogleFonts.poppins(
+  fontSize: 11,
+  fontWeight: FontWeight.w700,
+  color: AppColors.cream,
+);
+final _poppinsW600_14_cream90 = GoogleFonts.poppins(
+  fontSize: 14,
+  fontWeight: FontWeight.w600,
+  color: AppColors.cream90,
+);
+final _poppinsW600_11_cream90 = GoogleFonts.poppins(
+  fontSize: 11,
+  fontWeight: FontWeight.w600,
+  color: AppColors.cream90,
+);
 
 enum PrecipType { rain, snow, mixed }
 
@@ -99,29 +156,17 @@ class RainCard extends StatelessWidget {
             const SizedBox(width: 4),
             Text(
               label,
-              style: GoogleFonts.figtree(
-                fontSize: 16,
-                fontWeight: FontWeight.w400,
-                color: AppColors.cream,
-              ),
+              style: _figtreeW400_16_cream,
             ),
             const Spacer(),
             Text(
               precipLabel,
-              style: GoogleFonts.poppins(
-                fontSize: 13,
-                fontWeight: FontWeight.w700,
-                color: AppColors.cream,
-              ),
+              style: _poppinsBold13_cream,
             ),
             const SizedBox(width: 4),
             Text(
               '$precipitationProbability%',
-              style: GoogleFonts.poppins(
-                fontSize: 13,
-                fontWeight: FontWeight.w400,
-                color: AppColors.cream90,
-              ),
+              style: _poppinsW400_13_cream90,
             ),
           ],
         ),
@@ -142,11 +187,7 @@ class RainCard extends StatelessWidget {
                   const Spacer(),
                   Text(
                     '$humidity% humidity',
-                    style: GoogleFonts.poppins(
-                      fontSize: 11,
-                      fontWeight: FontWeight.w600,
-                      color: AppColors.cream80,
-                    ),
+                    style: _poppinsW600_11_cream80,
                   ),
                 ],
               ),
@@ -205,11 +246,7 @@ class RainCard extends StatelessWidget {
                 const Spacer(),
                 Text(
                   '$humidity% humidity',
-                  style: GoogleFonts.poppins(
-                    fontSize: 11,
-                    fontWeight: FontWeight.w600,
-                    color: AppColors.cream80,
-                  ),
+                  style: _poppinsW600_11_cream80,
                 ),
               ],
             ),
@@ -364,29 +401,17 @@ class RainCard extends StatelessWidget {
         SizedBox(width: compact ? 3 : 4),
         Text(
           label,
-          style: GoogleFonts.figtree(
-            fontSize: compact ? 14 : 18,
-            fontWeight: FontWeight.w400,
-            color: AppColors.cream,
-          ),
+          style: compact ? _figtreeW400_14_cream : _figtreeW400_18_cream,
         ),
         const Spacer(),
         Text(
           precipLabel,
-          style: GoogleFonts.poppins(
-            fontSize: compact ? 11 : 14,
-            fontWeight: FontWeight.w700,
-            color: AppColors.cream,
-          ),
+          style: compact ? _poppinsBold11_cream : _poppinsBold14_cream,
         ),
         const SizedBox(width: 4),
         Text(
           '$precipitationProbability% chance',
-          style: GoogleFonts.poppins(
-            fontSize: compact ? 11 : 14,
-            fontWeight: FontWeight.w600,
-            color: AppColors.cream90,
-          ),
+          style: compact ? _poppinsW600_11_cream90 : _poppinsW600_14_cream90,
         ),
       ],
     );
@@ -407,11 +432,7 @@ class _ChartLabel extends StatelessWidget {
       padding: const EdgeInsets.only(bottom: 4),
       child: Text(
         text,
-        style: GoogleFonts.poppins(
-          fontSize: 10,
-          fontWeight: FontWeight.w600,
-          color: AppColors.cream80,
-        ),
+        style: _poppinsW600_10_cream80,
       ),
     );
   }
@@ -504,7 +525,7 @@ class _PrecipBarPainter extends CustomPainter {
         if (i % 6 != 0 && i != hours.length - 1) continue;
         final tp = TextPainter(
           text: TextSpan(
-            text: DateFormat('ha').format(hours[i]).toLowerCase(),
+            text: AppDateFormats.ha.format(hours[i]).toLowerCase(),
             style: _hourLabelStyle,
           ),
           textDirection: TextDirection.ltr,
@@ -642,7 +663,7 @@ class _HumidityLinePainter extends CustomPainter {
         if (i % 6 != 0 && i != hours.length - 1) continue;
         final tp = TextPainter(
           text: TextSpan(
-            text: DateFormat('ha').format(hours[i]).toLowerCase(),
+            text: AppDateFormats.ha.format(hours[i]).toLowerCase(),
             style: _hourLabelStyle,
           ),
           textDirection: TextDirection.ltr,

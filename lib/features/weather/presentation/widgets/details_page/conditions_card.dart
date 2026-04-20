@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:heather/core/utils/date_formats.dart';
 import 'package:intl/intl.dart';
 import 'package:weather_icons/weather_icons.dart';
 
@@ -9,6 +10,33 @@ import '../../../../../core/utils/weather_icon_mapper.dart';
 import '../../../domain/entities/hourly_weather.dart';
 import './card_container.dart';
 import './card_display_mode.dart';
+
+/// Cached text styles to avoid repeated GoogleFonts allocations.
+final _figtreeW400_16_cream = GoogleFonts.figtree(
+  fontSize: 16,
+  fontWeight: FontWeight.w400,
+  color: AppColors.cream,
+);
+final _figtreeW600_11_cream70 = GoogleFonts.figtree(
+  fontSize: 11,
+  fontWeight: FontWeight.w600,
+  color: AppColors.cream70,
+);
+final _poppinsBold13_cream70 = GoogleFonts.poppins(
+  fontSize: 13,
+  fontWeight: FontWeight.w700,
+  color: AppColors.cream70,
+);
+final _figtreeW400_18_cream = GoogleFonts.figtree(
+  fontSize: 18,
+  fontWeight: FontWeight.w400,
+  color: AppColors.cream,
+);
+final _figtreeW400_14_cream = GoogleFonts.figtree(
+  fontSize: 14,
+  fontWeight: FontWeight.w400,
+  color: AppColors.cream,
+);
 
 class ConditionsCard extends StatefulWidget {
   final List<HourlyWeather> hourly;
@@ -75,13 +103,9 @@ class _ConditionsCardState extends State<ConditionsCard> {
         SizedBox(width: widget.compact ? 3 : 4),
         Text(
           'Conditions',
-          style: GoogleFonts.figtree(
-            fontSize: widget.mode == CardDisplayMode.collapsed
-                ? 16
-                : (widget.compact ? 14 : 18),
-            fontWeight: FontWeight.w400,
-            color: AppColors.cream,
-          ),
+          style: widget.mode == CardDisplayMode.collapsed
+              ? _figtreeW400_16_cream
+              : (widget.compact ? _figtreeW400_14_cream : _figtreeW400_18_cream),
         ),
       ],
     );
@@ -115,7 +139,7 @@ class _ConditionsCardState extends State<ConditionsCard> {
           itemCount: widget.hourly.length,
           itemBuilder: (context, index) {
             final h = widget.hourly[index];
-            final hourLabel = DateFormat('ha').format(h.time).toLowerCase();
+            final hourLabel = AppDateFormats.ha.format(h.time).toLowerCase();
             return Padding(
               padding: const EdgeInsets.only(right: 12),
               child: Column(
@@ -197,11 +221,7 @@ class _ConditionsCardState extends State<ConditionsCard> {
                         children: [
                           Text(
                             hourLabel,
-                            style: GoogleFonts.figtree(
-                              fontSize: 11,
-                              fontWeight: FontWeight.w600,
-                              color: AppColors.cream70,
-                            ),
+                            style: _figtreeW600_11_cream70,
                           ),
                           const SizedBox(height: 8),
                           Icon(
@@ -212,11 +232,7 @@ class _ConditionsCardState extends State<ConditionsCard> {
                           const SizedBox(height: 3),
                           Text(
                             '${h.temperature.round()}\u00B0',
-                            style: GoogleFonts.poppins(
-                              fontSize: 13,
-                              fontWeight: FontWeight.w700,
-                              color: AppColors.cream70,
-                            ),
+                            style: _poppinsBold13_cream70,
                           ),
                         ],
                       ),
@@ -247,11 +263,7 @@ class _ConditionsCardState extends State<ConditionsCard> {
             const SizedBox(width: 4),
             Text(
               'Conditions',
-              style: GoogleFonts.figtree(
-                fontSize: 16,
-                fontWeight: FontWeight.w400,
-                color: AppColors.cream,
-              ),
+              style: _figtreeW400_16_cream,
             ),
             const Spacer(),
             if (current != null)

@@ -4,11 +4,74 @@ import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:heather/core/constants/app_colors.dart';
 import 'package:heather/core/utils/uv_index.dart';
+import 'package:heather/core/utils/date_formats.dart';
 import 'package:intl/intl.dart' hide TextDirection;
 import 'package:weather_icons/weather_icons.dart';
 import './card_container.dart';
 import './card_display_mode.dart';
 import './info_chip.dart';
+
+/// Cached text styles to avoid repeated GoogleFonts allocations.
+final _figtreeW400_16_cream = GoogleFonts.figtree(
+  fontSize: 16,
+  fontWeight: FontWeight.w400,
+  color: AppColors.cream,
+);
+final _figtreeW400_18_cream = GoogleFonts.figtree(
+  fontSize: 18,
+  fontWeight: FontWeight.w400,
+  color: AppColors.cream,
+);
+final _poppinsBold13_cream = GoogleFonts.poppins(
+  fontSize: 13,
+  fontWeight: FontWeight.w700,
+  color: AppColors.cream,
+);
+final _poppinsW400_13_cream = GoogleFonts.poppins(
+  fontSize: 13,
+  fontWeight: FontWeight.w400,
+  color: AppColors.cream,
+);
+final _poppinsW500_11_cream80 = GoogleFonts.poppins(
+  fontSize: 11,
+  fontWeight: FontWeight.w500,
+  color: AppColors.cream80,
+);
+final _poppinsBold11_cream = GoogleFonts.poppins(
+  fontSize: 11,
+  fontWeight: FontWeight.w700,
+  color: AppColors.cream,
+);
+final _poppinsW600_11_cream90 = GoogleFonts.poppins(
+  fontSize: 11,
+  fontWeight: FontWeight.w600,
+  color: AppColors.cream90,
+);
+final _poppinsW400_11_cream75 = GoogleFonts.poppins(
+  fontSize: 11,
+  fontWeight: FontWeight.w400,
+  color: AppColors.cream75,
+);
+final _poppinsW400_12_cream95 = GoogleFonts.poppins(
+  fontSize: 12,
+  fontWeight: FontWeight.w400,
+  color: AppColors.cream95,
+);
+final _poppinsBold12_cream95 = GoogleFonts.poppins(
+  fontSize: 12,
+  fontWeight: FontWeight.w700,
+  color: AppColors.cream95,
+);
+final _poppinsW400_12_cream75 = GoogleFonts.poppins(
+  fontSize: 12,
+  fontWeight: FontWeight.w400,
+  color: AppColors.cream75,
+);
+final _poppinsW400_12_cream90 = GoogleFonts.poppins(
+  fontSize: 12,
+  fontWeight: FontWeight.w400,
+  color: AppColors.cream90,
+);
 
 class SunCard extends StatelessWidget {
   // Arc canvas geometry — kept here so the LayoutBuilder placing the
@@ -52,7 +115,7 @@ class SunCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final timeFmt = DateFormat('h:mm a');
+    final timeFmt = AppDateFormats.hmma;
     final theme = Theme.of(context);
 
     if (mode == CardDisplayMode.collapsed) {
@@ -68,30 +131,18 @@ class SunCard extends StatelessWidget {
             const SizedBox(width: 4),
             Text(
               'Sun',
-              style: GoogleFonts.figtree(
-                fontSize: 16,
-                fontWeight: FontWeight.w400,
-                color: AppColors.cream,
-              ),
+              style: _figtreeW400_16_cream,
             ),
             const Spacer(),
             if (isSunUp) ...[
               Text(
                 'UV ${uvIndex.round()}',
-                style: GoogleFonts.poppins(
-                  fontSize: 13,
-                  fontWeight: FontWeight.w700,
-                  color: AppColors.cream,
-                ),
+                style: _poppinsBold13_cream,
               ),
               const SizedBox(width: 4),
               Text(
                 uvLevelLabel(uvIndex),
-                style: GoogleFonts.poppins(
-                  fontSize: 13,
-                  fontWeight: FontWeight.w400,
-                  color: AppColors.cream,
-                ),
+                style: _poppinsW400_13_cream,
               ),
             ] else ...[
               Icon(
@@ -102,11 +153,7 @@ class SunCard extends StatelessWidget {
               const SizedBox(width: 3),
               Text(
                 timeFmt.format(sunrise),
-                style: GoogleFonts.poppins(
-                  fontSize: 13,
-                  fontWeight: FontWeight.w700,
-                  color: AppColors.cream,
-                ),
+                style: _poppinsBold13_cream,
               ),
             ],
           ],
@@ -134,39 +181,23 @@ class SunCard extends StatelessWidget {
                 const Spacer(),
                 Text(
                   _formatRemaining(now, isSunUp, sunrise, sunset),
-                  style: GoogleFonts.poppins(
-                    fontSize: 11,
-                    fontWeight: FontWeight.w500,
-                    color: AppColors.cream80,
-                  ),
+                  style: _poppinsW500_11_cream80,
                 ),
                 const SizedBox(width: 12),
                 Text(
                   'UV ${uvIndex.round()}',
-                  style: GoogleFonts.poppins(
-                    fontSize: 11,
-                    fontWeight: FontWeight.w700,
-                    color: AppColors.cream,
-                  ),
+                  style: _poppinsBold11_cream,
                 ),
                 const SizedBox(width: 4),
                 Text(
                   uvLevelLabel(uvIndex),
-                  style: GoogleFonts.poppins(
-                    fontSize: 11,
-                    fontWeight: FontWeight.w600,
-                    color: AppColors.cream90,
-                  ),
+                  style: _poppinsW600_11_cream90,
                 ),
                 if (!isSunUp) ...[
                   const SizedBox(width: 4),
                   Text(
                     'tmrw',
-                    style: GoogleFonts.poppins(
-                      fontSize: 11,
-                      fontWeight: FontWeight.w400,
-                      color: AppColors.cream75,
-                    ),
+                    style: _poppinsW400_11_cream75,
                   ),
                 ],
               ],
@@ -217,12 +248,8 @@ class SunCard extends StatelessWidget {
                               ),
                               const SizedBox(height: 1),
                               Text(
-                                DateFormat('h:mm a').format(sunrise),
-                                style: GoogleFonts.poppins(
-                                  fontSize: 12,
-                                  fontWeight: FontWeight.w400,
-                                  color: AppColors.cream95,
-                                ),
+                                AppDateFormats.hmma.format(sunrise),
+                                style: _poppinsW400_12_cream95,
                               ),
                             ],
                           ),
@@ -243,12 +270,8 @@ class SunCard extends StatelessWidget {
                               ),
                               const SizedBox(height: 1),
                               Text(
-                                DateFormat('h:mm a').format(sunset),
-                                style: GoogleFonts.poppins(
-                                  fontSize: 12,
-                                  fontWeight: FontWeight.w400,
-                                  color: AppColors.cream95,
-                                ),
+                                AppDateFormats.hmma.format(sunset),
+                                style: _poppinsW400_12_cream95,
                               ),
                             ],
                           ),
@@ -272,31 +295,19 @@ class SunCard extends StatelessWidget {
                 const SizedBox(width: 5),
                 Text.rich(
                   TextSpan(
-                    style: GoogleFonts.poppins(
-                      fontSize: 12,
-                      fontWeight: FontWeight.w700,
-                      color: AppColors.cream95,
-                    ),
+                    style: _poppinsBold12_cream95,
                     children: [
                       if (!isSunUp)
                         TextSpan(
                           text: 'Tomorrow  \u00B7  ',
-                          style: GoogleFonts.poppins(
-                            fontSize: 12,
-                            fontWeight: FontWeight.w400,
-                            color: AppColors.cream95,
-                          ),
+                          style: _poppinsW400_12_cream95,
                         ),
                       TextSpan(text: '${dayH}h ${dayM}m daylight'),
                       if (isSunUp &&
                           _formatDayDelta(dayLengthDeltaMinutes).isNotEmpty)
                         TextSpan(
                           text: _formatDayDelta(dayLengthDeltaMinutes),
-                          style: GoogleFonts.poppins(
-                            fontSize: 12,
-                            fontWeight: FontWeight.w400,
-                            color: AppColors.cream75,
-                          ),
+                          style: _poppinsW400_12_cream75,
                         ),
                     ],
                   ),
@@ -316,21 +327,13 @@ class SunCard extends StatelessWidget {
                   const SizedBox(width: 5),
                   Text.rich(
                     TextSpan(
-                      style: GoogleFonts.poppins(
-                        fontSize: 12,
-                        fontWeight: FontWeight.w400,
-                        color: AppColors.cream90,
-                      ),
+                      style: _poppinsW400_12_cream90,
                       children: [
                         const TextSpan(text: 'SPF/shade '),
                         TextSpan(
                           text:
-                              '${DateFormat('h a').format(protection.$1)} - ${DateFormat('h a').format(protection.$2)}',
-                          style: GoogleFonts.poppins(
-                            fontSize: 12,
-                            fontWeight: FontWeight.w700,
-                            color: AppColors.cream95,
-                          ),
+                              '${AppDateFormats.hSpaceA.format(protection.$1)} - ${AppDateFormats.hSpaceA.format(protection.$2)}',
+                          style: _poppinsBold12_cream95,
                         ),
                       ],
                     ),
@@ -379,29 +382,17 @@ class SunCard extends StatelessWidget {
               const Spacer(),
               Text(
                 _formatRemaining(now, isSunUp, sunrise, sunset),
-                style: GoogleFonts.poppins(
-                  fontSize: 11,
-                  fontWeight: FontWeight.w500,
-                  color: AppColors.cream80,
-                ),
+                style: _poppinsW500_11_cream80,
               ),
               const SizedBox(width: 12),
               Text(
                 'UV ${uvIndex.round()}',
-                style: GoogleFonts.poppins(
-                  fontSize: 11,
-                  fontWeight: FontWeight.w700,
-                  color: AppColors.cream,
-                ),
+                style: _poppinsBold11_cream,
               ),
               const SizedBox(width: 4),
               Text(
                 uvLevelLabel(uvIndex),
-                style: GoogleFonts.poppins(
-                  fontSize: 11,
-                  fontWeight: FontWeight.w600,
-                  color: AppColors.cream90,
-                ),
+                style: _poppinsW600_11_cream90,
               ),
             ],
           ),
@@ -437,11 +428,7 @@ class SunCard extends StatelessWidget {
         const SizedBox(width: 4),
         Text(
           'Sun',
-          style: GoogleFonts.figtree(
-            fontSize: 18,
-            fontWeight: FontWeight.w400,
-            color: AppColors.cream,
-          ),
+          style: _figtreeW400_18_cream,
         ),
         const Spacer(),
         Row(
@@ -483,8 +470,8 @@ class SunCard extends StatelessWidget {
   }
 
   Widget _buildInfoGrid() {
-    final timeFmt = DateFormat('h:mm a');
-    final hourFmt = DateFormat('h a');
+    final timeFmt = AppDateFormats.hmma;
+    final hourFmt = AppDateFormats.hSpaceA;
     final noon = _solarNoon(sunrise, sunset);
     final peak = _peakUv(hourlyUv, hours);
     final golden = _goldenHour(sunset);
@@ -764,7 +751,7 @@ class _UvLinePainter extends CustomPainter {
       if (i % 6 != 0 && i != hours.length - 1) continue;
       final tp = TextPainter(
         text: TextSpan(
-          text: DateFormat('ha').format(hours[i]).toLowerCase(),
+          text: AppDateFormats.ha.format(hours[i]).toLowerCase(),
           style: _hourLabelStyle,
         ),
         textDirection: TextDirection.ltr,

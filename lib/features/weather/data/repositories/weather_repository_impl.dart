@@ -2,6 +2,7 @@ import 'dart:convert';
 
 import 'package:shared_preferences/shared_preferences.dart';
 
+import '../../../../core/constants/cache_constants.dart';
 import '../../domain/entities/forecast.dart';
 import '../../domain/entities/location_info.dart';
 import '../../domain/entities/saved_location.dart';
@@ -153,7 +154,7 @@ class WeatherRepositoryImpl implements WeatherRepository {
     if (cached == null || ts == null) return null;
 
     final age = DateTime.now().millisecondsSinceEpoch - ts;
-    if (age > const Duration(minutes: 16).inMilliseconds) return null;
+    if (age > freshCacheTtl.inMilliseconds) return null;
 
     final json = jsonDecode(cached) as Map<String, dynamic>;
     return ForecastResponseModel.fromJson(json).toEntity();
@@ -256,7 +257,7 @@ class WeatherRepositoryImpl implements WeatherRepository {
     if (cached == null || ts == null) return null;
 
     final age = DateTime.now().millisecondsSinceEpoch - ts;
-    if (age > const Duration(hours: 12).inMilliseconds) return null;
+    if (age > staleCacheTtl.inMilliseconds) return null;
 
     final json = jsonDecode(cached) as Map<String, dynamic>;
     return ForecastResponseModel.fromJson(json).toEntity();

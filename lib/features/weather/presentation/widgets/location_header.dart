@@ -1,8 +1,20 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
-import 'package:intl/intl.dart';
 
 import '../../../../core/constants/app_colors.dart';
+import '../../../../core/utils/date_formats.dart';
+
+/// Cached text styles to avoid repeated GoogleFonts allocations.
+final _quicksandW500_15_cream90 = GoogleFonts.quicksand(
+  fontSize: 15,
+  fontWeight: FontWeight.w500,
+  color: AppColors.cream90,
+);
+final _quicksandBold22 = GoogleFonts.quicksand(
+  fontSize: 22,
+  fontWeight: FontWeight.w700,
+  color: AppColors.cream,
+);
 
 class LocationHeader extends StatelessWidget {
   final String cityName;
@@ -16,7 +28,7 @@ class LocationHeader extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final timeString = DateFormat('h:mm a').format(localTime);
+    final timeString = AppDateFormats.hmma.format(localTime);
 
     return Column(
       mainAxisSize: MainAxisSize.min,
@@ -24,11 +36,7 @@ class LocationHeader extends StatelessWidget {
       children: [
         Text(
           timeString,
-          style: GoogleFonts.quicksand(
-            fontSize: 15,
-            fontWeight: FontWeight.w500,
-            color: AppColors.cream.withValues(alpha: 0.9),
-          ),
+          style: _quicksandW500_15_cream90,
         ),
         const SizedBox(height: 2),
         Row(
@@ -42,11 +50,7 @@ class LocationHeader extends StatelessWidget {
             const SizedBox(width: 4),
             Text(
               cityName,
-              style: GoogleFonts.quicksand(
-                fontSize: 22,
-                fontWeight: FontWeight.w700,
-                color: AppColors.cream,
-              ),
+              style: _quicksandBold22,
             ),
           ],
         ),

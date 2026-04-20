@@ -2,10 +2,10 @@ import 'dart:async';
 import 'dart:math' as math;
 
 import 'package:flutter/material.dart';
-import 'package:pull_to_refresh/pull_to_refresh.dart';
 
 import '../../../../core/constants/app_colors.dart';
 import '../../domain/entities/forecast.dart';
+import '../../domain/entities/minutely_weather.dart';
 import '../../domain/entities/weather_alert.dart';
 import 'alert_card.dart';
 import 'location_header.dart';
@@ -43,7 +43,6 @@ class CurrentWeatherPage extends StatefulWidget {
 
 class _CurrentWeatherPageState extends State<CurrentWeatherPage> {
   final _scrollController = ScrollController();
-  final _refreshController = RefreshController();
   static const _overscrollThreshold = 50.0;
   bool _pageChanging = false;
   Timer? _cooldownTimer;
@@ -52,7 +51,6 @@ class _CurrentWeatherPageState extends State<CurrentWeatherPage> {
   void dispose() {
     _cooldownTimer?.cancel();
     _scrollController.dispose();
-    _refreshController.dispose();
     super.dispose();
   }
 
@@ -65,9 +63,6 @@ class _CurrentWeatherPageState extends State<CurrentWeatherPage> {
       // At bottom and swiping up → next page
       if (pos.pixels > pos.maxScrollExtent + _overscrollThreshold) {
         _pageChanging = true;
-        // Just trigger the page change — don't touch the scroll position.
-        // BouncingScrollPhysics will bounce back naturally and the page
-        // is already sliding away, so the bounce is barely visible.
         widget.parentPageController.nextPage(
           duration: const Duration(milliseconds: 400),
           curve: Curves.easeOutCubic,
@@ -75,7 +70,6 @@ class _CurrentWeatherPageState extends State<CurrentWeatherPage> {
         _cooldownTimer?.cancel();
         _cooldownTimer = Timer(const Duration(milliseconds: 600), () {
           _pageChanging = false;
-          // Reset scroll after the page transition completes
           if (_scrollController.hasClients) {
             _scrollController.jumpTo(0);
           }
@@ -88,12 +82,39 @@ class _CurrentWeatherPageState extends State<CurrentWeatherPage> {
   }
 
   Future<void> _onRefresh() async {
-    final success = await widget.onRefresh();
-    if (success) {
-      _refreshController.refreshCompleted();
-    } else {
-      _refreshController.refreshFailed();
+    await widget.onRefresh();
+  }
+
+  String? _precipLabel() {
+    final forecast = widget.forecast;
+    final isRaining = precipConditions.contains(forecast.current.condition);
+
+    // Try minutely_15 data first (most precise, ~1 hour window)
+    final minutelyLabel = formatPrecipLabel(analyzePrecipitation(
+      minutely15: forecast.minutely15,
+      locationNow: forecast.locationNow,
+      isCurrentlyRaining: isRaining,
+    ));
+    if (minutelyLabel != null) return minutelyLabel;
+
+    // Fall back to hourly data (transition/stop labels)
+    final hourlyLabel = hourlyPrecipLabel(
+      hourly: forecast.hourly,
+      currentCondition: forecast.current.condition,
+      locationNow: forecast.locationNow,
+      daily: forecast.daily,
+    );
+    if (hourlyLabel != null) return hourlyLabel;
+
+    // Nighttime fallback — tomorrow's precipitation
+    if (!forecast.isCurrentlyDay) {
+      return tomorrowPrecipLabel(
+        daily: forecast.daily,
+        locationNow: forecast.locationNow,
+      );
     }
+
+    return null;
   }
 
   @override
@@ -106,9 +127,8 @@ class _CurrentWeatherPageState extends State<CurrentWeatherPage> {
     final todayLow = hasDaily
         ? math.min(widget.forecast.todayDaily.temperatureMin, weather.temperature)
         : weather.temperature;
-    final textStyle = Theme.of(context).textTheme.bodySmall?.copyWith(
-      color: AppColors.cream.withValues(alpha: 0.85),
-    );
+
+    final precipLabel = _precipLabel();
 
     return MediaQuery(
       data: MediaQuery.of(context).copyWith(
@@ -117,28 +137,16 @@ class _CurrentWeatherPageState extends State<CurrentWeatherPage> {
       child: SafeArea(
       child: NotificationListener<ScrollNotification>(
         onNotification: _handleScrollNotification,
-        child: SmartRefresher(
-          controller: _refreshController,
-          enablePullDown: true,
-          enablePullUp: false,
+        child: RefreshIndicator(
           onRefresh: _onRefresh,
-          header: CustomHeader(
-            completeDuration: const Duration(milliseconds: 1200),
-            builder: (context, mode) {
-              Widget child;
-              if (mode == RefreshStatus.completed) {
-                child = Text('All caught up', style: textStyle);
-              } else if (mode == RefreshStatus.failed) {
-                child = Text('Yikes! Couldn\'t refresh', style: textStyle);
-              } else {
-                child = const PulsingDots();
-              }
-              return SizedBox(height: 60, child: Center(child: child));
-            },
-          ),
+          color: AppColors.cream,
+          backgroundColor: Colors.transparent,
+          elevation: 0,
           child: CustomScrollView(
             controller: _scrollController,
-            physics: const BouncingScrollPhysics(),
+            physics: const BouncingScrollPhysics(
+              parent: AlwaysScrollableScrollPhysics(),
+            ),
             slivers: [
               SliverFillRemaining(
                 hasScrollBody: false,
@@ -166,6 +174,7 @@ class _CurrentWeatherPageState extends State<CurrentWeatherPage> {
                         high: todayHigh,
                         low: todayLow,
                         feelsLike: weather.feelsLike,
+                        precipLabel: precipLabel,
                       ),
                       const Spacer(flex: 1),
                       SassyQuip(quip: widget.quip),
@@ -182,4 +191,3 @@ class _CurrentWeatherPageState extends State<CurrentWeatherPage> {
     );
   }
 }
-

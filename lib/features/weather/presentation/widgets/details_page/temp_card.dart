@@ -3,11 +3,79 @@ import 'dart:math' as math;
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:heather/core/constants/app_colors.dart';
-import 'package:intl/intl.dart' hide TextDirection;
+import 'package:heather/core/utils/date_formats.dart';
 import 'package:weather_icons/weather_icons.dart';
 import './card_container.dart';
 import './card_display_mode.dart';
 import './info_chip.dart';
+
+/// Cached text styles to avoid repeated GoogleFonts allocations.
+final _figtreeW400_16_cream = GoogleFonts.figtree(
+  fontSize: 16,
+  fontWeight: FontWeight.w400,
+  color: AppColors.cream,
+);
+final _poppinsBold13_cream = GoogleFonts.poppins(
+  fontSize: 13,
+  fontWeight: FontWeight.w700,
+  color: AppColors.cream,
+);
+final _poppinsW500_11_cream85 = GoogleFonts.poppins(
+  fontSize: 11,
+  fontWeight: FontWeight.w500,
+  color: AppColors.cream85,
+);
+final _poppinsBold42_cream = GoogleFonts.poppins(
+  fontSize: 42,
+  fontWeight: FontWeight.w700,
+  color: AppColors.cream,
+  height: 1,
+);
+final _poppinsBold10_cream70 = GoogleFonts.poppins(
+  fontSize: 10,
+  fontWeight: FontWeight.w700,
+  color: AppColors.cream70,
+);
+final _poppinsW600_11_cream80 = GoogleFonts.poppins(
+  fontSize: 11,
+  fontWeight: FontWeight.w600,
+  color: AppColors.cream80,
+);
+final _poppinsW600_10_cream80 = GoogleFonts.poppins(
+  fontSize: 10,
+  fontWeight: FontWeight.w600,
+  color: AppColors.cream80,
+);
+final _figtreeW400_18_cream = GoogleFonts.figtree(
+  fontSize: 18,
+  fontWeight: FontWeight.w400,
+  color: AppColors.cream,
+);
+final _figtreeW400_14_cream = GoogleFonts.figtree(
+  fontSize: 14,
+  fontWeight: FontWeight.w400,
+  color: AppColors.cream,
+);
+final _poppinsBold14_cream = GoogleFonts.poppins(
+  fontSize: 14,
+  fontWeight: FontWeight.w700,
+  color: AppColors.cream,
+);
+final _poppinsBold11_cream = GoogleFonts.poppins(
+  fontSize: 11,
+  fontWeight: FontWeight.w700,
+  color: AppColors.cream,
+);
+final _poppinsW600_14_cream90 = GoogleFonts.poppins(
+  fontSize: 14,
+  fontWeight: FontWeight.w600,
+  color: AppColors.cream90,
+);
+final _poppinsW600_11_cream90 = GoogleFonts.poppins(
+  fontSize: 11,
+  fontWeight: FontWeight.w600,
+  color: AppColors.cream90,
+);
 
 class TemperatureCard extends StatelessWidget {
   final List<double> temps;
@@ -59,20 +127,12 @@ class TemperatureCard extends StatelessWidget {
             const SizedBox(width: 4),
             Text(
               'Temp',
-              style: GoogleFonts.figtree(
-                fontSize: 16,
-                fontWeight: FontWeight.w400,
-                color: AppColors.cream,
-              ),
+              style: _figtreeW400_16_cream,
             ),
             const Spacer(),
             Text(
               '${hi.round()}° / ${lo.round()}°',
-              style: GoogleFonts.poppins(
-                fontSize: 13,
-                fontWeight: FontWeight.w700,
-                color: AppColors.cream,
-              ),
+              style: _poppinsBold13_cream,
             ),
           ],
         ),
@@ -119,22 +179,14 @@ class TemperatureCard extends StatelessWidget {
                     const SizedBox(width: 5),
                     Text(
                       'Temp',
-                      style: GoogleFonts.poppins(
-                        fontSize: 10,
-                        fontWeight: FontWeight.w600,
-                        color: AppColors.cream80,
-                      ),
+                      style: _poppinsW600_10_cream80,
                     ),
                     const SizedBox(width: 14),
                     _buildDashedLegendLine(),
                     const SizedBox(width: 5),
                     Text(
                       'Feels Like',
-                      style: GoogleFonts.poppins(
-                        fontSize: 10,
-                        fontWeight: FontWeight.w600,
-                        color: AppColors.cream80,
-                      ),
+                      style: _poppinsW600_10_cream80,
                     ),
                   ],
                 ),
@@ -203,28 +255,16 @@ class TemperatureCard extends StatelessWidget {
         SizedBox(width: compact ? 3 : 4),
         Text(
           'Temp',
-          style: GoogleFonts.figtree(
-            fontSize: compact ? 14 : 18,
-            fontWeight: FontWeight.w400,
-            color: AppColors.cream,
-          ),
+          style: compact ? _figtreeW400_14_cream : _figtreeW400_18_cream,
         ),
         const Spacer(),
         Text(
           '${hi.round()}°',
-          style: GoogleFonts.poppins(
-            fontSize: compact ? 11 : 14,
-            fontWeight: FontWeight.w700,
-            color: AppColors.cream,
-          ),
+          style: compact ? _poppinsBold11_cream : _poppinsBold14_cream,
         ),
         Text(
           ' / ${lo.round()}°',
-          style: GoogleFonts.poppins(
-            fontSize: compact ? 11 : 14,
-            fontWeight: FontWeight.w600,
-            color: AppColors.cream90,
-          ),
+          style: compact ? _poppinsW600_11_cream90 : _poppinsW600_14_cream90,
         ),
       ],
     );
@@ -243,22 +283,13 @@ class TemperatureCard extends StatelessWidget {
         if (showFeels) ...[
           Text(
             'feels ${feels.round()}°',
-            style: GoogleFonts.poppins(
-              fontSize: 11,
-              fontWeight: FontWeight.w500,
-              color: AppColors.cream85,
-            ),
+            style: _poppinsW500_11_cream85,
           ),
           const SizedBox(width: 8),
         ],
         Text(
           '${temp.round()}°',
-          style: GoogleFonts.poppins(
-            fontSize: 42,
-            fontWeight: FontWeight.w700,
-            color: AppColors.cream,
-            height: 1,
-          ),
+          style: _poppinsBold42_cream,
         ),
       ],
     );
@@ -292,20 +323,12 @@ class TemperatureCard extends StatelessWidget {
             children: [
               Text(
                 '${todayLo.round()}°',
-                style: GoogleFonts.poppins(
-                  fontSize: 10,
-                  fontWeight: FontWeight.w700,
-                  color: AppColors.cream70,
-                ),
+                style: _poppinsBold10_cream70,
               ),
               const Spacer(),
               Text(
                 '${todayHi.round()}°',
-                style: GoogleFonts.poppins(
-                  fontSize: 10,
-                  fontWeight: FontWeight.w700,
-                  color: AppColors.cream70,
-                ),
+                style: _poppinsBold10_cream70,
               ),
             ],
           ),
@@ -428,11 +451,7 @@ class TemperatureCard extends StatelessWidget {
         const SizedBox(width: 2),
         Text(
           '${diff.abs()}° ${isAbove ? 'above' : 'below'} avg',
-          style: GoogleFonts.poppins(
-            fontSize: 11,
-            fontWeight: FontWeight.w600,
-            color: AppColors.cream80,
-          ),
+          style: _poppinsW600_11_cream80,
         ),
       ],
     );
@@ -651,7 +670,7 @@ class _TempLinePainter extends CustomPainter {
       if (i % 6 != 0 && i != hours.length - 1) continue;
       final tp = TextPainter(
         text: TextSpan(
-          text: DateFormat('ha').format(hours[i]).toLowerCase(),
+          text: AppDateFormats.ha.format(hours[i]).toLowerCase(),
           style: _labelStyle,
         ),
         textDirection: TextDirection.ltr,

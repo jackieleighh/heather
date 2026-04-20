@@ -1,8 +1,10 @@
 import 'dart:math';
 
 import '../../../../core/constants/persona.dart';
+import '../../../../core/constants/quips/alert_quips.dart';
 import '../../domain/entities/temperature_tier.dart';
 import '../../domain/entities/weather.dart';
+import '../../domain/entities/weather_alert.dart';
 import '../../domain/repositories/quip_repository.dart';
 
 class QuipRepositoryImpl implements QuipRepository {
@@ -23,5 +25,22 @@ class QuipRepositoryImpl implements QuipRepository {
         quipMap[condition]?[TemperatureTier.shortsWeather] ??
         quipMap.values.first.values.first;
     return quips[_random.nextInt(quips.length)];
+  }
+
+  @override
+  String? getAlertQuip({
+    required List<WeatherAlert> alerts,
+    bool explicit = false,
+  }) {
+    for (final alert in alerts) {
+      final category = AlertQuipCategory.fromEvent(alert.event, alert.severity);
+      if (category != null) {
+        final quips = explicit
+            ? alertExplicitQuips[category]!
+            : alertCleanQuips[category]!;
+        return quips[_random.nextInt(quips.length)];
+      }
+    }
+    return null;
   }
 }

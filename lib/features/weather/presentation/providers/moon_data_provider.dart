@@ -4,6 +4,7 @@ import 'dart:math' as math;
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../../core/constants/api_endpoints.dart';
+import '../../../../core/constants/cache_constants.dart';
 import '../../../../core/network/api_client.dart';
 import '../../../../core/utils/moon_phase.dart';
 
@@ -107,9 +108,54 @@ class UsnoMoonData {
     return (1 - math.cos(2 * math.pi * frac)) / 2 * 100;
   }
 
-  /// Moon phase for a given [date].
-  MoonPhase phaseForDate(DateTime date) =>
-      phaseFromFraction(fractionForDate(date));
+  /// Moon phase for a given [date], using USNO transition dates to determine
+  /// the intermediate phase contextually. Falls back to fraction-based
+  /// classification when fewer than 2 transitions are available.
+  MoonPhase phaseForDate(DateTime date) {
+    if (transitions.length < 2) {
+      return phaseFromFraction(fractionForDate(date));
+    }
+
+    final dateDay = DateTime(date.year, date.month, date.day);
+
+    // If date falls on the same calendar day as a principal transition,
+    // return that transition's phase directly.
+    for (final t in transitions) {
+      final tDay = DateTime(t.date.year, t.date.month, t.date.day);
+      if (dateDay == tDay) {
+        final phase = usnoPhaseToEnum(t.phase);
+        if (phase != null) return phase;
+      }
+    }
+
+    // Find the two consecutive transitions that bracket the date.
+    int beforeIdx = -1;
+    for (int i = 0; i < transitions.length; i++) {
+      if (!transitions[i].date.isAfter(date)) {
+        beforeIdx = i;
+      }
+    }
+
+    if (beforeIdx < 0 || beforeIdx >= transitions.length - 1) {
+      return phaseFromFraction(fractionForDate(date));
+    }
+
+    return _intermediatePhaseBetween(
+      transitions[beforeIdx].phase,
+      transitions[beforeIdx + 1].phase,
+    );
+  }
+
+  static MoonPhase _intermediatePhaseBetween(String from, String to) =>
+      switch ((from, to)) {
+        ('New Moon', 'First Quarter') => MoonPhase.waxingCrescent,
+        ('First Quarter', 'Full Moon') => MoonPhase.waxingGibbous,
+        ('Full Moon', 'Last Quarter') ||
+        ('Full Moon', 'Third Quarter') => MoonPhase.waningGibbous,
+        ('Last Quarter', 'New Moon') ||
+        ('Third Quarter', 'New Moon') => MoonPhase.waningCrescent,
+        _ => MoonPhase.waxingCrescent,
+      };
 
   static double _transitionFraction(String phase) => switch (phase) {
     'New Moon' => 0.0,
@@ -151,6 +197,29 @@ class UsnoMoonData {
   );
 }
 
+/// Parse a USNO phase transition entry into a DateTime. USNO returns
+/// `year`/`month`/`day` plus a `time` field (typically "HH:MM" UTC).
+/// Preserving the hour/minute gives fractionForDate sub-day precision
+/// near phase transitions. Falls back to midnight if `time` is missing
+/// or malformed.
+DateTime _parsePhaseDateTime(Map<String, dynamic> p) {
+  final year = p['year'] as int;
+  final month = p['month'] as int;
+  final day = p['day'] as int;
+  final timeRaw = p['time'];
+  if (timeRaw is String) {
+    final parts = timeRaw.split(':');
+    if (parts.length >= 2) {
+      final hour = int.tryParse(parts[0]);
+      final minute = int.tryParse(parts[1]);
+      if (hour != null && minute != null) {
+        return DateTime.utc(year, month, day, hour, minute).toLocal();
+      }
+    }
+  }
+  return DateTime(year, month, day);
+}
+
 final moonDataProvider = FutureProvider.autoDispose<UsnoMoonData?>((ref) async {
   final prefs = ref.watch(sharedPreferencesProvider);
   final dio = ref.watch(dioProvider);
@@ -172,7 +241,7 @@ final moonDataProvider = FutureProvider.autoDispose<UsnoMoonData?>((ref) async {
   // Return cached value if <30 min old
   if (cachedData != null && cachedTs != null) {
     final age = DateTime.now().millisecondsSinceEpoch - cachedTs;
-    if (age < const Duration(minutes: 30).inMilliseconds) {
+    if (age < moonDataCacheTtl.inMilliseconds) {
       return cachedData;
     }
   }
@@ -209,8 +278,7 @@ final moonDataProvider = FutureProvider.autoDispose<UsnoMoonData?>((ref) async {
 
     final transitions = phasesData
         .map((p) => UsnoPhaseTransition(
-              date: DateTime(
-                  p['year'] as int, p['month'] as int, p['day'] as int),
+              date: _parsePhaseDateTime(p),
               phase: p['phase'] as String,
             ))
         .toList();
@@ -229,7 +297,7 @@ final moonDataProvider = FutureProvider.autoDispose<UsnoMoonData?>((ref) async {
     // Only return cached data if it's less than 24 hours old
     if (cachedData != null && cachedTs != null) {
       final age = DateTime.now().millisecondsSinceEpoch - cachedTs;
-      if (age < const Duration(hours: 24).inMilliseconds) {
+      if (age < moonDataStaleTtl.inMilliseconds) {
         return cachedData;
       }
     }
@@ -301,7 +369,7 @@ final moonRiseSetProvider = FutureProvider.autoDispose
   // Return cached value if <30 min old
   if (cachedData != null && cachedTs != null) {
     final age = DateTime.now().millisecondsSinceEpoch - cachedTs;
-    if (age < const Duration(minutes: 30).inMilliseconds) {
+    if (age < moonDataCacheTtl.inMilliseconds) {
       return cachedData;
     }
   }
@@ -367,7 +435,7 @@ final moonRiseSetProvider = FutureProvider.autoDispose
     // Return cached data if <24 hours old
     if (cachedData != null && cachedTs != null) {
       final age = DateTime.now().millisecondsSinceEpoch - cachedTs;
-      if (age < const Duration(hours: 24).inMilliseconds) {
+      if (age < moonDataStaleTtl.inMilliseconds) {
         return cachedData;
       }
     }

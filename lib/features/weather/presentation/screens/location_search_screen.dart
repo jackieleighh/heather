@@ -11,6 +11,13 @@ import '../../domain/entities/saved_location.dart';
 import '../providers/location_provider.dart';
 import '../widgets/pulsing_dots.dart';
 
+/// Cached text styles to avoid repeated GoogleFonts allocations.
+final _quicksandBold22 = GoogleFonts.quicksand(
+  fontSize: 22,
+  fontWeight: FontWeight.w700,
+  color: AppColors.cream,
+);
+
 class LocationSearchScreen extends ConsumerStatefulWidget {
   const LocationSearchScreen({super.key});
 
@@ -80,11 +87,7 @@ class _LocationSearchScreenState extends ConsumerState<LocationSearchScreen> {
                             child: Text(
                               'Add Location',
                               textAlign: TextAlign.right,
-                              style: GoogleFonts.quicksand(
-                                fontSize: 22,
-                                fontWeight: FontWeight.w700,
-                                color: AppColors.cream,
-                              ),
+                              style: _quicksandBold22,
                             ),
                           ),
                         ],
@@ -99,8 +102,8 @@ class _LocationSearchScreenState extends ConsumerState<LocationSearchScreen> {
                       curve: Curves.easeOut,
                       decoration: BoxDecoration(
                         color: _isFocused
-                            ? AppColors.cream.withValues(alpha: 0.95)
-                            : AppColors.cream.withValues(alpha: 0.9),
+                            ? AppColors.cream95
+                            : AppColors.cream90,
                         borderRadius: BorderRadius.circular(24),
                         boxShadow: [
                           BoxShadow(
@@ -174,7 +177,7 @@ class _SearchResultsState extends ConsumerState<_SearchResults> {
           key: const ValueKey('hint'),
           child: Text(
             'Type a city name to search',
-            style: TextStyle(color: AppColors.cream.withValues(alpha: 0.4)),
+            style: TextStyle(color: AppColors.cream40),
           ),
         ),
       );
@@ -193,7 +196,7 @@ class _SearchResultsState extends ConsumerState<_SearchResults> {
       error: (e, _) => Center(
         child: Text(
           'Yikes! Something went wrong.',
-          style: TextStyle(color: AppColors.cream.withValues(alpha: 0.7)),
+          style: TextStyle(color: AppColors.cream70),
         ),
       ),
       data: (locations) {
@@ -205,7 +208,7 @@ class _SearchResultsState extends ConsumerState<_SearchResults> {
               key: const ValueKey('empty'),
               child: Text(
                 'No results found. Try a different search?',
-                style: TextStyle(color: AppColors.cream.withValues(alpha: 0.7)),
+                style: TextStyle(color: AppColors.cream70),
               ),
             ),
           );
@@ -257,7 +260,7 @@ class _LocationTile extends ConsumerWidget {
       contentPadding: EdgeInsets.zero,
       leading: Icon(
         Icons.location_on_outlined,
-        color: AppColors.cream.withValues(alpha: 0.8),
+        color: AppColors.cream80,
       ),
       title: Text(
         location.name,
@@ -269,7 +272,7 @@ class _LocationTile extends ConsumerWidget {
       subtitle: subtitle.isNotEmpty
           ? Text(
               subtitle,
-              style: TextStyle(color: AppColors.cream.withValues(alpha: 0.6)),
+              style: TextStyle(color: AppColors.cream60),
             )
           : null,
       onTap: () async {

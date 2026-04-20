@@ -26,7 +26,7 @@ class ErrorScreen extends StatelessWidget {
               Icon(
                 onOpenSettings != null ? Icons.location_off : Icons.cloud_off,
                 size: 64,
-                color: AppColors.cream.withValues(alpha: 0.54),
+                color: AppColors.cream54,
               ),
               const SizedBox(height: 24),
               Text('Yikes!', style: Theme.of(context).textTheme.headlineLarge),
