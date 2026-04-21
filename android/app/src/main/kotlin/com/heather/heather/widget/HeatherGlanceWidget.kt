@@ -7,7 +7,6 @@ import android.graphics.Bitmap
 import android.graphics.Canvas
 import android.graphics.LinearGradient
 import android.graphics.Paint
-import android.graphics.RadialGradient
 import android.graphics.Shader
 import android.graphics.Typeface
 import androidx.compose.runtime.Composable
@@ -133,7 +132,7 @@ class HeatherGlanceWidget : GlanceAppWidget() {
         Column(
             modifier = GlanceModifier.fillMaxSize().padding(12.dp),
         ) {
-            // Top: city + icon
+            // Top: city + icon with day/night details below icon
             Row(
                 modifier = GlanceModifier.fillMaxWidth(),
                 verticalAlignment = Alignment.Top,
@@ -147,12 +146,28 @@ class HeatherGlanceWidget : GlanceAppWidget() {
                     contentDescription = data.cityName,
                 )
                 Spacer(modifier = GlanceModifier.defaultWeight())
-                Image(
-                    provider = ImageProvider(ConditionIcons.iconRes(data.conditionName, data.isDay)),
-                    contentDescription = data.conditionName,
-                    modifier = GlanceModifier.size(26.dp),
-                    colorFilter = ColorFilter.tint(ColorProvider(white90)),
-                )
+                Column(horizontalAlignment = Alignment.End) {
+                    Image(
+                        provider = ImageProvider(ConditionIcons.iconRes(data.conditionName, data.isDay)),
+                        contentDescription = data.conditionName,
+                        modifier = GlanceModifier.size(26.dp),
+                        colorFilter = ColorFilter.tint(ColorProvider(white90)),
+                    )
+                    Spacer(modifier = GlanceModifier.height(2.dp))
+                    if (data.isDay) {
+                        data.sunsetLabel?.let { label ->
+                            DetailRow(context, iconRes = R.drawable.ic_weather_sunset, value = label, iconSize = 8, fontSize = 9f, spacing = 2)
+                        }
+                        DetailRow(context, iconRes = R.drawable.ic_weather_uv, value = "UV ${data.uvIndexMax ?: data.uvIndex}", iconSize = 8, fontSize = 9f, spacing = 2)
+                    } else {
+                        data.sunriseLabel?.let { label ->
+                            DetailRow(context, iconRes = R.drawable.ic_weather_sunrise, value = label, iconSize = 8, fontSize = 9f, spacing = 2)
+                        }
+                        val moonIcon = R.drawable.ic_moon_waxing_crescent
+                        val moonIllum = data.moonIllumination ?: moonIllumination()
+                        DetailRow(context, iconRes = moonIcon, value = "${moonIllum}%", iconSize = 8, fontSize = 9f, spacing = 2)
+                    }
+                }
             }
 
             Spacer(modifier = GlanceModifier.defaultWeight())
@@ -166,6 +181,8 @@ class HeatherGlanceWidget : GlanceAppWidget() {
                 color = 0xFFFFFFFF.toInt(),
                 contentDescription = "${data.temperature} degrees",
             )
+
+            Spacer(modifier = GlanceModifier.defaultWeight())
 
             // H/L
             WidgetText(
@@ -923,21 +940,16 @@ class HeatherGlanceWidget : GlanceAppWidget() {
         val w = width.toFloat()
         val h = height.toFloat()
 
-        // 1. Draw radial gradient background (matching iOS widget)
+        // 1. Draw linear gradient background (top to bottom, matching iOS widget)
         val colors = hexColors.map { parseHexColor(it) }.toIntArray()
         if (colors.size < 2) {
             canvas.drawColor(colors.firstOrNull() ?: android.graphics.Color.parseColor("#5B86E5"))
         } else {
-            val cx = w * 0.75f
-            val cy = h * 0.15f
-            val endRadius = kotlin.math.sqrt(w * w + h * h)
-            // Compress stops to 82% so the bottom/outer color fills more area
-            val maxStop = 0.82f
             val stops = FloatArray(colors.size) { i ->
-                (i.toFloat() / (colors.size - 1).coerceAtLeast(1)) * maxStop
+                i.toFloat() / (colors.size - 1).coerceAtLeast(1)
             }
             val paint = Paint()
-            paint.shader = RadialGradient(cx, cy, endRadius, colors, stops, Shader.TileMode.CLAMP)
+            paint.shader = LinearGradient(0f, 0f, 0f, h, colors, stops, Shader.TileMode.CLAMP)
             canvas.drawRect(0f, 0f, w, h, paint)
         }
 

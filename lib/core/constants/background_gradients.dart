@@ -142,17 +142,17 @@ class BackgroundGradients {
     ],
     TemperatureTier.flannelWeather: [
       AppColors.drizzleCloudBlue,
-      AppColors.drizzleCloudTeal,
+      AppColors.drizzleMidSage,
       AppColors.drizzlePunchyGold,
     ],
     TemperatureTier.shortsWeather: [
       AppColors.drizzleCloudBlue,
-      AppColors.drizzleCloudTeal,
+      AppColors.drizzleMidLavender,
       AppColors.drizzlePunchyTangerine,
     ],
     TemperatureTier.scorcher: [
       AppColors.drizzleCloudBlue,
-      AppColors.drizzleCloudTeal,
+      AppColors.drizzleMidMauve,
       AppColors.drizzlePunchyRose,
     ],
   };
@@ -175,17 +175,17 @@ class BackgroundGradients {
     ],
     TemperatureTier.flannelWeather: [
       AppColors.rainBlue,
-      AppColors.rainMidTeal,
+      AppColors.rainMidSage,
       AppColors.rainGold,
     ],
     TemperatureTier.shortsWeather: [
       AppColors.rainBlue,
-      AppColors.rainMidTeal,
+      AppColors.rainMidLavender,
       AppColors.rainTangerine,
     ],
     TemperatureTier.scorcher: [
       AppColors.rainBlue,
-      AppColors.rainMidTeal,
+      AppColors.rainMidMauve,
       AppColors.rainRose,
     ],
   };
@@ -208,17 +208,17 @@ class BackgroundGradients {
     ],
     TemperatureTier.flannelWeather: [
       AppColors.stormBlue,
-      AppColors.stormTeal,
+      AppColors.stormMidSage,
       AppColors.stormRichGold,
     ],
     TemperatureTier.shortsWeather: [
       AppColors.stormBlue,
-      AppColors.stormTeal,
+      AppColors.stormMidLavender,
       AppColors.stormRichTangerine,
     ],
     TemperatureTier.scorcher: [
       AppColors.stormBlue,
-      AppColors.stormTeal,
+      AppColors.stormMidMauve,
       AppColors.stormRichRose,
     ],
   };
@@ -364,12 +364,12 @@ class BackgroundGradients {
     TemperatureTier.shortsWeather: [
       AppColors.pitchBlack,
       AppColors.deepPurple,
-      AppColors.nightCoral,
+      AppColors.nightMagenta,
     ],
     TemperatureTier.scorcher: [
       AppColors.pitchBlack,
       AppColors.deepPurple,
-      AppColors.nightMagenta,
+      AppColors.nightCoral,
     ],
   };
 

@@ -9,7 +9,7 @@ struct WidgetGradients {
             return [.init(color: Color(hex: hexColors.first ?? "FF000000"), location: 0)]
         }
 
-        let stepsPerSegment = 8 // intermediate colors between each pair
+        let stepsPerSegment = 24 // intermediate colors between each pair
         var stops: [Gradient.Stop] = []
         let totalSegments = hexColors.count - 1
         let totalStops = totalSegments * stepsPerSegment + 1
@@ -19,7 +19,9 @@ struct WidgetGradients {
             let c2 = parseRGB(hexColors[i + 1])
 
             for step in 0..<stepsPerSegment {
-                let t = Double(step) / Double(stepsPerSegment)
+                let linear = Double(step) / Double(stepsPerSegment)
+                // Smoothstep easing for less visible banding
+                let t = linear * linear * (3.0 - 2.0 * linear)
                 let r = c1.r + (c2.r - c1.r) * t
                 let g = c1.g + (c2.g - c1.g) * t
                 let b = c1.b + (c2.b - c1.b) * t
@@ -113,25 +115,25 @@ struct WidgetGradients {
             ["#FF6888D0", "#FF6878C0", "#FF8878D8"],
             ["#FF6888D0", "#FF5888C8", "#FF60A8E0"],
             ["#FF6888D0", "#FF5090C0", "#FF48C0A8"],
-            ["#FF6888D0", "#FF48A8B0", "#FFE0C020"],
-            ["#FF6888D0", "#FF48A8B0", "#FFF09030"],
-            ["#FF6888D0", "#FF48A8B0", "#FFE84880"],
+            ["#FF6888D0", "#FF88A8A0", "#FFE0C020"],
+            ["#FF6888D0", "#FF9888B0", "#FFF09030"],
+            ["#FF6888D0", "#FFA880B8", "#FFE84880"],
         ],
         "rain": [
             ["#FF5878C4", "#FF5C70B8", "#FF8074D0"],
             ["#FF5878C4", "#FF5080C0", "#FF5CA0DC"],
             ["#FF5878C4", "#FF4C88B8", "#FF44B8A0"],
-            ["#FF5878C4", "#FF489CA8", "#FFDCBC20"],
-            ["#FF5878C4", "#FF489CA8", "#FFEC8830"],
-            ["#FF5878C4", "#FF489CA8", "#FFE4487C"],
+            ["#FF5878C4", "#FF789090", "#FFDCBC20"],
+            ["#FF5878C4", "#FF8878A8", "#FFEC8830"],
+            ["#FF5878C4", "#FF9870A8", "#FFE4487C"],
         ],
         "heavyRain": [
             ["#FF3C5CB0", "#FF445CA8", "#FF6C64C0"],
             ["#FF3C5CB0", "#FF3C6CB0", "#FF4C8CD0"],
             ["#FF3C5CB0", "#FF3C74A8", "#FF34A490"],
-            ["#FF3C5CB0", "#FF3C8498", "#FFCCAC18"],
-            ["#FF3C5CB0", "#FF3C8498", "#FFDC7428"],
-            ["#FF3C5CB0", "#FF3C8498", "#FFD43C70"],
+            ["#FF3C5CB0", "#FF607880", "#FFCCAC18"],
+            ["#FF3C5CB0", "#FF706898", "#FFDC7428"],
+            ["#FF3C5CB0", "#FF806090", "#FFD43C70"],
         ],
         "snow": [
             ["#FFFAFAFA", "#FF7060D0", "#FF7890D0"],
@@ -167,16 +169,16 @@ struct WidgetGradients {
             ["#FF050308", "#FF2E1065", "#FF1830A0"],
             ["#FF050308", "#FF2E1065", "#FF186090"],
             ["#FF050308", "#FF2E1065", "#FF086040"],
-            ["#FF050308", "#FF2E1065", "#FF960819"],
             ["#FF050308", "#FF2E1065", "#FF96006b"],
+            ["#FF050308", "#FF2E1065", "#FF960819"],
         ],
         "rain": [
             ["#FF050308", "#FF2E1065", "#FF400898"],
             ["#FF050308", "#FF2E1065", "#FF1830A0"],
             ["#FF050308", "#FF2E1065", "#FF186090"],
             ["#FF050308", "#FF2E1065", "#FF086040"],
-            ["#FF050308", "#FF2E1065", "#FF960819"],
             ["#FF050308", "#FF2E1065", "#FF96006b"],
+            ["#FF050308", "#FF2E1065", "#FF960819"],
         ],
         "heavyRain": [
             ["#FF050308", "#FF2E1065", "#FF400898"],

@@ -1,5 +1,6 @@
 import 'dart:async';
 import 'dart:convert';
+import 'dart:math' as math;
 
 import 'package:flutter/foundation.dart';
 import 'package:home_widget/home_widget.dart';
@@ -224,6 +225,19 @@ class WidgetService {
         moonIllum = moonData.illuminationForDate(DateTime.now()).round();
       }
     } catch (_) {}
+
+    // Synodic fallback so the widget always gets an illumination value,
+    // even when USNO cache is missing.
+    if (moonIllum == null) {
+      const synodicMonth = 29.53058770576;
+      final refNewMoon = DateTime.utc(2026, 1, 18, 19, 51);
+      final days =
+          DateTime.now().toUtc().difference(refNewMoon).inSeconds / 86400;
+      var age = days % synodicMonth;
+      if (age < 0) age += synodicMonth;
+      final frac = age / synodicMonth;
+      moonIllum = ((1 - math.cos(2 * math.pi * frac)) / 2 * 100).round();
+    }
 
     final payload = buildWidgetPayload(
       forecast: forecast,

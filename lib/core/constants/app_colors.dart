@@ -73,7 +73,9 @@ class AppColors {
   static const drizzlePunchyCyan = Color(0xFF60A8E0);
   static const drizzleCloudMid = Color(0xFF5090C0);
   static const drizzlePunchyTeal = Color(0xFF48C0A8);
-  static const drizzleCloudTeal = Color(0xFF48A8B0);
+  static const drizzleMidSage = Color(0xFF88A8A0);
+  static const drizzleMidLavender = Color(0xFF9888B0);
+  static const drizzleMidMauve = Color(0xFFA880B8);
   static const drizzlePunchyGold = Color(0xFFE0C020);
   static const drizzlePunchyTangerine = Color(0xFFF09030);
   static const drizzlePunchyRose = Color(0xFFE84880);
@@ -86,7 +88,9 @@ class AppColors {
   static const rainCyan = Color(0xFF5CA0DC);
   static const rainMid = Color(0xFF4C88B8);
   static const rainTeal = Color(0xFF44B8A0);
-  static const rainMidTeal = Color(0xFF489CA8);
+  static const rainMidSage = Color(0xFF789090);
+  static const rainMidLavender = Color(0xFF8878A8);
+  static const rainMidMauve = Color(0xFF9870A8);
   static const rainGold = Color(0xFFDCBC20);
   static const rainTangerine = Color(0xFFEC8830);
   static const rainRose = Color(0xFFE4487C);
@@ -99,7 +103,9 @@ class AppColors {
   static const stormRichCyan = Color(0xFF4C8CD0);
   static const stormMid = Color(0xFF3C74A8);
   static const stormRichTeal = Color(0xFF34A490);
-  static const stormTeal = Color(0xFF3C8498);
+  static const stormMidSage = Color(0xFF607880);
+  static const stormMidLavender = Color(0xFF706898);
+  static const stormMidMauve = Color(0xFF806090);
   static const stormRichGold = Color(0xFFCCAC18);
   static const stormRichTangerine = Color(0xFFDC7428);
   static const stormRichRose = Color(0xFFD43C70);
