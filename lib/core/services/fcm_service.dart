@@ -103,23 +103,31 @@ class FcmService {
       _handleNotificationTap(initialMessage);
     }
 
-    // Check if app was launched by tapping a local notification (cold start)
-    final launchDetails =
-        await _localNotifications.getNotificationAppLaunchDetails();
-    if (kDebugMode) {
-      debugPrint('[FCM] getNotificationAppLaunchDetails: didLaunch=${launchDetails?.didNotificationLaunchApp}, '
-          'payload=${launchDetails?.notificationResponse?.payload}');
-    }
-    if (launchDetails?.didNotificationLaunchApp == true) {
-      pendingAlertTap = true;
-      final payload = launchDetails!.notificationResponse?.payload ?? '';
-      final parts = payload.split('|');
-      pendingAlertLocationId = parts.isNotEmpty ? parts[0] : null;
-      pendingAlertLocationName = parts.length > 1 ? parts[1] : payload;
-      // Fire the stream so WeatherScreen's listener is notified regardless of
-      // timing with the 3-second splash timer. Without this, the pending
-      // alert can be missed if init() completes after the timer fires.
-      _alertTapController.add(null);
+    // Check if app was launched by tapping a local notification (cold start).
+    // Only check if getInitialMessage() didn't already handle the tap — on iOS
+    // both handlers can fire for the same remote notification, and the local
+    // notification intercept has an empty payload that would overwrite the
+    // correct data from getInitialMessage().
+    if (!pendingAlertTap) {
+      final launchDetails =
+          await _localNotifications.getNotificationAppLaunchDetails();
+      if (kDebugMode) {
+        debugPrint('[FCM] getNotificationAppLaunchDetails: didLaunch=${launchDetails?.didNotificationLaunchApp}, '
+            'payload=${launchDetails?.notificationResponse?.payload}');
+      }
+      if (launchDetails?.didNotificationLaunchApp == true) {
+        final payload = launchDetails!.notificationResponse?.payload ?? '';
+        if (payload.isNotEmpty) {
+          pendingAlertTap = true;
+          final parts = payload.split('|');
+          pendingAlertLocationId = parts.isNotEmpty ? parts[0] : null;
+          pendingAlertLocationName = parts.length > 1 ? parts[1] : payload;
+          // Fire the stream so WeatherScreen's listener is notified regardless of
+          // timing with the 3-second splash timer. Without this, the pending
+          // alert can be missed if init() completes after the timer fires.
+          _alertTapController.add(null);
+        }
+      }
     }
 
     if (kDebugMode) {
@@ -174,8 +182,10 @@ class FcmService {
   }
 
   void _handleLocalNotificationTap(NotificationResponse response) {
-    pendingAlertTap = true;
     final payload = response.payload ?? '';
+    if (payload.isEmpty) return; // Remote notification intercept — no useful data
+
+    pendingAlertTap = true;
     final parts = payload.split('|');
     pendingAlertLocationId = parts.isNotEmpty ? parts[0] : null;
     pendingAlertLocationName = parts.length > 1 ? parts[1] : payload;

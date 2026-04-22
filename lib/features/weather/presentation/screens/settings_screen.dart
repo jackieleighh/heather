@@ -296,9 +296,7 @@ class SettingsScreen extends ConsumerWidget {
                                 ),
                                 onChanged: (value) async {
                                   if (value) {
-                                    final granted = await FcmService()
-                                        .requestPermission();
-                                    if (!granted) return;
+                                    await FcmService().requestPermission();
                                   }
                                   ref
                                       .read(settingsProvider.notifier)

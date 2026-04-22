@@ -15,6 +15,22 @@ class AppColors {
   static const darkTeal = Color(0xFF186880);
   static const darkMagenta = Color(0xFFA82058);
 
+  // --- Overcast night middles ---
+  static const nightOvercastViolet = Color(0xFF301470);
+  static const nightOvercastPeriwinkle = Color(0xFF222470);
+  static const nightOvercastBlue = Color(0xFF183888);
+  static const nightOvercastTeal = Color(0xFF144C68);
+  static const nightOvercastLavender = Color(0xFF581C80);
+  static const nightOvercastMauve = Color(0xFF681460);
+
+  // --- Sunny night middles ---
+  static const nightSunnyViolet = Color(0xFF381878);
+  static const nightSunnyPeriwinkle = Color(0xFF282878);
+  static const nightSunnyBlue = Color(0xFF1C4090);
+  static const nightSunnyTeal = Color(0xFF185870);
+  static const nightSunnyLavender = Color(0xFF602088);
+  static const nightSunnyMauve = Color(0xFF781868);
+
   // --- Night bottom accents ---
   static const nightPurple = Color(0xFF400898);
   static const nightBlue = Color(0xFF1830A0);
@@ -29,7 +45,7 @@ class AppColors {
   static const cream = Color(0xFFFAFAFA);
 
   // --- Cold tier ---
-  static const frostLavender = Color(0xFF7060D0);
+  static const frostLavender = Color(0xFF9888E0);
   static const coldIndigo = Color(0xFF312E81);
 
   // --- Sunny day (Electric & Vivid) ---
@@ -40,16 +56,43 @@ class AppColors {
   static const sunnyCeruleanAqua = Color(0xFF70B8F8);
   static const sunnyElectricAqua = Color(0xFF70D8F8);
   static const sunnyVividTeal = Color(0xFF38C0A0);
+  static const sunnyChartreuse = Color(0xFF78C858);
+  static const sunnyYellowGreen = Color(0xFFC8D830);
+  static const sunnyAmber = Color(0xFFF0C028);
   static const sunnyElectricGold = Color(0xFFF0D838);
   static const sunnyVividTangerine = Color(0xFFF08028);
   static const sunnyHotMagenta = Color(0xFFD80070);
+
+  // --- Drizzle night middles ---
+  static const nightDrizzleViolet = Color(0xFF2C1870);
+  static const nightDrizzlePeriwinkle = Color(0xFF1C2878);
+  static const nightDrizzleBlue = Color(0xFF2C3890);
+  static const nightDrizzleTeal = Color(0xFF2C4870);
+  static const nightDrizzleLavender = Color(0xFF581880);
+  static const nightDrizzleMauve = Color(0xFF701060);
+
+  // --- Rain night middles ---
+  static const nightRainViolet = Color(0xFF261468);
+  static const nightRainPeriwinkle = Color(0xFF182470);
+  static const nightRainBlue = Color(0xFF283488);
+  static const nightRainTeal = Color(0xFF284068);
+  static const nightRainLavender = Color(0xFF501478);
+  static const nightRainMauve = Color(0xFF680C58);
+
+  // --- Storm night middles ---
+  static const nightStormViolet = Color(0xFF201060);
+  static const nightStormPeriwinkle = Color(0xFF141E68);
+  static const nightStormBlue = Color(0xFF243080);
+  static const nightStormTeal = Color(0xFF243860);
+  static const nightStormLavender = Color(0xFF481070);
+  static const nightStormMauve = Color(0xFF600850);
 
   // --- Scorcher tier (night gradients) ---
   static const burntOrange = Color(0xFFF06A0A);
   static const orangeRed = Color(0xFFB91C1C);
 
   // --- Overcast day ---
-  static const overcastTeal = Color(0xFF387898);
+  static const overcastTeal = Color(0xFF5898B0);
   static const overcastSage = Color(0xFF689A50);
   static const overcastMauve = Color(0xFF7454A2);
   static const overcastWisteria = Color(0xFF6858B8);
@@ -111,12 +154,12 @@ class AppColors {
   static const stormRichRose = Color(0xFFD43C70);
 
   // --- Snow day ---
-  static const brightSkyPeriwinkle = Color(0xFF7890D0);
+  static const brightSkyPeriwinkle = Color(0xFF98A8E0);
   static const brightFrostLavender = Color(0xFF8070D8);
   static const brightFrostBlue = Color(0xFF60A8D0);
-  static const brightIcyBlue = Color(0xFF68B8E8);
-  static const brightWarmSkyBlue = Color(0xFF4088B8);
-  static const brightAzure = Color(0xFF38A8D8);
+  static const brightIcyBlue = Color(0xFF90B0E8);
+  static const brightWarmSkyBlue = Color(0xFF68A8D0);
+  static const brightAzure = Color(0xFF60C0E0);
 
   // --- Pre-computed cream alpha variants (avoid per-frame allocations) ---
   static const cream95 = Color(0xF2FAFAFA); // alpha 0.95

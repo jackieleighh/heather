@@ -143,9 +143,7 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
                         ),
                         onChanged: (value) async {
                           if (value) {
-                            final granted = await FcmService()
-                                .requestPermission();
-                            if (!granted) return;
+                            await FcmService().requestPermission();
                           }
                           setState(() => _severeAlertsEnabled = value);
                         },
