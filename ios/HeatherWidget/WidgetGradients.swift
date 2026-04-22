@@ -9,7 +9,7 @@ struct WidgetGradients {
             return [.init(color: Color(hex: hexColors.first ?? "FF000000"), location: 0)]
         }
 
-        let stepsPerSegment = 24 // intermediate colors between each pair
+        let stepsPerSegment = 64 // intermediate colors between each pair
         var stops: [Gradient.Stop] = []
         let totalSegments = hexColors.count - 1
         let totalStops = totalSegments * stepsPerSegment + 1
@@ -20,8 +20,7 @@ struct WidgetGradients {
 
             for step in 0..<stepsPerSegment {
                 let linear = Double(step) / Double(stepsPerSegment)
-                // Smoothstep easing for less visible banding
-                let t = linear * linear * (3.0 - 2.0 * linear)
+                let t = linear * linear * (3.0 - 2.0 * linear) // smoothstep
                 let r = c1.r + (c2.r - c1.r) * t
                 let g = c1.g + (c2.g - c1.g) * t
                 let b = c1.b + (c2.b - c1.b) * t
