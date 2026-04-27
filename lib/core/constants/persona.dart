@@ -15,8 +15,9 @@ Map<WeatherCondition, Map<TemperatureTier, List<String>>> heatherQuipMap({
   final clean = isDay ? HeatherQuips.quips : HeatherNightQuips.quips;
   if (!altTone) return clean;
 
-  final explicit =
-      isDay ? HeatherQuips.explicitQuips : HeatherNightQuips.explicitQuips;
+  final explicit = isDay
+      ? HeatherQuips.explicitQuips
+      : HeatherNightQuips.explicitQuips;
   return {
     for (final condition in clean.keys)
       condition: {

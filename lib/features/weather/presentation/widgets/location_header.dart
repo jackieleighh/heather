@@ -5,7 +5,7 @@ import '../../../../core/constants/app_colors.dart';
 import '../../../../core/utils/date_formats.dart';
 
 /// Cached text styles to avoid repeated GoogleFonts allocations.
-final _quicksandW500_15_cream90 = GoogleFonts.quicksand(
+final _quicksandW50015Cream90 = GoogleFonts.quicksand(
   fontSize: 15,
   fontWeight: FontWeight.w500,
   color: AppColors.cream90,
@@ -34,10 +34,7 @@ class LocationHeader extends StatelessWidget {
       mainAxisSize: MainAxisSize.min,
       crossAxisAlignment: CrossAxisAlignment.end,
       children: [
-        Text(
-          timeString,
-          style: _quicksandW500_15_cream90,
-        ),
+        Text(timeString, style: _quicksandW50015Cream90),
         const SizedBox(height: 2),
         Row(
           mainAxisSize: MainAxisSize.min,
@@ -48,10 +45,7 @@ class LocationHeader extends StatelessWidget {
               size: 20,
             ),
             const SizedBox(width: 4),
-            Text(
-              cityName,
-              style: _quicksandBold22,
-            ),
+            Text(cityName, style: _quicksandBold22),
           ],
         ),
       ],

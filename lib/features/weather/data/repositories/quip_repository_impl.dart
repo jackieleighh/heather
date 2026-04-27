@@ -1,7 +1,9 @@
 import 'dart:math';
 
 import '../../../../core/constants/persona.dart';
-import '../../../../core/constants/quips/alert_quips.dart';
+import '../../../../core/constants/quips/alert_quip_category.dart';
+import '../../../../core/constants/quips/clean/alert_quips.dart';
+import '../../../../core/constants/quips/explicit/alert_quips.dart';
 import '../../domain/entities/temperature_tier.dart';
 import '../../domain/entities/weather.dart';
 import '../../domain/entities/weather_alert.dart';
@@ -11,10 +13,7 @@ class QuipRepositoryImpl implements QuipRepository {
   final Random _random = Random();
 
   @override
-  String getLocalQuip({
-    required Weather weather,
-    bool explicit = false,
-  }) {
+  String getLocalQuip({required Weather weather, bool explicit = false}) {
     final condition = weather.condition;
     final tier = TemperatureTier.fromTemperature(weather.temperature);
     final quipMap = heatherQuipMap(altTone: explicit, isDay: weather.isDay);

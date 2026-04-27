@@ -11,45 +11,45 @@ import '../providers/location_provider.dart';
 import '../providers/settings_provider.dart';
 
 /// Cached text styles to avoid repeated GoogleFonts allocations.
-final _quicksandBold22_cream = GoogleFonts.quicksand(
+final _quicksandBold22Cream = GoogleFonts.quicksand(
   fontSize: 22,
   fontWeight: FontWeight.w700,
   color: AppColors.cream,
 );
-final _poppinsW500_15_cream = GoogleFonts.poppins(
+final _poppinsW50015Cream = GoogleFonts.poppins(
   fontSize: 15,
   fontWeight: FontWeight.w500,
   color: AppColors.cream,
 );
-final _poppins12_cream = GoogleFonts.poppins(
+final _poppins12Cream = GoogleFonts.poppins(
   fontSize: 12,
   color: AppColors.cream,
 );
-final _poppins13_cream = GoogleFonts.poppins(
+final _poppins13Cream = GoogleFonts.poppins(
   fontSize: 13,
   color: AppColors.cream,
 );
-final _poppinsW600_13_cream = GoogleFonts.poppins(
+final _poppinsW60013Cream = GoogleFonts.poppins(
   fontSize: 13,
   fontWeight: FontWeight.w600,
   color: AppColors.cream,
 );
-final _poppinsW400_13_cream = GoogleFonts.poppins(
+final _poppinsW40013Cream = GoogleFonts.poppins(
   fontSize: 13,
   fontWeight: FontWeight.w400,
   color: AppColors.cream,
 );
-final _poppinsW600_13_ls05_cream = GoogleFonts.poppins(
+final _poppinsW60013Ls05Cream = GoogleFonts.poppins(
   fontSize: 13,
   fontWeight: FontWeight.w600,
   letterSpacing: 0.5,
   color: AppColors.cream,
 );
-final _poppins12_cream60 = GoogleFonts.poppins(
+final _poppins12Cream60 = GoogleFonts.poppins(
   fontSize: 12,
   color: AppColors.cream60,
 );
-final _poppinsW600_12_cream = GoogleFonts.poppins(
+final _poppinsW60012Cream = GoogleFonts.poppins(
   fontSize: 12,
   fontWeight: FontWeight.w600,
   color: AppColors.cream,
@@ -99,7 +99,7 @@ class SettingsScreen extends ConsumerWidget {
                             child: Text(
                               'Settings',
                               textAlign: TextAlign.right,
-                              style: _quicksandBold22_cream,
+                              style: _quicksandBold22Cream,
                             ),
                           ),
                         ],
@@ -125,7 +125,7 @@ class SettingsScreen extends ConsumerWidget {
                             padding: const EdgeInsets.only(bottom: 16),
                             child: Text(
                               'Um... this is awkward.  No saved locations yet.',
-                              style: _poppins13_cream,
+                              style: _poppins13Cream,
                             ),
                           )
                         else
@@ -189,7 +189,7 @@ class SettingsScreen extends ConsumerWidget {
                                     ),
                                     title: Text(
                                       loc.name,
-                                      style: _poppinsW500_15_cream,
+                                      style: _poppinsW50015Cream,
                                     ),
                                     subtitle: loc.country.isNotEmpty
                                         ? Text(
@@ -199,7 +199,7 @@ class SettingsScreen extends ConsumerWidget {
                                                 loc.admin1!,
                                               loc.country,
                                             ].join(', '),
-                                            style: _poppins12_cream,
+                                            style: _poppins12Cream,
                                           )
                                         : null,
                                     trailing: IconButton(
@@ -239,11 +239,11 @@ class SettingsScreen extends ConsumerWidget {
                             ),
                             title: Text(
                               'Keep it PG',
-                              style: _poppinsW500_15_cream,
+                              style: _poppinsW50015Cream,
                             ),
                             subtitle: Text(
                               'No swearing.  Clean vibes only.',
-                              style: _poppins12_cream,
+                              style: _poppins12Cream,
                             ),
                             value: !settings.explicitLanguage,
                             activeTrackColor: AppColors.cream30,
@@ -280,11 +280,11 @@ class SettingsScreen extends ConsumerWidget {
                                 ),
                                 title: Text(
                                   'Severe weather alerts',
-                                  style: _poppinsW500_15_cream,
+                                  style: _poppinsW50015Cream,
                                 ),
                                 subtitle: Text(
                                   'Tornado warnings, severe thunderstorms, and other NWS alerts.',
-                                  style: _poppins12_cream,
+                                  style: _poppins12Cream,
                                 ),
                                 value: settings.severeAlertsEnabled,
                                 activeTrackColor: AppColors.cream30,
@@ -334,7 +334,7 @@ class SettingsScreen extends ConsumerWidget {
                                 Expanded(
                                   child: Text(
                                     "Got a quip? Text Heather. She's bad with her phone but maybe she'll see it.",
-                                    style: _poppins13_cream,
+                                    style: _poppins13Cream,
                                   ),
                                 ),
                                 const SizedBox(width: 12),
@@ -358,56 +358,41 @@ class SettingsScreen extends ConsumerWidget {
                             color: AppColors.cream15,
                             borderRadius: BorderRadius.circular(12),
                           ),
-                          child: Column(
+                          child: const Column(
                             children: [
-                              const _DataSourceTile(
+                              _DataSourceTile(
                                 name: 'Open-Meteo',
                                 description: 'Weather data by Open-Meteo.com',
                                 url: 'https://open-meteo.com/',
                               ),
-                              const Divider(
-                                height: 1,
-                                color: AppColors.cream15,
-                              ),
-                              const _DataSourceTile(
+                              Divider(height: 1, color: AppColors.cream15),
+                              _DataSourceTile(
                                 name: 'OpenFreeMap',
                                 description:
                                     'Maps by OpenFreeMap & OpenStreetMap',
                                 url: 'https://openfreemap.org/',
                               ),
-                              const Divider(
-                                height: 1,
-                                color: AppColors.cream15,
-                              ),
-                              const _DataSourceTile(
+                              Divider(height: 1, color: AppColors.cream15),
+                              _DataSourceTile(
                                 name: 'National Weather Service',
                                 description: 'Weather alerts by NWS',
                                 url: 'https://www.weather.gov/',
                               ),
-                              const Divider(
-                                height: 1,
-                                color: AppColors.cream15,
-                              ),
-                              const _DataSourceTile(
+                              Divider(height: 1, color: AppColors.cream15),
+                              _DataSourceTile(
                                 name: 'Iowa Mesonet',
                                 description:
                                     'Radar data by Iowa Environmental Mesonet',
                                 url: 'https://mesonet.agron.iastate.edu/',
                               ),
-                              const Divider(
-                                height: 1,
-                                color: AppColors.cream15,
-                              ),
-                              const _DataSourceTile(
+                              Divider(height: 1, color: AppColors.cream15),
+                              _DataSourceTile(
                                 name: 'US Naval Observatory',
                                 description: 'Astronomical data by USNO',
                                 url: 'https://aa.usno.navy.mil/',
                               ),
-                              const Divider(
-                                height: 1,
-                                color: AppColors.cream15,
-                              ),
-                              const _DataSourceTile(
+                              Divider(height: 1, color: AppColors.cream15),
+                              _DataSourceTile(
                                 name: 'Visible Planets',
                                 description:
                                     'Planet visibility by VisiblePlanets.dev',
@@ -428,11 +413,11 @@ class SettingsScreen extends ConsumerWidget {
                             child: Text.rich(
                               TextSpan(
                                 text: 'made with love by ',
-                                style: _poppins12_cream60,
+                                style: _poppins12Cream60,
                                 children: [
                                   TextSpan(
                                     text: 'jackie',
-                                    style: _poppinsW600_12_cream,
+                                    style: _poppinsW60012Cream,
                                   ),
                                 ],
                               ),
@@ -463,10 +448,7 @@ class _SectionHeader extends StatelessWidget {
   Widget build(BuildContext context) {
     return Padding(
       padding: const EdgeInsets.only(top: 8, bottom: 4),
-      child: Text(
-        title,
-        style: _poppinsW600_13_ls05_cream,
-      ),
+      child: Text(title, style: _poppinsW60013Ls05Cream),
     );
   }
 }
@@ -485,10 +467,8 @@ class _DataSourceTile extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return GestureDetector(
-      onTap: () => launchUrl(
-        Uri.parse(url),
-        mode: LaunchMode.externalApplication,
-      ),
+      onTap: () =>
+          launchUrl(Uri.parse(url), mode: LaunchMode.externalApplication),
       child: Padding(
         padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
         child: Row(
@@ -497,22 +477,15 @@ class _DataSourceTile extends StatelessWidget {
               child: Text.rich(
                 TextSpan(
                   text: '$name  ',
-                  style: _poppinsW600_13_cream,
+                  style: _poppinsW60013Cream,
                   children: [
-                    TextSpan(
-                      text: description,
-                      style: _poppinsW400_13_cream,
-                    ),
+                    TextSpan(text: description, style: _poppinsW40013Cream),
                   ],
                 ),
               ),
             ),
             const SizedBox(width: 8),
-            Icon(
-              Icons.open_in_new,
-              size: 16,
-              color: AppColors.cream60,
-            ),
+            const Icon(Icons.open_in_new, size: 16, color: AppColors.cream60),
           ],
         ),
       ),

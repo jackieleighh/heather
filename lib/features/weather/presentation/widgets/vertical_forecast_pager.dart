@@ -115,10 +115,7 @@ class _VerticalPageIndicator extends StatefulWidget {
   final PageController controller;
   final int count;
 
-  const _VerticalPageIndicator({
-    required this.controller,
-    required this.count,
-  });
+  const _VerticalPageIndicator({required this.controller, required this.count});
 
   @override
   State<_VerticalPageIndicator> createState() => _VerticalPageIndicatorState();
@@ -161,9 +158,7 @@ class _VerticalPageIndicatorState extends State<_VerticalPageIndicator> {
               width: 6,
               height: isActive ? 18 : 6,
               decoration: BoxDecoration(
-                color: isActive
-                    ? AppColors.cream90
-                    : AppColors.cream50,
+                color: isActive ? AppColors.cream90 : AppColors.cream50,
                 borderRadius: BorderRadius.circular(3),
               ),
             ),

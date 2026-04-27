@@ -42,10 +42,7 @@ class CachedRadarTileProvider extends TileProvider {
   final LruTileCache cache;
   final HttpClient httpClient;
 
-  CachedRadarTileProvider({
-    required this.cache,
-    required this.httpClient,
-  });
+  CachedRadarTileProvider({required this.cache, required this.httpClient});
 
   @override
   ImageProvider getImage(TileCoordinates coordinates, TileLayer options) {
@@ -73,12 +70,11 @@ class _CachedRadarImageProvider
   ImageStreamCompleter loadImage(
     _CachedRadarImageProvider key,
     ImageDecoderCallback decode,
-  ) =>
-      MultiFrameImageStreamCompleter(
-        codec: _loadTile(decode),
-        scale: 1,
-        debugLabel: url,
-      );
+  ) => MultiFrameImageStreamCompleter(
+    codec: _loadTile(decode),
+    scale: 1,
+    debugLabel: url,
+  );
 
   Future<ui.Codec> _loadTile(ImageDecoderCallback decode) async {
     // Serve from cache if available.
@@ -106,14 +102,13 @@ class _CachedRadarImageProvider
 
   /// Returns a 1x1 transparent PNG so the map renders without gaps.
   Future<ui.Codec> _transparent(ImageDecoderCallback decode) async => decode(
-        await ui.ImmutableBuffer.fromUint8List(TileProvider.transparentImage),
-      );
+    await ui.ImmutableBuffer.fromUint8List(TileProvider.transparentImage),
+  );
 
   @override
   SynchronousFuture<_CachedRadarImageProvider> obtainKey(
     ImageConfiguration configuration,
-  ) =>
-      SynchronousFuture(this);
+  ) => SynchronousFuture(this);
 
   @override
   bool operator ==(Object other) =>

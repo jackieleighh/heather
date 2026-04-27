@@ -10,26 +10,26 @@ import '../providers/settings_provider.dart';
 import '../widgets/logo_overlay.dart';
 
 /// Cached text styles to avoid repeated GoogleFonts allocations.
-final _quicksandBold32_cream = GoogleFonts.quicksand(
+final _quicksandBold32Cream = GoogleFonts.quicksand(
   fontSize: 32,
   fontWeight: FontWeight.w700,
   color: AppColors.cream,
 );
-final _poppinsW600_16_cream = GoogleFonts.poppins(
+final _poppinsW60016Cream = GoogleFonts.poppins(
   fontSize: 16,
   fontWeight: FontWeight.w600,
   color: AppColors.cream,
 );
-final _poppins12_cream = GoogleFonts.poppins(
+final _poppins12Cream = GoogleFonts.poppins(
   fontSize: 12,
   color: AppColors.cream,
 );
-final _poppinsW500_15_cream = GoogleFonts.poppins(
+final _poppinsW50015Cream = GoogleFonts.poppins(
   fontSize: 15,
   fontWeight: FontWeight.w500,
   color: AppColors.cream,
 );
-final _poppinsW600_16 = GoogleFonts.poppins(
+final _poppinsW60016 = GoogleFonts.poppins(
   fontSize: 16,
   fontWeight: FontWeight.w600,
 );
@@ -80,10 +80,7 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     const Spacer(flex: 2),
-                    Text(
-                      "What's the vibe?",
-                      style: _quicksandBold32_cream,
-                    ),
+                    Text("What's the vibe?", style: _quicksandBold32Cream),
                     const SizedBox(height: 32),
                     Container(
                       decoration: BoxDecoration(
@@ -95,13 +92,10 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
                           horizontal: 16,
                           vertical: 4,
                         ),
-                        title: Text(
-                          'Keep it PG',
-                          style: _poppinsW600_16_cream,
-                        ),
+                        title: Text('Keep it PG', style: _poppinsW60016Cream),
                         subtitle: Text(
                           'No swearing.  Clean vibes only.',
-                          style: _poppins12_cream,
+                          style: _poppins12Cream,
                         ),
                         value: _keepItPG,
                         activeTrackColor: AppColors.cream30,
@@ -127,11 +121,11 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
                         ),
                         title: Text(
                           'Severe weather alerts',
-                          style: _poppinsW500_15_cream,
+                          style: _poppinsW50015Cream,
                         ),
                         subtitle: Text(
                           'Tornado warnings, severe thunderstorms, and other NWS alerts.',
-                          style: _poppins12_cream,
+                          style: _poppins12Cream,
                         ),
                         value: _severeAlertsEnabled,
                         activeTrackColor: AppColors.cream30,
@@ -193,10 +187,7 @@ class _BottomButton extends StatelessWidget {
             borderRadius: BorderRadius.circular(12),
           ),
         ),
-        child: Text(
-          label,
-          style: _poppinsW600_16,
-        ),
+        child: Text(label, style: _poppinsW60016),
       ),
     );
   }

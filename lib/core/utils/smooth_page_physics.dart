@@ -9,11 +9,8 @@ class SmoothPageScrollPhysics extends PageScrollPhysics {
   }
 
   @override
-  SpringDescription get spring => SpringDescription.withDampingRatio(
-        mass: 0.4,
-        stiffness: 70,
-        ratio: 1.0,
-      );
+  SpringDescription get spring =>
+      SpringDescription.withDampingRatio(mass: 0.4, stiffness: 70, ratio: 1.0);
 
   @override
   double get dragStartDistanceMotionThreshold => 5.0;

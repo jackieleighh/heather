@@ -18,8 +18,10 @@ class _CloudMass {
   final double alpha;
   final double wobblePhase;
   final List<_Blob> blobs;
+  MaskFilter? cachedMaskFilter;
+  Color? cachedColor;
 
-  const _CloudMass({
+  _CloudMass({
     required this.startX,
     required this.yFraction,
     required this.speed,
@@ -34,7 +36,11 @@ class OvercastBackground extends StatefulWidget {
   final List<Color> gradientColors;
   final bool isActive;
 
-  const OvercastBackground({super.key, required this.gradientColors, this.isActive = true});
+  const OvercastBackground({
+    super.key,
+    required this.gradientColors,
+    this.isActive = true,
+  });
 
   @override
   State<OvercastBackground> createState() => _OvercastBackgroundState();
@@ -169,8 +175,16 @@ class _OvercastPainter extends CustomPainter {
       final scale = w * mass.scale;
 
       paint
-        ..maskFilter = MaskFilter.blur(BlurStyle.normal, scale * 0.12)
-        ..color = Color.fromRGBO(255, 255, 255, mass.alpha);
+        ..maskFilter = mass.cachedMaskFilter ??= MaskFilter.blur(
+          BlurStyle.normal,
+          scale * 0.12,
+        )
+        ..color = mass.cachedColor ??= Color.fromRGBO(
+          255,
+          255,
+          255,
+          mass.alpha,
+        );
 
       for (final blob in mass.blobs) {
         canvas.drawCircle(
@@ -200,7 +214,12 @@ class _OvercastPainter extends CustomPainter {
       paint,
     );
 
-    paint.color = Color.fromRGBO(255, 255, 255, 0.02 + sin(time * 0.12 + 2.0) * 0.01);
+    paint.color = Color.fromRGBO(
+      255,
+      255,
+      255,
+      0.02 + sin(time * 0.12 + 2.0) * 0.01,
+    );
     canvas.drawOval(
       Rect.fromCenter(
         center: Offset(w * 0.5, h * 0.65),

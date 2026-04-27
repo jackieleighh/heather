@@ -61,6 +61,7 @@ class _WeatherScreenState extends ConsumerState<WeatherScreen>
   bool _isAppActive = true;
   String? _pendingLocationId;
   String? _pendingLocationName;
+  String? _pendingAlertId;
   final _currentHorizontalPage = ValueNotifier<int>(0);
   late final AnimationController _feedbackController;
   late final Animation<double> _feedbackOpacity;
@@ -90,14 +91,18 @@ class _WeatherScreenState extends ConsumerState<WeatherScreen>
     );
     _feedbackOpacity = TweenSequence<double>([
       TweenSequenceItem(
-        tween: Tween(begin: 0.0, end: 1.0)
-            .chain(CurveTween(curve: Curves.easeOut)),
+        tween: Tween(
+          begin: 0.0,
+          end: 1.0,
+        ).chain(CurveTween(curve: Curves.easeOut)),
         weight: 15,
       ),
       TweenSequenceItem(tween: ConstantTween(1.0), weight: 55),
       TweenSequenceItem(
-        tween: Tween(begin: 1.0, end: 0.0)
-            .chain(CurveTween(curve: Curves.easeIn)),
+        tween: Tween(
+          begin: 1.0,
+          end: 0.0,
+        ).chain(CurveTween(curve: Curves.easeIn)),
         weight: 30,
       ),
     ]).animate(_feedbackController);
@@ -241,10 +246,6 @@ class _WeatherScreenState extends ConsumerState<WeatherScreen>
     context.push('/settings');
   }
 
-  void _openGallery() {
-    context.push('/gallery');
-  }
-
   /// Single idempotent entry point for handling pending notification taps.
   /// Called from: stream listener, 3s timer, lifecycle resume, and build callback.
   /// Safe to call multiple times — each call re-checks FcmService and local state.
@@ -258,6 +259,7 @@ class _WeatherScreenState extends ConsumerState<WeatherScreen>
       _pendingAlertSheetShown = false;
       _pendingLocationId = fcm.pendingAlertLocationId;
       _pendingLocationName = fcm.pendingAlertLocationName;
+      _pendingAlertId = fcm.pendingAlertId;
       _pendingAlertNavigated = false;
       _pendingAlertStartTime = DateTime.now();
       fcm.clearPendingAlertTap();
@@ -265,7 +267,7 @@ class _WeatherScreenState extends ConsumerState<WeatherScreen>
       if (kDebugMode) {
         debugPrint(
           '[ALERT] consumed: locId=$_pendingLocationId, '
-          'locName=$_pendingLocationName',
+          'locName=$_pendingLocationName, alertId=$_pendingAlertId',
         );
       }
 
@@ -330,6 +332,7 @@ class _WeatherScreenState extends ConsumerState<WeatherScreen>
     _pendingAlertSheetShown = false;
     _pendingLocationId = null;
     _pendingLocationName = null;
+    _pendingAlertId = null;
     _pendingAlertNavigated = false;
     _pendingAlertStartTime = null;
     _pendingAlertRetryTimer?.cancel();
@@ -364,9 +367,31 @@ class _WeatherScreenState extends ConsumerState<WeatherScreen>
       index = savedLocations.indexWhere((loc) => loc.name == locationName);
     }
 
+    // Fallback: use alertId to find which location has the alert
+    if (index < 0 && _pendingAlertId != null && _pendingAlertId!.isNotEmpty) {
+      final found = _findAlertByIdAcrossLocations(_pendingAlertId!);
+      if (found != null && found.locationId != 'GPS') {
+        index = savedLocations.indexWhere((loc) => loc.id == found.locationId);
+        if (index >= 0) {
+          _pendingLocationId = found.locationId;
+        }
+      } else if (found != null && found.locationId == 'GPS') {
+        // Alert is on GPS — navigate to page 0
+        _pendingLocationId = 'GPS';
+        if (_horizontalController.page?.round() != 0) {
+          _horizontalController.jumpToPage(0);
+        }
+        if (kDebugMode) {
+          debugPrint('[ALERT] navigate: alertId fallback → GPS');
+        }
+        return true;
+      }
+    }
+
     if (kDebugMode) {
       debugPrint(
-        '[ALERT] navigate: locId=$locationId, index=$index, '
+        '[ALERT] navigate: locId=$locationId, pendingLocId=$_pendingLocationId, '
+        'index=$index, alertId=$_pendingAlertId, '
         'savedIds=${savedLocations.map((l) => l.id).toList()}',
       );
     }
@@ -395,6 +420,10 @@ class _WeatherScreenState extends ConsumerState<WeatherScreen>
       alerts.sort(
         (a, b) => a.severity.sortOrder.compareTo(b.severity.sortOrder),
       );
+      _prioritizePendingAlert(alerts);
+      if (kDebugMode && alerts.isEmpty) {
+        debugPrint('[ALERT] collect: GPS branch, 0 alerts found');
+      }
       return alerts;
     }
 
@@ -407,10 +436,80 @@ class _WeatherScreenState extends ConsumerState<WeatherScreen>
         if (entry != null) {
           alerts.addAll(entry.alerts);
         }
+        if (kDebugMode) {
+          debugPrint(
+            '[ALERT] collect: saved branch, locId=$locationId, '
+            'entryFound=${entry != null}, alerts=${alerts.length}, '
+            'forecastKeys=${forecasts.keys.toList()}',
+          );
+        }
       },
     );
+
+    // Fallback: if primary lookup found no alerts, search all locations by alertId
+    if (alerts.isEmpty &&
+        _pendingAlertId != null &&
+        _pendingAlertId!.isNotEmpty) {
+      final found = _findAlertByIdAcrossLocations(_pendingAlertId!);
+      if (found != null) {
+        alerts.addAll(found.alerts);
+        if (kDebugMode) {
+          debugPrint(
+            '[ALERT] collect: alertId fallback found ${alerts.length} alerts '
+            'in locationId=${found.locationId}',
+          );
+        }
+      }
+    }
+
     alerts.sort((a, b) => a.severity.sortOrder.compareTo(b.severity.sortOrder));
+    _prioritizePendingAlert(alerts);
     return alerts;
+  }
+
+  /// If a specific alert ID was provided by the notification, move it to the
+  /// front of the list so the user sees it immediately.
+  void _prioritizePendingAlert(List<WeatherAlert> alerts) {
+    if (_pendingAlertId != null &&
+        _pendingAlertId!.isNotEmpty &&
+        alerts.isNotEmpty) {
+      final idx = alerts.indexWhere((a) => a.id == _pendingAlertId);
+      if (idx > 0) {
+        final target = alerts.removeAt(idx);
+        alerts.insert(0, target);
+      }
+    }
+  }
+
+  /// Searches GPS alerts and all saved-location alerts for a specific alert ID.
+  /// Returns the locationId where found (or 'GPS') and the full alert list for that location.
+  /// Returns null if not found anywhere.
+  ({String locationId, List<WeatherAlert> alerts})?
+  _findAlertByIdAcrossLocations(String alertId) {
+    // Search GPS alerts first
+    final gpsState = ref.read(weatherStateProvider);
+    final gpsAlerts = <WeatherAlert>[];
+    gpsState.whenOrNull(
+      loaded: (forecast, location, quip, alerts) {
+        gpsAlerts.addAll(alerts);
+      },
+    );
+    if (gpsAlerts.any((a) => a.id == alertId)) {
+      return (locationId: 'GPS', alerts: gpsAlerts);
+    }
+
+    // Search saved location alerts
+    final savedState = ref.read(savedLocationsForecastProvider);
+    return savedState.whenOrNull(
+      loaded: (forecasts) {
+        for (final entry in forecasts.entries) {
+          if (entry.value.alerts.any((a) => a.id == alertId)) {
+            return (locationId: entry.key, alerts: entry.value.alerts.toList());
+          }
+        }
+        return null;
+      },
+    );
   }
 
   Future<void> _registerAllLocations({
@@ -568,7 +667,10 @@ class _WeatherScreenState extends ConsumerState<WeatherScreen>
         // Trigger batch load for saved locations once GPS is loaded
         if (!_savedLocationsLoaded) {
           _savedLocationsLoaded = true;
-          if (savedLocations.isNotEmpty) {
+          // Skip if _handlePendingAlert() already triggered a forceRefresh —
+          // running load() concurrently would race and could overwrite the
+          // refresh results (which include fresh alerts we need).
+          if (savedLocations.isNotEmpty && !_pendingAlertActive) {
             WidgetsBinding.instance.addPostFrameCallback((_) {
               if (mounted) {
                 ref
@@ -612,10 +714,9 @@ class _WeatherScreenState extends ConsumerState<WeatherScreen>
             isUs: location.countryCode == 'US',
             alerts: alerts,
             onRefresh: () async {
-              final debounced = _lastForceRefreshTime != null &&
-                  DateTime.now()
-                          .difference(_lastForceRefreshTime!)
-                          .inSeconds <
+              final debounced =
+                  _lastForceRefreshTime != null &&
+                  DateTime.now().difference(_lastForceRefreshTime!).inSeconds <
                       30;
               final success = await _refreshAll(force: true);
               if (!debounced) _showRefreshFeedback(success);
@@ -676,23 +777,15 @@ class _WeatherScreenState extends ConsumerState<WeatherScreen>
                 children: [
                   IconButton(
                     onPressed: _openLocationSearch,
-                    icon: Icon(
+                    icon: const Icon(
                       Icons.add_location_alt_outlined,
                       color: AppColors.cream60,
                       size: 24,
                     ),
                   ),
-                  // IconButton(
-                  //   onPressed: _openGallery,
-                  //   icon: Icon(
-                  //     Icons.grid_view_rounded,
-                  //     color: AppColors.cream60,
-                  //     size: 24,
-                  //   ),
-                  // ),
                   IconButton(
                     onPressed: _showSettings,
-                    icon: Icon(
+                    icon: const Icon(
                       Icons.settings_outlined,
                       color: AppColors.cream85,
                       size: 24,
@@ -714,9 +807,7 @@ class _WeatherScreenState extends ConsumerState<WeatherScreen>
                       crossAxisAlignment: CrossAxisAlignment.center,
                       children: [
                         Icon(
-                          _feedbackSuccess
-                              ? Icons.check
-                              : Icons.close,
+                          _feedbackSuccess ? Icons.check : Icons.close,
                           color: AppColors.cream80,
                           size: 18,
                         ),
@@ -881,18 +972,12 @@ class _HorizontalPageIndicatorState extends State<_HorizontalPageIndicator> {
             height: isActive ? 8 : 6,
             decoration: BoxDecoration(
               shape: BoxShape.circle,
-              color: isActive
-                  ? AppColors.cream90
-                  : AppColors.cream35,
+              color: isActive ? AppColors.cream90 : AppColors.cream35,
             ),
             child: isFirst && !isActive
-                ? Icon(
-                    Icons.add,
-                    size: 4,
-                    color: AppColors.cream54,
-                  )
+                ? const Icon(Icons.add, size: 4, color: AppColors.cream54)
                 : index == 1 && !isActive
-                ? Icon(
+                ? const Icon(
                     Icons.my_location,
                     size: 4,
                     color: AppColors.cream54,

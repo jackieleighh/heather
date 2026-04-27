@@ -1,0 +1,100 @@
+import '../../../../features/weather/domain/entities/temperature_tier.dart';
+
+const mostlySunnyQuips = <TemperatureTier, List<String>>{
+  TemperatureTier.singleDigits: [
+    'She fought past the clouds for single digits and honestly why. Stay inside in your fuzzy socks girl.',
+    'Mostly sunny single digits. Beautiful and freezing. Puffiest coat on if you must leave bestie.',
+    'The sun pushed through but the cold is brutal. Every layer you own and stay in babe.',
+    "She showed up through the clouds but it's still dangerously cold. Warmest PJs and stay put girl.",
+  ],
+  TemperatureTier.freezing: [
+    'Mostly sunny and freezing. The sun is pretty but useless right now. Heaviest coat and earmuffs bestie.',
+    'She cleared the clouds but forgot to warm anything up. Scarf and gloves on babe.',
+    'Below freezing with some sunshine. Nice to look at but bundle up if you go out girl.',
+    'The sun showed up below freezing. Cute and completely unhelpful. Warm boots on bestie.',
+    'Freezing with mostly sun. Gorgeous from inside. Hot cocoa time babe.',
+  ],
+  TemperatureTier.jacketWeather: [
+    'Mostly sunny and cool. Jacket on sunnies on and go be outside girl.',
+    'She pushed through the clouds and the temp is perfect for a light layer. Hoodie on babe.',
+    'A few clouds and jacket weather. The sky is accessorizing. Smart. Denim jacket on bestie.',
+    'Cool with mostly sun. This is a walking around with coffee kind of day. Cute jacket girl.',
+    'She cleared the clouds just enough to serve. Light jacket and sneakers babe.',
+  ],
+  TemperatureTier.flannelWeather: [
+    'Mostly sunny and mild. This is the weather storybooks promised us. Flannel on and get outside girl.',
+    'The clouds are just set decoration today. Cozy sweater on and go enjoy it babe.',
+    'Mostly sunny perfect temps. The kind of day that makes everything feel possible. Cute boots on bestie.',
+    'She gave us almost full sunshine at the best temperature. Light scarf and go make memories girl.',
+    'Flannel weather with sun peeking through. Grab your coziest layers and get outside babe.',
+  ],
+  TemperatureTier.shortsWeather: [
+    'Warm and mostly sunny. Sundress on and the whole day is yours babe.',
+    'She fought off the clouds to serve us this warmth. Respect. Shorts on bestie.',
+    'Mostly sunny shorts weather. This is the day you plan around. Sandals on girl.',
+    'Warm with mostly sun. Sunglasses on ponytail up and go enjoy it babe.',
+    'She served us warmth with a few clouds for drama. Sundress and sandals bestie.',
+  ],
+  TemperatureTier.scorcher: [
+    'She fought through clouds to scorch us. SPF and a hat immediately girl.',
+    'Mostly sunny scorcher. The clouds are not helping. Water bottle now bestie.',
+    'She pushed past clouds to cook us. Lightest clothes shade and hydrate babe.',
+    'The sun cleared the clouds just to make it hotter. SPF on hat on stay cool girl.',
+    "Hot with mostly sun. Drink water like it's your job. Lightest outfit on bestie.",
+  ],
+};
+
+const mostlySunnyNightQuips = <TemperatureTier, List<String>>{
+  TemperatureTier.singleDigits: [
+    'Most of the stars showed up but the warmth ghosted. Classic commitment issues babe.',
+    'She brought ninety percent of the sky and zero percent of the warmth. Coziest PJs and stay inside girl.',
+    'Clouds and stars having a meeting and the cold crashed it. Fuzzy socks and blanket burrito bestie.',
+    'Constellations playing peekaboo in single digits. Nobody asked for this game girl.',
+  ],
+  TemperatureTier.freezing: [
+    'Frozen soundtrack energy with most of the stars out. Heaviest coat babe.',
+    'Almost all the stars and all of the cold? Pick one girl.',
+    'Moon peeking through clouds. Temp being rude. Bundle up bestie.',
+    'Mostly clear and fully freezing. Beauty and pain. Very Taylor Swift bridge babe.',
+    'Stars doing their best through a few clouds. Brave little things honestly girl.',
+    'Clouds crashed the star party. Cold crashed everything else. Heaviest coat bestie.',
+  ],
+  TemperatureTier.jacketWeather: [
+    "Cool night mostly clear. She's giving that scene in Brave where Merida follows the wisps. Jacket on girl.",
+    'Stars out clouds politely stepping aside. Cool enough for a jacket cute enough for a walk babe.',
+    'She gave us most of the sky and a perfect jacket night. This is her love language bestie.',
+    "Almost fully clear and cool. She stumbled in looking like this and we're out here trying girl.",
+    'She cleared most of the sky and cooled the air to jacket perfect. This is her apology tour babe.',
+    'Mostly starry and cool. Very midnight walk in a fairy tale village energy. Jacket on bestie.',
+    'The moon is out and the clouds are respectfully keeping their distance. Jacket weather perfection girl.',
+    'Cool mostly clear night. She gave us the stars with a few clouds for drama because she lives for drama babe.',
+  ],
+  TemperatureTier.flannelWeather: [
+    "Mild night and she gave us almost every star. She's the friend who's always almost on time babe.",
+    "This sky with this temp. She's flirting with us and honestly it's working girl.",
+    "A few clouds adding drama to a mostly perfect sky. She knows what she's doing bestie.",
+    'Flannel weather and ninety percent of the stars showed up. The other ten are fashionably late babe.',
+    'She left a few clouds up there for texture like a good Instagram filter. Mild and lovely girl.',
+    'Mostly clear flannel night. The sky is giving ninety percent effort and honestly that is more than most babe.',
+    'The stars showed up like it is opening night and a few clouds are in the nosebleed seats. Flannel on and enjoy bestie.',
+    'She cleared almost the whole sky at the perfect temp. Very fairy godmother finally doing her job energy girl.',
+    'Mild night with almost every star accounted for. She is giving dependable bestie energy for once babe.',
+    'A few clouds wandered in but the stars are unbothered. Flannel on and enjoy the show girl.',
+  ],
+  TemperatureTier.shortsWeather: [
+    "Warm night almost fully clear. She's giving fairy tale without the curse for once girl.",
+    "She's peaking and she wants witnesses. Light clothes and go be one bestie.",
+    "Most of the stars pulled up to a warm night. This is the sequel that's better than the original babe.",
+    'Warm and mostly clear. Put down the phone and go stargaze in your tank top girl.',
+    'Warm and almost fully starry. She is giving Olivia Rodrigo summer music video but make it nighttime babe.',
+    'Almost every star made it to the warm night party. Fashionably complete bestie.',
+    'She gave us warm air and most of the stars. Very generous host energy tonight girl.',
+  ],
+  TemperatureTier.scorcher: [
+    "Hot and mostly starry. She's giving tropical princess who forgot the water bottle babe.",
+    "She's too hot tonight and she knows it. Lightest PJs and hydrate bestie.",
+    'The heat is not taking the night off and neither are the stars. Drink something cold girl.',
+    "Scorching with most of the stars out. She's a showoff even when she's melting us babe.",
+    'Hot and mostly starry. She is performing a one woman show and the heat is her encore. Fan on and hydrate girl.',
+  ],
+};

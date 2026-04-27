@@ -60,8 +60,9 @@ class WidgetService {
       widgetTapped.add(null);
     } else {
       // Fallback: check native flag written by AppDelegate
-      final nativeFlag =
-          await HomeWidget.getWidgetData<bool>('widget_cold_launch');
+      final nativeFlag = await HomeWidget.getWidgetData<bool>(
+        'widget_cold_launch',
+      );
       if (nativeFlag == true) {
         coldLaunchedFromWidget = true;
         widgetTapped.add(null);
@@ -155,10 +156,12 @@ class WidgetService {
         );
 
         if (kDebugMode) {
-          debugPrint('[widgetSeed] MERGED: ${widgetCurrent.temperature}° '
-              '${condition.name} onto cached forecast '
-              '(daily=${baseForecast.daily.length}, '
-              'hourly=${baseForecast.hourly.length})');
+          debugPrint(
+            '[widgetSeed] MERGED: ${widgetCurrent.temperature}° '
+            '${condition.name} onto cached forecast '
+            '(daily=${baseForecast.daily.length}, '
+            'hourly=${baseForecast.hourly.length})',
+          );
         }
         return (location, merged);
       }
@@ -179,8 +182,10 @@ class WidgetService {
       );
 
       if (kDebugMode) {
-        debugPrint('[widgetSeed] STANDALONE: ${widgetCurrent.temperature}° '
-            '${condition.name}, city=${location.cityName}');
+        debugPrint(
+          '[widgetSeed] STANDALONE: ${widgetCurrent.temperature}° '
+          '${condition.name}, city=${location.cityName}',
+        );
       }
       return (location, forecast);
     } catch (e, st) {
@@ -214,8 +219,7 @@ class WidgetService {
     int? moonIllum;
     try {
       final prefs = await SharedPreferences.getInstance();
-      final cacheKey =
-          'cached_moon_${location.latitude}_${location.longitude}';
+      final cacheKey = 'cached_moon_${location.latitude}_${location.longitude}';
       final cachedJson = prefs.getString(cacheKey);
       if (cachedJson != null) {
         final moonData = UsnoMoonData.fromJson(
@@ -261,7 +265,10 @@ class WidgetService {
     );
   }
 
-  static Future<void> _writeQuipMap(bool explicit, {required bool isDay}) async {
+  static Future<void> _writeQuipMap(
+    bool explicit, {
+    required bool isDay,
+  }) async {
     final map = heatherQuipMap(altTone: explicit, isDay: isDay);
     final json = map.map(
       (condition, tiers) => MapEntry(

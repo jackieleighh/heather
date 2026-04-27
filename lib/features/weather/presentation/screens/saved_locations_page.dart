@@ -44,12 +44,14 @@ class SavedLocationsPage extends ConsumerWidget {
           longitude: location.longitude,
           isUs: location.country == 'United States',
           alerts: data.alerts,
-          onRefresh: onRefresh ?? () {
-            final savedLocations = ref.read(savedLocationsProvider);
-            return ref
-                .read(savedLocationsForecastProvider.notifier)
-                .refresh(savedLocations, forceRefresh: true);
-          },
+          onRefresh:
+              onRefresh ??
+              () {
+                final savedLocations = ref.read(savedLocationsProvider);
+                return ref
+                    .read(savedLocationsForecastProvider.notifier)
+                    .refresh(savedLocations, forceRefresh: true);
+              },
           onSettings: onSettings,
         );
       },
@@ -64,11 +66,7 @@ class _MiniLoadingView extends StatelessWidget {
   Widget build(BuildContext context) {
     return Container(
       color: Theme.of(context).colorScheme.secondary,
-      child: const Center(
-        child: PulsingDots(
-          color: AppColors.cream,
-        ),
-      ),
+      child: const Center(child: PulsingDots(color: AppColors.cream)),
     );
   }
 }
@@ -92,11 +90,7 @@ class _MiniErrorView extends StatelessWidget {
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
-            Icon(
-              Icons.cloud_off,
-              size: 48,
-              color: AppColors.cream54,
-            ),
+            const Icon(Icons.cloud_off, size: 48, color: AppColors.cream54),
             const SizedBox(height: 16),
             Text(
               'Couldn\'t load this one.',

@@ -14,28 +14,29 @@ final locationRepositoryProvider = Provider<LocationRepositoryImpl>((ref) {
 });
 
 // Seed provider: holds pre-read saved locations for instant display
-final savedLocationsSeedProvider =
-    StateProvider<List<SavedLocation>?>((_) => null);
+final savedLocationsSeedProvider = StateProvider<List<SavedLocation>?>(
+  (_) => null,
+);
 
 final savedLocationsProvider =
     StateNotifierProvider<SavedLocationsNotifier, List<SavedLocation>>((ref) {
-  final seed = ref.read(savedLocationsSeedProvider);
-  // Defer clearing seed to avoid modifying another provider during initialization
-  Future.microtask(() => ref.read(savedLocationsSeedProvider.notifier).state = null);
+      final seed = ref.read(savedLocationsSeedProvider);
+      // Defer clearing seed to avoid modifying another provider during initialization
+      Future.microtask(
+        () => ref.read(savedLocationsSeedProvider.notifier).state = null,
+      );
 
-  return SavedLocationsNotifier(
-    repository: ref.watch(locationRepositoryProvider),
-    seed: seed,
-  );
-});
+      return SavedLocationsNotifier(
+        repository: ref.watch(locationRepositoryProvider),
+        seed: seed,
+      );
+    });
 
 class SavedLocationsNotifier extends StateNotifier<List<SavedLocation>> {
   final LocationRepositoryImpl repository;
 
-  SavedLocationsNotifier({
-    required this.repository,
-    List<SavedLocation>? seed,
-  }) : super(seed ?? []) {
+  SavedLocationsNotifier({required this.repository, List<SavedLocation>? seed})
+    : super(seed ?? []) {
     _load();
   }
 
@@ -67,18 +68,18 @@ class SavedLocationsNotifier extends StateNotifier<List<SavedLocation>> {
   }
 }
 
-final locationSearchProvider =
-    FutureProvider.autoDispose.family<List<SavedLocation>, String>((ref, query) async {
-  if (query.trim().length < 2) return [];
+final locationSearchProvider = FutureProvider.autoDispose
+    .family<List<SavedLocation>, String>((ref, query) async {
+      if (query.trim().length < 2) return [];
 
-  // Debounce: wait 300ms. With autoDispose, if the query changes during
-  // this delay the old provider instance is disposed and this result is
-  // discarded automatically.
-  var cancelled = false;
-  ref.onDispose(() => cancelled = true);
-  await Future<void>.delayed(const Duration(milliseconds: 300));
-  if (cancelled) return [];
+      // Debounce: wait 300ms. With autoDispose, if the query changes during
+      // this delay the old provider instance is disposed and this result is
+      // discarded automatically.
+      var cancelled = false;
+      ref.onDispose(() => cancelled = true);
+      await Future<void>.delayed(const Duration(milliseconds: 300));
+      if (cancelled) return [];
 
-  final repository = ref.watch(locationRepositoryProvider);
-  return repository.searchLocations(query);
-});
+      final repository = ref.watch(locationRepositoryProvider);
+      return repository.searchLocations(query);
+    });

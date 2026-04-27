@@ -25,12 +25,7 @@ class CardContainer extends StatelessWidget {
       decoration: BoxDecoration(
         color: AppColors.cream22,
         borderRadius: BorderRadius.circular(20),
-        boxShadow: [
-          BoxShadow(
-            color: AppColors.black12,
-            blurRadius: 12,
-          ),
-        ],
+        boxShadow: [const BoxShadow(color: AppColors.black12, blurRadius: 12)],
       ),
       child: Stack(
         children: [
@@ -38,11 +33,7 @@ class CardContainer extends StatelessWidget {
             Positioned(
               right: -10,
               top: -10,
-              child: Icon(
-                backgroundIcon,
-                color: AppColors.cream25,
-                size: 80,
-              ),
+              child: Icon(backgroundIcon, color: AppColors.cream25, size: 80),
             ),
           Positioned.fill(
             child: Padding(

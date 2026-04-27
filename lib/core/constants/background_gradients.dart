@@ -61,22 +61,22 @@ class BackgroundGradients {
     TemperatureTier.freezing: [
       AppColors.sunnyElectricBlueWarm,
       AppColors.sunnyCeruleanAqua,
-      AppColors.sunnyElectricAqua,
+      AppColors.sunnyBrightSkyBlue,
     ],
     TemperatureTier.jacketWeather: [
-      AppColors.sunnyElectricAqua,
-      AppColors.sunnyVividTeal,
-      AppColors.sunnyChartreuse,
+      AppColors.sunnyBrightSkyBlue,
+      AppColors.sunnyCoolTeal,
+      AppColors.sunnyTealGreen,
     ],
     TemperatureTier.flannelWeather: [
-      AppColors.sunnyVividTeal,
+      AppColors.sunnyCoolTeal,
+      AppColors.sunnySpringSage,
       AppColors.sunnyChartreuse,
-      AppColors.sunnyYellowGreen,
     ],
     TemperatureTier.shortsWeather: [
-      AppColors.sunnyYellowGreen,
-      AppColors.sunnyAmber,
-      AppColors.sunnyVividTangerine,
+      AppColors.sunnyGoldenLime,
+      AppColors.sunnyWarmAmber,
+      AppColors.sunnyDeepTangerine,
     ],
     TemperatureTier.scorcher: [
       AppColors.sunnyElectricGold,

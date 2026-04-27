@@ -11,57 +11,57 @@ import './card_display_mode.dart';
 import './info_chip.dart';
 
 /// Cached text styles to avoid repeated GoogleFonts allocations.
-final _figtreeW400_16_cream = GoogleFonts.figtree(
+final _figtreeW40016Cream = GoogleFonts.figtree(
   fontSize: 16,
   fontWeight: FontWeight.w400,
   color: AppColors.cream,
 );
-final _poppinsBold13_cream = GoogleFonts.poppins(
+final _poppinsBold13Cream = GoogleFonts.poppins(
   fontSize: 13,
   fontWeight: FontWeight.w700,
   color: AppColors.cream,
 );
-final _poppinsW400_13_cream90 = GoogleFonts.poppins(
+final _poppinsW40013Cream90 = GoogleFonts.poppins(
   fontSize: 13,
   fontWeight: FontWeight.w400,
   color: AppColors.cream90,
 );
-final _poppinsW600_11_cream80 = GoogleFonts.poppins(
+final _poppinsW60011Cream80 = GoogleFonts.poppins(
   fontSize: 11,
   fontWeight: FontWeight.w600,
   color: AppColors.cream80,
 );
-final _poppinsW600_10_cream80 = GoogleFonts.poppins(
+final _poppinsW60010Cream80 = GoogleFonts.poppins(
   fontSize: 10,
   fontWeight: FontWeight.w600,
   color: AppColors.cream80,
 );
-final _figtreeW400_18_cream = GoogleFonts.figtree(
+final _figtreeW40018Cream = GoogleFonts.figtree(
   fontSize: 18,
   fontWeight: FontWeight.w400,
   color: AppColors.cream,
 );
-final _figtreeW400_14_cream = GoogleFonts.figtree(
+final _figtreeW40014Cream = GoogleFonts.figtree(
   fontSize: 14,
   fontWeight: FontWeight.w400,
   color: AppColors.cream,
 );
-final _poppinsBold14_cream = GoogleFonts.poppins(
+final _poppinsBold14Cream = GoogleFonts.poppins(
   fontSize: 14,
   fontWeight: FontWeight.w700,
   color: AppColors.cream,
 );
-final _poppinsBold11_cream = GoogleFonts.poppins(
+final _poppinsBold11Cream = GoogleFonts.poppins(
   fontSize: 11,
   fontWeight: FontWeight.w700,
   color: AppColors.cream,
 );
-final _poppinsW600_14_cream90 = GoogleFonts.poppins(
+final _poppinsW60014Cream90 = GoogleFonts.poppins(
   fontSize: 14,
   fontWeight: FontWeight.w600,
   color: AppColors.cream90,
 );
-final _poppinsW600_11_cream90 = GoogleFonts.poppins(
+final _poppinsW60011Cream90 = GoogleFonts.poppins(
   fontSize: 11,
   fontWeight: FontWeight.w600,
   color: AppColors.cream90,
@@ -154,20 +154,11 @@ class RainCard extends StatelessWidget {
           children: [
             Icon(icon, size: 14, color: AppColors.cream90),
             const SizedBox(width: 4),
-            Text(
-              label,
-              style: _figtreeW400_16_cream,
-            ),
+            Text(label, style: _figtreeW40016Cream),
             const Spacer(),
-            Text(
-              precipLabel,
-              style: _poppinsBold13_cream,
-            ),
+            Text(precipLabel, style: _poppinsBold13Cream),
             const SizedBox(width: 4),
-            Text(
-              '$precipitationProbability%',
-              style: _poppinsW400_13_cream90,
-            ),
+            Text('$precipitationProbability%', style: _poppinsW40013Cream90),
           ],
         ),
       );
@@ -185,10 +176,7 @@ class RainCard extends StatelessWidget {
               Row(
                 children: [
                   const Spacer(),
-                  Text(
-                    '$humidity% humidity',
-                    style: _poppinsW600_11_cream80,
-                  ),
+                  Text('$humidity% humidity', style: _poppinsW60011Cream80),
                 ],
               ),
             const SizedBox(height: 12),
@@ -244,10 +232,7 @@ class RainCard extends StatelessWidget {
             Row(
               children: [
                 const Spacer(),
-                Text(
-                  '$humidity% humidity',
-                  style: _poppinsW600_11_cream80,
-                ),
+                Text('$humidity% humidity', style: _poppinsW60011Cream80),
               ],
             ),
           SizedBox(height: compact ? 4 : 6),
@@ -286,7 +271,7 @@ class RainCard extends StatelessWidget {
               ),
             ),
             const SizedBox(width: 10),
-            Icon(
+            const Icon(
               WeatherIcons.umbrella,
               size: 24,
               color: AppColors.cream70,
@@ -393,25 +378,18 @@ class RainCard extends StatelessWidget {
       crossAxisAlignment: CrossAxisAlignment.baseline,
       textBaseline: TextBaseline.alphabetic,
       children: [
-        Icon(
-          icon,
-          size: compact ? 10 : 15,
-          color: AppColors.cream90,
-        ),
+        Icon(icon, size: compact ? 10 : 15, color: AppColors.cream90),
         SizedBox(width: compact ? 3 : 4),
-        Text(
-          label,
-          style: compact ? _figtreeW400_14_cream : _figtreeW400_18_cream,
-        ),
+        Text(label, style: compact ? _figtreeW40014Cream : _figtreeW40018Cream),
         const Spacer(),
         Text(
           precipLabel,
-          style: compact ? _poppinsBold11_cream : _poppinsBold14_cream,
+          style: compact ? _poppinsBold11Cream : _poppinsBold14Cream,
         ),
         const SizedBox(width: 4),
         Text(
           '$precipitationProbability% chance',
-          style: compact ? _poppinsW600_11_cream90 : _poppinsW600_14_cream90,
+          style: compact ? _poppinsW60011Cream90 : _poppinsW60014Cream90,
         ),
       ],
     );
@@ -430,10 +408,7 @@ class _ChartLabel extends StatelessWidget {
   Widget build(BuildContext context) {
     return Padding(
       padding: const EdgeInsets.only(bottom: 4),
-      child: Text(
-        text,
-        style: _poppinsW600_10_cream80,
-      ),
+      child: Text(text, style: _poppinsW60010Cream80),
     );
   }
 }
@@ -482,8 +457,7 @@ class _PrecipBarPainter extends CustomPainter {
     final barW = graphW / barCount;
 
     // Y-axis percentage labels
-    final yLabelStyle =
-        showHourLabels ? _yLabelStyleLarge : _yLabelStyleSmall;
+    final yLabelStyle = showHourLabels ? _yLabelStyleLarge : _yLabelStyleSmall;
     for (final pct in [100, 50, 0]) {
       final y = graphH * (1 - pct / 100.0);
       final tp = TextPainter(

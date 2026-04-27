@@ -17,107 +17,102 @@ import './card_display_mode.dart';
 import './info_chip.dart';
 
 /// Cached text styles to avoid repeated GoogleFonts allocations.
-final _figtreeW400_18_cream = GoogleFonts.figtree(
+final _figtreeW40018Cream = GoogleFonts.figtree(
   fontSize: 18,
   fontWeight: FontWeight.w400,
   color: AppColors.cream,
 );
-final _figtreeW400_16_cream = GoogleFonts.figtree(
+final _figtreeW40016Cream = GoogleFonts.figtree(
   fontSize: 16,
   fontWeight: FontWeight.w400,
   color: AppColors.cream,
 );
-final _poppinsW400_13_cream = GoogleFonts.poppins(
+final _poppinsW40013Cream = GoogleFonts.poppins(
   fontSize: 13,
   fontWeight: FontWeight.w400,
   color: AppColors.cream,
 );
-final _poppinsBold13_cream = GoogleFonts.poppins(
+final _poppinsBold13Cream = GoogleFonts.poppins(
   fontSize: 13,
   fontWeight: FontWeight.w700,
   color: AppColors.cream,
 );
-final _poppinsW500_11_cream70 = GoogleFonts.poppins(
+final _poppinsW50011Cream70 = GoogleFonts.poppins(
   fontSize: 11,
   fontWeight: FontWeight.w500,
   color: AppColors.cream70,
 );
-final _poppinsBold14_cream = GoogleFonts.poppins(
+final _poppinsBold14Cream = GoogleFonts.poppins(
   fontSize: 14,
   fontWeight: FontWeight.w700,
   color: AppColors.cream,
 );
-final _poppinsW500_11_cream80 = GoogleFonts.poppins(
+final _poppinsW50011Cream80 = GoogleFonts.poppins(
   fontSize: 11,
   fontWeight: FontWeight.w500,
   color: AppColors.cream80,
 );
-final _poppinsBold11_cream90 = GoogleFonts.poppins(
+final _poppinsBold11Cream90 = GoogleFonts.poppins(
   fontSize: 11,
   fontWeight: FontWeight.w700,
   color: AppColors.cream90,
 );
-final _poppinsBold12_cream95 = GoogleFonts.poppins(
+final _poppinsBold12Cream95 = GoogleFonts.poppins(
   fontSize: 12,
   fontWeight: FontWeight.w700,
   color: AppColors.cream95,
 );
-final _poppinsW400_12_cream95 = GoogleFonts.poppins(
+final _poppinsW40012Cream95 = GoogleFonts.poppins(
   fontSize: 12,
   fontWeight: FontWeight.w400,
   color: AppColors.cream95,
 );
-final _poppinsW400_12_cream75 = GoogleFonts.poppins(
+final _poppinsW40012Cream75 = GoogleFonts.poppins(
   fontSize: 12,
   fontWeight: FontWeight.w400,
   color: AppColors.cream75,
 );
-final _poppinsW400_11_cream75 = GoogleFonts.poppins(
+final _poppinsW40011Cream75 = GoogleFonts.poppins(
   fontSize: 11,
   fontWeight: FontWeight.w400,
   color: AppColors.cream75,
 );
-final _poppinsBold11_cream95 = GoogleFonts.poppins(
+final _poppinsBold11Cream95 = GoogleFonts.poppins(
   fontSize: 11,
   fontWeight: FontWeight.w700,
   color: AppColors.cream95,
 );
-final _poppinsW800_11_cream85 = GoogleFonts.poppins(
+final _poppinsW80011Cream85 = GoogleFonts.poppins(
   fontSize: 11,
   fontWeight: FontWeight.w800,
   color: AppColors.cream85,
 );
-final _poppinsW400_11_cream85 = GoogleFonts.poppins(
+final _poppinsW40011Cream85 = GoogleFonts.poppins(
   fontSize: 11,
   fontWeight: FontWeight.w400,
   color: AppColors.cream85,
 );
-final _poppinsBold11_cream90Style = GoogleFonts.poppins(
+final _poppinsBold11Cream90Style = GoogleFonts.poppins(
   fontSize: 11,
   fontWeight: FontWeight.w700,
   color: AppColors.cream90,
 );
-final _poppinsW400_11_cream90 = GoogleFonts.poppins(
+final _poppinsW40011Cream90 = GoogleFonts.poppins(
   fontSize: 11,
   fontWeight: FontWeight.w400,
   color: AppColors.cream90,
 );
-final _poppinsBold16_cream = GoogleFonts.poppins(
-  fontSize: 16,
-  fontWeight: FontWeight.w700,
-  color: AppColors.cream,
-);
-final _poppinsW600_11_cream = GoogleFonts.poppins(
+final _poppinsW60011Cream = GoogleFonts.poppins(
   fontSize: 11,
   fontWeight: FontWeight.w600,
   color: AppColors.cream,
 );
-final _poppinsW400_11_cream = GoogleFonts.poppins(
+final _poppinsW40011Cream = GoogleFonts.poppins(
   fontSize: 11,
   fontWeight: FontWeight.w400,
   color: AppColors.cream,
 );
-final _poppinsW500_10_cream90 = GoogleFonts.poppins(
+final _poppinsW50010Cream90 = GoogleFonts.poppins(
   fontSize: 10,
   fontWeight: FontWeight.w500,
   color: AppColors.cream90,
@@ -168,13 +163,17 @@ class MoonCard extends ConsumerWidget {
     if (rise != null && set != null) {
       if (rise.isBefore(set)) {
         // Standard day: down → rises → up → sets → down
-        if (now.isBefore(rise)) return (state: 'Down', next: 'rises ${fmt(rise)}');
+        if (now.isBefore(rise)) {
+          return (state: 'Down', next: 'rises ${fmt(rise)}');
+        }
         if (now.isBefore(set)) return (state: 'Up', next: 'sets ${fmt(set)}');
         return (state: 'Down', next: null); // already set for the night
       } else {
         // Set comes before rise: up at midnight → sets → down → rises → up
         if (now.isBefore(set)) return (state: 'Up', next: 'sets ${fmt(set)}');
-        if (now.isBefore(rise)) return (state: 'Down', next: 'rises ${fmt(rise)}');
+        if (now.isBefore(rise)) {
+          return (state: 'Down', next: 'rises ${fmt(rise)}');
+        }
         return (state: 'Up', next: null); // back up for the rest of the night
       }
     }
@@ -223,10 +222,7 @@ class MoonCard extends ConsumerWidget {
                   color: AppColors.cream90,
                 ),
                 const SizedBox(width: 4),
-                Text(
-                  'Sky',
-                  style: _figtreeW400_18_cream,
-                ),
+                Text('Sky', style: _figtreeW40018Cream),
               ],
             ),
             const Expanded(child: SizedBox.expand()),
@@ -308,26 +304,13 @@ class MoonCard extends ConsumerWidget {
       padding: const EdgeInsets.symmetric(horizontal: 14),
       child: Row(
         children: [
-          Icon(
-            icon,
-            size: 14,
-            color: AppColors.cream90,
-          ),
+          Icon(icon, size: 14, color: AppColors.cream90),
           const SizedBox(width: 4),
-          Text(
-            'Sky',
-            style: _figtreeW400_16_cream,
-          ),
+          Text('Sky', style: _figtreeW40016Cream),
           const Spacer(),
-          Text(
-            '$illumination%',
-            style: _poppinsW400_13_cream,
-          ),
+          Text('$illumination%', style: _poppinsW40013Cream),
           const SizedBox(width: 6),
-          Text(
-            moonPhaseLabel(phase),
-            style: _poppinsBold13_cream,
-          ),
+          Text(moonPhaseLabel(phase), style: _poppinsBold13Cream),
         ],
       ),
     );
@@ -406,11 +389,15 @@ class MoonCard extends ConsumerWidget {
     final hasAstroEvent =
         activeAstroEvent(now, nextFullMoonDate: usno.nextFullMoon) != null;
 
-    final riseSet = ref.watch(moonRiseSetProvider((
-      lat: latitude,
-      lon: longitude,
-      tzOffsetSeconds: utcOffsetSeconds,
-    ))).valueOrNull;
+    final riseSet = ref
+        .watch(
+          moonRiseSetProvider((
+            lat: latitude,
+            lon: longitude,
+            tzOffsetSeconds: utcOffsetSeconds,
+          )),
+        )
+        .valueOrNull;
 
     return CardContainer(
       backgroundIcon: icon,
@@ -435,23 +422,20 @@ class MoonCard extends ConsumerWidget {
               child: Center(
                 child: Text.rich(
                   TextSpan(
-                    style: _poppinsW500_11_cream80,
+                    style: _poppinsW50011Cream80,
                     children: [
                       if (lunarAge != null) ...[
                         const TextSpan(text: 'Day '),
                         TextSpan(
                           text: '${lunarAge.round()}',
-                          style: _poppinsBold11_cream90,
+                          style: _poppinsBold11Cream90,
                         ),
                       ],
                       if (lunarAge != null && nextPrefix != null)
                         const TextSpan(text: '  \u00B7  '),
                       if (nextPrefix != null) ...[
                         TextSpan(text: nextPrefix),
-                        TextSpan(
-                          text: nextDate,
-                          style: _poppinsBold11_cream90,
-                        ),
+                        TextSpan(text: nextDate, style: _poppinsBold11Cream90),
                       ],
                     ],
                   ),
@@ -486,8 +470,7 @@ class MoonCard extends ConsumerWidget {
 
   /// Tonight darkness + moonrise/moonset row.
   Widget _buildExpandedDarknessRow(UsnoMoonRiseSet? riseSet) {
-    final todayNight =
-        const Duration(hours: 24) - sunset.difference(sunrise);
+    final todayNight = const Duration(hours: 24) - sunset.difference(sunrise);
     final tomorrowNight =
         const Duration(hours: 24) - tomorrowSunset.difference(tomorrowSunrise);
     final deltaMinutes = tomorrowNight.inMinutes - todayNight.inMinutes;
@@ -504,10 +487,11 @@ class MoonCard extends ConsumerWidget {
         d == null ? '—' : timeFmt.format(d).toLowerCase();
 
     final hasRiseSet =
-        riseSet != null && (riseSet.moonrise != null || riseSet.moonset != null);
+        riseSet != null &&
+        (riseSet.moonrise != null || riseSet.moonset != null);
 
-    final labelStyle = _poppinsW400_11_cream75;
-    final timeStyle = _poppinsBold11_cream95;
+    final labelStyle = _poppinsW40011Cream75;
+    final timeStyle = _poppinsBold11Cream95;
 
     final distLabel = moonDistanceLabel(now);
 
@@ -519,17 +503,14 @@ class MoonCard extends ConsumerWidget {
           children: [
             Text.rich(
               TextSpan(
-                style: _poppinsBold12_cream95,
+                style: _poppinsBold12Cream95,
                 children: [
                   TextSpan(
                     text: 'Tonight  \u00B7  ',
-                    style: _poppinsW400_12_cream95,
+                    style: _poppinsW40012Cream95,
                   ),
                   TextSpan(text: '${nightH}h ${nightM}m dark'),
-                  TextSpan(
-                    text: deltaStr,
-                    style: _poppinsW400_12_cream75,
-                  ),
+                  TextSpan(text: deltaStr, style: _poppinsW40012Cream75),
                 ],
               ),
             ),
@@ -564,9 +545,7 @@ class MoonCard extends ConsumerWidget {
           const SizedBox(height: 2),
           Row(
             mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              Text(distLabel, style: labelStyle),
-            ],
+            children: [Text(distLabel, style: labelStyle)],
           ),
         ],
       ],
@@ -585,10 +564,7 @@ class MoonCard extends ConsumerWidget {
       'assets/images/zodiac/${zodiac.toLowerCase()}.svg',
       width: 10,
       height: 10,
-      colorFilter: const ColorFilter.mode(
-        AppColors.cream60,
-        BlendMode.srcIn,
-      ),
+      colorFilter: const ColorFilter.mode(AppColors.cream60, BlendMode.srcIn),
     );
 
     final visibility = _moonVisibility(now, riseSet);
@@ -655,10 +631,7 @@ class MoonCard extends ConsumerWidget {
             color: AppColors.cream90,
           ),
           const SizedBox(width: 4),
-          Text(
-            'Sky',
-            style: _figtreeW400_16_cream,
-          ),
+          Text('Sky', style: _figtreeW40016Cream),
         ],
       ),
     );
@@ -674,16 +647,9 @@ class MoonCard extends ConsumerWidget {
       crossAxisAlignment: CrossAxisAlignment.baseline,
       textBaseline: TextBaseline.alphabetic,
       children: [
-        Icon(
-          icon,
-          size: 15,
-          color: AppColors.cream90,
-        ),
+        Icon(icon, size: 15, color: AppColors.cream90),
         const SizedBox(width: 4),
-        Text(
-          'Sky',
-          style: _figtreeW400_18_cream,
-        ),
+        Text('Sky', style: _figtreeW40018Cream),
         const Spacer(),
         Column(
           crossAxisAlignment: CrossAxisAlignment.end,
@@ -695,20 +661,14 @@ class MoonCard extends ConsumerWidget {
                   phase == MoonPhase.fullMoon
                       ? fullMoonName(now)
                       : '$illumination%',
-                  style: _poppinsW500_11_cream70,
+                  style: _poppinsW50011Cream70,
                 ),
                 const SizedBox(width: 6),
-                Text(
-                  moonPhaseLabel(phase),
-                  style: _poppinsBold14_cream,
-                ),
+                Text(moonPhaseLabel(phase), style: _poppinsBold14Cream),
               ],
             ),
             if (phaseDatesText.isNotEmpty)
-              Text(
-                phaseDatesText,
-                style: _poppinsW500_11_cream80,
-              ),
+              Text(phaseDatesText, style: _poppinsW50011Cream80),
           ],
         ),
       ],
@@ -746,7 +706,10 @@ class _MoonDiscPainter extends CustomPainter {
     final center = Offset(size.width / 2, size.height / 2);
 
     // Use saveLayer so BlendMode.clear erases to transparency
-    canvas.saveLayer(Rect.fromCircle(center: center, radius: radius + 1), Paint());
+    canvas.saveLayer(
+      Rect.fromCircle(center: center, radius: radius + 1),
+      Paint(),
+    );
 
     // 1. Draw base lit circle
     final litPaint = Paint()
@@ -891,10 +854,7 @@ class _VisiblePlanetsRow extends ConsumerWidget {
         final names = data.map((p) => p.name).toList();
         return Row(
           children: [
-            Text(
-              'Visible planets',
-              style: _poppinsW800_11_cream85,
-            ),
+            Text('Visible planets', style: _poppinsW80011Cream85),
             const SizedBox(width: 6),
             Flexible(
               child: Text.rich(
@@ -904,7 +864,7 @@ class _VisiblePlanetsRow extends ConsumerWidget {
                       if (i > 0)
                         TextSpan(
                           text: ' \u00B7 ',
-                          style: _poppinsW400_11_cream85,
+                          style: _poppinsW40011Cream85,
                         ),
                       WidgetSpan(
                         alignment: PlaceholderAlignment.middle,
@@ -920,7 +880,7 @@ class _VisiblePlanetsRow extends ConsumerWidget {
                       ),
                       TextSpan(
                         text: ' ${names[i]}',
-                        style: _poppinsW400_11_cream85,
+                        style: _poppinsW40011Cream85,
                       ),
                     ],
                   ],
@@ -959,10 +919,7 @@ class _ExpandedVisiblePlanetsBlock extends ConsumerWidget {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             const SizedBox(height: 4),
-            Text(
-              'Visible tonight',
-              style: _poppinsW800_11_cream85,
-            ),
+            Text('Visible tonight', style: _poppinsW80011Cream85),
             const SizedBox(height: 6),
             IntrinsicHeight(
               child: Row(
@@ -992,9 +949,9 @@ class _PlanetTile extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final nameStyle = _poppinsW600_11_cream;
-    final altStyle = _poppinsW400_11_cream;
-    final magStyle = _poppinsW500_10_cream90;
+    final nameStyle = _poppinsW60011Cream;
+    final altStyle = _poppinsW40011Cream;
+    final magStyle = _poppinsW50010Cream90;
 
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 5),
@@ -1111,7 +1068,7 @@ class _AstroEventRow extends StatelessWidget {
   Widget build(BuildContext context) {
     final sign = currentZodiac(now);
     final event = activeAstroEvent(now, nextFullMoonDate: nextFullMoonDate);
-    final style = _poppinsBold11_cream90Style;
+    final style = _poppinsBold11Cream90Style;
 
     if (!showSeason && event == null) {
       return const SizedBox.shrink();
@@ -1134,16 +1091,14 @@ class _AstroEventRow extends StatelessWidget {
         ],
         if (event != null) ...[
           if (showSeason) Text('  \u00B7  ', style: style),
-          Flexible(
-            child: _buildEventLabel(event, style),
-          ),
+          Flexible(child: _buildEventLabel(event, style)),
         ],
       ],
     );
   }
 
   Widget _buildEventLabel(AstroEvent event, TextStyle style) {
-    final lightStyle = _poppinsW400_11_cream90;
+    final lightStyle = _poppinsW40011Cream90;
     final label = event.label;
     final untilIndex = label.indexOf(' until ');
     final isMeteorShower = event.zhr != null;
@@ -1231,9 +1186,7 @@ class _MoonCycleChartPainter extends CustomPainter {
     final start = hasCycle
         ? cycleStart
         : now.subtract(const Duration(days: 15));
-    final end = hasCycle
-        ? cycleEnd
-        : now.add(const Duration(days: 15));
+    final end = hasCycle ? cycleEnd : now.add(const Duration(days: 15));
     final totalSec = end.difference(start).inSeconds.toDouble();
     if (totalSec <= 0) return;
 
@@ -1270,16 +1223,8 @@ class _MoonCycleChartPainter extends CustomPainter {
       ..shader = const LinearGradient(
         begin: Alignment.topCenter,
         end: Alignment.bottomCenter,
-        colors: [
-          AppColors.cream15,
-          Colors.transparent,
-        ],
-      ).createShader(Rect.fromLTRB(
-        padLeft,
-        padTop,
-        padLeft + graphW,
-        bottomY,
-      ))
+        colors: [AppColors.cream15, Colors.transparent],
+      ).createShader(Rect.fromLTRB(padLeft, padTop, padLeft + graphW, bottomY))
       ..style = PaintingStyle.fill;
     canvas.drawPath(fillPath, fillPaint);
 
@@ -1313,14 +1258,12 @@ class _MoonCycleChartPainter extends CustomPainter {
 
         final cx = xForDate(t.date);
         const discTop = 4.0;
-        final discLeft = (cx - discSize / 2).clamp(
-          0.0,
-          size.width - discSize,
-        );
+        final discLeft = (cx - discSize / 2).clamp(0.0, size.width - discSize);
         canvas.save();
         canvas.translate(discLeft, discTop);
-        _MoonDiscPainter(fraction: markerFraction)
-            .paint(canvas, const Size(discSize, discSize));
+        _MoonDiscPainter(
+          fraction: markerFraction,
+        ).paint(canvas, const Size(discSize, discSize));
         canvas.restore();
 
         final label = dateFmt.format(t.date);
@@ -1328,8 +1271,7 @@ class _MoonCycleChartPainter extends CustomPainter {
           text: TextSpan(text: label, style: _dateLabelStyle),
           textDirection: TextDirection.ltr,
         )..layout();
-        final labelX = (cx - tp.width / 2)
-            .clamp(0.0, size.width - tp.width);
+        final labelX = (cx - tp.width / 2).clamp(0.0, size.width - tp.width);
         const labelY = discTop + discSize + 1;
         tp.paint(canvas, Offset(labelX, labelY));
       }
@@ -1348,10 +1290,7 @@ class _MoonCycleChartPainter extends CustomPainter {
 
     // 11. "u r here" label centered below the dot
     final todayLabel = TextPainter(
-      text: const TextSpan(
-        text: 'u r here',
-        style: _todayLabelStyle,
-      ),
+      text: const TextSpan(text: 'u r here', style: _todayLabelStyle),
       textDirection: TextDirection.ltr,
     )..layout();
 

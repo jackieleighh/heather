@@ -96,8 +96,9 @@ class UsnoMoonData {
 
     final totalHours = after.date.difference(before.date).inHours.toDouble();
     final elapsed = date.difference(before.date).inHours.toDouble();
-    final progress =
-        totalHours > 0 ? (elapsed / totalHours).clamp(0.0, 1.0) : 0.0;
+    final progress = totalHours > 0
+        ? (elapsed / totalHours).clamp(0.0, 1.0)
+        : 0.0;
 
     return (startFrac + progress * (endFrac - startFrac)) % 1.0;
   }
@@ -189,9 +190,11 @@ class UsnoMoonData {
   factory UsnoMoonData.fromJson(Map<String, dynamic> json) => UsnoMoonData(
     curPhase: json['curPhase'] as String,
     fracIllum: (json['fracIllum'] as num).toDouble(),
-    transitions: (json['transitions'] as List<dynamic>?)
-            ?.map((t) =>
-                UsnoPhaseTransition.fromJson(t as Map<String, dynamic>))
+    transitions:
+        (json['transitions'] as List<dynamic>?)
+            ?.map(
+              (t) => UsnoPhaseTransition.fromJson(t as Map<String, dynamic>),
+            )
             .toList() ??
         [],
   );
@@ -256,12 +259,14 @@ final moonDataProvider = FutureProvider.autoDispose<UsnoMoonData?>((ref) async {
         '${phasesStart.year}-${phasesStart.month}-${phasesStart.day}';
 
     final results = await Future.wait([
-      dio.get(ApiEndpoints.usnoOneDay(
-        date: dateStr,
-        latitude: 0,
-        longitude: 0,
-        tzOffset: 0,
-      )),
+      dio.get(
+        ApiEndpoints.usnoOneDay(
+          date: dateStr,
+          latitude: 0,
+          longitude: 0,
+          tzOffset: 0,
+        ),
+      ),
       dio.get(ApiEndpoints.usnoMoonPhases(date: phasesDateStr, nump: 16)),
     ]);
 
@@ -269,18 +274,19 @@ final moonDataProvider = FutureProvider.autoDispose<UsnoMoonData?>((ref) async {
         (results[0].data as Map<String, dynamic>)['properties']['data']
             as Map<String, dynamic>;
     final phasesData =
-        (results[1].data as Map<String, dynamic>)['phasedata']
-            as List<dynamic>;
+        (results[1].data as Map<String, dynamic>)['phasedata'] as List<dynamic>;
 
     final curPhase = oneDayData['curphase'] as String;
     final fracStr = oneDayData['fracillum'] as String;
     final fracIllum = double.tryParse(fracStr.replaceAll('%', '')) ?? 0;
 
     final transitions = phasesData
-        .map((p) => UsnoPhaseTransition(
-              date: _parsePhaseDateTime(p),
-              phase: p['phase'] as String,
-            ))
+        .map(
+          (p) => UsnoPhaseTransition(
+            date: _parsePhaseDateTime(p),
+            phase: p['phase'] as String,
+          ),
+        )
         .toList();
 
     final data = UsnoMoonData(
@@ -347,98 +353,105 @@ MoonRiseSetKey _roundMoonKey(MoonRiseSetKey k) => (
 
 final moonRiseSetProvider = FutureProvider.autoDispose
     .family<UsnoMoonRiseSet?, MoonRiseSetKey>((ref, rawKey) async {
-  final key = _roundMoonKey(rawKey);
-  final prefs = ref.watch(sharedPreferencesProvider);
-  final dio = ref.watch(dioProvider);
-  final cacheKey =
-      'cached_moonriseset_${key.lat.toStringAsFixed(2)}_${key.lon.toStringAsFixed(2)}';
-  final cacheTsKey = '${cacheKey}_ts';
+      final key = _roundMoonKey(rawKey);
+      final prefs = ref.watch(sharedPreferencesProvider);
+      final dio = ref.watch(dioProvider);
+      final cacheKey =
+          'cached_moonriseset_${key.lat.toStringAsFixed(2)}_${key.lon.toStringAsFixed(2)}';
+      final cacheTsKey = '${cacheKey}_ts';
 
-  final cachedJson = prefs.getString(cacheKey);
-  final cachedTs = prefs.getInt(cacheTsKey);
+      final cachedJson = prefs.getString(cacheKey);
+      final cachedTs = prefs.getInt(cacheTsKey);
 
-  UsnoMoonRiseSet? cachedData;
-  if (cachedJson != null) {
-    try {
-      cachedData = UsnoMoonRiseSet.fromJson(
-        jsonDecode(cachedJson) as Map<String, dynamic>,
-      );
-    } catch (_) {}
-  }
+      UsnoMoonRiseSet? cachedData;
+      if (cachedJson != null) {
+        try {
+          cachedData = UsnoMoonRiseSet.fromJson(
+            jsonDecode(cachedJson) as Map<String, dynamic>,
+          );
+        } catch (_) {}
+      }
 
-  // Return cached value if <30 min old
-  if (cachedData != null && cachedTs != null) {
-    final age = DateTime.now().millisecondsSinceEpoch - cachedTs;
-    if (age < moonDataCacheTtl.inMilliseconds) {
-      return cachedData;
-    }
-  }
-
-  try {
-    final nowUtc = DateTime.now().toUtc();
-    // Use local date at the forecast location
-    final localNow = nowUtc.add(Duration(seconds: key.tzOffsetSeconds));
-    final dateStr = '${localNow.year}-${localNow.month}-${localNow.day}';
-    final tzHours = (key.tzOffsetSeconds / 3600).round();
-
-    final response = await dio.get(ApiEndpoints.usnoOneDay(
-      date: dateStr,
-      latitude: key.lat,
-      longitude: key.lon,
-      tzOffset: tzHours,
-    ));
-
-    final data =
-        (response.data as Map<String, dynamic>)['properties']['data']
-            as Map<String, dynamic>;
-    final moondata = data['moondata'] as List<dynamic>?;
-
-    DateTime? moonrise;
-    DateTime? moonset;
-    DateTime? upperTransit;
-
-    if (moondata != null) {
-      for (final entry in moondata) {
-        final phen = entry['phen'] as String;
-        final timeStr = entry['time'] as String; // "HH:MM"
-        final parts = timeStr.split(':');
-        final hour = int.parse(parts[0]);
-        final minute = int.parse(parts[1]);
-        final dt = DateTime(localNow.year, localNow.month, localNow.day,
-            hour, minute);
-
-        switch (phen) {
-          case 'Rise':
-          case 'R':
-            moonrise = dt;
-          case 'Set':
-          case 'S':
-            moonset = dt;
-          case 'Upper Transit':
-          case 'U':
-            upperTransit = dt;
+      // Return cached value if <30 min old
+      if (cachedData != null && cachedTs != null) {
+        final age = DateTime.now().millisecondsSinceEpoch - cachedTs;
+        if (age < moonDataCacheTtl.inMilliseconds) {
+          return cachedData;
         }
       }
-    }
 
-    final result = UsnoMoonRiseSet(
-      moonrise: moonrise,
-      moonset: moonset,
-      upperTransit: upperTransit,
-    );
+      try {
+        final nowUtc = DateTime.now().toUtc();
+        // Use local date at the forecast location
+        final localNow = nowUtc.add(Duration(seconds: key.tzOffsetSeconds));
+        final dateStr = '${localNow.year}-${localNow.month}-${localNow.day}';
+        final tzHours = (key.tzOffsetSeconds / 3600).round();
 
-    await prefs.setString(cacheKey, jsonEncode(result.toJson()));
-    await prefs.setInt(cacheTsKey, DateTime.now().millisecondsSinceEpoch);
+        final response = await dio.get(
+          ApiEndpoints.usnoOneDay(
+            date: dateStr,
+            latitude: key.lat,
+            longitude: key.lon,
+            tzOffset: tzHours,
+          ),
+        );
 
-    return result;
-  } catch (_) {
-    // Return cached data if <24 hours old
-    if (cachedData != null && cachedTs != null) {
-      final age = DateTime.now().millisecondsSinceEpoch - cachedTs;
-      if (age < moonDataStaleTtl.inMilliseconds) {
-        return cachedData;
+        final data =
+            (response.data as Map<String, dynamic>)['properties']['data']
+                as Map<String, dynamic>;
+        final moondata = data['moondata'] as List<dynamic>?;
+
+        DateTime? moonrise;
+        DateTime? moonset;
+        DateTime? upperTransit;
+
+        if (moondata != null) {
+          for (final entry in moondata) {
+            final phen = entry['phen'] as String;
+            final timeStr = entry['time'] as String; // "HH:MM"
+            final parts = timeStr.split(':');
+            final hour = int.parse(parts[0]);
+            final minute = int.parse(parts[1]);
+            final dt = DateTime(
+              localNow.year,
+              localNow.month,
+              localNow.day,
+              hour,
+              minute,
+            );
+
+            switch (phen) {
+              case 'Rise':
+              case 'R':
+                moonrise = dt;
+              case 'Set':
+              case 'S':
+                moonset = dt;
+              case 'Upper Transit':
+              case 'U':
+                upperTransit = dt;
+            }
+          }
+        }
+
+        final result = UsnoMoonRiseSet(
+          moonrise: moonrise,
+          moonset: moonset,
+          upperTransit: upperTransit,
+        );
+
+        await prefs.setString(cacheKey, jsonEncode(result.toJson()));
+        await prefs.setInt(cacheTsKey, DateTime.now().millisecondsSinceEpoch);
+
+        return result;
+      } catch (_) {
+        // Return cached data if <24 hours old
+        if (cachedData != null && cachedTs != null) {
+          final age = DateTime.now().millisecondsSinceEpoch - cachedTs;
+          if (age < moonDataStaleTtl.inMilliseconds) {
+            return cachedData;
+          }
+        }
+        return null;
       }
-    }
-    return null;
-  }
-});
+    });

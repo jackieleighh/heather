@@ -177,8 +177,7 @@ class WeatherRepositoryImpl implements WeatherRepository {
   }) {
     // Try widget-coordinate override first
     if (overrideLat != null && overrideLon != null) {
-      final overrideKey =
-          'cached_forecast_${overrideLat}_$overrideLon';
+      final overrideKey = 'cached_forecast_${overrideLat}_$overrideLon';
       final overrideCached = prefs.getString(overrideKey);
       if (overrideCached != null) {
         try {

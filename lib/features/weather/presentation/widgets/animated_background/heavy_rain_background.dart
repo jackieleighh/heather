@@ -8,7 +8,11 @@ class HeavyRainBackground extends StatefulWidget {
   final List<Color> gradientColors;
   final bool isActive;
 
-  const HeavyRainBackground({super.key, required this.gradientColors, this.isActive = true});
+  const HeavyRainBackground({
+    super.key,
+    required this.gradientColors,
+    this.isActive = true,
+  });
 
   @override
   State<HeavyRainBackground> createState() => _HeavyRainBackgroundState();
@@ -31,6 +35,26 @@ class _HeavyRainBackgroundState extends State<HeavyRainBackground>
     if (widget.isActive) {
       _controller.repeat();
       _stopwatch.start();
+    }
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (mounted && _drops.isEmpty) {
+        final size = context.size;
+        if (size != null) _initDrops(size.width, size.height);
+      }
+    });
+  }
+
+  void _initDrops(double width, double height) {
+    for (var i = 0; i < 100; i++) {
+      _drops.add(
+        Particle(
+          x: _random.nextDouble() * width,
+          y: _random.nextDouble() * height,
+          speed: 6.0 + _random.nextDouble() * 8.0,
+          size: 1.0 + _random.nextDouble() * 2.0,
+          opacity: 0.1 + _random.nextDouble() * 0.3,
+        ),
+      );
     }
   }
 
@@ -88,19 +112,7 @@ class _HeavyRainPainter extends CustomPainter {
 
   @override
   void paint(Canvas canvas, Size size) {
-    if (drops.isEmpty) {
-      for (var i = 0; i < 100; i++) {
-        drops.add(
-          Particle(
-            x: random.nextDouble() * size.width,
-            y: random.nextDouble() * size.height,
-            speed: 6.0 + random.nextDouble() * 8.0,
-            size: 1.0 + random.nextDouble() * 2.0,
-            opacity: 0.1 + random.nextDouble() * 0.3,
-          ),
-        );
-      }
-    }
+    if (drops.isEmpty) return;
 
     final paint = Paint()
       ..strokeCap = StrokeCap.butt
@@ -117,7 +129,12 @@ class _HeavyRainPainter extends CustomPainter {
       if (drop.x > size.width) drop.x = 0;
 
       paint
-        ..color = (drop.cachedColor ??= Color.fromRGBO(255, 255, 255, drop.opacity))
+        ..color = (drop.cachedColor ??= Color.fromRGBO(
+          255,
+          255,
+          255,
+          drop.opacity,
+        ))
         ..strokeWidth = drop.size;
 
       canvas.drawLine(
@@ -129,6 +146,5 @@ class _HeavyRainPainter extends CustomPainter {
   }
 
   @override
-  bool shouldRepaint(_HeavyRainPainter oldDelegate) =>
-      oldDelegate.time != time;
+  bool shouldRepaint(_HeavyRainPainter oldDelegate) => oldDelegate.time != time;
 }

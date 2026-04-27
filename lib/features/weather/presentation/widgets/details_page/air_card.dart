@@ -12,77 +12,77 @@ import './card_container.dart';
 import './card_display_mode.dart';
 
 /// Cached text styles to avoid repeated GoogleFonts allocations.
-final _figtreeW400_16_cream = GoogleFonts.figtree(
+final _figtreeW40016Cream = GoogleFonts.figtree(
   fontSize: 16,
   fontWeight: FontWeight.w400,
   color: AppColors.cream,
 );
-final _figtreeW400_18_cream = GoogleFonts.figtree(
+final _figtreeW40018Cream = GoogleFonts.figtree(
   fontSize: 18,
   fontWeight: FontWeight.w400,
   color: AppColors.cream,
 );
-final _poppinsW400_13_cream = GoogleFonts.poppins(
+final _poppinsW40013Cream = GoogleFonts.poppins(
   fontSize: 13,
   fontWeight: FontWeight.w400,
   color: AppColors.cream,
 );
-final _poppinsBold13_cream = GoogleFonts.poppins(
+final _poppinsBold13Cream = GoogleFonts.poppins(
   fontSize: 13,
   fontWeight: FontWeight.w700,
   color: AppColors.cream,
 );
-final _poppinsW600_13_cream95 = GoogleFonts.poppins(
+final _poppinsW60013Cream95 = GoogleFonts.poppins(
   fontSize: 13,
   fontWeight: FontWeight.w600,
   color: AppColors.cream95,
 );
-final _poppinsBold13_cream95 = GoogleFonts.poppins(
+final _poppinsBold13Cream95 = GoogleFonts.poppins(
   fontSize: 13,
   fontWeight: FontWeight.w700,
   color: AppColors.cream95,
 );
-final _poppinsW400_11_cream80 = GoogleFonts.poppins(
+final _poppinsW40011Cream80 = GoogleFonts.poppins(
   fontSize: 11,
   fontWeight: FontWeight.w400,
   color: AppColors.cream80,
 );
-final _poppinsW600_11_cream80 = GoogleFonts.poppins(
+final _poppinsW60011Cream80 = GoogleFonts.poppins(
   fontSize: 11,
   fontWeight: FontWeight.w600,
   color: AppColors.cream80,
 );
-final _poppinsW600_13_cream90 = GoogleFonts.poppins(
+final _poppinsW60013Cream90 = GoogleFonts.poppins(
   fontSize: 13,
   fontWeight: FontWeight.w600,
   color: AppColors.cream90,
 );
-final _poppinsW600_12_cream85 = GoogleFonts.poppins(
+final _poppinsW60012Cream85 = GoogleFonts.poppins(
   fontSize: 12,
   fontWeight: FontWeight.w600,
   color: AppColors.cream85,
 );
-final _poppinsW600_10_cream80 = GoogleFonts.poppins(
+final _poppinsW60010Cream80 = GoogleFonts.poppins(
   fontSize: 10,
   fontWeight: FontWeight.w600,
   color: AppColors.cream80,
 );
-final _poppinsW800_11_cream85 = GoogleFonts.poppins(
+final _poppinsW80011Cream85 = GoogleFonts.poppins(
   fontSize: 11,
   fontWeight: FontWeight.w800,
   color: AppColors.cream85,
 );
-final _poppinsW400_9_cream50 = GoogleFonts.poppins(
+final _poppinsW4009Cream50 = GoogleFonts.poppins(
   fontSize: 9,
   fontWeight: FontWeight.w400,
   color: AppColors.cream50,
 );
-final _poppinsW400_11_cream = GoogleFonts.poppins(
+final _poppinsW40011Cream = GoogleFonts.poppins(
   fontSize: 11,
   fontWeight: FontWeight.w400,
   color: AppColors.cream,
 );
-final _poppinsBold14_cream = GoogleFonts.poppins(
+final _poppinsBold14Cream = GoogleFonts.poppins(
   fontSize: 14,
   fontWeight: FontWeight.w700,
   color: AppColors.cream,
@@ -141,36 +141,20 @@ class AirCard extends StatelessWidget {
         padding: const EdgeInsets.symmetric(horizontal: 14),
         child: Row(
           children: [
-            Icon(
-              WeatherIcons.smoke,
-              size: 14,
-              color: AppColors.cream90,
-            ),
+            const Icon(WeatherIcons.smoke, size: 14, color: AppColors.cream90),
             const SizedBox(width: 4),
-            Text(
-              'Air',
-              style: _figtreeW400_16_cream,
-            ),
+            Text('Air', style: _figtreeW40016Cream),
             const Spacer(),
             if (aqi != null) ...[
-              Text(
-                'AQI ',
-                style: _poppinsW400_13_cream,
-              ),
-              Text(
-                '${aqi!}',
-                style: _poppinsBold13_cream,
-              ),
+              Text('AQI ', style: _poppinsW40013Cream),
+              Text('${aqi!}', style: _poppinsBold13Cream),
               const SizedBox(width: 8),
             ],
             Text(
               '${windDirectionLabel(windDirection)} ',
-              style: _poppinsW400_13_cream,
+              style: _poppinsW40013Cream,
             ),
-            Text(
-              '${windSpeed.round()} mph',
-              style: _poppinsBold13_cream,
-            ),
+            Text('${windSpeed.round()} mph', style: _poppinsBold13Cream),
           ],
         ),
       );
@@ -196,24 +180,14 @@ class AirCard extends StatelessWidget {
                 padding: const EdgeInsets.only(bottom: 4),
                 child: Row(
                   children: [
-                    Container(
-                      width: 16,
-                      height: 2,
-                      color: AppColors.cream50,
-                    ),
+                    Container(width: 16, height: 2, color: AppColors.cream50),
                     const SizedBox(width: 5),
-                    Text(
-                      'Wind',
-                      style: _poppinsW600_10_cream80,
-                    ),
+                    Text('Wind', style: _poppinsW60010Cream80),
                     if (hourlyWindGusts.isNotEmpty) ...[
                       const SizedBox(width: 14),
                       _buildDashedLegendLine(),
                       const SizedBox(width: 5),
-                      Text(
-                        'Gusts',
-                        style: _poppinsW600_10_cream80,
-                      ),
+                      Text('Gusts', style: _poppinsW60010Cream80),
                     ],
                   ],
                 ),
@@ -241,16 +215,13 @@ class AirCard extends StatelessWidget {
                 padding: const EdgeInsets.only(bottom: 4),
                 child: Row(
                   children: [
-                    Icon(
+                    const Icon(
                       WeatherIcons.barometer,
                       size: 12,
                       color: AppColors.cream80,
                     ),
                     const SizedBox(width: 4),
-                    Text(
-                      'Pressure (mb)',
-                      style: _poppinsW600_10_cream80,
-                    ),
+                    Text('Pressure (mb)', style: _poppinsW60010Cream80),
                   ],
                 ),
               ),
@@ -314,38 +285,21 @@ class AirCard extends StatelessWidget {
       crossAxisAlignment: CrossAxisAlignment.baseline,
       textBaseline: TextBaseline.alphabetic,
       children: [
-        Icon(
-          WeatherIcons.smoke,
-          size: 15,
-          color: AppColors.cream90,
-        ),
+        const Icon(WeatherIcons.smoke, size: 15, color: AppColors.cream90),
         const SizedBox(width: 4),
-        Text(
-          'Air',
-          style: _figtreeW400_18_cream,
-        ),
+        Text('Air', style: _figtreeW40018Cream),
         const Spacer(),
-        Icon(
-          WeatherIcons.windy,
-          size: 14,
-          color: AppColors.cream95,
-        ),
+        const Icon(WeatherIcons.windy, size: 14, color: AppColors.cream95),
         const SizedBox(width: 6),
         Text(
           '${windDirectionLabel(windDirection)} ($windDirection\u00B0)',
-          style: _poppinsW600_13_cream95,
+          style: _poppinsW60013Cream95,
         ),
         const SizedBox(width: 8),
-        Text(
-          '${windSpeed.round()} mph',
-          style: _poppinsBold13_cream95,
-        ),
+        Text('${windSpeed.round()} mph', style: _poppinsBold13Cream95),
         if (maxGust > windSpeed) ...[
           const SizedBox(width: 4),
-          Text(
-            'up to ${maxGust.round()} mph',
-            style: _poppinsW400_11_cream80,
-          ),
+          Text('up to ${maxGust.round()} mph', style: _poppinsW40011Cream80),
         ],
       ],
     );
@@ -355,16 +309,9 @@ class AirCard extends StatelessWidget {
     return Row(
       children: [
         const Spacer(),
-        Icon(
-          WeatherIcons.barometer,
-          size: 14,
-          color: AppColors.cream80,
-        ),
+        const Icon(WeatherIcons.barometer, size: 14, color: AppColors.cream80),
         const SizedBox(width: 4),
-        Text(
-          '${pressure.round()} mb',
-          style: _poppinsW600_11_cream80,
-        ),
+        Text('${pressure.round()} mb', style: _poppinsW60011Cream80),
         if (pressureDelta != null) ...[
           Icon(
             pressureDelta > 0.5
@@ -380,7 +327,7 @@ class AirCard extends StatelessWidget {
             pressureDelta.abs() < 0.5
                 ? 'steady'
                 : '${pressureDelta > 0 ? '+' : ''}${pressureDelta.toStringAsFixed(1)} mb',
-            style: _poppinsW600_11_cream80,
+            style: _poppinsW60011Cream80,
           ),
         ],
       ],
@@ -411,10 +358,7 @@ class AirCard extends StatelessWidget {
                 ),
               ),
               const SizedBox(width: 6),
-              Text(
-                _aqiLabel(aqi!),
-                style: _poppinsW600_13_cream90,
-              ),
+              Text(_aqiLabel(aqi!), style: _poppinsW60013Cream90),
             ],
           )
         else
@@ -437,38 +381,21 @@ class AirCard extends StatelessWidget {
       crossAxisAlignment: CrossAxisAlignment.baseline,
       textBaseline: TextBaseline.alphabetic,
       children: [
-        Icon(
-          WeatherIcons.smoke,
-          size: 15,
-          color: AppColors.cream90,
-        ),
+        const Icon(WeatherIcons.smoke, size: 15, color: AppColors.cream90),
         const SizedBox(width: 4),
-        Text(
-          'Air',
-          style: _figtreeW400_18_cream,
-        ),
+        Text('Air', style: _figtreeW40018Cream),
         const Spacer(),
-        Icon(
-          WeatherIcons.windy,
-          size: 14,
-          color: AppColors.cream95,
-        ),
+        const Icon(WeatherIcons.windy, size: 14, color: AppColors.cream95),
         const SizedBox(width: 6),
         Text(
           '${windDirectionLabel(windDirection)} ($windDirection\u00B0)',
-          style: _poppinsW600_13_cream95,
+          style: _poppinsW60013Cream95,
         ),
         const SizedBox(width: 8),
-        Text(
-          '${windSpeed.round()} mph',
-          style: _poppinsBold13_cream95,
-        ),
+        Text('${windSpeed.round()} mph', style: _poppinsBold13Cream95),
         if (maxGust > windSpeed) ...[
           const SizedBox(width: 4),
-          Text(
-            'up to ${maxGust.round()} mph',
-            style: _poppinsW400_11_cream80,
-          ),
+          Text('up to ${maxGust.round()} mph', style: _poppinsW40011Cream80),
         ],
       ],
     );
@@ -500,7 +427,7 @@ class AirCard extends StatelessWidget {
             const SizedBox(width: 6),
             Text(
               aqi == null ? '' : _aqiLabel(aqi!),
-              style: _poppinsW600_12_cream85,
+              style: _poppinsW60012Cream85,
             ),
           ],
         ),
@@ -517,11 +444,21 @@ class AirCard extends StatelessWidget {
 
   Widget _buildPollutantGrid() {
     final entries = <MapEntry<String, double>>[];
-    if (airQuality!.pm25 != null) entries.add(MapEntry('PM2.5', airQuality!.pm25!));
-    if (airQuality!.pm10 != null) entries.add(MapEntry('PM10', airQuality!.pm10!));
-    if (airQuality!.ozone != null) entries.add(MapEntry('O\u2083', airQuality!.ozone!));
-    if (airQuality!.no2 != null) entries.add(MapEntry('NO\u2082', airQuality!.no2!));
-    if (airQuality!.so2 != null) entries.add(MapEntry('SO\u2082', airQuality!.so2!));
+    if (airQuality!.pm25 != null) {
+      entries.add(MapEntry('PM2.5', airQuality!.pm25!));
+    }
+    if (airQuality!.pm10 != null) {
+      entries.add(MapEntry('PM10', airQuality!.pm10!));
+    }
+    if (airQuality!.ozone != null) {
+      entries.add(MapEntry('O\u2083', airQuality!.ozone!));
+    }
+    if (airQuality!.no2 != null) {
+      entries.add(MapEntry('NO\u2082', airQuality!.no2!));
+    }
+    if (airQuality!.so2 != null) {
+      entries.add(MapEntry('SO\u2082', airQuality!.so2!));
+    }
     if (airQuality!.co != null) entries.add(MapEntry('CO', airQuality!.co!));
 
     if (entries.isEmpty) return const SizedBox.shrink();
@@ -533,15 +470,9 @@ class AirCard extends StatelessWidget {
         children: [
           Row(
             children: [
-              Text(
-                'Pollutants',
-                style: _poppinsW800_11_cream85,
-              ),
+              Text('Pollutants', style: _poppinsW80011Cream85),
               const SizedBox(width: 6),
-              Text(
-                '\u00B5g/m\u00B3',
-                style: _poppinsW400_9_cream50,
-              ),
+              Text('\u00B5g/m\u00B3', style: _poppinsW4009Cream50),
             ],
           ),
           const SizedBox(height: 6),
@@ -551,7 +482,12 @@ class AirCard extends StatelessWidget {
               children: [
                 for (var i = 0; i < entries.length; i++) ...[
                   if (i > 0) const SizedBox(width: 6),
-                  Expanded(child: _PollutantTile(label: entries[i].key, value: entries[i].value)),
+                  Expanded(
+                    child: _PollutantTile(
+                      label: entries[i].key,
+                      value: entries[i].value,
+                    ),
+                  ),
                 ],
               ],
             ),
@@ -565,11 +501,7 @@ class AirCard extends StatelessWidget {
     return SizedBox(
       width: 16,
       height: 2,
-      child: CustomPaint(
-        painter: _DashedLinePainter(
-          color: AppColors.cream30,
-        ),
-      ),
+      child: CustomPaint(painter: _DashedLinePainter(color: AppColors.cream30)),
     );
   }
 }
@@ -726,10 +658,7 @@ class _WindLinePainter extends CustomPainter {
         ..shader = const LinearGradient(
           begin: Alignment.topCenter,
           end: Alignment.bottomCenter,
-          colors: [
-            AppColors.cream15,
-            AppColors.cream03,
-          ],
+          colors: [AppColors.cream15, AppColors.cream03],
         ).createShader(fillRect)
         ..style = PaintingStyle.fill,
     );
@@ -972,10 +901,7 @@ class _PressureLinePainter extends CustomPainter {
         ..shader = const LinearGradient(
           begin: Alignment.topCenter,
           end: Alignment.bottomCenter,
-          colors: [
-            AppColors.cream15,
-            AppColors.cream03,
-          ],
+          colors: [AppColors.cream15, AppColors.cream03],
         ).createShader(fillRect)
         ..style = PaintingStyle.fill,
     );
@@ -1010,8 +936,7 @@ class _PressureLinePainter extends CustomPainter {
           final interpPressure =
               pressures[i0] + (pressures[i0 + 1] - pressures[i0]) * t;
           final nowX = padLeft + graphW * frac;
-          final nowY =
-              padTop + graphH * (1 - (interpPressure - lo) / range);
+          final nowY = padTop + graphH * (1 - (interpPressure - lo) / range);
 
           canvas.drawCircle(
             Offset(nowX, nowY),
@@ -1038,8 +963,9 @@ class _PollutantTile extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final valueStr =
-        value >= 100 ? value.round().toString() : value.toStringAsFixed(1);
+    final valueStr = value >= 100
+        ? value.round().toString()
+        : value.toStringAsFixed(1);
 
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 8),
@@ -1061,7 +987,7 @@ class _PollutantTile extends StatelessWidget {
                 maxLines: 1,
                 softWrap: false,
                 overflow: TextOverflow.visible,
-                style: _poppinsW400_11_cream,
+                style: _poppinsW40011Cream,
                 strutStyle: const StrutStyle(
                   fontSize: 11,
                   height: 1.4,
@@ -1081,7 +1007,7 @@ class _PollutantTile extends StatelessWidget {
                 maxLines: 1,
                 softWrap: false,
                 overflow: TextOverflow.visible,
-                style: _poppinsBold14_cream,
+                style: _poppinsBold14Cream,
                 strutStyle: const StrutStyle(
                   fontSize: 14,
                   height: 1.3,

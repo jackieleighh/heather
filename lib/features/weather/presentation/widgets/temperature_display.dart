@@ -9,7 +9,7 @@ final _quicksandBold22 = GoogleFonts.quicksand(
   fontWeight: FontWeight.w700,
   color: AppColors.cream,
 );
-final _quicksandW500_15_cream90 = GoogleFonts.quicksand(
+final _quicksandW50015Cream90 = GoogleFonts.quicksand(
   fontSize: 15,
   fontWeight: FontWeight.w500,
   color: AppColors.cream90,
@@ -59,24 +59,22 @@ class TemperatureDisplay extends StatelessWidget {
         Transform.translate(
           offset: const Offset(0, -6),
           child: Text(
-          '${high.round()}° / ${low.round()}°',
-          style: _quicksandBold22,
-        )),
+            '${high.round()}° / ${low.round()}°',
+            style: _quicksandBold22,
+          ),
+        ),
         if (showFeels)
           Transform.translate(
             offset: const Offset(0, -8),
             child: Text(
               'feels ${feelsLike!.round()}°',
-              style: _quicksandW500_15_cream90,
+              style: _quicksandW50015Cream90,
             ),
           ),
         if (precipLabel != null)
           Transform.translate(
             offset: const Offset(0, 0),
-            child: Text(
-              precipLabel!,
-              style: _quicksandW500_15_cream90,
-            ),
+            child: Text(precipLabel!, style: _quicksandW50015Cream90),
           ),
       ],
     );

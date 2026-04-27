@@ -42,10 +42,16 @@ String buildWidgetPayload({
   final timelineSegments = _buildTimelineSegments(forecast);
   final locationNow = forecast.locationNow;
   final hasPrecipInTimeline = forecast.hourly
-      .where((h) =>
-          !h.time.isBefore(locationNow) &&
-          h.time.isBefore(locationNow.add(const Duration(hours: 6))))
-      .any((h) => precipConditions.contains(h.condition) && h.precipitationProbability >= 60);
+      .where(
+        (h) =>
+            !h.time.isBefore(locationNow) &&
+            h.time.isBefore(locationNow.add(const Duration(hours: 6))),
+      )
+      .any(
+        (h) =>
+            precipConditions.contains(h.condition) &&
+            h.precipitationProbability >= 60,
+      );
 
   // Build smart summary
   final widgetSummary = buildWidgetSummary(
@@ -87,20 +93,22 @@ String buildWidgetPayload({
     }).toList(),
     'sunrise': today.sunrise.toIso8601String(),
     'sunset': today.sunset.toIso8601String(),
-    'sunriseEpoch': (today.sunrise.millisecondsSinceEpoch ~/ 1000) +
+    'sunriseEpoch':
+        (today.sunrise.millisecondsSinceEpoch ~/ 1000) +
         today.sunrise.timeZoneOffset.inSeconds -
         forecast.utcOffsetSeconds,
-    'sunsetEpoch': (today.sunset.millisecondsSinceEpoch ~/ 1000) +
+    'sunsetEpoch':
+        (today.sunset.millisecondsSinceEpoch ~/ 1000) +
         today.sunset.timeZoneOffset.inSeconds -
         forecast.utcOffsetSeconds,
     'uvIndexMax': today.uvIndexMax.round(),
     'utcOffsetSeconds': forecast.utcOffsetSeconds,
-    if (alertLabel != null) 'alertLabel': alertLabel,
-    if (alertSeverity != null) 'alertSeverity': alertSeverity,
-    if (alertExpires != null) 'alertExpires': alertExpires,
-    if (precipLabel != null) 'precipLabel': precipLabel,
-    if (moonPhase != null) 'moonPhase': moonPhase,
-    if (moonIllumination != null) 'moonIllumination': moonIllumination,
+    'alertLabel': ?alertLabel,
+    'alertSeverity': ?alertSeverity,
+    'alertExpires': ?alertExpires,
+    'precipLabel': ?precipLabel,
+    'moonPhase': ?moonPhase,
+    'moonIllumination': ?moonIllumination,
     'widgetSummary': widgetSummary,
     'summaryIsDay': isDay,
     'timelineSegments': timelineSegments,
@@ -115,7 +123,8 @@ String? _computePrecipLabel(Forecast forecast) {
   final currentSlot = forecast.hourly
       .where((h) => !h.time.isAfter(locationNow))
       .lastOrNull;
-  final probRaining = !isRaining &&
+  final probRaining =
+      !isRaining &&
       currentSlot != null &&
       currentSlot.precipitationProbability >= 90;
 
@@ -138,10 +147,7 @@ String? _computePrecipLabel(Forecast forecast) {
   if (hourlyLabel != null) return hourlyLabel;
 
   if (!forecast.current.isDay) {
-    return tomorrowPrecipLabel(
-      daily: forecast.daily,
-      locationNow: locationNow,
-    );
+    return tomorrowPrecipLabel(daily: forecast.daily, locationNow: locationNow);
   }
   return null;
 }
@@ -165,7 +171,8 @@ List<Map<String, dynamic>> _buildTimelineSegments(Forecast forecast) {
 
     final minuteOffset = m.time.difference(locationNow).inMinutes;
     // Find the closest hourly entry for temperature
-    final temp = _closestHourlyTemp(forecast.hourly, m.time) ??
+    final temp =
+        _closestHourlyTemp(forecast.hourly, m.time) ??
         forecast.current.temperature.round();
     final prob = _closestHourlyPrecipProb(forecast.hourly, m.time);
 
@@ -206,12 +213,15 @@ List<Map<String, dynamic>> _buildTimelineSegments(Forecast forecast) {
       'minuteOffset': 0,
       'precipitation': forecast.minutely15.isNotEmpty
           ? forecast.minutely15
-              .where((m) => !m.time.isAfter(locationNow))
-              .lastOrNull
-              ?.precipitation ?? 0.0
+                    .where((m) => !m.time.isAfter(locationNow))
+                    .lastOrNull
+                    ?.precipitation ??
+                0.0
           : 0.0,
-      'precipProbability':
-          _closestHourlyPrecipProb(forecast.hourly, locationNow),
+      'precipProbability': _closestHourlyPrecipProb(
+        forecast.hourly,
+        locationNow,
+      ),
       'temperature': forecast.current.temperature.round(),
     });
   }

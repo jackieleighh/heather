@@ -17,15 +17,16 @@ Future<List<WeatherAlert>> fetchAlerts({
   if (!isInUSBounds(latitude, longitude)) return [];
 
   try {
-    final client = dio ?? Dio(BaseOptions(
-      connectTimeout: const Duration(seconds: 10),
-      receiveTimeout: const Duration(seconds: 10),
-    ));
+    final client =
+        dio ??
+        Dio(
+          BaseOptions(
+            connectTimeout: const Duration(seconds: 10),
+            receiveTimeout: const Duration(seconds: 10),
+          ),
+        );
     final response = await client.get(
-      ApiEndpoints.nwsAlerts(
-        latitude: latitude,
-        longitude: longitude,
-      ),
+      ApiEndpoints.nwsAlerts(latitude: latitude, longitude: longitude),
       options: Options(
         headers: {
           'User-Agent': '(Heather Weather App)',
@@ -69,14 +70,12 @@ Future<List<WeatherAlert>> fetchAlerts({
           return WeatherAlert(
             id: alertId,
             event: props['event'] as String? ?? 'Weather Alert',
-            severity:
-                AlertSeverity.fromString(props['severity'] as String?),
+            severity: AlertSeverity.fromString(props['severity'] as String?),
             headline: props['headline'] as String? ?? '',
             description: _cleanAlertText(props['description'] as String? ?? ''),
             instruction: _cleanAlertText(props['instruction'] as String? ?? ''),
             effective:
-                DateTime.tryParse(props['effective'] as String? ?? '') ??
-                    now,
+                DateTime.tryParse(props['effective'] as String? ?? '') ?? now,
             expires: expires ?? now.add(const Duration(hours: 1)),
             senderName: props['senderName'] as String? ?? '',
             areaDesc: props['areaDesc'] as String? ?? '',

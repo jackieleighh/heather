@@ -72,18 +72,22 @@ Future<void> main() async {
   final savedLocs = SavedLocationsLocalSource.readSync(prefs);
   if (savedLocs.isNotEmpty) {
     savedLocationsSeed = savedLocs;
-    final forecasts =
-        WeatherRepositoryImpl.readCachedSavedForecasts(prefs, savedLocs);
+    final forecasts = WeatherRepositoryImpl.readCachedSavedForecasts(
+      prefs,
+      savedLocs,
+    );
     if (forecasts.isNotEmpty) savedForecastsSeed = forecasts;
   }
 
   if (kDebugMode) {
-    debugPrint('[launch] weatherSeed=${cachedWeatherSeed != null}, '
-        'savedLocs=${savedLocationsSeed?.length ?? 0}, '
-        'savedForecasts=${savedForecastsSeed?.length ?? 0}, '
-        'widgetColdLaunch=${WidgetService.coldLaunchedFromWidget}, '
-        'widgetDataIsNewer=${WidgetService.widgetDataIsNewer}, '
-        'widgetLastUpdated=${WidgetService.widgetLastUpdated}');
+    debugPrint(
+      '[launch] weatherSeed=${cachedWeatherSeed != null}, '
+      'savedLocs=${savedLocationsSeed?.length ?? 0}, '
+      'savedForecasts=${savedForecastsSeed?.length ?? 0}, '
+      'widgetColdLaunch=${WidgetService.coldLaunchedFromWidget}, '
+      'widgetDataIsNewer=${WidgetService.widgetDataIsNewer}, '
+      'widgetLastUpdated=${WidgetService.widgetLastUpdated}',
+    );
   }
 
   runApp(
@@ -95,8 +99,9 @@ Future<void> main() async {
         if (savedLocationsSeed != null)
           savedLocationsSeedProvider.overrideWith((_) => savedLocationsSeed),
         if (savedForecastsSeed != null)
-          cachedSavedForecastsSeedProvider
-              .overrideWith((_) => savedForecastsSeed),
+          cachedSavedForecastsSeedProvider.overrideWith(
+            (_) => savedForecastsSeed,
+          ),
       ],
       child: HeatherApp(router: router),
     ),

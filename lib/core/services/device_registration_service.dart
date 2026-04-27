@@ -28,8 +28,8 @@ class DeviceRegistrationService {
     final prefs = await SharedPreferences.getInstance();
     final locationsJson = prefs.getString(_prefsLocationsKey);
     if (locationsJson != null) {
-      _lastLocations =
-          (jsonDecode(locationsJson) as List<dynamic>).cast<Map<String, dynamic>>();
+      _lastLocations = (jsonDecode(locationsJson) as List<dynamic>)
+          .cast<Map<String, dynamic>>();
     }
     _lastAlertsEnabled = prefs.getBool(_prefsAlertsEnabledKey) ?? true;
   }
@@ -124,12 +124,14 @@ class DeviceRegistrationService {
     try {
       await _firestore.collection('devices').doc(token).set({
         'locations': locations
-            .map((loc) => {
-                  'latitude': loc['latitude'] as double,
-                  'longitude': loc['longitude'] as double,
-                  'name': loc['name'] as String? ?? '',
-                  'locationId': loc['locationId'] as String? ?? '',
-                })
+            .map(
+              (loc) => {
+                'latitude': loc['latitude'] as double,
+                'longitude': loc['longitude'] as double,
+                'name': loc['name'] as String? ?? '',
+                'locationId': loc['locationId'] as String? ?? '',
+              },
+            )
             .toList(),
         'alertsEnabled': alertsEnabled,
         'platform': Platform.isIOS ? 'ios' : 'android',

@@ -1,0 +1,100 @@
+import '../../../../features/weather/domain/entities/temperature_tier.dart';
+
+const sunnyQuips = <TemperatureTier, List<String>>{
+  TemperatureTier.singleDigits: [
+    'Sunshine but single digits. She is lying to you with that blue sky. Puffiest coat on and stay inside bestie.',
+    'The sun showed up but forgot to bring any warmth. Typical. Every layer you own girl.',
+    'Sunny and freezing cold. Beautiful from behind a window. Stay in your coziest PJs babe.',
+    "She's out there sparkling but it's dangerously cold. Do not be fooled. Warmest everything and stay in bestie.",
+  ],
+  TemperatureTier.freezing: [
+    "It's freezing out there and the sun is just for show. Heaviest coat scarf and gloves girl.",
+    'She looks gorgeous but below freezing is below freezing. Bundle up in your warmest coat babe.',
+    'Sunny and bitter cold. The kind of day that fools you into going outside underdressed. Earmuffs on bestie.',
+    'The sun came out but the cold stayed. Layer up like you mean it. Warm boots on girl.',
+    "Don't let that sunshine trick you. It's still freezing. Heavy coat and gloves babe.",
+  ],
+  TemperatureTier.jacketWeather: [
+    'Sunny and cool. Sunnies on and your cutest jacket. This is your moment bestie.',
+    'She gave us sunshine and a little chill. Perfect for your favorite denim jacket girl.',
+    'Cool and bright. Grab a light jacket and go enjoy every second of this babe.',
+    'Sunny jacket weather. The kind of day you want to walk everywhere. Sneakers on and go bestie.',
+    "The sun is out and it's cool enough to actually enjoy being outside. Hoodie and sunnies girl.",
+  ],
+  TemperatureTier.flannelWeather: [
+    'Sunny and mild. Put on your coziest sweater and get outside immediately girl.',
+    'She gave us the perfect sunny day. Flannel and cute boots and go make the most of it babe.',
+    'The sky looks like a painting right now. Cozy layers on and go take a walk bestie.',
+    'Mild and sunny and everything feels right. Light scarf and your favorite boots girl.',
+    'This is the kind of day you remember. Best fall outfit on and go soak it in babe.',
+  ],
+  TemperatureTier.shortsWeather: [
+    "She's being so gentle today. Sundress and sandals and go enjoy every second of it girl.",
+    'Warm and sunny. Shorts on sunglasses on and do not waste a minute of this babe.',
+    'The sun showed up and meant it. Tank top and sandals and go live your life bestie.',
+    'Sunny and warm and perfect. Ponytail and your cutest sundress. This is your day girl.',
+    'She delivered warmth and sunshine. Bare legs and sandals and soak it all in babe.',
+  ],
+  TemperatureTier.scorcher: [
+    "The sun took it personally today. SPF on hat on water bottle full and don't skip any of it bestie.",
+    'Scorching sun. She went full villain arc. Lightest clothes you own and stay hydrated girl.',
+    "Hot enough to fry an egg on the sidewalk. Sunscreen is not optional it's survival babe.",
+    'She is not playing today. Big hat water bottle and find some shade. Lightest outfit on bestie.',
+    'Dangerously hot and sunny. SPF 50 and hydrate like your life depends on it girl.',
+  ],
+};
+
+const sunnyNightQuips = <TemperatureTier, List<String>>{
+  TemperatureTier.singleDigits: [
+    'The stars are giving Tangled lantern scene energy but the cold said stay in your tower. Every layer babe.',
+    'She hung every constellation like Christmas lights and set the temp to cruel. Coziest PJs and fuzzy socks girl.',
+    'Elsa really said let it go and took all the warmth with her. Stars are pretty through the window though bestie.',
+    'The sky is a whole planetarium and the cold is a whole problem. Blanket burrito and stay inside girl.',
+  ],
+  TemperatureTier.freezing: [
+    'Cinderella sky. Villain origin story temp. Heaviest coat bestie.',
+    "Moon's giving main character. Cold's giving antagonist. Bundle up babe.",
+    'Stars sparkling like Taylor dropped a new album. Freezing though? Bundle up girl.',
+    'Every star showed up. Below freezing though so admire from inside bestie.',
+    'She painted a fairy tale sky and set the thermostat to betrayal. Warmest coat girl.',
+    'Beautiful and brutal. Friendship bracelet stars in below freezing. Classic her babe.',
+  ],
+  TemperatureTier.jacketWeather: [
+    'Cool clear night. The kind Rapunzel waited eighteen years for. Jacket on and go see the lights babe.',
+    "She decorated the sky like a fairy tale and you're inside scrolling. Go look up bestie.",
+    'Orion is flexing so hard tonight. Jacket on and go be impressed girl.',
+    'This is the sky Cinderella danced under. Midnight magic energy. Jacket and go babe.',
+    'The Big Dipper is out here scooping the night sky like dessert. Jacket on and go get your serving girl.',
+    'Clear cool night. Very Moana finding her way by the stars energy. Jacket and go bestie.',
+    'She hung the moon like a chandelier and cooled the room to perfection. Jacket on babe.',
+    'Sabrina Carpenter would write a whole song about this sky. Cool enough for a jacket cute enough for a moment girl.',
+  ],
+  TemperatureTier.flannelWeather: [
+    'The stars are giving Tangled lantern scene energy. Flannel on and go make a wish bestie.',
+    'Mild and clear and the Milky Way is right there like a Barbie dreamhouse ceiling. Flannel on girl.',
+    'She turned the sky into a whole Disney movie. Go look up babe.',
+    "This is the night every Disney princess stares out the window during. You're that princess now girl.",
+    'Clear mild night and the moon is showing off like she just got a fresh highlight. Go appreciate her babe.',
+    'The sky looks like someone spilled glitter on black velvet. Flannel on and go be mesmerized girl.',
+    'She gave us every star and the perfect temperature. This is the apology we were owed bestie.',
+    'Mild and clear. The kind of night Taylor writes folklore songs about. Go live in the poetry babe.',
+    'Venus is out and she brought friends. Flannel weather stargazing is her love language girl.',
+    'The night sky is serving Encanto finale energy. Flannel on and soak it in bestie.',
+  ],
+  TemperatureTier.shortsWeather: [
+    "Warm night and every star showed up like it's a premiere. You're the VIP bestie.",
+    "Lie in the grass and count stars. Lose count. Start over. She's got all night babe.",
+    'The sky is serving Tangled boat scene and the temp said come outside in your lightest clothes girl.',
+    'She made it warm enough to stargaze without a blanket. The universe is flirting with you bestie.',
+    'Warm starry night. Very Tangled boat scene energy minus the boy plus the peace. Go float girl.',
+    'She turned the sky into a planetarium and the air into a warm hug. Main character night bestie.',
+    'The stars are out and the temp is giving permission to stay outside forever. Light clothes and go wander babe.',
+  ],
+  TemperatureTier.scorcher: [
+    "Hot clear night. The stars are watching us melt like it's a reality show. Lightest PJs and hydrate babe.",
+    "Scorching and starry. She's giving Jasmine on a magic carpet ride minus the breeze. Water now girl.",
+    'Night kept the heat like a grudge. At least the stars are pretty. Fan on bestie.',
+    'The sky is stunning and the heat is stunning us. Drink water and admire from inside babe.',
+    'She bedazzled the sky and turned up the heat like a Sabrina Carpenter music video. Stay hydrated bestie.',
+  ],
+};

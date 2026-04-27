@@ -13,10 +13,7 @@ class LoadingScreen extends StatelessWidget {
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
-            Image.asset(
-              'assets/images/splash.png',
-              width: 270,
-            ),
+            Image.asset('assets/images/splash.png', width: 270),
             const SizedBox(height: 48),
             const PulsingDots(
               dotSize: 10,
@@ -27,9 +24,9 @@ class LoadingScreen extends StatelessWidget {
             Text(
               'Getting your forecast...',
               style: Theme.of(context).textTheme.headlineSmall?.copyWith(
-                    color: AppColors.cream70,
-                    fontSize: 14,
-                  ),
+                color: AppColors.cream70,
+                fontSize: 14,
+              ),
             ),
           ],
         ),

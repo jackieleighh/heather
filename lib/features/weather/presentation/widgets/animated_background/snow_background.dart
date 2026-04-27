@@ -9,7 +9,11 @@ class SnowBackground extends StatefulWidget {
   final List<Color> gradientColors;
   final bool isActive;
 
-  const SnowBackground({super.key, required this.gradientColors, this.isActive = true});
+  const SnowBackground({
+    super.key,
+    required this.gradientColors,
+    this.isActive = true,
+  });
 
   @override
   State<SnowBackground> createState() => _SnowBackgroundState();
@@ -32,6 +36,27 @@ class _SnowBackgroundState extends State<SnowBackground>
     if (widget.isActive) {
       _controller.repeat();
       _stopwatch.start();
+    }
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (mounted && _flakes.isEmpty) {
+        final size = context.size;
+        if (size != null) _initFlakes(size.width, size.height);
+      }
+    });
+  }
+
+  void _initFlakes(double width, double height) {
+    for (var i = 0; i < 60; i++) {
+      _flakes.add(
+        Particle(
+          x: _random.nextDouble() * width,
+          y: _random.nextDouble() * height,
+          speed: 0.5 + _random.nextDouble() * 2.0,
+          size: 2.0 + _random.nextDouble() * 5.0,
+          opacity: 0.1 + _random.nextDouble() * 0.3,
+          wobble: _random.nextDouble() * 2 * pi,
+        ),
+      );
     }
   }
 
@@ -75,9 +100,7 @@ class _SnowBackgroundState extends State<SnowBackground>
             colors: widget.gradientColors,
           ),
         ),
-        foregroundDecoration: BoxDecoration(
-          color: AppColors.black18,
-        ),
+        foregroundDecoration: const BoxDecoration(color: AppColors.black18),
       ),
     );
   }
@@ -92,20 +115,7 @@ class _SnowPainter extends CustomPainter {
 
   @override
   void paint(Canvas canvas, Size size) {
-    if (flakes.isEmpty) {
-      for (var i = 0; i < 60; i++) {
-        flakes.add(
-          Particle(
-            x: random.nextDouble() * size.width,
-            y: random.nextDouble() * size.height,
-            speed: 0.5 + random.nextDouble() * 2.0,
-            size: 2.0 + random.nextDouble() * 5.0,
-            opacity: 0.1 + random.nextDouble() * 0.3,
-            wobble: random.nextDouble() * 2 * pi,
-          ),
-        );
-      }
-    }
+    if (flakes.isEmpty) return;
 
     final paint = Paint()..style = PaintingStyle.fill;
 
@@ -120,7 +130,12 @@ class _SnowPainter extends CustomPainter {
       if (flake.x < 0) flake.x = size.width;
       if (flake.x > size.width) flake.x = 0;
 
-      paint.color = flake.cachedColor ??= Color.fromRGBO(255, 255, 255, flake.opacity);
+      paint.color = flake.cachedColor ??= Color.fromRGBO(
+        255,
+        255,
+        255,
+        flake.opacity,
+      );
       canvas.drawCircle(Offset(flake.x, flake.y), flake.size / 2, paint);
     }
   }

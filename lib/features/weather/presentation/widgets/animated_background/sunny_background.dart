@@ -2,11 +2,16 @@ import 'dart:math';
 import 'dart:ui' as ui;
 
 import 'package:flutter/material.dart';
+
 class SunnyBackground extends StatefulWidget {
   final List<Color> gradientColors;
   final bool isActive;
 
-  const SunnyBackground({super.key, required this.gradientColors, this.isActive = true});
+  const SunnyBackground({
+    super.key,
+    required this.gradientColors,
+    this.isActive = true,
+  });
 
   @override
   State<SunnyBackground> createState() => _SunnyBackgroundState();
@@ -16,6 +21,8 @@ class _SunnyBackgroundState extends State<SunnyBackground>
     with SingleTickerProviderStateMixin {
   late final AnimationController _controller;
   final _stopwatch = Stopwatch();
+  final _rayColors = List<Color>.filled(12, const Color(0x00FFFFFF));
+  double _lastColorTime = -1;
 
   @override
   void initState() {
@@ -56,8 +63,29 @@ class _SunnyBackgroundState extends State<SunnyBackground>
       animation: _controller,
       builder: (context, child) {
         final time = _stopwatch.elapsedMilliseconds / 1000.0 * 0.48;
+        if ((time - _lastColorTime).abs() > 0.033) {
+          _lastColorTime = time;
+          const rayAlphas = [
+            0.40,
+            0.25,
+            0.35,
+            0.20,
+            0.38,
+            0.28,
+            0.33,
+            0.22,
+            0.30,
+            0.24,
+            0.37,
+            0.18,
+          ];
+          for (var i = 0; i < 12; i++) {
+            final alpha = rayAlphas[i] + sin(time * 0.5 + i * 0.7).abs() * 0.05;
+            _rayColors[i] = Color.fromRGBO(255, 255, 255, alpha);
+          }
+        }
         return CustomPaint(
-          foregroundPainter: _SunnyPainter(time),
+          foregroundPainter: _SunnyPainter(time, _rayColors),
           size: Size.infinite,
           child: child,
         );
@@ -77,8 +105,9 @@ class _SunnyBackgroundState extends State<SunnyBackground>
 
 class _SunnyPainter extends CustomPainter {
   final double time;
+  final List<Color> rayColors;
 
-  _SunnyPainter(this.time);
+  _SunnyPainter(this.time, this.rayColors);
 
   static const _white0 = Color.fromRGBO(255, 255, 255, 0);
   static const _glowColors = [
@@ -104,17 +133,54 @@ class _SunnyPainter extends CustomPainter {
     final rayPaint = Paint()
       ..style = PaintingStyle.fill
       ..maskFilter = const MaskFilter.blur(BlurStyle.normal, 6);
-    const rayAngles = [0.0, 0.55, 1.05, 1.6, 2.15, 2.65, 3.2, 3.75, 4.3, 4.85, 5.35, 5.9];
-    const rayLengths = [380.0, 240.0, 320.0, 200.0, 360.0, 260.0, 340.0, 220.0, 300.0, 250.0, 350.0, 230.0];
-    const raySpreads = [0.06, 0.04, 0.055, 0.035, 0.06, 0.045, 0.055, 0.04, 0.05, 0.04, 0.06, 0.035];
-    const rayAlphas = [0.40, 0.25, 0.35, 0.20, 0.38, 0.28, 0.33, 0.22, 0.30, 0.24, 0.37, 0.18];
+    const rayAngles = [
+      0.0,
+      0.55,
+      1.05,
+      1.6,
+      2.15,
+      2.65,
+      3.2,
+      3.75,
+      4.3,
+      4.85,
+      5.35,
+      5.9,
+    ];
+    const rayLengths = [
+      380.0,
+      240.0,
+      320.0,
+      200.0,
+      360.0,
+      260.0,
+      340.0,
+      220.0,
+      300.0,
+      250.0,
+      350.0,
+      230.0,
+    ];
+    const raySpreads = [
+      0.06,
+      0.04,
+      0.055,
+      0.035,
+      0.06,
+      0.045,
+      0.055,
+      0.04,
+      0.05,
+      0.04,
+      0.06,
+      0.035,
+    ];
     const innerR = 25.0;
 
     for (var i = 0; i < rayAngles.length; i++) {
       final angle = rayAngles[i] + spin;
       final outerR = rayLengths[i];
       final halfSpread = raySpreads[i];
-      final alpha = rayAlphas[i] + sin(time * 0.5 + i * 0.7).abs() * 0.05;
 
       final cosA = cos(angle);
       final sinA = sin(angle);
@@ -133,7 +199,7 @@ class _SunnyPainter extends CustomPainter {
       rayPaint.shader = ui.Gradient.linear(
         Offset(center.dx + cosA * innerR, center.dy + sinA * innerR),
         Offset(center.dx + cosA * outerR, center.dy + sinA * outerR),
-        [Color.fromRGBO(255, 255, 255, alpha), _white0],
+        [rayColors[i], _white0],
       );
       canvas.drawPath(path, rayPaint);
     }

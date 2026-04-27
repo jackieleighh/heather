@@ -9,7 +9,11 @@ class BlizzardBackground extends StatefulWidget {
   final List<Color> gradientColors;
   final bool isActive;
 
-  const BlizzardBackground({super.key, required this.gradientColors, this.isActive = true});
+  const BlizzardBackground({
+    super.key,
+    required this.gradientColors,
+    this.isActive = true,
+  });
 
   @override
   State<BlizzardBackground> createState() => _BlizzardBackgroundState();
@@ -32,6 +36,27 @@ class _BlizzardBackgroundState extends State<BlizzardBackground>
     if (widget.isActive) {
       _controller.repeat();
       _stopwatch.start();
+    }
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (mounted && _flakes.isEmpty) {
+        final size = context.size;
+        if (size != null) _initFlakes(size.width, size.height);
+      }
+    });
+  }
+
+  void _initFlakes(double width, double height) {
+    for (var i = 0; i < 150; i++) {
+      _flakes.add(
+        Particle(
+          x: _random.nextDouble() * width,
+          y: _random.nextDouble() * height,
+          speed: 1.5 + _random.nextDouble() * 4.0,
+          size: 1.5 + _random.nextDouble() * 3.5,
+          opacity: 0.15 + _random.nextDouble() * 0.45,
+          wobble: _random.nextDouble() * 2 * pi,
+        ),
+      );
     }
   }
 
@@ -75,9 +100,7 @@ class _BlizzardBackgroundState extends State<BlizzardBackground>
             colors: widget.gradientColors,
           ),
         ),
-        foregroundDecoration: BoxDecoration(
-          color: AppColors.black18,
-        ),
+        foregroundDecoration: const BoxDecoration(color: AppColors.black18),
       ),
     );
   }
@@ -92,20 +115,7 @@ class _BlizzardPainter extends CustomPainter {
 
   @override
   void paint(Canvas canvas, Size size) {
-    if (flakes.isEmpty) {
-      for (var i = 0; i < 150; i++) {
-        flakes.add(
-          Particle(
-            x: random.nextDouble() * size.width,
-            y: random.nextDouble() * size.height,
-            speed: 1.5 + random.nextDouble() * 4.0,
-            size: 1.5 + random.nextDouble() * 3.5,
-            opacity: 0.15 + random.nextDouble() * 0.45,
-            wobble: random.nextDouble() * 2 * pi,
-          ),
-        );
-      }
-    }
+    if (flakes.isEmpty) return;
 
     final paint = Paint()..style = PaintingStyle.fill;
 
@@ -123,7 +133,12 @@ class _BlizzardPainter extends CustomPainter {
       if (flake.x > size.width) flake.x = 0;
       if (flake.x < 0) flake.x = size.width;
 
-      paint.color = flake.cachedColor ??= Color.fromRGBO(255, 255, 255, flake.opacity);
+      paint.color = flake.cachedColor ??= Color.fromRGBO(
+        255,
+        255,
+        255,
+        flake.opacity,
+      );
       canvas.drawCircle(Offset(flake.x, flake.y), flake.size / 2, paint);
     }
 
@@ -137,6 +152,5 @@ class _BlizzardPainter extends CustomPainter {
   }
 
   @override
-  bool shouldRepaint(_BlizzardPainter oldDelegate) =>
-      oldDelegate.time != time;
+  bool shouldRepaint(_BlizzardPainter oldDelegate) => oldDelegate.time != time;
 }

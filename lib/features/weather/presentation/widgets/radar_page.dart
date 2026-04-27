@@ -59,6 +59,7 @@ class _RadarPageState extends ConsumerState<RadarPage> {
       ref.invalidate(radarManifestProvider);
     });
   }
+
   MarkerLayer get _locationMarker => MarkerLayer(
     markers: [
       Marker(
@@ -66,7 +67,7 @@ class _RadarPageState extends ConsumerState<RadarPage> {
         width: 16,
         height: 16,
         child: Container(
-          decoration: BoxDecoration(
+          decoration: const BoxDecoration(
             color: AppColors.cream,
             shape: BoxShape.circle,
             boxShadow: [
@@ -190,10 +191,7 @@ class _RadarPageState extends ConsumerState<RadarPage> {
                 height: 62,
                 child: Align(
                   alignment: Alignment.centerRight,
-                  child: Text(
-                    'Radar',
-                    style: _radarHeaderStyle,
-                  ),
+                  child: Text('Radar', style: _radarHeaderStyle),
                 ),
               ),
             ),
@@ -202,19 +200,16 @@ class _RadarPageState extends ConsumerState<RadarPage> {
             Expanded(
               child: _MapCard(
                 child: (styleAsync.isLoading || manifestAsync.isLoading)
-                  ? const Center(
-                      child: PulsingDots(
-                        color: AppColors.cream,
-                      ),
-                    )
-                  : (styleAsync.hasError || manifestAsync.hasError)
-                      ? Center(
-                          child: Text(
-                            'Radar unavailable',
-                            style: _radarErrorStyle,
-                          ),
-                        )
-                      : Builder(builder: (context) {
+                    ? const Center(child: PulsingDots(color: AppColors.cream))
+                    : (styleAsync.hasError || manifestAsync.hasError)
+                    ? Center(
+                        child: Text(
+                          'Radar unavailable',
+                          style: _radarErrorStyle,
+                        ),
+                      )
+                    : Builder(
+                        builder: (context) {
                           final style = styleAsync.value!;
                           final manifest = manifestAsync.value!;
                           _initializePlayback(manifest.frames.length);
@@ -236,9 +231,10 @@ class _RadarPageState extends ConsumerState<RadarPage> {
                                     backgroundColor: Colors.transparent,
                                     interactionOptions:
                                         const InteractionOptions(
-                                      flags: InteractiveFlag.all &
-                                          ~InteractiveFlag.rotate,
-                                    ),
+                                          flags:
+                                              InteractiveFlag.all &
+                                              ~InteractiveFlag.rotate,
+                                        ),
                                   ),
                                   children: [
                                     Opacity(
@@ -254,9 +250,7 @@ class _RadarPageState extends ConsumerState<RadarPage> {
                                     Opacity(
                                       opacity: 0.7,
                                       child: TileLayer(
-                                        key: ValueKey(
-                                          frame.tileUrlTemplate,
-                                        ),
+                                        key: ValueKey(frame.tileUrlTemplate),
                                         urlTemplate: frame.tileUrlTemplate,
                                         tileProvider: CachedRadarTileProvider(
                                           cache: _tileCache,
@@ -286,18 +280,18 @@ class _RadarPageState extends ConsumerState<RadarPage> {
                                     formatRelativeTime: _formatRelativeTime,
                                     onSliderChanged: (value) =>
                                         _onSliderChanged(
-                                      value,
-                                      manifest.frames.length,
-                                    ),
-                                    onPlayPause: () => _togglePlayback(
-                                      manifest.frames.length,
-                                    ),
+                                          value,
+                                          manifest.frames.length,
+                                        ),
+                                    onPlayPause: () =>
+                                        _togglePlayback(manifest.frames.length),
                                   ),
                                 ),
                               ),
                             ],
                           );
-                        }),
+                        },
+                      ),
               ),
             ),
           ],
@@ -333,14 +327,11 @@ class _ControlBar extends StatelessWidget {
     final timeLabel = formatRelativeTime(frame.time);
 
     return Container(
-      decoration: BoxDecoration(color: AppColors.cream25),
+      decoration: const BoxDecoration(color: AppColors.cream25),
       padding: const EdgeInsets.fromLTRB(12, 4, 6, 0),
       child: Row(
         children: [
-          Text(
-            timeLabel,
-            style: _radarTimeLabelStyle,
-          ),
+          Text(timeLabel, style: _radarTimeLabelStyle),
           const SizedBox(width: 4),
           Expanded(
             child: LayoutBuilder(
@@ -355,13 +346,13 @@ class _ControlBar extends StatelessWidget {
                 return Stack(
                   children: [
                     SliderTheme(
-                      data: SliderThemeData(
+                      data: const SliderThemeData(
                         activeTrackColor: AppColors.cream80,
                         inactiveTrackColor: AppColors.cream20,
                         thumbColor: AppColors.cream,
                         overlayColor: AppColors.cream10,
                         trackHeight: 1.5,
-                        thumbShape: const RoundSliderThumbShape(
+                        thumbShape: RoundSliderThumbShape(
                           enabledThumbRadius: 4,
                         ),
                       ),
@@ -423,23 +414,16 @@ class _MapCard extends StatelessWidget {
         color: AppColors.cream06,
         borderRadius: BorderRadius.circular(20),
         border: Border.all(color: AppColors.cream08),
-        boxShadow: [
-          BoxShadow(
-            color: AppColors.black12,
-            blurRadius: 12,
-          ),
-        ],
+        boxShadow: [const BoxShadow(color: AppColors.black12, blurRadius: 12)],
       ),
       child: Stack(
         children: [
           Positioned.fill(child: child),
           // Subtle white tint overlay
-          Positioned.fill(
+          const Positioned.fill(
             child: IgnorePointer(
               child: DecoratedBox(
-                decoration: BoxDecoration(
-                  color: AppColors.cream06,
-                ),
+                decoration: BoxDecoration(color: AppColors.cream06),
               ),
             ),
           ),

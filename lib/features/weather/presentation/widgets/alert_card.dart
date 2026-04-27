@@ -1,3 +1,5 @@
+import 'dart:ui';
+
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 
@@ -6,16 +8,16 @@ import '../../domain/entities/weather_alert.dart';
 import '../screens/alert_detail_sheet.dart';
 
 /// Cached text styles to avoid repeated GoogleFonts allocations.
-final _poppinsW600_14_cream = GoogleFonts.poppins(
+final _poppinsW60014Cream = GoogleFonts.poppins(
   fontSize: 14,
   fontWeight: FontWeight.w600,
   color: AppColors.cream,
 );
-final _quicksand12_cream85 = GoogleFonts.quicksand(
+final _quicksand12Cream85 = GoogleFonts.quicksand(
   fontSize: 12,
   color: AppColors.cream85,
 );
-final _quicksandW500_11_cream70 = GoogleFonts.quicksand(
+final _quicksandW50011Cream70 = GoogleFonts.quicksand(
   fontSize: 11,
   fontWeight: FontWeight.w500,
   color: AppColors.cream70,
@@ -36,63 +38,55 @@ class AlertCard extends StatelessWidget {
 
     return GestureDetector(
       onTap: () => showAlertDetailSheet(context, alerts),
-      child: Container(
-        width: double.infinity,
-        padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
-        decoration: BoxDecoration(
-          color: primary.severity.color.withValues(alpha: 0.2),
+      child: RepaintBoundary(
+        child: ClipRRect(
           borderRadius: BorderRadius.circular(16),
-          border: Border.all(
-            color: primary.severity.color.withValues(alpha: 0.4),
-            width: 1,
-          ),
-          boxShadow: [
-            BoxShadow(
-              color: AppColors.black12,
-              blurRadius: 12,
-            ),
-          ],
-        ),
-        child: Row(
-          children: [
-            Icon(
-              primary.severity.icon,
-              color: primary.severity.color,
-              size: 22,
-            ),
-            const SizedBox(width: 10),
-            Expanded(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
+          child: BackdropFilter(
+            filter: ImageFilter.blur(sigmaX: 20, sigmaY: 20),
+            child: Container(
+              width: double.infinity,
+              padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
+              color: AppColors.cream12,
+              child: Row(
                 children: [
-                  Text(
-                    primary.event,
-                    style: _poppinsW600_14_cream,
+                  Icon(
+                    primary.severity.icon,
+                    color: primary.severity.color,
+                    size: 22,
                   ),
-                  if (primary.headline.isNotEmpty)
-                    Text(
-                      primary.headline,
-                      maxLines: 1,
-                      overflow: TextOverflow.ellipsis,
-                      style: _quicksand12_cream85,
+                  const SizedBox(width: 10),
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(primary.event, style: _poppinsW60014Cream),
+                        if (primary.headline.isNotEmpty)
+                          Text(
+                            primary.headline,
+                            maxLines: 1,
+                            overflow: TextOverflow.ellipsis,
+                            style: _quicksand12Cream85,
+                          ),
+                        if (moreCount > 0)
+                          Padding(
+                            padding: const EdgeInsets.only(top: 2),
+                            child: Text(
+                              '+$moreCount more alert${moreCount == 1 ? '' : 's'}',
+                              style: _quicksandW50011Cream70,
+                            ),
+                          ),
+                      ],
                     ),
-                  if (moreCount > 0)
-                    Padding(
-                      padding: const EdgeInsets.only(top: 2),
-                      child: Text(
-                        '+$moreCount more alert${moreCount == 1 ? '' : 's'}',
-                        style: _quicksandW500_11_cream70,
-                      ),
-                    ),
+                  ),
+                  const Icon(
+                    Icons.chevron_right,
+                    color: AppColors.cream70,
+                    size: 20,
+                  ),
                 ],
               ),
             ),
-            Icon(
-              Icons.chevron_right,
-              color: AppColors.cream70,
-              size: 20,
-            ),
-          ],
+          ),
         ),
       ),
     );

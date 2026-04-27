@@ -12,7 +12,7 @@ import '../../data/repositories/quip_repository_impl.dart';
 import '../../data/repositories/weather_repository_impl.dart';
 import '../../data/sources/location_source.dart';
 import '../../data/sources/weather_remote_source.dart';
-import '../../../../core/constants/quips/alert_quips.dart';
+import '../../../../core/constants/quips/alert_quip_category.dart';
 import '../../domain/entities/forecast.dart';
 import '../../domain/entities/location_info.dart';
 import '../../domain/entities/saved_location.dart';
@@ -31,7 +31,10 @@ typedef _QuipKey = ({
   AlertQuipCategory? alertCategory,
 });
 
-_QuipKey _quipKeyFor(Forecast forecast, {List<WeatherAlert> alerts = const []}) {
+_QuipKey _quipKeyFor(
+  Forecast forecast, {
+  List<WeatherAlert> alerts = const [],
+}) {
   AlertQuipCategory? alertCategory;
   for (final alert in alerts) {
     alertCategory = AlertQuipCategory.fromEvent(alert.event, alert.severity);
@@ -73,34 +76,38 @@ class WeatherState with _$WeatherState {
 }
 
 // Seed provider: holds pre-read cached weather for synchronous constructor use
-final cachedWeatherSeedProvider =
-    StateProvider<(LocationInfo, Forecast)?>((_) => null);
+final cachedWeatherSeedProvider = StateProvider<(LocationInfo, Forecast)?>(
+  (_) => null,
+);
 
 // Main provider
-final weatherStateProvider =
-    StateNotifierProvider<WeatherNotifier, WeatherState>((ref) {
-      final settings = ref.read(settingsProvider);
-      final seed = ref.read(cachedWeatherSeedProvider);
-      // Defer clearing seed to avoid modifying another provider during initialization
-      Future.microtask(() => ref.read(cachedWeatherSeedProvider.notifier).state = null);
+final weatherStateProvider = StateNotifierProvider<WeatherNotifier, WeatherState>((
+  ref,
+) {
+  final settings = ref.read(settingsProvider);
+  final seed = ref.read(cachedWeatherSeedProvider);
+  // Defer clearing seed to avoid modifying another provider during initialization
+  Future.microtask(
+    () => ref.read(cachedWeatherSeedProvider.notifier).state = null,
+  );
 
-      final notifier = WeatherNotifier(
-        weatherRepo: ref.watch(weatherRepositoryProvider),
-        quipRepo: ref.watch(quipRepositoryProvider),
-        dio: ref.watch(dioProvider),
-        prefs: ref.watch(sharedPreferencesProvider),
-        explicit: settings.explicitLanguage,
-        cachedSeed: seed,
-      );
+  final notifier = WeatherNotifier(
+    weatherRepo: ref.watch(weatherRepositoryProvider),
+    quipRepo: ref.watch(quipRepositoryProvider),
+    dio: ref.watch(dioProvider),
+    prefs: ref.watch(sharedPreferencesProvider),
+    explicit: settings.explicitLanguage,
+    cachedSeed: seed,
+  );
 
-      ref.listen<SettingsState>(settingsProvider, (previous, next) {
-        if (previous?.explicitLanguage != next.explicitLanguage) {
-          notifier.updateExplicit(next.explicitLanguage);
-        }
-      });
+  ref.listen<SettingsState>(settingsProvider, (previous, next) {
+    if (previous?.explicitLanguage != next.explicitLanguage) {
+      notifier.updateExplicit(next.explicitLanguage);
+    }
+  });
 
-      return notifier;
-    });
+  return notifier;
+});
 
 class WeatherNotifier extends StateNotifier<WeatherState> {
   final WeatherRepositoryImpl weatherRepo;
@@ -121,14 +128,13 @@ class WeatherNotifier extends StateNotifier<WeatherState> {
     required bool explicit,
     (LocationInfo, Forecast)? cachedSeed,
   }) : _explicit = explicit,
-       super(
-         _initialState(cachedSeed, quipRepo, explicit),
-       ) {
+       super(_initialState(cachedSeed, quipRepo, explicit)) {
     // A seed is only usable if it has full forecast data. The standalone
     // widget seed (no cached forecast) carries just a current-conditions
     // snapshot with empty daily/hourly, which can't render the full UI —
     // treat it as no seed so we show LoadingScreen and call loadWeather().
-    final hasUsableSeed = cachedSeed != null &&
+    final hasUsableSeed =
+        cachedSeed != null &&
         cachedSeed.$2.daily.isNotEmpty &&
         cachedSeed.$2.hourly.isNotEmpty;
     if (hasUsableSeed) {
@@ -136,7 +142,8 @@ class WeatherNotifier extends StateNotifier<WeatherState> {
       // Force-refresh when the native widget has fresher data than the
       // app's cache, or when cold-launched from a widget tap.
       refresh(
-        forceRefresh: WidgetService.coldLaunchedFromWidget ||
+        forceRefresh:
+            WidgetService.coldLaunchedFromWidget ||
             WidgetService.widgetDataIsNewer,
       );
     } else {
@@ -151,9 +158,7 @@ class WeatherNotifier extends StateNotifier<WeatherState> {
     QuipRepositoryImpl quipRepo,
     bool explicit,
   ) {
-    if (seed == null ||
-        seed.$2.daily.isEmpty ||
-        seed.$2.hourly.isEmpty) {
+    if (seed == null || seed.$2.daily.isEmpty || seed.$2.hourly.isEmpty) {
       return const WeatherState.loading();
     }
     final (location, forecast) = seed;
@@ -176,10 +181,8 @@ class WeatherNotifier extends StateNotifier<WeatherState> {
     final current = state;
     current.whenOrNull(
       loaded: (forecast, location, _, alerts) {
-        final quip = quipRepo.getAlertQuip(
-              alerts: alerts,
-              explicit: _explicit,
-            ) ??
+        final quip =
+            quipRepo.getAlertQuip(alerts: alerts, explicit: _explicit) ??
             quipRepo.getLocalQuip(
               weather: forecast.current,
               explicit: _explicit,
@@ -267,10 +270,8 @@ class WeatherNotifier extends StateNotifier<WeatherState> {
         if (_loadGeneration != gen) return;
         final forecast = results[0] as Forecast;
         final alerts = results[1] as List<WeatherAlert>;
-        final quip = quipRepo.getAlertQuip(
-              alerts: alerts,
-              explicit: _explicit,
-            ) ??
+        final quip =
+            quipRepo.getAlertQuip(alerts: alerts, explicit: _explicit) ??
             quipRepo.getLocalQuip(
               weather: forecast.current,
               explicit: _explicit,
@@ -322,7 +323,11 @@ class WeatherNotifier extends StateNotifier<WeatherState> {
           longitude: location.longitude,
           forceRefresh: forceRefresh,
         ),
-        fetchAlerts(latitude: location.latitude, longitude: location.longitude, dio: dio),
+        fetchAlerts(
+          latitude: location.latitude,
+          longitude: location.longitude,
+          dio: dio,
+        ),
       ]);
       final forecast = results[0] as Forecast;
       final alerts = results[1] as List<WeatherAlert>;
@@ -331,10 +336,8 @@ class WeatherNotifier extends StateNotifier<WeatherState> {
       if (newKey == _lastQuipKey && state is _Loaded) {
         quip = (state as _Loaded).quip;
       } else {
-        quip = quipRepo.getAlertQuip(
-              alerts: alerts,
-              explicit: _explicit,
-            ) ??
+        quip =
+            quipRepo.getAlertQuip(alerts: alerts, explicit: _explicit) ??
             quipRepo.getLocalQuip(
               weather: forecast.current,
               explicit: _explicit,
@@ -361,8 +364,11 @@ class WeatherNotifier extends StateNotifier<WeatherState> {
 }
 
 // Batch provider for all saved location forecasts (single API call)
-typedef LocationForecastData =
-    ({Forecast forecast, String quip, List<WeatherAlert> alerts});
+typedef LocationForecastData = ({
+  Forecast forecast,
+  String quip,
+  List<WeatherAlert> alerts,
+});
 
 @freezed
 class SavedLocationsForecastState with _$SavedLocationsForecastState {
@@ -370,39 +376,42 @@ class SavedLocationsForecastState with _$SavedLocationsForecastState {
   const factory SavedLocationsForecastState.loaded({
     required Map<String, LocationForecastData> forecasts,
   }) = _SavedLoaded;
-  const factory SavedLocationsForecastState.error(String message) =
-      _SavedError;
+  const factory SavedLocationsForecastState.error(String message) = _SavedError;
 }
 
 // Seed provider: holds pre-read cached saved-location forecasts
-final cachedSavedForecastsSeedProvider =
-    StateProvider<Map<String, Forecast>?>((_) => null);
+final cachedSavedForecastsSeedProvider = StateProvider<Map<String, Forecast>?>(
+  (_) => null,
+);
 
-final savedLocationsForecastProvider = StateNotifierProvider<
-  SavedLocationsForecastNotifier,
-  SavedLocationsForecastState
->((ref) {
-  final settings = ref.read(settingsProvider);
-  final seed = ref.read(cachedSavedForecastsSeedProvider);
-  // Defer clearing seed to avoid modifying another provider during initialization
-  Future.microtask(() => ref.read(cachedSavedForecastsSeedProvider.notifier).state = null);
+final savedLocationsForecastProvider =
+    StateNotifierProvider<
+      SavedLocationsForecastNotifier,
+      SavedLocationsForecastState
+    >((ref) {
+      final settings = ref.read(settingsProvider);
+      final seed = ref.read(cachedSavedForecastsSeedProvider);
+      // Defer clearing seed to avoid modifying another provider during initialization
+      Future.microtask(
+        () => ref.read(cachedSavedForecastsSeedProvider.notifier).state = null,
+      );
 
-  final notifier = SavedLocationsForecastNotifier(
-    weatherRepo: ref.watch(weatherRepositoryProvider),
-    quipRepo: ref.watch(quipRepositoryProvider),
-    dio: ref.watch(dioProvider),
-    explicit: settings.explicitLanguage,
-    cachedSeed: seed,
-  );
+      final notifier = SavedLocationsForecastNotifier(
+        weatherRepo: ref.watch(weatherRepositoryProvider),
+        quipRepo: ref.watch(quipRepositoryProvider),
+        dio: ref.watch(dioProvider),
+        explicit: settings.explicitLanguage,
+        cachedSeed: seed,
+      );
 
-  ref.listen<SettingsState>(settingsProvider, (previous, next) {
-    if (previous?.explicitLanguage != next.explicitLanguage) {
-      notifier.updateExplicit(next.explicitLanguage);
-    }
-  });
+      ref.listen<SettingsState>(settingsProvider, (previous, next) {
+        if (previous?.explicitLanguage != next.explicitLanguage) {
+          notifier.updateExplicit(next.explicitLanguage);
+        }
+      });
 
-  return notifier;
-});
+      return notifier;
+    });
 
 class SavedLocationsForecastNotifier
     extends StateNotifier<SavedLocationsForecastState> {
@@ -461,20 +470,11 @@ class SavedLocationsForecastNotifier
     for (final entry in current.forecasts.entries) {
       final forecast = entry.value.forecast;
       final alerts = entry.value.alerts;
-      final quip = quipRepo.getAlertQuip(
-            alerts: alerts,
-            explicit: _explicit,
-          ) ??
-          quipRepo.getLocalQuip(
-            weather: forecast.current,
-            explicit: _explicit,
-          );
+      final quip =
+          quipRepo.getAlertQuip(alerts: alerts, explicit: _explicit) ??
+          quipRepo.getLocalQuip(weather: forecast.current, explicit: _explicit);
       _lastQuipKeys[entry.key] = _quipKeyFor(forecast, alerts: alerts);
-      updated[entry.key] = (
-        forecast: forecast,
-        quip: quip,
-        alerts: alerts,
-      );
+      updated[entry.key] = (forecast: forecast, quip: quip, alerts: alerts);
     }
     state = SavedLocationsForecastState.loaded(forecasts: updated);
   }
@@ -498,10 +498,8 @@ class SavedLocationsForecastNotifier
           (state as _SavedLoaded).forecasts.containsKey(loc.id)) {
         quip = (state as _SavedLoaded).forecasts[loc.id]!.quip;
       } else {
-        quip = quipRepo.getAlertQuip(
-              alerts: alerts,
-              explicit: _explicit,
-            ) ??
+        quip =
+            quipRepo.getAlertQuip(alerts: alerts, explicit: _explicit) ??
             quipRepo.getLocalQuip(
               weather: forecast.current,
               explicit: _explicit,
@@ -509,11 +507,7 @@ class SavedLocationsForecastNotifier
         _lastQuipKeys[loc.id] = newKey;
       }
 
-      forecasts[loc.id] = (
-        forecast: forecast,
-        quip: quip,
-        alerts: alerts,
-      );
+      forecasts[loc.id] = (forecast: forecast, quip: quip, alerts: alerts);
     }
     return forecasts;
   }
@@ -533,11 +527,8 @@ class SavedLocationsForecastNotifier
     try {
       final batchLocations = locations
           .map(
-            (loc) => (
-              id: loc.id,
-              latitude: loc.latitude,
-              longitude: loc.longitude,
-            ),
+            (loc) =>
+                (id: loc.id, latitude: loc.latitude, longitude: loc.longitude),
           )
           .toList();
 
@@ -576,11 +567,8 @@ class SavedLocationsForecastNotifier
     try {
       final batchLocations = locations
           .map(
-            (loc) => (
-              id: loc.id,
-              latitude: loc.latitude,
-              longitude: loc.longitude,
-            ),
+            (loc) =>
+                (id: loc.id, latitude: loc.latitude, longitude: loc.longitude),
           )
           .toList();
 

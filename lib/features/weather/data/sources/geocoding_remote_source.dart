@@ -27,15 +27,21 @@ class GeocodingRemoteSource {
         if (parts.length > 1) {
           // Try progressively shorter prefixes to handle multi-word city
           // names like "New York" — drop one word at a time from the end.
-          for (var wordCount = parts.length - 1;
-              wordCount >= 1 && results.isEmpty;
-              wordCount--) {
+          for (
+            var wordCount = parts.length - 1;
+            wordCount >= 1 && results.isEmpty;
+            wordCount--
+          ) {
             final cityPart = parts.sublist(0, wordCount).join(' ');
             results = await _fetchResults(cityPart);
           }
 
-          qualifier =
-              parts.sublist(1).join(' ').toLowerCase().replaceAll(',', '').trim();
+          qualifier = parts
+              .sublist(1)
+              .join(' ')
+              .toLowerCase()
+              .replaceAll(',', '')
+              .trim();
         }
       }
 

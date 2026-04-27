@@ -10,68 +10,68 @@ import './card_display_mode.dart';
 import './info_chip.dart';
 
 /// Cached text styles to avoid repeated GoogleFonts allocations.
-final _figtreeW400_16_cream = GoogleFonts.figtree(
+final _figtreeW40016Cream = GoogleFonts.figtree(
   fontSize: 16,
   fontWeight: FontWeight.w400,
   color: AppColors.cream,
 );
-final _poppinsBold13_cream = GoogleFonts.poppins(
+final _poppinsBold13Cream = GoogleFonts.poppins(
   fontSize: 13,
   fontWeight: FontWeight.w700,
   color: AppColors.cream,
 );
-final _poppinsW500_11_cream85 = GoogleFonts.poppins(
+final _poppinsW50011Cream85 = GoogleFonts.poppins(
   fontSize: 11,
   fontWeight: FontWeight.w500,
   color: AppColors.cream85,
 );
-final _poppinsBold42_cream = GoogleFonts.poppins(
+final _poppinsBold42Cream = GoogleFonts.poppins(
   fontSize: 42,
   fontWeight: FontWeight.w700,
   color: AppColors.cream,
   height: 1,
 );
-final _poppinsBold10_cream70 = GoogleFonts.poppins(
+final _poppinsBold10Cream70 = GoogleFonts.poppins(
   fontSize: 10,
   fontWeight: FontWeight.w700,
   color: AppColors.cream70,
 );
-final _poppinsW600_11_cream80 = GoogleFonts.poppins(
+final _poppinsW60011Cream80 = GoogleFonts.poppins(
   fontSize: 11,
   fontWeight: FontWeight.w600,
   color: AppColors.cream80,
 );
-final _poppinsW600_10_cream80 = GoogleFonts.poppins(
+final _poppinsW60010Cream80 = GoogleFonts.poppins(
   fontSize: 10,
   fontWeight: FontWeight.w600,
   color: AppColors.cream80,
 );
-final _figtreeW400_18_cream = GoogleFonts.figtree(
+final _figtreeW40018Cream = GoogleFonts.figtree(
   fontSize: 18,
   fontWeight: FontWeight.w400,
   color: AppColors.cream,
 );
-final _figtreeW400_14_cream = GoogleFonts.figtree(
+final _figtreeW40014Cream = GoogleFonts.figtree(
   fontSize: 14,
   fontWeight: FontWeight.w400,
   color: AppColors.cream,
 );
-final _poppinsBold14_cream = GoogleFonts.poppins(
+final _poppinsBold14Cream = GoogleFonts.poppins(
   fontSize: 14,
   fontWeight: FontWeight.w700,
   color: AppColors.cream,
 );
-final _poppinsBold11_cream = GoogleFonts.poppins(
+final _poppinsBold11Cream = GoogleFonts.poppins(
   fontSize: 11,
   fontWeight: FontWeight.w700,
   color: AppColors.cream,
 );
-final _poppinsW600_14_cream90 = GoogleFonts.poppins(
+final _poppinsW60014Cream90 = GoogleFonts.poppins(
   fontSize: 14,
   fontWeight: FontWeight.w600,
   color: AppColors.cream90,
 );
-final _poppinsW600_11_cream90 = GoogleFonts.poppins(
+final _poppinsW60011Cream90 = GoogleFonts.poppins(
   fontSize: 11,
   fontWeight: FontWeight.w600,
   color: AppColors.cream90,
@@ -119,21 +119,15 @@ class TemperatureCard extends StatelessWidget {
         padding: const EdgeInsets.symmetric(horizontal: 14),
         child: Row(
           children: [
-            Icon(
+            const Icon(
               WeatherIcons.thermometer,
               size: 14,
               color: AppColors.cream90,
             ),
             const SizedBox(width: 4),
-            Text(
-              'Temp',
-              style: _figtreeW400_16_cream,
-            ),
+            Text('Temp', style: _figtreeW40016Cream),
             const Spacer(),
-            Text(
-              '${hi.round()}° / ${lo.round()}°',
-              style: _poppinsBold13_cream,
-            ),
+            Text('${hi.round()}° / ${lo.round()}°', style: _poppinsBold13Cream),
           ],
         ),
       );
@@ -171,23 +165,13 @@ class TemperatureCard extends StatelessWidget {
                 padding: const EdgeInsets.only(top: 10, bottom: 2),
                 child: Row(
                   children: [
-                    Container(
-                      width: 16,
-                      height: 2,
-                      color: AppColors.cream50,
-                    ),
+                    Container(width: 16, height: 2, color: AppColors.cream50),
                     const SizedBox(width: 5),
-                    Text(
-                      'Temp',
-                      style: _poppinsW600_10_cream80,
-                    ),
+                    Text('Temp', style: _poppinsW60010Cream80),
                     const SizedBox(width: 14),
                     _buildDashedLegendLine(),
                     const SizedBox(width: 5),
-                    Text(
-                      'Feels Like',
-                      style: _poppinsW600_10_cream80,
-                    ),
+                    Text('Feels Like', style: _poppinsW60010Cream80),
                   ],
                 ),
               ),
@@ -255,16 +239,16 @@ class TemperatureCard extends StatelessWidget {
         SizedBox(width: compact ? 3 : 4),
         Text(
           'Temp',
-          style: compact ? _figtreeW400_14_cream : _figtreeW400_18_cream,
+          style: compact ? _figtreeW40014Cream : _figtreeW40018Cream,
         ),
         const Spacer(),
         Text(
           '${hi.round()}°',
-          style: compact ? _poppinsBold11_cream : _poppinsBold14_cream,
+          style: compact ? _poppinsBold11Cream : _poppinsBold14Cream,
         ),
         Text(
           ' / ${lo.round()}°',
-          style: compact ? _poppinsW600_11_cream90 : _poppinsW600_14_cream90,
+          style: compact ? _poppinsW60011Cream90 : _poppinsW60014Cream90,
         ),
       ],
     );
@@ -281,16 +265,10 @@ class TemperatureCard extends StatelessWidget {
       children: [
         const Spacer(),
         if (showFeels) ...[
-          Text(
-            'feels ${feels.round()}°',
-            style: _poppinsW500_11_cream85,
-          ),
+          Text('feels ${feels.round()}°', style: _poppinsW50011Cream85),
           const SizedBox(width: 8),
         ],
-        Text(
-          '${temp.round()}°',
-          style: _poppinsBold42_cream,
-        ),
+        Text('${temp.round()}°', style: _poppinsBold42Cream),
       ],
     );
   }
@@ -321,15 +299,9 @@ class TemperatureCard extends StatelessWidget {
           offset: const Offset(0, -10),
           child: Row(
             children: [
-              Text(
-                '${todayLo.round()}°',
-                style: _poppinsBold10_cream70,
-              ),
+              Text('${todayLo.round()}°', style: _poppinsBold10Cream70),
               const Spacer(),
-              Text(
-                '${todayHi.round()}°',
-                style: _poppinsBold10_cream70,
-              ),
+              Text('${todayHi.round()}°', style: _poppinsBold10Cream70),
             ],
           ),
         ),
@@ -428,11 +400,7 @@ class TemperatureCard extends StatelessWidget {
     return SizedBox(
       width: 16,
       height: 2,
-      child: CustomPaint(
-        painter: _DashedLinePainter(
-          color: AppColors.cream35,
-        ),
-      ),
+      child: CustomPaint(painter: _DashedLinePainter(color: AppColors.cream35)),
     );
   }
 
@@ -451,7 +419,7 @@ class TemperatureCard extends StatelessWidget {
         const SizedBox(width: 2),
         Text(
           '${diff.abs()}° ${isAbove ? 'above' : 'below'} avg',
-          style: _poppinsW600_11_cream80,
+          style: _poppinsW60011Cream80,
         ),
       ],
     );
@@ -541,13 +509,10 @@ class _TempLinePainter extends CustomPainter {
         padTop + graphH,
       );
       final fillPaint = Paint()
-        ..shader = LinearGradient(
+        ..shader = const LinearGradient(
           begin: Alignment.topCenter,
           end: Alignment.bottomCenter,
-          colors: [
-            AppColors.cream15,
-            AppColors.cream03,
-          ],
+          colors: [AppColors.cream15, AppColors.cream03],
         ).createShader(fillRect);
       canvas.drawPath(fillPath, fillPaint);
     }
@@ -722,9 +687,7 @@ class _RangeGaugePainter extends CustomPainter {
     fontWeight: FontWeight.w600,
     fontFamily: GoogleFonts.poppins().fontFamily,
   );
-  static final _nowLabelStyle = _labelStyle.copyWith(
-    color: AppColors.cream85,
-  );
+  static final _nowLabelStyle = _labelStyle.copyWith(color: AppColors.cream85);
 
   _RangeGaugePainter({
     required this.currentTemp,
@@ -744,10 +707,7 @@ class _RangeGaugePainter extends CustomPainter {
     );
 
     // Track
-    canvas.drawRRect(
-      barRect,
-      Paint()..color = AppColors.cream12,
-    );
+    canvas.drawRRect(barRect, Paint()..color = AppColors.cream12);
 
     // Compute scale window.
     var scaleLo = todayLo;

@@ -3,7 +3,7 @@ import 'package:google_fonts/google_fonts.dart';
 import 'package:heather/core/constants/app_colors.dart';
 
 /// Cached text styles to avoid repeated GoogleFonts allocations.
-final _poppinsW500_10_cream60 = GoogleFonts.poppins(
+final _poppinsW50010Cream60 = GoogleFonts.poppins(
   fontSize: 10,
   fontWeight: FontWeight.w500,
   color: AppColors.cream60,
@@ -27,8 +27,10 @@ class InfoChip extends StatelessWidget {
     this.iconWidget,
     required this.label,
     required this.value,
-  }) : assert(icon != null || iconWidget != null,
-            'Either icon or iconWidget must be provided');
+  }) : assert(
+         icon != null || iconWidget != null,
+         'Either icon or iconWidget must be provided',
+       );
 
   @override
   Widget build(BuildContext context) {
@@ -43,17 +45,9 @@ class InfoChip extends StatelessWidget {
         children: [
           Row(
             children: [
-              iconWidget ??
-                  Icon(
-                    icon,
-                    size: 10,
-                    color: AppColors.cream60,
-                  ),
+              iconWidget ?? Icon(icon, size: 10, color: AppColors.cream60),
               const SizedBox(width: 4),
-              Text(
-                label,
-                style: _poppinsW500_10_cream60,
-              ),
+              Text(label, style: _poppinsW50010Cream60),
             ],
           ),
           const SizedBox(height: 2),

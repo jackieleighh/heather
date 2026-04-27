@@ -47,12 +47,12 @@ class Forecast with _$Forecast {
     final localNow = nowUtc.add(Duration(seconds: utcOffsetSeconds));
 
     final todayDaily = daily.cast<DailyWeather?>().firstWhere(
-          (d) =>
-              d!.date.year == localNow.year &&
-              d.date.month == localNow.month &&
-              d.date.day == localNow.day,
-          orElse: () => null,
-        );
+      (d) =>
+          d!.date.year == localNow.year &&
+          d.date.month == localNow.month &&
+          d.date.day == localNow.day,
+      orElse: () => null,
+    );
     if (todayDaily == null) return current.isDay;
 
     final localMinutes = localNow.hour * 60 + localNow.minute;

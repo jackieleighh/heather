@@ -68,12 +68,8 @@ class ForecastResponseModel {
         precipitation: i < hourly.precipitation.length
             ? hourly.precipitation[i] / 25.4
             : 0.0,
-        cloudCover: i < hourly.cloudCover.length
-            ? hourly.cloudCover[i]
-            : 0,
-        dewPoint: i < hourly.dewPoint2m.length
-            ? hourly.dewPoint2m[i]
-            : 0.0,
+        cloudCover: i < hourly.cloudCover.length ? hourly.cloudCover[i] : 0,
+        dewPoint: i < hourly.dewPoint2m.length ? hourly.dewPoint2m[i] : 0.0,
         visibility: i < hourly.visibility.length
             ? hourly.visibility[i] / 1609.34
             : 0.0,
@@ -98,15 +94,14 @@ class ForecastResponseModel {
           .toList();
       final humidityAvg = dayHumidities.isNotEmpty
           ? (dayHumidities.reduce((a, b) => a + b) / dayHumidities.length)
-              .round()
+                .round()
           : 0;
 
       // Derive daily condition from daytime hourly data using severity logic
       final sunrise = DateTime.parse(daily.sunrise[i]);
       final sunset = DateTime.parse(daily.sunset[i]);
       final daytimeHours = hourlyAllEntities
-          .where((h) =>
-              !h.time.isBefore(sunrise) && h.time.isBefore(sunset))
+          .where((h) => !h.time.isBefore(sunrise) && h.time.isBefore(sunset))
           .toList();
 
       // Check if any daytime hour has a clear-ish sky condition
@@ -132,44 +127,50 @@ class ForecastResponseModel {
       late final int dailyCode;
       late final WeatherCondition dailyCondition;
       if (daytimeConditions.isNotEmpty) {
-        dailyCondition =
-            WeatherCodes.dominantDaytimeCondition(daytimeConditions);
-        dailyCode = WeatherCodes.canonicalWmoCode[dailyCondition] ??
+        dailyCondition = WeatherCodes.dominantDaytimeCondition(
+          daytimeConditions,
+        );
+        dailyCode =
+            WeatherCodes.canonicalWmoCode[dailyCondition] ??
             daily.weatherCode[i];
       } else {
         dailyCode = daily.weatherCode[i];
         dailyCondition = WeatherCodes.fromWmo(dailyCode);
       }
 
-      dailyEntities.add(DailyWeather(
-        date: dayDate,
-        temperatureMax: daily.temperature2mMax[i],
-        temperatureMin: daily.temperature2mMin[i],
-        weatherCode: dailyCode,
-        condition: dailyCondition,
-        precipitationSum: daily.precipitationSum[i],
-        precipitationProbabilityMax: daily.precipitationProbabilityMax[i],
-        sunrise: sunrise,
-        sunset: sunset,
-        uvIndexMax: i < daily.uvIndexMax.length ? daily.uvIndexMax[i] : 0.0,
-        humidityAvg: humidityAvg,
-        hasSunnyPeriods: hasSunnyPeriods,
-      ));
+      dailyEntities.add(
+        DailyWeather(
+          date: dayDate,
+          temperatureMax: daily.temperature2mMax[i],
+          temperatureMin: daily.temperature2mMin[i],
+          weatherCode: dailyCode,
+          condition: dailyCondition,
+          precipitationSum: daily.precipitationSum[i],
+          precipitationProbabilityMax: daily.precipitationProbabilityMax[i],
+          sunrise: sunrise,
+          sunset: sunset,
+          uvIndexMax: i < daily.uvIndexMax.length ? daily.uvIndexMax[i] : 0.0,
+          humidityAvg: humidityAvg,
+          hasSunnyPeriods: hasSunnyPeriods,
+        ),
+      );
     }
 
     final minutelyEntities = <MinutelyWeather>[];
     if (minutely15 != null) {
       for (var i = 0; i < minutely15!.time.length; i++) {
-        minutelyEntities.add(MinutelyWeather(
-          time: DateTime.parse(minutely15!.time[i]),
-          precipitation: i < minutely15!.precipitation.length
-              ? minutely15!.precipitation[i]
-              : 0.0,
-          rain: i < minutely15!.rain.length ? minutely15!.rain[i] : 0.0,
-          snowfall: i < minutely15!.snowfall.length
-              ? minutely15!.snowfall[i]
-              : 0.0,
-        ));
+        minutelyEntities.add(
+          MinutelyWeather(
+            time: DateTime.parse(minutely15!.time[i]),
+            precipitation: i < minutely15!.precipitation.length
+                ? minutely15!.precipitation[i]
+                : 0.0,
+            rain: i < minutely15!.rain.length ? minutely15!.rain[i] : 0.0,
+            snowfall: i < minutely15!.snowfall.length
+                ? minutely15!.snowfall[i]
+                : 0.0,
+          ),
+        );
       }
     }
 
@@ -214,13 +215,22 @@ class ForecastResponseModel {
 
     // Cross-reference: if recent minutely15 data shows precipitation
     // but current condition doesn't reflect it, override
-    if (!WeatherCodes.isPrecipitation(condition) && minutelyEntities.isNotEmpty) {
+    if (!WeatherCodes.isPrecipitation(condition) &&
+        minutelyEntities.isNotEmpty) {
       final recentMinutely = minutelyEntities
-          .where((m) => !m.time.isAfter(now) && m.time.isAfter(now.subtract(const Duration(minutes: 30))))
+          .where(
+            (m) =>
+                !m.time.isAfter(now) &&
+                m.time.isAfter(now.subtract(const Duration(minutes: 30))),
+          )
           .toList();
       if (recentMinutely.isNotEmpty) {
-        final maxRain = recentMinutely.map((m) => m.rain).reduce((a, b) => a > b ? a : b);
-        final maxSnow = recentMinutely.map((m) => m.snowfall).reduce((a, b) => a > b ? a : b);
+        final maxRain = recentMinutely
+            .map((m) => m.rain)
+            .reduce((a, b) => a > b ? a : b);
+        final maxSnow = recentMinutely
+            .map((m) => m.snowfall)
+            .reduce((a, b) => a > b ? a : b);
         if (maxSnow > 0) {
           condition = WeatherCondition.snow;
           weatherCode = 71;

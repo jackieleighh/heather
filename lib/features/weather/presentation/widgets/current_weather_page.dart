@@ -9,7 +9,6 @@ import '../../domain/entities/minutely_weather.dart';
 import '../../domain/entities/weather_alert.dart';
 import 'alert_card.dart';
 import 'location_header.dart';
-import 'pulsing_dots.dart';
 import 'sassy_quip.dart';
 import 'temperature_display.dart';
 
@@ -90,11 +89,13 @@ class _CurrentWeatherPageState extends State<CurrentWeatherPage> {
     final isRaining = precipConditions.contains(forecast.current.condition);
 
     // Try minutely_15 data first (most precise, ~1 hour window)
-    final minutelyLabel = formatPrecipLabel(analyzePrecipitation(
-      minutely15: forecast.minutely15,
-      locationNow: forecast.locationNow,
-      isCurrentlyRaining: isRaining,
-    ));
+    final minutelyLabel = formatPrecipLabel(
+      analyzePrecipitation(
+        minutely15: forecast.minutely15,
+        locationNow: forecast.locationNow,
+        isCurrentlyRaining: isRaining,
+      ),
+    );
     if (minutelyLabel != null) return minutelyLabel;
 
     // Fall back to hourly data (transition/stop labels)
@@ -122,10 +123,16 @@ class _CurrentWeatherPageState extends State<CurrentWeatherPage> {
     final weather = widget.forecast.current;
     final hasDaily = widget.forecast.daily.isNotEmpty;
     final todayHigh = hasDaily
-        ? math.max(widget.forecast.todayDaily.temperatureMax, weather.temperature)
+        ? math.max(
+            widget.forecast.todayDaily.temperatureMax,
+            weather.temperature,
+          )
         : weather.temperature;
     final todayLow = hasDaily
-        ? math.min(widget.forecast.todayDaily.temperatureMin, weather.temperature)
+        ? math.min(
+            widget.forecast.todayDaily.temperatureMin,
+            weather.temperature,
+          )
         : weather.temperature;
 
     final precipLabel = _precipLabel();
@@ -135,59 +142,59 @@ class _CurrentWeatherPageState extends State<CurrentWeatherPage> {
         textScaler: MediaQuery.textScalerOf(context).clamp(maxScaleFactor: 1.0),
       ),
       child: SafeArea(
-      child: NotificationListener<ScrollNotification>(
-        onNotification: _handleScrollNotification,
-        child: RefreshIndicator(
-          onRefresh: _onRefresh,
-          color: AppColors.cream,
-          backgroundColor: Colors.transparent,
-          elevation: 0,
-          child: CustomScrollView(
-            controller: _scrollController,
-            physics: const BouncingScrollPhysics(
-              parent: AlwaysScrollableScrollPhysics(),
-            ),
-            slivers: [
-              SliverFillRemaining(
-                hasScrollBody: false,
-                child: Padding(
-                  padding: const EdgeInsets.fromLTRB(16, 0, 26, 16),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.end,
-                    children: [
-                      const SizedBox(height: 56),
-                      const Spacer(flex: 3),
-                      LocationHeader(
-                        cityName: widget.cityName,
-                        localTime: widget.forecast.locationNow,
-                      ),
-                      if (widget.alerts.isNotEmpty) ...[
-                        const SizedBox(height: 10),
-                        AlertCard(
-                          alerts: widget.alerts,
-                          heroColor: AppColors.magenta,
+        child: NotificationListener<ScrollNotification>(
+          onNotification: _handleScrollNotification,
+          child: RefreshIndicator(
+            onRefresh: _onRefresh,
+            color: AppColors.cream,
+            backgroundColor: Colors.transparent,
+            elevation: 0,
+            child: CustomScrollView(
+              controller: _scrollController,
+              physics: const BouncingScrollPhysics(
+                parent: AlwaysScrollableScrollPhysics(),
+              ),
+              slivers: [
+                SliverFillRemaining(
+                  hasScrollBody: false,
+                  child: Padding(
+                    padding: const EdgeInsets.fromLTRB(16, 0, 26, 16),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.end,
+                      children: [
+                        const SizedBox(height: 56),
+                        const Spacer(flex: 3),
+                        LocationHeader(
+                          cityName: widget.cityName,
+                          localTime: widget.forecast.locationNow,
                         ),
+                        if (widget.alerts.isNotEmpty) ...[
+                          const SizedBox(height: 10),
+                          AlertCard(
+                            alerts: widget.alerts,
+                            heroColor: AppColors.magenta,
+                          ),
+                        ],
+                        const SizedBox(height: 8),
+                        TemperatureDisplay(
+                          temperature: weather.temperature,
+                          high: todayHigh,
+                          low: todayLow,
+                          feelsLike: weather.feelsLike,
+                          precipLabel: precipLabel,
+                        ),
+                        const Spacer(flex: 1),
+                        SassyQuip(quip: widget.quip),
+                        const Spacer(flex: 5),
                       ],
-                      const SizedBox(height: 8),
-                      TemperatureDisplay(
-                        temperature: weather.temperature,
-                        high: todayHigh,
-                        low: todayLow,
-                        feelsLike: weather.feelsLike,
-                        precipLabel: precipLabel,
-                      ),
-                      const Spacer(flex: 1),
-                      SassyQuip(quip: widget.quip),
-                      const Spacer(flex: 5),
-                    ],
+                    ),
                   ),
                 ),
-              ),
-            ],
+              ],
+            ),
           ),
         ),
       ),
-    ),
     );
   }
 }

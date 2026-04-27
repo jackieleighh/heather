@@ -96,10 +96,12 @@ PrecipForecast? analyzePrecipitation({
         // Check if rain resumes later — if so, this is just a brief lull
         final resumesLater = future.skip(i + 1).any((m) => m.precipitation > 0);
         if (resumesLater) {
-          final refPoint = future.skip(i + 1).firstWhere(
-            (m) => m.precipitation > 0,
-            orElse: () => recent.isNotEmpty ? recent.last : future.first,
-          );
+          final refPoint = future
+              .skip(i + 1)
+              .firstWhere(
+                (m) => m.precipitation > 0,
+                orElse: () => recent.isNotEmpty ? recent.last : future.first,
+              );
           return (
             isCurrentlyRaining: true,
             precipType: _classifyPrecip(refPoint),
@@ -171,7 +173,9 @@ String? formatPrecipLabel(PrecipForecast? forecast) {
 
   if (forecast.isCurrentlyRaining) {
     final mins = forecast.onsetMinutes;
-    if (mins == null) return null; // no stop time — let hourly/daily provide context
+    if (mins == null) {
+      return null; // no stop time — let hourly/daily provide context
+    }
     return '$type stopping in ~${formatDuration(mins)}';
   }
 
@@ -209,29 +213,29 @@ const precipConditions = {
 
 /// Display name for a [WeatherCondition] when used in precip labels.
 String conditionPrecipName(WeatherCondition condition) => switch (condition) {
-      WeatherCondition.drizzle => 'Drizzle',
-      WeatherCondition.rain => 'Rain',
-      WeatherCondition.heavyRain => 'Heavy Rain',
-      WeatherCondition.freezingRain => 'Freezing Rain',
-      WeatherCondition.thunderstorm => 'Rain',
-      WeatherCondition.hail => 'Hail',
-      WeatherCondition.snow => 'Snow',
-      WeatherCondition.blizzard => 'Heavy Snow',
-      _ => 'Rain',
-    };
+  WeatherCondition.drizzle => 'Drizzle',
+  WeatherCondition.rain => 'Rain',
+  WeatherCondition.heavyRain => 'Heavy Rain',
+  WeatherCondition.freezingRain => 'Freezing Rain',
+  WeatherCondition.thunderstorm => 'Rain',
+  WeatherCondition.hail => 'Hail',
+  WeatherCondition.snow => 'Snow',
+  WeatherCondition.blizzard => 'Heavy Snow',
+  _ => 'Rain',
+};
 
 /// Severity ranking for precipitation conditions (higher = more intense).
 int precipSeverity(WeatherCondition c) => switch (c) {
-      WeatherCondition.drizzle => 1,
-      WeatherCondition.rain => 2,
-      WeatherCondition.freezingRain => 3,
-      WeatherCondition.heavyRain => 3,
-      WeatherCondition.snow => 2,
-      WeatherCondition.blizzard => 3,
-      WeatherCondition.thunderstorm => 4,
-      WeatherCondition.hail => 4,
-      _ => 0,
-    };
+  WeatherCondition.drizzle => 1,
+  WeatherCondition.rain => 2,
+  WeatherCondition.freezingRain => 3,
+  WeatherCondition.heavyRain => 3,
+  WeatherCondition.snow => 2,
+  WeatherCondition.blizzard => 3,
+  WeatherCondition.thunderstorm => 4,
+  WeatherCondition.hail => 4,
+  _ => 0,
+};
 
 /// Builds a precip label from hourly forecast data, detecting intensity
 /// transitions (escalation, rain↔snow, de-escalation) instead of only
@@ -242,8 +246,9 @@ String? hourlyPrecipLabel({
   required DateTime locationNow,
   required List<DailyWeather> daily,
 }) {
-  final currentSlot =
-      hourly.where((h) => !h.time.isAfter(locationNow)).lastOrNull;
+  final currentSlot = hourly
+      .where((h) => !h.time.isAfter(locationNow))
+      .lastOrNull;
   final hourlyShowsRain =
       currentSlot != null && precipConditions.contains(currentSlot.condition);
   final isRaining = precipConditions.contains(currentCondition);
@@ -251,8 +256,9 @@ String? hourlyPrecipLabel({
   if (isRaining || hourlyShowsRain) {
     // Prefer the actual current condition when it's precipitation, since
     // it reflects what the user is experiencing right now.
-    final activeCondition =
-        isRaining ? currentCondition : (currentSlot?.condition ?? currentCondition);
+    final activeCondition = isRaining
+        ? currentCondition
+        : (currentSlot?.condition ?? currentCondition);
     final activeSeverity = precipSeverity(activeCondition);
     final activeName = conditionPrecipName(activeCondition);
 
@@ -340,7 +346,13 @@ String? hourlyPrecipLabel({
   }
 
   // Check rest of today — "60% chance of rain tonight"
-  final endOfDay = DateTime(locationNow.year, locationNow.month, locationNow.day, 23, 59);
+  final endOfDay = DateTime(
+    locationNow.year,
+    locationNow.month,
+    locationNow.day,
+    23,
+    59,
+  );
   int maxProb = 0;
   WeatherCondition? firstPrecipCondition;
   int? firstPrecipHour;
@@ -388,10 +400,12 @@ String? extendedPrecipLabel({
   required List<DailyWeather> daily,
   required DateTime locationNow,
 }) {
-  final todayIndex = daily.indexWhere((d) =>
-      d.date.year == locationNow.year &&
-      d.date.month == locationNow.month &&
-      d.date.day == locationNow.day);
+  final todayIndex = daily.indexWhere(
+    (d) =>
+        d.date.year == locationNow.year &&
+        d.date.month == locationNow.month &&
+        d.date.day == locationNow.day,
+  );
   if (todayIndex < 0) return null;
 
   var count = 0;
@@ -417,12 +431,12 @@ String? tomorrowPrecipLabel({
 }) {
   final tomorrow = locationNow.add(const Duration(days: 1));
   final tomorrowDay = daily.cast<DailyWeather?>().firstWhere(
-        (d) =>
-            d!.date.year == tomorrow.year &&
-            d.date.month == tomorrow.month &&
-            d.date.day == tomorrow.day,
-        orElse: () => null,
-      );
+    (d) =>
+        d!.date.year == tomorrow.year &&
+        d.date.month == tomorrow.month &&
+        d.date.day == tomorrow.day,
+    orElse: () => null,
+  );
   if (tomorrowDay == null) return null;
 
   final prob = tomorrowDay.precipitationProbabilityMax;

@@ -8,7 +8,11 @@ class RainBackground extends StatefulWidget {
   final List<Color> gradientColors;
   final bool isActive;
 
-  const RainBackground({super.key, required this.gradientColors, this.isActive = true});
+  const RainBackground({
+    super.key,
+    required this.gradientColors,
+    this.isActive = true,
+  });
 
   @override
   State<RainBackground> createState() => _RainBackgroundState();
@@ -31,6 +35,26 @@ class _RainBackgroundState extends State<RainBackground>
     if (widget.isActive) {
       _controller.repeat();
       _stopwatch.start();
+    }
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (mounted && _drops.isEmpty) {
+        final size = context.size;
+        if (size != null) _initDrops(size.width, size.height);
+      }
+    });
+  }
+
+  void _initDrops(double width, double height) {
+    for (var i = 0; i < 80; i++) {
+      _drops.add(
+        Particle(
+          x: _random.nextDouble() * width,
+          y: _random.nextDouble() * height,
+          speed: 5.0 + _random.nextDouble() * 6.0,
+          size: 0.9 + _random.nextDouble() * 1.8,
+          opacity: 0.1 + _random.nextDouble() * 0.3,
+        ),
+      );
     }
   }
 
@@ -88,19 +112,7 @@ class _RainPainter extends CustomPainter {
 
   @override
   void paint(Canvas canvas, Size size) {
-    if (drops.isEmpty) {
-      for (var i = 0; i < 80; i++) {
-        drops.add(
-          Particle(
-            x: random.nextDouble() * size.width,
-            y: random.nextDouble() * size.height,
-            speed: 5.0 + random.nextDouble() * 6.0,
-            size: 0.9 + random.nextDouble() * 1.8,
-            opacity: 0.1 + random.nextDouble() * 0.3,
-          ),
-        );
-      }
-    }
+    if (drops.isEmpty) return;
 
     final paint = Paint()
       ..strokeCap = StrokeCap.butt
@@ -119,7 +131,12 @@ class _RainPainter extends CustomPainter {
       }
 
       paint
-        ..color = (drop.cachedColor ??= Color.fromRGBO(255, 255, 255, drop.opacity))
+        ..color = (drop.cachedColor ??= Color.fromRGBO(
+          255,
+          255,
+          255,
+          drop.opacity,
+        ))
         ..strokeWidth = drop.size;
 
       canvas.drawLine(

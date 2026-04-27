@@ -17,7 +17,9 @@ import '../../features/weather/presentation/providers/moon_data_provider.dart';
 import '../constants/api_endpoints.dart';
 import '../constants/cache_constants.dart';
 import '../constants/persona.dart';
-import '../constants/quips/alert_quips.dart';
+import '../constants/quips/alert_quip_category.dart';
+import '../constants/quips/clean/alert_quips.dart';
+import '../constants/quips/explicit/alert_quips.dart';
 import '../utils/geo_utils.dart';
 import 'widget_payload_builder.dart';
 
@@ -54,8 +56,7 @@ Future<void> _refreshWidgetData() async {
     await HomeWidget.setAppGroupId(_appGroupId);
 
     // Read existing widget data to get stored location as fallback
-    final existingJson =
-        await HomeWidget.getWidgetData<String>(_widgetDataKey);
+    final existingJson = await HomeWidget.getWidgetData<String>(_widgetDataKey);
     if (existingJson == null) return;
 
     final existing = jsonDecode(existingJson) as Map<String, dynamic>;
@@ -81,8 +82,8 @@ Future<void> _refreshWidgetData() async {
             cityName = place.locality?.isNotEmpty == true
                 ? place.locality!
                 : place.subAdministrativeArea ??
-                    place.administrativeArea ??
-                    cityName;
+                      place.administrativeArea ??
+                      cityName;
           }
         } catch (_) {
           // Keep existing cityName if reverse geocoding fails
@@ -118,7 +119,8 @@ Future<void> _refreshWidgetData() async {
       // Cache is <14 min old — reuse it. The widget refresh runs every
       // 15 min so this avoids hammering the API when nothing has changed.
       forecastModel = ForecastResponseModel.fromJson(
-          jsonDecode(cachedJson) as Map<String, dynamic>);
+        jsonDecode(cachedJson) as Map<String, dynamic>,
+      );
     } else {
       // Cache is stale or missing — try to fetch from API.
       try {
@@ -126,23 +128,26 @@ Future<void> _refreshWidgetData() async {
           ApiEndpoints.forecast(latitude: lat, longitude: lon),
         );
         forecastModel = ForecastResponseModel.fromJson(
-            response.data as Map<String, dynamic>);
+          response.data as Map<String, dynamic>,
+        );
 
         // Write back to shared cache so foreground benefits too
         await prefs.setString(cacheKey, jsonEncode(forecastModel.toJson()));
-        await prefs.setInt(
-            cacheTsKey, DateTime.now().millisecondsSinceEpoch);
+        await prefs.setInt(cacheTsKey, DateTime.now().millisecondsSinceEpoch);
       } on DioException catch (e) {
         // Rate-limited or transient failure — fall back to whatever cached
         // forecast we have rather than letting the widget refresh fail.
         if (kDebugMode) {
-          print('Widget refresh API fetch failed '
-              '(${e.response?.statusCode ?? e.type.name}); '
-              'using stale cache');
+          print(
+            'Widget refresh API fetch failed '
+            '(${e.response?.statusCode ?? e.type.name}); '
+            'using stale cache',
+          );
         }
         if (cachedJson != null) {
           forecastModel = ForecastResponseModel.fromJson(
-              jsonDecode(cachedJson) as Map<String, dynamic>);
+            jsonDecode(cachedJson) as Map<String, dynamic>,
+          );
         }
       }
     }
@@ -191,7 +196,8 @@ Future<void> _refreshWidgetData() async {
           final expires = DateTime.tryParse(props['expires'] as String? ?? '');
           if (expires != null && expires.isBefore(now)) continue;
 
-          final severityStr = (props['severity'] as String? ?? '').toLowerCase();
+          final severityStr = (props['severity'] as String? ?? '')
+              .toLowerCase();
           final sortOrder = switch (severityStr) {
             'extreme' => 0,
             'severe' => 1,
@@ -205,8 +211,9 @@ Future<void> _refreshWidgetData() async {
             alertEvent = props['event'] as String? ?? 'Weather Alert';
             alertLabel = '\u26A0 $alertEvent';
             alertSeverity = severityStr;
-            alertExpires =
-                expires != null ? expires.toUtc().millisecondsSinceEpoch ~/ 1000 : null;
+            alertExpires = expires != null
+                ? expires.toUtc().millisecondsSinceEpoch ~/ 1000
+                : null;
             if (sortOrder == 0) break; // can't get more severe
           }
         }
@@ -277,7 +284,9 @@ Future<void> _refreshWidgetData() async {
       ),
     );
     await HomeWidget.saveWidgetData<String>(
-        'widget_quips', jsonEncode(quipJson));
+      'widget_quips',
+      jsonEncode(quipJson),
+    );
 
     await HomeWidget.updateWidget(
       iOSName: _iOSWidgetName,

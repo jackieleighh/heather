@@ -41,7 +41,8 @@ String buildWidgetSummary({
     for (final h in forecast.hourly) {
       if (!h.time.isAfter(locationNow)) continue;
       if (h.time.difference(locationNow).inHours > 6) break;
-      if (precipConditions.contains(h.condition) && h.precipitationProbability >= 60) {
+      if (precipConditions.contains(h.condition) &&
+          h.precipitationProbability >= 60) {
         final hour = h.time.hour;
         final h12 = hour == 0 ? 12 : (hour > 12 ? hour - 12 : hour);
         final amPm = hour >= 12 ? 'pm' : 'am';

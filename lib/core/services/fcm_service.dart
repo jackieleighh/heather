@@ -44,10 +44,14 @@ class FcmService {
   /// The location ID from the tapped alert notification (e.g. "GPS" or a saved location UUID).
   String? pendingAlertLocationId;
 
+  /// The NWS alert ID from the tapped notification (for opening the specific alert).
+  String? pendingAlertId;
+
   void clearPendingAlertTap() {
     pendingAlertTap = false;
     pendingAlertLocationName = null;
     pendingAlertLocationId = null;
+    pendingAlertId = null;
   }
 
   Future<void> init() async {
@@ -97,7 +101,9 @@ class FcmService {
     // Check if app was opened from a terminated state via notification
     final initialMessage = await _messaging.getInitialMessage();
     if (kDebugMode) {
-      debugPrint('[FCM] getInitialMessage: ${initialMessage != null ? 'YES data=${initialMessage.data}' : 'null'}');
+      debugPrint(
+        '[FCM] getInitialMessage: ${initialMessage != null ? 'YES data=${initialMessage.data}' : 'null'}',
+      );
     }
     if (initialMessage != null) {
       _handleNotificationTap(initialMessage);
@@ -109,11 +115,13 @@ class FcmService {
     // notification intercept has an empty payload that would overwrite the
     // correct data from getInitialMessage().
     if (!pendingAlertTap) {
-      final launchDetails =
-          await _localNotifications.getNotificationAppLaunchDetails();
+      final launchDetails = await _localNotifications
+          .getNotificationAppLaunchDetails();
       if (kDebugMode) {
-        debugPrint('[FCM] getNotificationAppLaunchDetails: didLaunch=${launchDetails?.didNotificationLaunchApp}, '
-            'payload=${launchDetails?.notificationResponse?.payload}');
+        debugPrint(
+          '[FCM] getNotificationAppLaunchDetails: didLaunch=${launchDetails?.didNotificationLaunchApp}, '
+          'payload=${launchDetails?.notificationResponse?.payload}',
+        );
       }
       if (launchDetails?.didNotificationLaunchApp == true) {
         final payload = launchDetails!.notificationResponse?.payload ?? '';
@@ -122,6 +130,7 @@ class FcmService {
           final parts = payload.split('|');
           pendingAlertLocationId = parts.isNotEmpty ? parts[0] : null;
           pendingAlertLocationName = parts.length > 1 ? parts[1] : payload;
+          pendingAlertId = parts.length > 2 ? parts[2] : null;
           // Fire the stream so WeatherScreen's listener is notified regardless of
           // timing with the 3-second splash timer. Without this, the pending
           // alert can be missed if init() completes after the timer fires.
@@ -131,8 +140,11 @@ class FcmService {
     }
 
     if (kDebugMode) {
-      debugPrint('[FCM] init complete: pendingAlertTap=$pendingAlertTap, '
-          'locationId=$pendingAlertLocationId, locationName=$pendingAlertLocationName');
+      debugPrint(
+        '[FCM] init complete: pendingAlertTap=$pendingAlertTap, '
+        'locationId=$pendingAlertLocationId, locationName=$pendingAlertLocationName, '
+        'alertId=$pendingAlertId',
+      );
     }
     _initialized = true;
   }
@@ -149,7 +161,8 @@ class FcmService {
 
     await _localNotifications
         .resolvePlatformSpecificImplementation<
-            AndroidFlutterLocalNotificationsPlugin>()
+          AndroidFlutterLocalNotificationsPlugin
+        >()
         ?.createNotificationChannel(channel);
   }
 
@@ -177,21 +190,32 @@ class FcmService {
           presentSound: true,
         ),
       ),
-      payload: '${message.data['locationId'] ?? ''}|${message.data['locationName'] ?? ''}',
+      payload:
+          '${message.data['locationId'] ?? ''}|${message.data['locationName'] ?? ''}|${message.data['alertId'] ?? ''}',
     );
   }
 
   void _handleLocalNotificationTap(NotificationResponse response) {
     final payload = response.payload ?? '';
-    if (payload.isEmpty) return; // Remote notification intercept — no useful data
+    if (payload.isEmpty) {
+      return; // Remote notification intercept — no useful data
+    }
 
     pendingAlertTap = true;
     final parts = payload.split('|');
     pendingAlertLocationId = parts.isNotEmpty ? parts[0] : null;
     pendingAlertLocationName = parts.length > 1 ? parts[1] : payload;
+    pendingAlertId = parts.length > 2 ? parts[2] : null;
     if (kDebugMode) {
-      debugPrint('[FCM] _handleLocalNotificationTap: locId=$pendingAlertLocationId, '
-          'locName=$pendingAlertLocationName, payload=$payload');
+      if (pendingAlertLocationId == null || pendingAlertLocationId!.isEmpty) {
+        debugPrint(
+          '[FCM] WARNING: locationId is empty in local notification payload',
+        );
+      }
+      debugPrint(
+        '[FCM] _handleLocalNotificationTap: locId=$pendingAlertLocationId, '
+        'locName=$pendingAlertLocationName, alertId=$pendingAlertId, payload=$payload',
+      );
     }
     _alertTapController.add(null);
   }
@@ -200,9 +224,15 @@ class FcmService {
     pendingAlertTap = true;
     pendingAlertLocationId = message.data['locationId'];
     pendingAlertLocationName = message.data['locationName'];
+    pendingAlertId = message.data['alertId'];
     if (kDebugMode) {
-      debugPrint('[FCM] _handleNotificationTap: locId=$pendingAlertLocationId, '
-          'locName=$pendingAlertLocationName, data=${message.data}');
+      if (pendingAlertLocationId == null || pendingAlertLocationId!.isEmpty) {
+        debugPrint('[FCM] WARNING: locationId is empty in notification data');
+      }
+      debugPrint(
+        '[FCM] _handleNotificationTap: locId=$pendingAlertLocationId, '
+        'locName=$pendingAlertLocationName, alertId=$pendingAlertId, data=${message.data}',
+      );
     }
     _alertTapController.add(null);
   }
@@ -225,5 +255,4 @@ class FcmService {
     return settings.authorizationStatus == AuthorizationStatus.authorized ||
         settings.authorizationStatus == AuthorizationStatus.provisional;
   }
-
 }

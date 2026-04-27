@@ -1,6 +1,7 @@
 import 'dart:math';
 
 import 'package:flutter/material.dart';
+
 class ClearBackground extends StatefulWidget {
   final bool isDay;
   final List<Color> gradientColors;
@@ -34,6 +35,26 @@ class _ClearBackgroundState extends State<ClearBackground>
     if (widget.isActive) {
       _controller.repeat();
       _stopwatch.start();
+    }
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (mounted && !widget.isDay && _stars.isEmpty) {
+        final size = context.size;
+        if (size != null) _initStars(size.width, size.height);
+      }
+    });
+  }
+
+  void _initStars(double width, double height) {
+    for (var i = 0; i < 80; i++) {
+      _stars.add(
+        _Star(
+          x: _random.nextDouble() * width,
+          y: _random.nextDouble() * height * 0.7,
+          size: 0.5 + _random.nextDouble() * 2.5,
+          twinkleSpeed: 0.5 + _random.nextDouble() * 2.0,
+          phase: _random.nextDouble() * 2 * pi,
+        ),
+      );
     }
   }
 
@@ -138,19 +159,7 @@ class _NightClearPainter extends CustomPainter {
 
   @override
   void paint(Canvas canvas, Size size) {
-    if (stars.isEmpty) {
-      for (var i = 0; i < 80; i++) {
-        stars.add(
-          _Star(
-            x: random.nextDouble() * size.width,
-            y: random.nextDouble() * size.height * 0.7,
-            size: 0.5 + random.nextDouble() * 2.5,
-            twinkleSpeed: 0.5 + random.nextDouble() * 2.0,
-            phase: random.nextDouble() * 2 * pi,
-          ),
-        );
-      }
-    }
+    if (stars.isEmpty) return;
 
     final paint = Paint()..style = PaintingStyle.fill;
 

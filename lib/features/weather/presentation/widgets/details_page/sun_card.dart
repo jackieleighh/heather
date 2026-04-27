@@ -12,62 +12,62 @@ import './card_display_mode.dart';
 import './info_chip.dart';
 
 /// Cached text styles to avoid repeated GoogleFonts allocations.
-final _figtreeW400_16_cream = GoogleFonts.figtree(
+final _figtreeW40016Cream = GoogleFonts.figtree(
   fontSize: 16,
   fontWeight: FontWeight.w400,
   color: AppColors.cream,
 );
-final _figtreeW400_18_cream = GoogleFonts.figtree(
+final _figtreeW40018Cream = GoogleFonts.figtree(
   fontSize: 18,
   fontWeight: FontWeight.w400,
   color: AppColors.cream,
 );
-final _poppinsBold13_cream = GoogleFonts.poppins(
+final _poppinsBold13Cream = GoogleFonts.poppins(
   fontSize: 13,
   fontWeight: FontWeight.w700,
   color: AppColors.cream,
 );
-final _poppinsW400_13_cream = GoogleFonts.poppins(
+final _poppinsW40013Cream = GoogleFonts.poppins(
   fontSize: 13,
   fontWeight: FontWeight.w400,
   color: AppColors.cream,
 );
-final _poppinsW500_11_cream80 = GoogleFonts.poppins(
+final _poppinsW50011Cream80 = GoogleFonts.poppins(
   fontSize: 11,
   fontWeight: FontWeight.w500,
   color: AppColors.cream80,
 );
-final _poppinsBold11_cream = GoogleFonts.poppins(
+final _poppinsBold11Cream = GoogleFonts.poppins(
   fontSize: 11,
   fontWeight: FontWeight.w700,
   color: AppColors.cream,
 );
-final _poppinsW600_11_cream90 = GoogleFonts.poppins(
+final _poppinsW60011Cream90 = GoogleFonts.poppins(
   fontSize: 11,
   fontWeight: FontWeight.w600,
   color: AppColors.cream90,
 );
-final _poppinsW400_11_cream75 = GoogleFonts.poppins(
+final _poppinsW40011Cream75 = GoogleFonts.poppins(
   fontSize: 11,
   fontWeight: FontWeight.w400,
   color: AppColors.cream75,
 );
-final _poppinsW400_12_cream95 = GoogleFonts.poppins(
+final _poppinsW40012Cream95 = GoogleFonts.poppins(
   fontSize: 12,
   fontWeight: FontWeight.w400,
   color: AppColors.cream95,
 );
-final _poppinsBold12_cream95 = GoogleFonts.poppins(
+final _poppinsBold12Cream95 = GoogleFonts.poppins(
   fontSize: 12,
   fontWeight: FontWeight.w700,
   color: AppColors.cream95,
 );
-final _poppinsW400_12_cream75 = GoogleFonts.poppins(
+final _poppinsW40012Cream75 = GoogleFonts.poppins(
   fontSize: 12,
   fontWeight: FontWeight.w400,
   color: AppColors.cream75,
 );
-final _poppinsW400_12_cream90 = GoogleFonts.poppins(
+final _poppinsW40012Cream90 = GoogleFonts.poppins(
   fontSize: 12,
   fontWeight: FontWeight.w400,
   color: AppColors.cream90,
@@ -123,38 +123,26 @@ class SunCard extends StatelessWidget {
         padding: const EdgeInsets.symmetric(horizontal: 14),
         child: Row(
           children: [
-            Icon(
+            const Icon(
               WeatherIcons.day_sunny,
               size: 14,
               color: AppColors.cream90,
             ),
             const SizedBox(width: 4),
-            Text(
-              'Sun',
-              style: _figtreeW400_16_cream,
-            ),
+            Text('Sun', style: _figtreeW40016Cream),
             const Spacer(),
             if (isSunUp) ...[
-              Text(
-                'UV ${uvIndex.round()}',
-                style: _poppinsBold13_cream,
-              ),
+              Text('UV ${uvIndex.round()}', style: _poppinsBold13Cream),
               const SizedBox(width: 4),
-              Text(
-                uvLevelLabel(uvIndex),
-                style: _poppinsW400_13_cream,
-              ),
+              Text(uvLevelLabel(uvIndex), style: _poppinsW40013Cream),
             ] else ...[
-              Icon(
+              const Icon(
                 WeatherIcons.sunrise,
                 size: 12,
                 color: AppColors.cream90,
               ),
               const SizedBox(width: 3),
-              Text(
-                timeFmt.format(sunrise),
-                style: _poppinsBold13_cream,
-              ),
+              Text(timeFmt.format(sunrise), style: _poppinsBold13Cream),
             ],
           ],
         ),
@@ -181,24 +169,15 @@ class SunCard extends StatelessWidget {
                 const Spacer(),
                 Text(
                   _formatRemaining(now, isSunUp, sunrise, sunset),
-                  style: _poppinsW500_11_cream80,
+                  style: _poppinsW50011Cream80,
                 ),
                 const SizedBox(width: 12),
-                Text(
-                  'UV ${uvIndex.round()}',
-                  style: _poppinsBold11_cream,
-                ),
+                Text('UV ${uvIndex.round()}', style: _poppinsBold11Cream),
                 const SizedBox(width: 4),
-                Text(
-                  uvLevelLabel(uvIndex),
-                  style: _poppinsW600_11_cream90,
-                ),
+                Text(uvLevelLabel(uvIndex), style: _poppinsW60011Cream90),
                 if (!isSunUp) ...[
                   const SizedBox(width: 4),
-                  Text(
-                    'tmrw',
-                    style: _poppinsW400_11_cream75,
-                  ),
+                  Text('tmrw', style: _poppinsW40011Cream75),
                 ],
               ],
             ),
@@ -241,7 +220,7 @@ class SunCard extends StatelessWidget {
                           child: Column(
                             mainAxisSize: MainAxisSize.min,
                             children: [
-                              Icon(
+                              const Icon(
                                 WeatherIcons.sunrise,
                                 size: 14,
                                 color: AppColors.cream95,
@@ -249,7 +228,7 @@ class SunCard extends StatelessWidget {
                               const SizedBox(height: 1),
                               Text(
                                 AppDateFormats.hmma.format(sunrise),
-                                style: _poppinsW400_12_cream95,
+                                style: _poppinsW40012Cream95,
                               ),
                             ],
                           ),
@@ -263,7 +242,7 @@ class SunCard extends StatelessWidget {
                           child: Column(
                             mainAxisSize: MainAxisSize.min,
                             children: [
-                              Icon(
+                              const Icon(
                                 WeatherIcons.sunset,
                                 size: 14,
                                 color: AppColors.cream95,
@@ -271,7 +250,7 @@ class SunCard extends StatelessWidget {
                               const SizedBox(height: 1),
                               Text(
                                 AppDateFormats.hmma.format(sunset),
-                                style: _poppinsW400_12_cream95,
+                                style: _poppinsW40012Cream95,
                               ),
                             ],
                           ),
@@ -287,7 +266,7 @@ class SunCard extends StatelessWidget {
             Row(
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
-                Icon(
+                const Icon(
                   WeatherIcons.time_3,
                   size: 12,
                   color: AppColors.cream95,
@@ -295,19 +274,19 @@ class SunCard extends StatelessWidget {
                 const SizedBox(width: 5),
                 Text.rich(
                   TextSpan(
-                    style: _poppinsBold12_cream95,
+                    style: _poppinsBold12Cream95,
                     children: [
                       if (!isSunUp)
                         TextSpan(
                           text: 'Tomorrow  \u00B7  ',
-                          style: _poppinsW400_12_cream95,
+                          style: _poppinsW40012Cream95,
                         ),
                       TextSpan(text: '${dayH}h ${dayM}m daylight'),
                       if (isSunUp &&
                           _formatDayDelta(dayLengthDeltaMinutes).isNotEmpty)
                         TextSpan(
                           text: _formatDayDelta(dayLengthDeltaMinutes),
-                          style: _poppinsW400_12_cream75,
+                          style: _poppinsW40012Cream75,
                         ),
                     ],
                   ),
@@ -319,7 +298,7 @@ class SunCard extends StatelessWidget {
               Row(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
-                  Icon(
+                  const Icon(
                     WeatherIcons.umbrella,
                     size: 12,
                     color: AppColors.cream90,
@@ -327,13 +306,13 @@ class SunCard extends StatelessWidget {
                   const SizedBox(width: 5),
                   Text.rich(
                     TextSpan(
-                      style: _poppinsW400_12_cream90,
+                      style: _poppinsW40012Cream90,
                       children: [
                         const TextSpan(text: 'SPF/shade '),
                         TextSpan(
                           text:
                               '${AppDateFormats.hSpaceA.format(protection.$1)} - ${AppDateFormats.hSpaceA.format(protection.$2)}',
-                          style: _poppinsBold12_cream95,
+                          style: _poppinsBold12Cream95,
                         ),
                       ],
                     ),
@@ -382,18 +361,12 @@ class SunCard extends StatelessWidget {
               const Spacer(),
               Text(
                 _formatRemaining(now, isSunUp, sunrise, sunset),
-                style: _poppinsW500_11_cream80,
+                style: _poppinsW50011Cream80,
               ),
               const SizedBox(width: 12),
-              Text(
-                'UV ${uvIndex.round()}',
-                style: _poppinsBold11_cream,
-              ),
+              Text('UV ${uvIndex.round()}', style: _poppinsBold11Cream),
               const SizedBox(width: 4),
-              Text(
-                uvLevelLabel(uvIndex),
-                style: _poppinsW600_11_cream90,
-              ),
+              Text(uvLevelLabel(uvIndex), style: _poppinsW60011Cream90),
             ],
           ),
           if (hourlyUv.length >= 2) ...[
@@ -420,16 +393,9 @@ class SunCard extends StatelessWidget {
       crossAxisAlignment: CrossAxisAlignment.baseline,
       textBaseline: TextBaseline.alphabetic,
       children: [
-        Icon(
-          WeatherIcons.day_sunny,
-          size: 15,
-          color: AppColors.cream90,
-        ),
+        const Icon(WeatherIcons.day_sunny, size: 15, color: AppColors.cream90),
         const SizedBox(width: 4),
-        Text(
-          'Sun',
-          style: _figtreeW400_18_cream,
-        ),
+        Text('Sun', style: _figtreeW40018Cream),
         const Spacer(),
         Row(
           children: [
@@ -647,10 +613,7 @@ class _UvLinePainter extends CustomPainter {
     // "UV index" chart label (top-left)
     if (showLabel) {
       final uvLabelPainter = TextPainter(
-        text: const TextSpan(
-          text: 'UV index',
-          style: _uvLabelStyle,
-        ),
+        text: const TextSpan(text: 'UV index', style: _uvLabelStyle),
         textDirection: TextDirection.ltr,
       )..layout();
       uvLabelPainter.paint(canvas, const Offset(0, 0));
@@ -684,13 +647,10 @@ class _UvLinePainter extends CustomPainter {
 
       final fillPaint = Paint()
         ..shader =
-            LinearGradient(
+            const LinearGradient(
               begin: Alignment.topCenter,
               end: Alignment.bottomCenter,
-              colors: [
-                AppColors.cream15,
-                AppColors.cream03,
-              ],
+              colors: [AppColors.cream15, AppColors.cream03],
             ).createShader(
               Rect.fromLTRB(padLeft, padTop, padLeft + graphW, bottomY),
             )

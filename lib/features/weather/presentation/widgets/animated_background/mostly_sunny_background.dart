@@ -2,6 +2,7 @@ import 'dart:math';
 import 'dart:ui' as ui;
 
 import 'package:flutter/material.dart';
+
 class MostlySunnyBackground extends StatefulWidget {
   final List<Color> gradientColors;
   final bool isDay;
@@ -25,6 +26,9 @@ class _MostlySunnyBackgroundState extends State<MostlySunnyBackground>
   final List<_Star> _stars = [];
   final Random _random = Random();
 
+  final _rayColors = List<Color>.filled(12, const Color(0x00FFFFFF));
+  double _lastColorTime = -1;
+
   @override
   void initState() {
     super.initState();
@@ -35,6 +39,26 @@ class _MostlySunnyBackgroundState extends State<MostlySunnyBackground>
     if (widget.isActive) {
       _controller.repeat();
       _stopwatch.start();
+    }
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (mounted && !widget.isDay && _stars.isEmpty) {
+        final size = context.size;
+        if (size != null) _initStars(size.width, size.height);
+      }
+    });
+  }
+
+  void _initStars(double width, double height) {
+    for (var i = 0; i < 80; i++) {
+      _stars.add(
+        _Star(
+          x: _random.nextDouble() * width,
+          y: _random.nextDouble() * height * 0.7,
+          size: 0.5 + _random.nextDouble() * 2.5,
+          twinkleSpeed: 0.5 + _random.nextDouble() * 2.0,
+          phase: _random.nextDouble() * 2 * pi,
+        ),
+      );
     }
   }
 
@@ -64,9 +88,30 @@ class _MostlySunnyBackgroundState extends State<MostlySunnyBackground>
       animation: _controller,
       builder: (context, child) {
         final time = _stopwatch.elapsedMilliseconds / 1000.0 * 0.42;
+        if (widget.isDay && (time - _lastColorTime).abs() > 0.033) {
+          _lastColorTime = time;
+          const rayAlphas = [
+            0.22,
+            0.14,
+            0.20,
+            0.11,
+            0.21,
+            0.15,
+            0.18,
+            0.13,
+            0.17,
+            0.13,
+            0.21,
+            0.10,
+          ];
+          for (var i = 0; i < 12; i++) {
+            final alpha = rayAlphas[i] + sin(time * 0.5 + i * 0.7).abs() * 0.03;
+            _rayColors[i] = Color.fromRGBO(255, 255, 255, alpha);
+          }
+        }
         return CustomPaint(
           foregroundPainter: widget.isDay
-              ? _MostlySunnyDayPainter(time)
+              ? _MostlySunnyDayPainter(time, _rayColors)
               : _MostlySunnyNightPainter(_stars, _random, time),
           size: Size.infinite,
           child: child,
@@ -103,8 +148,9 @@ class _Star {
 
 class _MostlySunnyDayPainter extends CustomPainter {
   final double time;
+  final List<Color> rayColors;
 
-  _MostlySunnyDayPainter(this.time);
+  _MostlySunnyDayPainter(this.time, this.rayColors);
 
   static const _white0 = Color.fromRGBO(255, 255, 255, 0);
   static const _glowColors = [
@@ -131,10 +177,48 @@ class _MostlySunnyDayPainter extends CustomPainter {
     final rayPaint = Paint()
       ..style = PaintingStyle.fill
       ..maskFilter = const MaskFilter.blur(BlurStyle.normal, 5);
-    const rayAngles = [0.0, 0.55, 1.05, 1.6, 2.15, 2.65, 3.2, 3.75, 4.3, 4.85, 5.35, 5.9];
-    const rayLengths = [300.0, 190.0, 260.0, 160.0, 290.0, 210.0, 270.0, 180.0, 240.0, 200.0, 280.0, 185.0];
-    const raySpreads = [0.055, 0.037, 0.05, 0.032, 0.055, 0.04, 0.05, 0.037, 0.045, 0.037, 0.055, 0.032];
-    const rayAlphas = [0.22, 0.14, 0.20, 0.11, 0.21, 0.15, 0.18, 0.13, 0.17, 0.13, 0.21, 0.10];
+    const rayAngles = [
+      0.0,
+      0.55,
+      1.05,
+      1.6,
+      2.15,
+      2.65,
+      3.2,
+      3.75,
+      4.3,
+      4.85,
+      5.35,
+      5.9,
+    ];
+    const rayLengths = [
+      300.0,
+      190.0,
+      260.0,
+      160.0,
+      290.0,
+      210.0,
+      270.0,
+      180.0,
+      240.0,
+      200.0,
+      280.0,
+      185.0,
+    ];
+    const raySpreads = [
+      0.055,
+      0.037,
+      0.05,
+      0.032,
+      0.055,
+      0.04,
+      0.05,
+      0.037,
+      0.045,
+      0.037,
+      0.055,
+      0.032,
+    ];
     const innerR = 22.0;
     final spin = time * 0.15;
 
@@ -142,7 +226,6 @@ class _MostlySunnyDayPainter extends CustomPainter {
       final angle = rayAngles[i] + spin;
       final outerR = rayLengths[i];
       final halfSpread = raySpreads[i];
-      final alpha = rayAlphas[i] + sin(time * 0.5 + i * 0.7).abs() * 0.03;
 
       final cosA = cos(angle);
       final sinA = sin(angle);
@@ -161,7 +244,7 @@ class _MostlySunnyDayPainter extends CustomPainter {
       rayPaint.shader = ui.Gradient.linear(
         Offset(center.dx + cosA * innerR, center.dy + sinA * innerR),
         Offset(center.dx + cosA * outerR, center.dy + sinA * outerR),
-        [Color.fromRGBO(255, 255, 255, alpha), _white0],
+        [rayColors[i], _white0],
       );
       canvas.drawPath(path, rayPaint);
     }
@@ -197,20 +280,7 @@ class _MostlySunnyNightPainter extends CustomPainter {
     final w = size.width;
     final h = size.height;
 
-    // Stars
-    if (stars.isEmpty) {
-      for (var i = 0; i < 80; i++) {
-        stars.add(
-          _Star(
-            x: random.nextDouble() * w,
-            y: random.nextDouble() * h * 0.7,
-            size: 0.5 + random.nextDouble() * 2.5,
-            twinkleSpeed: 0.5 + random.nextDouble() * 2.0,
-            phase: random.nextDouble() * 2 * pi,
-          ),
-        );
-      }
-    }
+    if (stars.isEmpty) return;
 
     final starPaint = Paint()..style = PaintingStyle.fill;
 
@@ -237,6 +307,25 @@ class _MostlySunnyNightPainter extends CustomPainter {
       oldDelegate.time != time;
 }
 
+/// File-level caches for [_drawCloud] to avoid per-frame allocations.
+final _blurCache = <double, MaskFilter>{};
+final _colorCache = <double, Color>{};
+
+MaskFilter _cachedBlur(double scale) {
+  final key = scale * 0.06;
+  return _blurCache.putIfAbsent(
+    key,
+    () => MaskFilter.blur(BlurStyle.normal, key),
+  );
+}
+
+Color _cachedColor(double alpha) {
+  return _colorCache.putIfAbsent(
+    alpha,
+    () => Color.fromRGBO(255, 255, 255, alpha),
+  );
+}
+
 /// Draws a cloud that drifts continuously across the screen and wraps around.
 void _drawDriftingCloud(
   Canvas canvas,
@@ -254,12 +343,7 @@ void _drawDriftingCloud(
   final rawX = (startXFrac * w + time * w * speed) % totalWidth - scale * 0.75;
   final y = h * yFrac + sin(time * 0.25 + startXFrac * 10) * 6;
 
-  _drawCloud(
-    canvas,
-    center: Offset(rawX, y),
-    scale: scale,
-    alpha: alpha,
-  );
+  _drawCloud(canvas, center: Offset(rawX, y), scale: scale, alpha: alpha);
 }
 
 void _drawCloud(
@@ -270,10 +354,14 @@ void _drawCloud(
 }) {
   final paint = Paint()
     ..style = PaintingStyle.fill
-    ..maskFilter = MaskFilter.blur(BlurStyle.normal, scale * 0.06);
+    ..maskFilter = _cachedBlur(scale);
+
+  final baseColor = _cachedColor(alpha * 0.7);
+  final mainColor = _cachedColor(alpha);
+  final accentColor = _cachedColor(alpha * 0.8);
 
   // Flat base
-  paint.color = Color.fromRGBO(255, 255, 255, alpha * 0.7);
+  paint.color = baseColor;
   canvas.drawOval(
     Rect.fromCenter(
       center: Offset(center.dx, center.dy + scale * 0.10),
@@ -284,7 +372,7 @@ void _drawCloud(
   );
 
   // Main lobes
-  paint.color = Color.fromRGBO(255, 255, 255, alpha);
+  paint.color = mainColor;
   canvas.drawCircle(
     Offset(center.dx - scale * 0.25, center.dy),
     scale * 0.24,
@@ -302,7 +390,7 @@ void _drawCloud(
   );
 
   // Top accent puff
-  paint.color = Color.fromRGBO(255, 255, 255, alpha * 0.8);
+  paint.color = accentColor;
   canvas.drawCircle(
     Offset(center.dx + scale * 0.04, center.dy - scale * 0.20),
     scale * 0.18,

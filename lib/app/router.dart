@@ -11,7 +11,9 @@ GoRouter buildRouter({required bool onboardingCompleted}) {
     redirect: (context, state) {
       final uri = state.uri;
       // Ignore non-app URIs (e.g. Glance widget callbacks)
-      if (uri.scheme.isNotEmpty && uri.scheme != 'https' && uri.scheme != 'http') {
+      if (uri.scheme.isNotEmpty &&
+          uri.scheme != 'https' &&
+          uri.scheme != 'http') {
         return '/';
       }
       return null;

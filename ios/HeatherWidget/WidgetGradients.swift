@@ -9,30 +9,59 @@ struct WidgetGradients {
             return [.init(color: Color(hex: hexColors.first ?? "FF000000"), location: 0)]
         }
 
-        let stepsPerSegment = 64 // intermediate colors between each pair
-        var stops: [Gradient.Stop] = []
-        let totalSegments = hexColors.count - 1
-        let totalStops = totalSegments * stepsPerSegment + 1
+        let n = hexColors.count
+        let parsed = hexColors.map { parseRGB($0) }
+        let totalStops = 129
 
-        for i in 0..<totalSegments {
-            let c1 = parseRGB(hexColors[i])
-            let c2 = parseRGB(hexColors[i + 1])
+        // Evenly-spaced knot positions
+        let pos = (0..<n).map { Double($0) / Double(n - 1) }
 
-            for step in 0..<stepsPerSegment {
-                let linear = Double(step) / Double(stepsPerSegment)
-                let t = linear * linear * (3.0 - 2.0 * linear) // smoothstep
-                let r = c1.r + (c2.r - c1.r) * t
-                let g = c1.g + (c2.g - c1.g) * t
-                let b = c1.b + (c2.b - c1.b) * t
-                let stopIndex = i * stepsPerSegment + step
-                let location = Double(stopIndex) / Double(totalStops - 1)
-                stops.append(.init(color: Color(red: r, green: g, blue: b), location: location))
+        // Per-channel values
+        let rv = parsed.map { $0.r }
+        let gv = parsed.map { $0.g }
+        let bv = parsed.map { $0.b }
+
+        // Catmull-Rom tangents per channel
+        func tangents(_ v: [Double]) -> [Double] {
+            var m = [Double](repeating: 0, count: n)
+            for i in 0..<n {
+                if i == 0 {
+                    m[i] = (v[1] - v[0]) / (pos[1] - pos[0])
+                } else if i == n - 1 {
+                    m[i] = (v[n - 1] - v[n - 2]) / (pos[n - 1] - pos[n - 2])
+                } else {
+                    m[i] = (v[i + 1] - v[i - 1]) / (pos[i + 1] - pos[i - 1])
+                }
             }
+            return m
         }
 
-        // Add the final color
-        let last = parseRGB(hexColors.last!)
-        stops.append(.init(color: Color(red: last.r, green: last.g, blue: last.b), location: 1.0))
+        let rm = tangents(rv), gm = tangents(gv), bm = tangents(bv)
+
+        // Cubic Hermite interpolation for one channel
+        func herp(_ v: [Double], _ m: [Double], _ t: Double) -> Double {
+            var seg = n - 2
+            for i in 0..<(n - 1) {
+                if t <= pos[i + 1] { seg = i; break }
+            }
+            let h = pos[seg + 1] - pos[seg]
+            let s = (t - pos[seg]) / h
+            let s2 = s * s, s3 = s2 * s
+            let result = (2 * s3 - 3 * s2 + 1) * v[seg]
+                       + (s3 - 2 * s2 + s) * h * m[seg]
+                       + (-2 * s3 + 3 * s2) * v[seg + 1]
+                       + (s3 - s2) * h * m[seg + 1]
+            return max(0, min(1, result))
+        }
+
+        var stops: [Gradient.Stop] = []
+        for step in 0..<totalStops {
+            let t = Double(step) / Double(totalStops - 1)
+            stops.append(.init(
+                color: Color(red: herp(rv, rm, t), green: herp(gv, gm, t), blue: herp(bv, bm, t)),
+                location: t
+            ))
+        }
 
         return stops
     }
@@ -96,11 +125,11 @@ struct WidgetGradients {
     private static let dayGradients: [String: [[String]]] = [
         "sunny": [
             ["#FF70A8FF", "#FF80A8F8", "#FF9888F8"],
-            ["#FF70B0FF", "#FF70B8F8", "#FF70D8F8"],
-            ["#FF70D8F8", "#FF38C0A0", "#FF78C858"],
-            ["#FF38C0A0", "#FF78C858", "#FFC8D830"],
-            ["#FFC8D830", "#FFF0C028", "#FFF08028"],
-            ["#FFF0D838", "#FFF08028", "#FFD80070"],
+            ["#FF70B0FF", "#FF70B8F8", "#FF50B0F0"],
+            ["#FF50B0F0", "#FF58B8D0", "#FF50B8A0"],
+            ["#FF58B8D0", "#FF58C8A0", "#FFA0C828"],
+            ["#FFA8C830", "#FFF0D830", "#FFF07818"],
+            ["#FFF0D838", "#FFF08028", "#FFD83020"],
         ],
         "overcast": [
             ["#FF5454B8", "#FF727AC0", "#FF9A8AC8"],

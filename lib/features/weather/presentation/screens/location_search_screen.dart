@@ -171,10 +171,10 @@ class _SearchResultsState extends ConsumerState<_SearchResults> {
     final trimmed = widget.query.trim();
 
     if (trimmed.length < 2) {
-      return AnimatedSwitcher(
-        duration: const Duration(milliseconds: 200),
+      return const AnimatedSwitcher(
+        duration: Duration(milliseconds: 200),
         child: Center(
-          key: const ValueKey('hint'),
+          key: ValueKey('hint'),
           child: Text(
             'Type a city name to search',
             style: TextStyle(color: AppColors.cream40),
@@ -193,7 +193,7 @@ class _SearchResultsState extends ConsumerState<_SearchResults> {
         }
         return const Center(child: PulsingDots(color: AppColors.cream));
       },
-      error: (e, _) => Center(
+      error: (e, _) => const Center(
         child: Text(
           'Yikes! Something went wrong.',
           style: TextStyle(color: AppColors.cream70),
@@ -202,10 +202,10 @@ class _SearchResultsState extends ConsumerState<_SearchResults> {
       data: (locations) {
         _lastResults = locations;
         if (locations.isEmpty) {
-          return AnimatedSwitcher(
-            duration: const Duration(milliseconds: 200),
+          return const AnimatedSwitcher(
+            duration: Duration(milliseconds: 200),
             child: Center(
-              key: const ValueKey('empty'),
+              key: ValueKey('empty'),
               child: Text(
                 'No results found. Try a different search?',
                 style: TextStyle(color: AppColors.cream70),
@@ -258,10 +258,7 @@ class _LocationTile extends ConsumerWidget {
 
     return ListTile(
       contentPadding: EdgeInsets.zero,
-      leading: Icon(
-        Icons.location_on_outlined,
-        color: AppColors.cream80,
-      ),
+      leading: const Icon(Icons.location_on_outlined, color: AppColors.cream80),
       title: Text(
         location.name,
         style: const TextStyle(
@@ -270,17 +267,13 @@ class _LocationTile extends ConsumerWidget {
         ),
       ),
       subtitle: subtitle.isNotEmpty
-          ? Text(
-              subtitle,
-              style: TextStyle(color: AppColors.cream60),
-            )
+          ? Text(subtitle, style: const TextStyle(color: AppColors.cream60))
           : null,
       onTap: () async {
         final saved = ref.read(savedLocationsProvider);
 
         // If location already exists, navigate to it instead of adding
-        final existingIndex =
-            saved.indexWhere((l) => l.id == location.id);
+        final existingIndex = saved.indexWhere((l) => l.id == location.id);
         if (existingIndex >= 0) {
           if (context.mounted) Navigator.of(context).maybePop(location.id);
           return;

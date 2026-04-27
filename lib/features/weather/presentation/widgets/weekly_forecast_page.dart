@@ -160,16 +160,16 @@ class _WeeklyForecastPageState extends ConsumerState<WeeklyForecastPage> {
                   final totalSpacing = spacing * (cardCount - 1);
 
                   final equalHeight = (totalHeight - totalSpacing) / cardCount;
-                  final naturalExpanded = totalHeight -
+                  final naturalExpanded =
+                      totalHeight -
                       totalSpacing -
                       (baseCollapsedHeight * (cardCount - 1));
                   final expandedHeight = isExpanded
                       ? math.min(naturalExpanded, maxExpandedHeight)
                       : 0.0;
-                  final compactExtra = isExpanded &&
-                          naturalExpanded > maxExpandedHeight
-                      ? (naturalExpanded - maxExpandedHeight) /
-                          (cardCount - 1)
+                  final compactExtra =
+                      isExpanded && naturalExpanded > maxExpandedHeight
+                      ? (naturalExpanded - maxExpandedHeight) / (cardCount - 1)
                       : 0.0;
                   final collapsedHeight = baseCollapsedHeight + compactExtra;
 
@@ -227,9 +227,7 @@ class _WeeklyForecastPageState extends ConsumerState<WeeklyForecastPage> {
     final dayDiff = daily[i].date.difference(today).inDays;
 
     return Padding(
-      padding: EdgeInsets.only(
-        bottom: i < cardCount - 1 ? spacing : 0,
-      ),
+      padding: EdgeInsets.only(bottom: i < cardCount - 1 ? spacing : 0),
       child: AnimatedContainer(
         duration: const Duration(milliseconds: 300),
         curve: Curves.easeInOut,
@@ -242,19 +240,19 @@ class _WeeklyForecastPageState extends ConsumerState<WeeklyForecastPage> {
             _expandedIndex = _expandedIndex == i ? null : i;
           }),
           child: _expandedIndex == i
-                ? _ExpandedDayContent(
-                    daily: daily[i],
-                    dayDiff: dayDiff,
-                    forecast: forecast,
-                    moonData: usno,
-                  )
-                : _CollapsedDayContent(
-                    daily: daily[i],
-                    dayDiff: dayDiff,
-                    isExpanded: isExpanded,
-                    now: now,
-                    moonData: usno,
-                  ),
+              ? _ExpandedDayContent(
+                  daily: daily[i],
+                  dayDiff: dayDiff,
+                  forecast: forecast,
+                  moonData: usno,
+                )
+              : _CollapsedDayContent(
+                  daily: daily[i],
+                  dayDiff: dayDiff,
+                  isExpanded: isExpanded,
+                  now: now,
+                  moonData: usno,
+                ),
         ),
       ),
     );
@@ -385,11 +383,7 @@ class _CollapsedDayContent extends StatelessWidget {
               // Row 2: Stats left, temp right
               Row(
                 children: [
-                  Icon(
-                    _precipIcon(daily),
-                    size: 12,
-                    color: AppColors.cream95,
-                  ),
+                  Icon(_precipIcon(daily), size: 12, color: AppColors.cream95),
                   const SizedBox(width: 2),
                   Text(
                     '${daily.precipitationProbabilityMax}%',
@@ -405,7 +399,7 @@ class _CollapsedDayContent extends StatelessWidget {
                   ],
                   if (daily.humidityAvg > 0) ...[
                     const SizedBox(width: 8),
-                    Icon(
+                    const Icon(
                       WeatherIcons.humidity,
                       size: 10,
                       color: AppColors.cream90,
@@ -414,7 +408,7 @@ class _CollapsedDayContent extends StatelessWidget {
                     Text('${daily.humidityAvg}%', style: _statLightStyle),
                   ],
                   const SizedBox(width: 8),
-                  Icon(
+                  const Icon(
                     WeatherIcons.day_sunny,
                     size: 11,
                     color: AppColors.cream90,
@@ -629,11 +623,7 @@ class _TileHeader extends StatelessWidget {
   final String label;
   final Widget? trailing;
 
-  const _TileHeader({
-    required this.icon,
-    required this.label,
-    this.trailing,
-  });
+  const _TileHeader({required this.icon, required this.label, this.trailing});
 
   @override
   Widget build(BuildContext context) {
@@ -643,10 +633,7 @@ class _TileHeader extends StatelessWidget {
         Icon(icon, size: 11, color: AppColors.cream90),
         const SizedBox(width: 4),
         Text(label, style: _tileHeaderStyle),
-        if (trailing != null) ...[
-          const Spacer(),
-          trailing!,
-        ],
+        if (trailing != null) ...[const Spacer(), trailing!],
       ],
     );
   }
@@ -709,7 +696,9 @@ class _RainTile extends StatelessWidget {
       PrecipType.rain => ('Rain', WeatherIcons.raindrop),
     };
     final amountIn = daily.precipitationSum / 25.4;
-    final amountLabel = amountIn < 0.01 ? '0"' : '${amountIn.toStringAsFixed(2)}"';
+    final amountLabel = amountIn < 0.01
+        ? '0"'
+        : '${amountIn.toStringAsFixed(2)}"';
     final probs = hourly.map((h) => h.precipitationProbability).toList();
 
     return Column(
@@ -886,7 +875,11 @@ class _StatsTile extends StatelessWidget {
           mainAxisAlignment: MainAxisAlignment.spaceBetween,
           children: [
             if (humidity > 0)
-              _StatChip(icon: WeatherIcons.humidity, value: '$humidity%', fontWeight: FontWeight.w400),
+              _StatChip(
+                icon: WeatherIcons.humidity,
+                value: '$humidity%',
+                fontWeight: FontWeight.w400,
+              ),
             if (meanWind != null && domDir != null)
               _StatChip(
                 icon: WeatherIcons.windy,
@@ -991,13 +984,10 @@ class _MiniTempPainter extends CustomPainter {
       ..lineTo(points.first.dx, h)
       ..close();
     final fillPaint = Paint()
-      ..shader = LinearGradient(
+      ..shader = const LinearGradient(
         begin: Alignment.topCenter,
         end: Alignment.bottomCenter,
-        colors: [
-          AppColors.cream18,
-          AppColors.cream02,
-        ],
+        colors: [AppColors.cream18, AppColors.cream02],
       ).createShader(Rect.fromLTWH(0, 0, w, h));
     canvas.drawPath(fillPath, fillPaint);
 
@@ -1053,13 +1043,10 @@ class _MiniUvPainter extends CustomPainter {
       ..lineTo(points.first.dx, h)
       ..close();
     final fillPaint = Paint()
-      ..shader = LinearGradient(
+      ..shader = const LinearGradient(
         begin: Alignment.topCenter,
         end: Alignment.bottomCenter,
-        colors: [
-          AppColors.cream18,
-          AppColors.cream02,
-        ],
+        colors: [AppColors.cream18, AppColors.cream02],
       ).createShader(Rect.fromLTWH(0, 0, w, h));
     canvas.drawPath(fillPath, fillPaint);
 
@@ -1178,14 +1165,18 @@ class _MiniSunArcPainter extends CustomPainter {
     if (isToday && now.isAfter(sunrise) && now.isBefore(sunset)) {
       final totalMs = sunset.difference(sunrise).inMilliseconds.toDouble();
       if (totalMs > 0) {
-        final t = (now.difference(sunrise).inMilliseconds / totalMs)
-            .clamp(0.0, 1.0);
+        final t = (now.difference(sunrise).inMilliseconds / totalMs).clamp(
+          0.0,
+          1.0,
+        );
         // Sample the quadratic bezier at parameter t
         final oneMinusT = 1 - t;
-        final x = oneMinusT * oneMinusT * startPt.dx +
+        final x =
+            oneMinusT * oneMinusT * startPt.dx +
             2 * oneMinusT * t * controlPt.dx +
             t * t * endPt.dx;
-        final y = oneMinusT * oneMinusT * startPt.dy +
+        final y =
+            oneMinusT * oneMinusT * startPt.dy +
             2 * oneMinusT * t * controlPt.dy +
             t * t * endPt.dy;
         canvas.drawCircle(

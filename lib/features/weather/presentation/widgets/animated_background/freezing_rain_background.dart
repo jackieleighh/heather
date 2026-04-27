@@ -8,7 +8,11 @@ class FreezingRainBackground extends StatefulWidget {
   final List<Color> gradientColors;
   final bool isActive;
 
-  const FreezingRainBackground({super.key, required this.gradientColors, this.isActive = true});
+  const FreezingRainBackground({
+    super.key,
+    required this.gradientColors,
+    this.isActive = true,
+  });
 
   @override
   State<FreezingRainBackground> createState() => _FreezingRainBackgroundState();
@@ -31,6 +35,26 @@ class _FreezingRainBackgroundState extends State<FreezingRainBackground>
     if (widget.isActive) {
       _controller.repeat();
       _stopwatch.start();
+    }
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (mounted && _drops.isEmpty) {
+        final size = context.size;
+        if (size != null) _initDrops(size.width, size.height);
+      }
+    });
+  }
+
+  void _initDrops(double width, double height) {
+    for (var i = 0; i < 90; i++) {
+      _drops.add(
+        Particle(
+          x: _random.nextDouble() * width,
+          y: _random.nextDouble() * height,
+          speed: 3.0 + _random.nextDouble() * 7.0,
+          size: 1.0 + _random.nextDouble() * 2.0,
+          opacity: 0.1 + _random.nextDouble() * 0.3,
+        ),
+      );
     }
   }
 
@@ -88,19 +112,7 @@ class _FreezingRainPainter extends CustomPainter {
 
   @override
   void paint(Canvas canvas, Size size) {
-    if (drops.isEmpty) {
-      for (var i = 0; i < 90; i++) {
-        drops.add(
-          Particle(
-            x: random.nextDouble() * size.width,
-            y: random.nextDouble() * size.height,
-            speed: 3.0 + random.nextDouble() * 7.0,
-            size: 1.0 + random.nextDouble() * 2.0,
-            opacity: 0.1 + random.nextDouble() * 0.3,
-          ),
-        );
-      }
-    }
+    if (drops.isEmpty) return;
 
     final paint = Paint()
       ..strokeCap = StrokeCap.butt

@@ -22,8 +22,7 @@ const _zodiacSigns = [
 String currentZodiac(DateTime date) {
   for (var i = _zodiacSigns.length - 1; i >= 0; i--) {
     final z = _zodiacSigns[i];
-    if (date.month > z.month ||
-        (date.month == z.month && date.day >= z.day)) {
+    if (date.month > z.month || (date.month == z.month && date.day >= z.day)) {
       return z.sign;
     }
   }
@@ -87,16 +86,76 @@ class MeteorShower {
 }
 
 const _showers = [
-  MeteorShower(name: 'Quadrantids', peakMonth: 1, peakDay: 3, windowDays: 1, zhr: 120),
-  MeteorShower(name: 'Lyrids', peakMonth: 4, peakDay: 22, windowDays: 2, zhr: 18),
-  MeteorShower(name: 'Eta Aquariids', peakMonth: 5, peakDay: 6, windowDays: 3, zhr: 50),
-  MeteorShower(name: 'Delta Aquariids', peakMonth: 7, peakDay: 30, windowDays: 2, zhr: 25),
-  MeteorShower(name: 'Perseids', peakMonth: 8, peakDay: 12, windowDays: 3, zhr: 100),
-  MeteorShower(name: 'Draconids', peakMonth: 10, peakDay: 8, windowDays: 1, zhr: 10),
-  MeteorShower(name: 'Orionids', peakMonth: 10, peakDay: 21, windowDays: 2, zhr: 20),
-  MeteorShower(name: 'Leonids', peakMonth: 11, peakDay: 17, windowDays: 2, zhr: 15),
-  MeteorShower(name: 'Geminids', peakMonth: 12, peakDay: 14, windowDays: 2, zhr: 150),
-  MeteorShower(name: 'Ursids', peakMonth: 12, peakDay: 22, windowDays: 1, zhr: 10),
+  MeteorShower(
+    name: 'Quadrantids',
+    peakMonth: 1,
+    peakDay: 3,
+    windowDays: 1,
+    zhr: 120,
+  ),
+  MeteorShower(
+    name: 'Lyrids',
+    peakMonth: 4,
+    peakDay: 22,
+    windowDays: 2,
+    zhr: 18,
+  ),
+  MeteorShower(
+    name: 'Eta Aquariids',
+    peakMonth: 5,
+    peakDay: 6,
+    windowDays: 3,
+    zhr: 50,
+  ),
+  MeteorShower(
+    name: 'Delta Aquariids',
+    peakMonth: 7,
+    peakDay: 30,
+    windowDays: 2,
+    zhr: 25,
+  ),
+  MeteorShower(
+    name: 'Perseids',
+    peakMonth: 8,
+    peakDay: 12,
+    windowDays: 3,
+    zhr: 100,
+  ),
+  MeteorShower(
+    name: 'Draconids',
+    peakMonth: 10,
+    peakDay: 8,
+    windowDays: 1,
+    zhr: 10,
+  ),
+  MeteorShower(
+    name: 'Orionids',
+    peakMonth: 10,
+    peakDay: 21,
+    windowDays: 2,
+    zhr: 20,
+  ),
+  MeteorShower(
+    name: 'Leonids',
+    peakMonth: 11,
+    peakDay: 17,
+    windowDays: 2,
+    zhr: 15,
+  ),
+  MeteorShower(
+    name: 'Geminids',
+    peakMonth: 12,
+    peakDay: 14,
+    windowDays: 2,
+    zhr: 150,
+  ),
+  MeteorShower(
+    name: 'Ursids',
+    peakMonth: 12,
+    peakDay: 22,
+    windowDays: 1,
+    zhr: 10,
+  ),
 ];
 
 /// Returns the active meteor shower (nearest to peak) if within range, or null.
@@ -201,8 +260,19 @@ AstroEvent? activeAstroEvent(DateTime date, {DateTime? nextFullMoonDate}) {
     final endMonth = retro.end.month;
     final endDay = retro.end.day;
     final monthNames = [
-      '', 'Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun',
-      'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec',
+      '',
+      'Jan',
+      'Feb',
+      'Mar',
+      'Apr',
+      'May',
+      'Jun',
+      'Jul',
+      'Aug',
+      'Sep',
+      'Oct',
+      'Nov',
+      'Dec',
     ];
     return AstroEvent(
       '\u263F Retrograde until ${monthNames[endMonth]} $endDay',
@@ -221,14 +291,26 @@ AstroEvent? activeAstroEvent(DateTime date, {DateTime? nextFullMoonDate}) {
 
   // 3. Supermoon (check if next full moon is a supermoon)
   if (nextFullMoonDate != null && isSupermoon(nextFullMoonDate)) {
-    final daysUntil =
-        DateTime(nextFullMoonDate.year, nextFullMoonDate.month, nextFullMoonDate.day)
-            .difference(DateTime(date.year, date.month, date.day))
-            .inDays;
+    final daysUntil = DateTime(
+      nextFullMoonDate.year,
+      nextFullMoonDate.month,
+      nextFullMoonDate.day,
+    ).difference(DateTime(date.year, date.month, date.day)).inDays;
     if (daysUntil <= 7) {
       final monthNames = [
-        '', 'Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun',
-        'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec',
+        '',
+        'Jan',
+        'Feb',
+        'Mar',
+        'Apr',
+        'May',
+        'Jun',
+        'Jul',
+        'Aug',
+        'Sep',
+        'Oct',
+        'Nov',
+        'Dec',
       ];
       final label = daysUntil == 0
           ? 'Supermoon tonight!'

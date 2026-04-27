@@ -62,14 +62,19 @@ class _DetailsPageState extends ConsumerState<DetailsPage> {
 
     final now = forecast.locationNow;
     final next24 = forecast.hourly.take(24).toList();
-    final aqi = ref.watch(airQualityProvider((lat: widget.latitude, lon: widget.longitude)));
-    final historicalAvg =
-        ref.watch(historicalAvgProvider((lat: widget.latitude, lon: widget.longitude)));
+    final aqi = ref.watch(
+      airQualityProvider((lat: widget.latitude, lon: widget.longitude)),
+    );
+    final historicalAvg = ref.watch(
+      historicalAvgProvider((lat: widget.latitude, lon: widget.longitude)),
+    );
 
     // --- Pre-compute derived lists once instead of per-card ---
     final next24Temps = next24.map((h) => h.temperature).toList();
     final next24Hours = next24.map((h) => h.time).toList();
-    final next24PrecipProb = next24.map((h) => h.precipitationProbability).toList();
+    final next24PrecipProb = next24
+        .map((h) => h.precipitationProbability)
+        .toList();
     final next24Conditions = next24.map((h) => h.condition).toList();
     final next24Pressure = next24.map((h) => h.pressure).toList();
     final next24WindSpeed = next24.map((h) => h.windSpeed).toList();
@@ -93,7 +98,9 @@ class _DetailsPageState extends ConsumerState<DetailsPage> {
     final todayDaily = forecast.todayDaily;
     final todayIdx = forecast.daily.indexOf(todayDaily);
     final tomorrowDaily = forecast.daily.length > 1
-        ? forecast.daily[todayIdx + 1 < forecast.daily.length ? todayIdx + 1 : 0]
+        ? forecast.daily[todayIdx + 1 < forecast.daily.length
+              ? todayIdx + 1
+              : 0]
         : todayDaily;
     // Coherent (sunrise, sunset) pair: today's pair while today's sunset is
     // still ahead, otherwise tomorrow's pair. Keeping these matched ensures
@@ -107,8 +114,11 @@ class _DetailsPageState extends ConsumerState<DetailsPage> {
         now.isAfter(todayDaily.sunrise) && now.isBefore(todayDaily.sunset);
 
     final todayDayLength = todayDaily.sunset.difference(todayDaily.sunrise);
-    final tomorrowDayLength = tomorrowDaily.sunset.difference(tomorrowDaily.sunrise);
-    final dayLengthDeltaMinutes = tomorrowDayLength.inMinutes - todayDayLength.inMinutes;
+    final tomorrowDayLength = tomorrowDaily.sunset.difference(
+      tomorrowDaily.sunrise,
+    );
+    final dayLengthDeltaMinutes =
+        tomorrowDayLength.inMinutes - todayDayLength.inMinutes;
 
     // Visibility to show on the expanded Sun card. During the day use the
     // live current visibility; at night, average the next-24h hourly
@@ -307,9 +317,7 @@ class _DetailsPageState extends ConsumerState<DetailsPage> {
     }
 
     return Padding(
-      padding: EdgeInsets.only(
-        bottom: i < cardCount - 1 ? spacing : 0,
-      ),
+      padding: EdgeInsets.only(bottom: i < cardCount - 1 ? spacing : 0),
       child: AnimatedContainer(
         duration: const Duration(milliseconds: 300),
         curve: Curves.easeInOut,

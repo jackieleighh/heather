@@ -12,27 +12,27 @@ import './card_container.dart';
 import './card_display_mode.dart';
 
 /// Cached text styles to avoid repeated GoogleFonts allocations.
-final _figtreeW400_16_cream = GoogleFonts.figtree(
+final _figtreeW40016Cream = GoogleFonts.figtree(
   fontSize: 16,
   fontWeight: FontWeight.w400,
   color: AppColors.cream,
 );
-final _figtreeW600_11_cream70 = GoogleFonts.figtree(
+final _figtreeW60011Cream70 = GoogleFonts.figtree(
   fontSize: 11,
   fontWeight: FontWeight.w600,
   color: AppColors.cream70,
 );
-final _poppinsBold13_cream70 = GoogleFonts.poppins(
+final _poppinsBold13Cream70 = GoogleFonts.poppins(
   fontSize: 13,
   fontWeight: FontWeight.w700,
   color: AppColors.cream70,
 );
-final _figtreeW400_18_cream = GoogleFonts.figtree(
+final _figtreeW40018Cream = GoogleFonts.figtree(
   fontSize: 18,
   fontWeight: FontWeight.w400,
   color: AppColors.cream,
 );
-final _figtreeW400_14_cream = GoogleFonts.figtree(
+final _figtreeW40014Cream = GoogleFonts.figtree(
   fontSize: 14,
   fontWeight: FontWeight.w400,
   color: AppColors.cream,
@@ -104,8 +104,8 @@ class _ConditionsCardState extends State<ConditionsCard> {
         Text(
           'Conditions',
           style: widget.mode == CardDisplayMode.collapsed
-              ? _figtreeW400_16_cream
-              : (widget.compact ? _figtreeW400_14_cream : _figtreeW400_18_cream),
+              ? _figtreeW40016Cream
+              : (widget.compact ? _figtreeW40014Cream : _figtreeW40018Cream),
         ),
       ],
     );
@@ -203,11 +203,14 @@ class _ConditionsCardState extends State<ConditionsCard> {
                 child: Row(
                   children: List.generate(columns, (col) {
                     final index = row * columns + col;
-                    if (index >= hours.length) return SizedBox(width: cellWidth);
+                    if (index >= hours.length) {
+                      return SizedBox(width: cellWidth);
+                    }
 
                     final h = hours[index];
-                    final hourLabel =
-                        DateFormat('ha').format(h.time).toLowerCase();
+                    final hourLabel = DateFormat(
+                      'ha',
+                    ).format(h.time).toLowerCase();
                     final isDay = isDayForSunTimes(
                       h.time,
                       sunrise: widget.sunrise,
@@ -219,10 +222,7 @@ class _ConditionsCardState extends State<ConditionsCard> {
                       child: Column(
                         mainAxisAlignment: MainAxisAlignment.center,
                         children: [
-                          Text(
-                            hourLabel,
-                            style: _figtreeW600_11_cream70,
-                          ),
+                          Text(hourLabel, style: _figtreeW60011Cream70),
                           const SizedBox(height: 8),
                           Icon(
                             conditionIcon(h.weatherCode, isDay: isDay),
@@ -232,7 +232,7 @@ class _ConditionsCardState extends State<ConditionsCard> {
                           const SizedBox(height: 3),
                           Text(
                             '${h.temperature.round()}\u00B0',
-                            style: _poppinsBold13_cream70,
+                            style: _poppinsBold13Cream70,
                           ),
                         ],
                       ),
@@ -255,16 +255,9 @@ class _ConditionsCardState extends State<ConditionsCard> {
         padding: const EdgeInsets.symmetric(horizontal: 14),
         child: Row(
           children: [
-            Icon(
-              WeatherIcons.cloud,
-              size: 14,
-              color: AppColors.cream90,
-            ),
+            const Icon(WeatherIcons.cloud, size: 14, color: AppColors.cream90),
             const SizedBox(width: 4),
-            Text(
-              'Conditions',
-              style: _figtreeW400_16_cream,
-            ),
+            Text('Conditions', style: _figtreeW40016Cream),
             const Spacer(),
             if (current != null)
               Icon(

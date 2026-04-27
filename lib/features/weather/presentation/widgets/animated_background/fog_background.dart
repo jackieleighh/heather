@@ -11,8 +11,13 @@ class _FogWisp {
   final double blur;
   final double alpha;
   final double wobblePhase;
+  late final MaskFilter cachedMaskFilter = MaskFilter.blur(
+    BlurStyle.normal,
+    blur,
+  );
+  late final Color cachedColor = Color.fromRGBO(255, 255, 255, alpha);
 
-  const _FogWisp({
+  _FogWisp({
     required this.startX,
     required this.yFraction,
     required this.speed,
@@ -28,7 +33,11 @@ class FogBackground extends StatefulWidget {
   final List<Color> gradientColors;
   final bool isActive;
 
-  const FogBackground({super.key, required this.gradientColors, this.isActive = true});
+  const FogBackground({
+    super.key,
+    required this.gradientColors,
+    this.isActive = true,
+  });
 
   @override
   State<FogBackground> createState() => _FogBackgroundState();
@@ -146,8 +155,8 @@ class _FogPainter extends CustomPainter {
       final y = h * wisp.yFraction + wobble;
 
       paint
-        ..color = Color.fromRGBO(255, 255, 255, wisp.alpha)
-        ..maskFilter = MaskFilter.blur(BlurStyle.normal, wisp.blur);
+        ..color = wisp.cachedColor
+        ..maskFilter = wisp.cachedMaskFilter;
 
       canvas.drawOval(
         Rect.fromCenter(

@@ -8,7 +8,11 @@ class DrizzleBackground extends StatefulWidget {
   final List<Color> gradientColors;
   final bool isActive;
 
-  const DrizzleBackground({super.key, required this.gradientColors, this.isActive = true});
+  const DrizzleBackground({
+    super.key,
+    required this.gradientColors,
+    this.isActive = true,
+  });
 
   @override
   State<DrizzleBackground> createState() => _DrizzleBackgroundState();
@@ -19,7 +23,7 @@ class _DrizzleBackgroundState extends State<DrizzleBackground>
   late final AnimationController _controller;
   final List<Particle> _drops = [];
   final Random _random = Random();
-  final _stopwatch = Stopwatch();
+  Duration _previousFrameTime = Duration.zero;
 
   @override
   void initState() {
@@ -30,7 +34,50 @@ class _DrizzleBackgroundState extends State<DrizzleBackground>
     );
     if (widget.isActive) {
       _controller.repeat();
-      _stopwatch.start();
+    }
+    _controller.addListener(_tick);
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (mounted && _drops.isEmpty) {
+        final size = context.size;
+        if (size != null) _initDrops(size.width, size.height);
+      }
+    });
+  }
+
+  void _initDrops(double width, double height) {
+    for (var i = 0; i < 75; i++) {
+      _drops.add(
+        Particle(
+          x: _random.nextDouble() * width,
+          y: _random.nextDouble() * height,
+          speed: 2.5 + _random.nextDouble() * 2.5,
+          size: 0.5 + _random.nextDouble() * 0.9,
+          opacity: 0.06 + _random.nextDouble() * 0.19,
+        ),
+      );
+    }
+  }
+
+  void _tick() {
+    final now = _controller.lastElapsedDuration ?? Duration.zero;
+    final dtMs = (now - _previousFrameTime).inMilliseconds;
+    _previousFrameTime = now;
+
+    // Clamp to avoid huge jumps after app resume or debugger pause
+    final dt = (dtMs.clamp(0, 50)) / 16.667; // normalize: 1.0 at 60fps
+
+    final size = context.size;
+    if (size == null || _drops.isEmpty) return;
+
+    for (final drop in _drops) {
+      drop.y += drop.speed * dt;
+      drop.x += 0.3 * dt;
+
+      if (drop.y > size.height) {
+        drop.y = -10;
+        drop.x = _random.nextDouble() * size.width;
+      }
+      if (drop.x > size.width) drop.x = 0;
     }
   }
 
@@ -39,17 +86,17 @@ class _DrizzleBackgroundState extends State<DrizzleBackground>
     super.didUpdateWidget(oldWidget);
     if (widget.isActive != oldWidget.isActive) {
       if (widget.isActive) {
+        _previousFrameTime = _controller.lastElapsedDuration ?? Duration.zero;
         _controller.repeat();
-        _stopwatch.start();
       } else {
         _controller.stop();
-        _stopwatch.stop();
       }
     }
   }
 
   @override
   void dispose() {
+    _controller.removeListener(_tick);
     _controller.dispose();
     super.dispose();
   }
@@ -59,11 +106,12 @@ class _DrizzleBackgroundState extends State<DrizzleBackground>
     return AnimatedBuilder(
       animation: _controller,
       builder: (context, child) {
-        final time = _stopwatch.elapsedMilliseconds / 1000.0 * 0.96;
-        return CustomPaint(
-          foregroundPainter: _DrizzlePainter(_drops, _random, time),
-          size: Size.infinite,
-          child: child,
+        return RepaintBoundary(
+          child: CustomPaint(
+            foregroundPainter: _DrizzlePainter(_drops),
+            size: Size.infinite,
+            child: child,
+          ),
         );
       },
       child: Container(
@@ -81,53 +129,35 @@ class _DrizzleBackgroundState extends State<DrizzleBackground>
 
 class _DrizzlePainter extends CustomPainter {
   final List<Particle> drops;
-  final Random random;
-  final double time;
 
-  _DrizzlePainter(this.drops, this.random, this.time);
+  _DrizzlePainter(this.drops);
 
   @override
   void paint(Canvas canvas, Size size) {
-    if (drops.isEmpty) {
-      for (var i = 0; i < 50; i++) {
-        drops.add(
-          Particle(
-            x: random.nextDouble() * size.width,
-            y: random.nextDouble() * size.height,
-            speed: 3.0 + random.nextDouble() * 3.5,
-            size: 0.5 + random.nextDouble() * 0.9,
-            opacity: 0.08 + random.nextDouble() * 0.18,
-          ),
-        );
-      }
-    }
+    if (drops.isEmpty) return;
 
     final paint = Paint()
       ..strokeCap = StrokeCap.butt
       ..blendMode = BlendMode.plus;
 
     for (final drop in drops) {
-      drop.y += drop.speed;
-      drop.x += 0.3;
-
-      if (drop.y > size.height) {
-        drop.y = -10;
-        drop.x = random.nextDouble() * size.width;
-      }
-      if (drop.x > size.width) drop.x = 0;
-
       paint
-        ..color = (drop.cachedColor ??= Color.fromRGBO(255, 255, 255, drop.opacity))
+        ..color = (drop.cachedColor ??= Color.fromRGBO(
+          255,
+          255,
+          255,
+          drop.opacity,
+        ))
         ..strokeWidth = drop.size;
 
       canvas.drawLine(
         Offset(drop.x, drop.y),
-        Offset(drop.x + 0.3, drop.y + 8 + drop.speed),
+        Offset(drop.x + 0.3, drop.y + 5 + drop.speed * 0.8),
         paint,
       );
     }
   }
 
   @override
-  bool shouldRepaint(_DrizzlePainter oldDelegate) => oldDelegate.time != time;
+  bool shouldRepaint(_DrizzlePainter oldDelegate) => true;
 }

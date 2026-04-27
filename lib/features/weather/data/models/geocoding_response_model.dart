@@ -51,11 +51,11 @@ class GeocodingResultModel {
   Map<String, dynamic> toJson() => _$GeocodingResultModelToJson(this);
 
   SavedLocation toEntity() => SavedLocation(
-        id: '${latitude}_$longitude',
-        name: name,
-        country: country ?? '',
-        latitude: latitude,
-        longitude: longitude,
-        admin1: admin1,
-      );
+    id: '${latitude}_$longitude',
+    name: name,
+    country: country ?? '',
+    latitude: latitude,
+    longitude: longitude,
+    admin1: admin1,
+  );
 }
