@@ -20,7 +20,6 @@ class SunnyBackground extends StatefulWidget {
 class _SunnyBackgroundState extends State<SunnyBackground>
     with SingleTickerProviderStateMixin {
   late final AnimationController _controller;
-  final _stopwatch = Stopwatch();
   final _rayColors = List<Color>.filled(12, const Color(0x00FFFFFF));
   double _lastColorTime = -1;
 
@@ -33,7 +32,6 @@ class _SunnyBackgroundState extends State<SunnyBackground>
     );
     if (widget.isActive) {
       _controller.repeat();
-      _stopwatch.start();
     }
   }
 
@@ -43,10 +41,8 @@ class _SunnyBackgroundState extends State<SunnyBackground>
     if (widget.isActive != oldWidget.isActive) {
       if (widget.isActive) {
         _controller.repeat();
-        _stopwatch.start();
       } else {
         _controller.stop();
-        _stopwatch.stop();
       }
     }
   }
@@ -62,7 +58,10 @@ class _SunnyBackgroundState extends State<SunnyBackground>
     return AnimatedBuilder(
       animation: _controller,
       builder: (context, child) {
-        final time = _stopwatch.elapsedMilliseconds / 1000.0 * 0.48;
+        final time =
+            (_controller.lastElapsedDuration?.inMilliseconds ?? 0) /
+                1000.0 *
+                0.48;
         if ((time - _lastColorTime).abs() > 0.033) {
           _lastColorTime = time;
           const rayAlphas = [
@@ -84,10 +83,12 @@ class _SunnyBackgroundState extends State<SunnyBackground>
             _rayColors[i] = Color.fromRGBO(255, 255, 255, alpha);
           }
         }
-        return CustomPaint(
-          foregroundPainter: _SunnyPainter(time, _rayColors),
-          size: Size.infinite,
-          child: child,
+        return RepaintBoundary(
+          child: CustomPaint(
+            foregroundPainter: _SunnyPainter(time, _rayColors),
+            size: Size.infinite,
+            child: child,
+          ),
         );
       },
       child: Container(

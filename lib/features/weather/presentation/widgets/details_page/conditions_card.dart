@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:google_fonts/google_fonts.dart';
 import 'package:heather/core/utils/date_formats.dart';
 import 'package:intl/intl.dart';
 import 'package:weather_icons/weather_icons.dart';
@@ -12,27 +11,27 @@ import './card_container.dart';
 import './card_display_mode.dart';
 
 /// Cached text styles to avoid repeated GoogleFonts allocations.
-final _figtreeW40016Cream = GoogleFonts.figtree(
+const _figtreeW40016Cream = TextStyle(fontFamily: 'Figtree',
   fontSize: 16,
   fontWeight: FontWeight.w400,
   color: AppColors.cream,
 );
-final _figtreeW60011Cream70 = GoogleFonts.figtree(
+const _figtreeW60011Cream70 = TextStyle(fontFamily: 'Figtree',
   fontSize: 11,
   fontWeight: FontWeight.w600,
   color: AppColors.cream70,
 );
-final _poppinsBold13Cream70 = GoogleFonts.poppins(
+const _poppinsBold13Cream70 = TextStyle(fontFamily: 'Poppins',
   fontSize: 13,
   fontWeight: FontWeight.w700,
   color: AppColors.cream70,
 );
-final _figtreeW40018Cream = GoogleFonts.figtree(
+const _figtreeW40018Cream = TextStyle(fontFamily: 'Figtree',
   fontSize: 18,
   fontWeight: FontWeight.w400,
   color: AppColors.cream,
 );
-final _figtreeW40014Cream = GoogleFonts.figtree(
+const _figtreeW40014Cream = TextStyle(fontFamily: 'Figtree',
   fontSize: 14,
   fontWeight: FontWeight.w400,
   color: AppColors.cream,

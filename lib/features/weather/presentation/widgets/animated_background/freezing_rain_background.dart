@@ -23,7 +23,8 @@ class _FreezingRainBackgroundState extends State<FreezingRainBackground>
   late final AnimationController _controller;
   final List<Particle> _drops = [];
   final Random _random = Random();
-  final _stopwatch = Stopwatch();
+  Duration _previousFrameTime = Duration.zero;
+  double _elapsedTime = 0;
 
   @override
   void initState() {
@@ -34,8 +35,8 @@ class _FreezingRainBackgroundState extends State<FreezingRainBackground>
     );
     if (widget.isActive) {
       _controller.repeat();
-      _stopwatch.start();
     }
+    _controller.addListener(_tick);
     WidgetsBinding.instance.addPostFrameCallback((_) {
       if (mounted && _drops.isEmpty) {
         final size = context.size;
@@ -58,22 +59,44 @@ class _FreezingRainBackgroundState extends State<FreezingRainBackground>
     }
   }
 
+  void _tick() {
+    final now = _controller.lastElapsedDuration ?? Duration.zero;
+    final dtMs = (now - _previousFrameTime).inMilliseconds;
+    _previousFrameTime = now;
+    final dt = (dtMs.clamp(0, 50)) / 16.667;
+    _elapsedTime += (dtMs.clamp(0, 50)) / 1000.0 * 0.6;
+
+    final size = context.size;
+    if (size == null || _drops.isEmpty) return;
+
+    for (final drop in _drops) {
+      drop.y += drop.speed * dt;
+      drop.x += 0.6 * dt;
+
+      if (drop.y > size.height) {
+        drop.y = -10;
+        drop.x = _random.nextDouble() * size.width;
+      }
+      if (drop.x > size.width) drop.x = 0;
+    }
+  }
+
   @override
   void didUpdateWidget(FreezingRainBackground oldWidget) {
     super.didUpdateWidget(oldWidget);
     if (widget.isActive != oldWidget.isActive) {
       if (widget.isActive) {
+        _previousFrameTime = _controller.lastElapsedDuration ?? Duration.zero;
         _controller.repeat();
-        _stopwatch.start();
       } else {
         _controller.stop();
-        _stopwatch.stop();
       }
     }
   }
 
   @override
   void dispose() {
+    _controller.removeListener(_tick);
     _controller.dispose();
     super.dispose();
   }
@@ -83,11 +106,12 @@ class _FreezingRainBackgroundState extends State<FreezingRainBackground>
     return AnimatedBuilder(
       animation: _controller,
       builder: (context, child) {
-        final time = _stopwatch.elapsedMilliseconds / 1000.0 * 0.6;
-        return CustomPaint(
-          foregroundPainter: _FreezingRainPainter(_drops, _random, time),
-          size: Size.infinite,
-          child: child,
+        return RepaintBoundary(
+          child: CustomPaint(
+            foregroundPainter: _FreezingRainPainter(_drops, _elapsedTime),
+            size: Size.infinite,
+            child: child,
+          ),
         );
       },
       child: Container(
@@ -105,10 +129,9 @@ class _FreezingRainBackgroundState extends State<FreezingRainBackground>
 
 class _FreezingRainPainter extends CustomPainter {
   final List<Particle> drops;
-  final Random random;
   final double time;
 
-  _FreezingRainPainter(this.drops, this.random, this.time);
+  _FreezingRainPainter(this.drops, this.time);
 
   @override
   void paint(Canvas canvas, Size size) {
@@ -119,15 +142,6 @@ class _FreezingRainPainter extends CustomPainter {
       ..blendMode = BlendMode.plus;
 
     for (final drop in drops) {
-      drop.y += drop.speed;
-      drop.x += 0.6;
-
-      if (drop.y > size.height) {
-        drop.y = -10;
-        drop.x = random.nextDouble() * size.width;
-      }
-      if (drop.x > size.width) drop.x = 0;
-
       // Alternate between icy blue and white drops (size is fixed per particle)
       paint
         ..color = (drop.cachedColor ??= drop.size > 2.0
@@ -157,6 +171,5 @@ class _FreezingRainPainter extends CustomPainter {
   }
 
   @override
-  bool shouldRepaint(_FreezingRainPainter oldDelegate) =>
-      oldDelegate.time != time;
+  bool shouldRepaint(_FreezingRainPainter oldDelegate) => true;
 }

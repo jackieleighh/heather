@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:google_fonts/google_fonts.dart';
 import 'package:heather/features/weather/presentation/widgets/logo_overlay.dart';
 import 'package:url_launcher/url_launcher.dart';
 
@@ -11,45 +10,45 @@ import '../providers/location_provider.dart';
 import '../providers/settings_provider.dart';
 
 /// Cached text styles to avoid repeated GoogleFonts allocations.
-final _quicksandBold22Cream = GoogleFonts.quicksand(
+const _quicksandBold22Cream = TextStyle(fontFamily: 'Quicksand',
   fontSize: 22,
   fontWeight: FontWeight.w700,
   color: AppColors.cream,
 );
-final _poppinsW50015Cream = GoogleFonts.poppins(
+const _poppinsW50015Cream = TextStyle(fontFamily: 'Poppins',
   fontSize: 15,
   fontWeight: FontWeight.w500,
   color: AppColors.cream,
 );
-final _poppins12Cream = GoogleFonts.poppins(
+const _poppins12Cream = TextStyle(fontFamily: 'Poppins',
   fontSize: 12,
   color: AppColors.cream,
 );
-final _poppins13Cream = GoogleFonts.poppins(
+const _poppins13Cream = TextStyle(fontFamily: 'Poppins',
   fontSize: 13,
   color: AppColors.cream,
 );
-final _poppinsW60013Cream = GoogleFonts.poppins(
+const _poppinsW60013Cream = TextStyle(fontFamily: 'Poppins',
   fontSize: 13,
   fontWeight: FontWeight.w600,
   color: AppColors.cream,
 );
-final _poppinsW40013Cream = GoogleFonts.poppins(
+const _poppinsW40013Cream = TextStyle(fontFamily: 'Poppins',
   fontSize: 13,
   fontWeight: FontWeight.w400,
   color: AppColors.cream,
 );
-final _poppinsW60013Ls05Cream = GoogleFonts.poppins(
+const _poppinsW60013Ls05Cream = TextStyle(fontFamily: 'Poppins',
   fontSize: 13,
   fontWeight: FontWeight.w600,
   letterSpacing: 0.5,
   color: AppColors.cream,
 );
-final _poppins12Cream60 = GoogleFonts.poppins(
+const _poppins12Cream60 = TextStyle(fontFamily: 'Poppins',
   fontSize: 12,
   color: AppColors.cream60,
 );
-final _poppinsW60012Cream = GoogleFonts.poppins(
+const _poppinsW60012Cream = TextStyle(fontFamily: 'Poppins',
   fontSize: 12,
   fontWeight: FontWeight.w600,
   color: AppColors.cream,

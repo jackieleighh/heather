@@ -1,15 +1,14 @@
 import 'package:flutter/material.dart';
-import 'package:google_fonts/google_fonts.dart';
 
 import '../../../../core/constants/app_colors.dart';
 
 /// Cached text styles to avoid repeated GoogleFonts allocations.
-final _quicksandBold22 = GoogleFonts.quicksand(
+const _quicksandBold22 = TextStyle(fontFamily: 'Quicksand',
   fontSize: 22,
   fontWeight: FontWeight.w700,
   color: AppColors.cream,
 );
-final _quicksandW50015Cream90 = GoogleFonts.quicksand(
+const _quicksandW50015Cream90 = TextStyle(fontFamily: 'Quicksand',
   fontSize: 15,
   fontWeight: FontWeight.w500,
   color: AppColors.cream90,

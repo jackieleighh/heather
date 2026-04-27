@@ -3,7 +3,6 @@ import 'dart:io';
 import 'package:flutter/material.dart' hide Theme;
 import 'package:flutter_map/flutter_map.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:google_fonts/google_fonts.dart';
 import 'package:latlong2/latlong.dart';
 import 'package:vector_map_tiles/vector_map_tiles.dart';
 
@@ -15,17 +14,17 @@ import '../providers/radar_provider.dart';
 import 'pulsing_dots.dart';
 
 /// Cached text styles.
-final _radarHeaderStyle = GoogleFonts.quicksand(
+const _radarHeaderStyle = TextStyle(fontFamily: 'Quicksand',
   fontSize: 22,
   fontWeight: FontWeight.w700,
   color: AppColors.cream,
 );
-final _radarErrorStyle = GoogleFonts.quicksand(
+const _radarErrorStyle = TextStyle(fontFamily: 'Quicksand',
   fontSize: 16,
   fontWeight: FontWeight.w600,
   color: AppColors.cream70,
 );
-final _radarTimeLabelStyle = GoogleFonts.quicksand(
+const _radarTimeLabelStyle = TextStyle(fontFamily: 'Quicksand',
   fontSize: 11,
   fontWeight: FontWeight.w700,
   color: AppColors.cream,

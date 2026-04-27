@@ -23,9 +23,9 @@ class _ThunderstormBackgroundState extends State<ThunderstormBackground>
   late final AnimationController _controller;
   final List<Particle> _drops = [];
   final Random _random = Random();
+  Duration _previousFrameTime = Duration.zero;
   double _lightningOpacity = 0;
   double _nextFlash = 2.0;
-  final _stopwatch = Stopwatch();
 
   @override
   void initState() {
@@ -36,9 +36,8 @@ class _ThunderstormBackgroundState extends State<ThunderstormBackground>
     );
     if (widget.isActive) {
       _controller.repeat();
-      _stopwatch.start();
     }
-    _controller.addListener(_updateLightning);
+    _controller.addListener(_tick);
     WidgetsBinding.instance.addPostFrameCallback((_) {
       if (mounted && _drops.isEmpty) {
         final size = context.size;
@@ -61,35 +60,55 @@ class _ThunderstormBackgroundState extends State<ThunderstormBackground>
     }
   }
 
-  @override
-  void didUpdateWidget(ThunderstormBackground oldWidget) {
-    super.didUpdateWidget(oldWidget);
-    if (widget.isActive != oldWidget.isActive) {
-      if (widget.isActive) {
-        _controller.repeat();
-        _stopwatch.start();
-      } else {
-        _controller.stop();
-        _stopwatch.stop();
-      }
-    }
-  }
+  void _tick() {
+    final now = _controller.lastElapsedDuration ?? Duration.zero;
+    final dtMs = (now - _previousFrameTime).inMilliseconds;
+    _previousFrameTime = now;
+    final dt = (dtMs.clamp(0, 50)) / 16.667;
 
-  void _updateLightning() {
+    // Lightning
     if (_lightningOpacity > 0) {
       _lightningOpacity -= 0.08;
       if (_lightningOpacity < 0) _lightningOpacity = 0;
     }
-
     _nextFlash -= 0.016;
     if (_nextFlash <= 0) {
       _lightningOpacity = 0.6 + _random.nextDouble() * 0.4;
       _nextFlash = 2.0 + _random.nextDouble() * 5.0;
     }
+
+    // Rain drops
+    final size = context.size;
+    if (size == null || _drops.isEmpty) return;
+
+    for (final drop in _drops) {
+      drop.y += drop.speed * dt;
+      drop.x += 1.5 * dt;
+
+      if (drop.y > size.height) {
+        drop.y = -10;
+        drop.x = _random.nextDouble() * size.width;
+      }
+      if (drop.x > size.width) drop.x = 0;
+    }
+  }
+
+  @override
+  void didUpdateWidget(ThunderstormBackground oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    if (widget.isActive != oldWidget.isActive) {
+      if (widget.isActive) {
+        _previousFrameTime = _controller.lastElapsedDuration ?? Duration.zero;
+        _controller.repeat();
+      } else {
+        _controller.stop();
+      }
+    }
   }
 
   @override
   void dispose() {
+    _controller.removeListener(_tick);
     _controller.dispose();
     super.dispose();
   }
@@ -99,16 +118,15 @@ class _ThunderstormBackgroundState extends State<ThunderstormBackground>
     return AnimatedBuilder(
       animation: _controller,
       builder: (context, child) {
-        final time = _stopwatch.elapsedMilliseconds / 1000.0 * 0.96;
-        return CustomPaint(
-          foregroundPainter: _ThunderstormPainter(
-            _drops,
-            _random,
-            _lightningOpacity,
-            time,
+        return RepaintBoundary(
+          child: CustomPaint(
+            foregroundPainter: _ThunderstormPainter(
+              _drops,
+              _lightningOpacity,
+            ),
+            size: Size.infinite,
+            child: child,
           ),
-          size: Size.infinite,
-          child: child,
         );
       },
       child: Container(
@@ -126,16 +144,9 @@ class _ThunderstormBackgroundState extends State<ThunderstormBackground>
 
 class _ThunderstormPainter extends CustomPainter {
   final List<Particle> drops;
-  final Random random;
   final double lightningOpacity;
-  final double time;
 
-  _ThunderstormPainter(
-    this.drops,
-    this.random,
-    this.lightningOpacity,
-    this.time,
-  );
+  _ThunderstormPainter(this.drops, this.lightningOpacity);
 
   @override
   void paint(Canvas canvas, Size size) {
@@ -147,15 +158,6 @@ class _ThunderstormPainter extends CustomPainter {
       ..blendMode = BlendMode.plus;
 
     for (final drop in drops) {
-      drop.y += drop.speed;
-      drop.x += 1.5;
-
-      if (drop.y > size.height) {
-        drop.y = -10;
-        drop.x = random.nextDouble() * size.width;
-      }
-      if (drop.x > size.width) drop.x = 0;
-
       paint
         ..color = (drop.cachedColor ??= Color.fromRGBO(
           255,
@@ -182,7 +184,5 @@ class _ThunderstormPainter extends CustomPainter {
   }
 
   @override
-  bool shouldRepaint(_ThunderstormPainter oldDelegate) =>
-      oldDelegate.time != time ||
-      oldDelegate.lightningOpacity != lightningOpacity;
+  bool shouldRepaint(_ThunderstormPainter oldDelegate) => true;
 }

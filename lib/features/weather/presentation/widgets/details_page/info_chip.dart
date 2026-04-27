@@ -1,14 +1,13 @@
 import 'package:flutter/material.dart';
-import 'package:google_fonts/google_fonts.dart';
 import 'package:heather/core/constants/app_colors.dart';
 
 /// Cached text styles to avoid repeated GoogleFonts allocations.
-final _poppinsW50010Cream60 = GoogleFonts.poppins(
+const _poppinsW50010Cream60 = TextStyle(fontFamily: 'Poppins',
   fontSize: 10,
   fontWeight: FontWeight.w500,
   color: AppColors.cream60,
 );
-final _poppinsBold12 = GoogleFonts.poppins(
+const _poppinsBold12 = TextStyle(fontFamily: 'Poppins',
   fontSize: 12,
   fontWeight: FontWeight.w700,
   color: AppColors.cream,

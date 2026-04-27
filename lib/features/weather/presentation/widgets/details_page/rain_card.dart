@@ -1,7 +1,6 @@
 import 'dart:math' as math;
 
 import 'package:flutter/material.dart';
-import 'package:google_fonts/google_fonts.dart';
 import 'package:heather/core/constants/app_colors.dart';
 import 'package:heather/features/weather/domain/entities/weather_condition.dart';
 import 'package:heather/core/utils/date_formats.dart';
@@ -11,57 +10,57 @@ import './card_display_mode.dart';
 import './info_chip.dart';
 
 /// Cached text styles to avoid repeated GoogleFonts allocations.
-final _figtreeW40016Cream = GoogleFonts.figtree(
+const _figtreeW40016Cream = TextStyle(fontFamily: 'Figtree',
   fontSize: 16,
   fontWeight: FontWeight.w400,
   color: AppColors.cream,
 );
-final _poppinsBold13Cream = GoogleFonts.poppins(
+const _poppinsBold13Cream = TextStyle(fontFamily: 'Poppins',
   fontSize: 13,
   fontWeight: FontWeight.w700,
   color: AppColors.cream,
 );
-final _poppinsW40013Cream90 = GoogleFonts.poppins(
+const _poppinsW40013Cream90 = TextStyle(fontFamily: 'Poppins',
   fontSize: 13,
   fontWeight: FontWeight.w400,
   color: AppColors.cream90,
 );
-final _poppinsW60011Cream80 = GoogleFonts.poppins(
+const _poppinsW60011Cream80 = TextStyle(fontFamily: 'Poppins',
   fontSize: 11,
   fontWeight: FontWeight.w600,
   color: AppColors.cream80,
 );
-final _poppinsW60010Cream80 = GoogleFonts.poppins(
+const _poppinsW60010Cream80 = TextStyle(fontFamily: 'Poppins',
   fontSize: 10,
   fontWeight: FontWeight.w600,
   color: AppColors.cream80,
 );
-final _figtreeW40018Cream = GoogleFonts.figtree(
+const _figtreeW40018Cream = TextStyle(fontFamily: 'Figtree',
   fontSize: 18,
   fontWeight: FontWeight.w400,
   color: AppColors.cream,
 );
-final _figtreeW40014Cream = GoogleFonts.figtree(
+const _figtreeW40014Cream = TextStyle(fontFamily: 'Figtree',
   fontSize: 14,
   fontWeight: FontWeight.w400,
   color: AppColors.cream,
 );
-final _poppinsBold14Cream = GoogleFonts.poppins(
+const _poppinsBold14Cream = TextStyle(fontFamily: 'Poppins',
   fontSize: 14,
   fontWeight: FontWeight.w700,
   color: AppColors.cream,
 );
-final _poppinsBold11Cream = GoogleFonts.poppins(
+const _poppinsBold11Cream = TextStyle(fontFamily: 'Poppins',
   fontSize: 11,
   fontWeight: FontWeight.w700,
   color: AppColors.cream,
 );
-final _poppinsW60014Cream90 = GoogleFonts.poppins(
+const _poppinsW60014Cream90 = TextStyle(fontFamily: 'Poppins',
   fontSize: 14,
   fontWeight: FontWeight.w600,
   color: AppColors.cream90,
 );
-final _poppinsW60011Cream90 = GoogleFonts.poppins(
+const _poppinsW60011Cream90 = TextStyle(fontFamily: 'Poppins',
   fontSize: 11,
   fontWeight: FontWeight.w600,
   color: AppColors.cream90,

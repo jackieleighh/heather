@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:google_fonts/google_fonts.dart';
 import './air_card.dart';
 import './card_display_mode.dart';
 import './conditions_card.dart';
@@ -15,7 +14,7 @@ import '../../providers/air_quality_provider.dart';
 import '../../providers/historical_avg_provider.dart';
 
 /// Cached text style to avoid repeated GoogleFonts allocations.
-final _headerStyle = GoogleFonts.figtree(
+const _headerStyle = TextStyle(fontFamily: 'Figtree',
   fontSize: 22,
   fontWeight: FontWeight.w700,
   color: AppColors.cream,

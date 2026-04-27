@@ -49,7 +49,6 @@ class OvercastBackground extends StatefulWidget {
 class _OvercastBackgroundState extends State<OvercastBackground>
     with SingleTickerProviderStateMixin {
   late final AnimationController _controller;
-  final _stopwatch = Stopwatch();
   final Random _random = Random();
   late final List<_CloudMass> _masses;
 
@@ -63,7 +62,6 @@ class _OvercastBackgroundState extends State<OvercastBackground>
     );
     if (widget.isActive) {
       _controller.repeat();
-      _stopwatch.start();
     }
   }
 
@@ -73,10 +71,8 @@ class _OvercastBackgroundState extends State<OvercastBackground>
     if (widget.isActive != oldWidget.isActive) {
       if (widget.isActive) {
         _controller.repeat();
-        _stopwatch.start();
       } else {
         _controller.stop();
-        _stopwatch.stop();
       }
     }
   }
@@ -125,11 +121,16 @@ class _OvercastBackgroundState extends State<OvercastBackground>
     return AnimatedBuilder(
       animation: _controller,
       builder: (context, child) {
-        final time = _stopwatch.elapsedMilliseconds / 1000.0 * 0.3;
-        return CustomPaint(
-          foregroundPainter: _OvercastPainter(time, _masses),
-          size: Size.infinite,
-          child: child,
+        final time =
+            (_controller.lastElapsedDuration?.inMilliseconds ?? 0) /
+                1000.0 *
+                0.3;
+        return RepaintBoundary(
+          child: CustomPaint(
+            foregroundPainter: _OvercastPainter(time, _masses),
+            size: Size.infinite,
+            child: child,
+          ),
         );
       },
       child: Container(

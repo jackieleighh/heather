@@ -22,7 +22,6 @@ class MostlySunnyBackground extends StatefulWidget {
 class _MostlySunnyBackgroundState extends State<MostlySunnyBackground>
     with SingleTickerProviderStateMixin {
   late final AnimationController _controller;
-  final _stopwatch = Stopwatch();
   final List<_Star> _stars = [];
   final Random _random = Random();
 
@@ -38,7 +37,6 @@ class _MostlySunnyBackgroundState extends State<MostlySunnyBackground>
     );
     if (widget.isActive) {
       _controller.repeat();
-      _stopwatch.start();
     }
     WidgetsBinding.instance.addPostFrameCallback((_) {
       if (mounted && !widget.isDay && _stars.isEmpty) {
@@ -68,10 +66,8 @@ class _MostlySunnyBackgroundState extends State<MostlySunnyBackground>
     if (widget.isActive != oldWidget.isActive) {
       if (widget.isActive) {
         _controller.repeat();
-        _stopwatch.start();
       } else {
         _controller.stop();
-        _stopwatch.stop();
       }
     }
   }
@@ -87,7 +83,10 @@ class _MostlySunnyBackgroundState extends State<MostlySunnyBackground>
     return AnimatedBuilder(
       animation: _controller,
       builder: (context, child) {
-        final time = _stopwatch.elapsedMilliseconds / 1000.0 * 0.42;
+        final time =
+            (_controller.lastElapsedDuration?.inMilliseconds ?? 0) /
+                1000.0 *
+                0.42;
         if (widget.isDay && (time - _lastColorTime).abs() > 0.033) {
           _lastColorTime = time;
           const rayAlphas = [
@@ -109,12 +108,14 @@ class _MostlySunnyBackgroundState extends State<MostlySunnyBackground>
             _rayColors[i] = Color.fromRGBO(255, 255, 255, alpha);
           }
         }
-        return CustomPaint(
-          foregroundPainter: widget.isDay
-              ? _MostlySunnyDayPainter(time, _rayColors)
-              : _MostlySunnyNightPainter(_stars, _random, time),
-          size: Size.infinite,
-          child: child,
+        return RepaintBoundary(
+          child: CustomPaint(
+            foregroundPainter: widget.isDay
+                ? _MostlySunnyDayPainter(time, _rayColors)
+                : _MostlySunnyNightPainter(_stars, _random, time),
+            size: Size.infinite,
+            child: child,
+          ),
         );
       },
       child: Container(

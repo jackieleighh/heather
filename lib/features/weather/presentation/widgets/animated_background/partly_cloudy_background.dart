@@ -22,7 +22,6 @@ class PartlyCloudyBackground extends StatefulWidget {
 class _PartlyCloudyBackgroundState extends State<PartlyCloudyBackground>
     with SingleTickerProviderStateMixin {
   late final AnimationController _controller;
-  final _stopwatch = Stopwatch();
   final List<_Star> _stars = [];
   final Random _random = Random();
   final _rayColors = List<Color>.filled(10, const Color(0x00FFFFFF));
@@ -37,7 +36,6 @@ class _PartlyCloudyBackgroundState extends State<PartlyCloudyBackground>
     );
     if (widget.isActive) {
       _controller.repeat();
-      _stopwatch.start();
     }
     WidgetsBinding.instance.addPostFrameCallback((_) {
       if (mounted && !widget.isDay && _stars.isEmpty) {
@@ -67,10 +65,8 @@ class _PartlyCloudyBackgroundState extends State<PartlyCloudyBackground>
     if (widget.isActive != oldWidget.isActive) {
       if (widget.isActive) {
         _controller.repeat();
-        _stopwatch.start();
       } else {
         _controller.stop();
-        _stopwatch.stop();
       }
     }
   }
@@ -86,7 +82,10 @@ class _PartlyCloudyBackgroundState extends State<PartlyCloudyBackground>
     return AnimatedBuilder(
       animation: _controller,
       builder: (context, child) {
-        final time = _stopwatch.elapsedMilliseconds / 1000.0 * 0.42;
+        final time =
+            (_controller.lastElapsedDuration?.inMilliseconds ?? 0) /
+                1000.0 *
+                0.42;
         if (widget.isDay && (time - _lastColorTime).abs() > 0.033) {
           _lastColorTime = time;
           const rayAlphas = [
@@ -106,12 +105,14 @@ class _PartlyCloudyBackgroundState extends State<PartlyCloudyBackground>
             _rayColors[i] = Color.fromRGBO(255, 255, 255, alpha);
           }
         }
-        return CustomPaint(
-          foregroundPainter: widget.isDay
-              ? _PartlyCloudyDayPainter(time, _rayColors)
-              : _PartlyCloudyNightPainter(_stars, _random, time),
-          size: Size.infinite,
-          child: child,
+        return RepaintBoundary(
+          child: CustomPaint(
+            foregroundPainter: widget.isDay
+                ? _PartlyCloudyDayPainter(time, _rayColors)
+                : _PartlyCloudyNightPainter(_stars, _random, time),
+            size: Size.infinite,
+            child: child,
+          ),
         );
       },
       child: Container(

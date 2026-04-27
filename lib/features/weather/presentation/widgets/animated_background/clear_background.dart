@@ -21,7 +21,6 @@ class ClearBackground extends StatefulWidget {
 class _ClearBackgroundState extends State<ClearBackground>
     with SingleTickerProviderStateMixin {
   late final AnimationController _controller;
-  final _stopwatch = Stopwatch();
   final List<_Star> _stars = [];
   final Random _random = Random();
 
@@ -34,7 +33,6 @@ class _ClearBackgroundState extends State<ClearBackground>
     );
     if (widget.isActive) {
       _controller.repeat();
-      _stopwatch.start();
     }
     WidgetsBinding.instance.addPostFrameCallback((_) {
       if (mounted && !widget.isDay && _stars.isEmpty) {
@@ -64,10 +62,8 @@ class _ClearBackgroundState extends State<ClearBackground>
     if (widget.isActive != oldWidget.isActive) {
       if (widget.isActive) {
         _controller.repeat();
-        _stopwatch.start();
       } else {
         _controller.stop();
-        _stopwatch.stop();
       }
     }
   }
@@ -83,13 +79,18 @@ class _ClearBackgroundState extends State<ClearBackground>
     return AnimatedBuilder(
       animation: _controller,
       builder: (context, child) {
-        final time = _stopwatch.elapsedMilliseconds / 1000.0 * 0.6;
-        return CustomPaint(
-          foregroundPainter: widget.isDay
-              ? _DayClearPainter(time)
-              : _NightClearPainter(_stars, _random, time),
-          size: Size.infinite,
-          child: child,
+        final time =
+            (_controller.lastElapsedDuration?.inMilliseconds ?? 0) /
+                1000.0 *
+                0.6;
+        return RepaintBoundary(
+          child: CustomPaint(
+            foregroundPainter: widget.isDay
+                ? _DayClearPainter(time)
+                : _NightClearPainter(_stars, _random, time),
+            size: Size.infinite,
+            child: child,
+          ),
         );
       },
       child: Container(

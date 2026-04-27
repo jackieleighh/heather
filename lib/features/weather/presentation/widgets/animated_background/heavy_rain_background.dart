@@ -23,7 +23,7 @@ class _HeavyRainBackgroundState extends State<HeavyRainBackground>
   late final AnimationController _controller;
   final List<Particle> _drops = [];
   final Random _random = Random();
-  final _stopwatch = Stopwatch();
+  Duration _previousFrameTime = Duration.zero;
 
   @override
   void initState() {
@@ -34,8 +34,8 @@ class _HeavyRainBackgroundState extends State<HeavyRainBackground>
     );
     if (widget.isActive) {
       _controller.repeat();
-      _stopwatch.start();
     }
+    _controller.addListener(_tick);
     WidgetsBinding.instance.addPostFrameCallback((_) {
       if (mounted && _drops.isEmpty) {
         final size = context.size;
@@ -58,22 +58,43 @@ class _HeavyRainBackgroundState extends State<HeavyRainBackground>
     }
   }
 
+  void _tick() {
+    final now = _controller.lastElapsedDuration ?? Duration.zero;
+    final dtMs = (now - _previousFrameTime).inMilliseconds;
+    _previousFrameTime = now;
+    final dt = (dtMs.clamp(0, 50)) / 16.667;
+
+    final size = context.size;
+    if (size == null || _drops.isEmpty) return;
+
+    for (final drop in _drops) {
+      drop.y += drop.speed * dt;
+      drop.x += 1.2 * dt;
+
+      if (drop.y > size.height) {
+        drop.y = -10;
+        drop.x = _random.nextDouble() * size.width;
+      }
+      if (drop.x > size.width) drop.x = 0;
+    }
+  }
+
   @override
   void didUpdateWidget(HeavyRainBackground oldWidget) {
     super.didUpdateWidget(oldWidget);
     if (widget.isActive != oldWidget.isActive) {
       if (widget.isActive) {
+        _previousFrameTime = _controller.lastElapsedDuration ?? Duration.zero;
         _controller.repeat();
-        _stopwatch.start();
       } else {
         _controller.stop();
-        _stopwatch.stop();
       }
     }
   }
 
   @override
   void dispose() {
+    _controller.removeListener(_tick);
     _controller.dispose();
     super.dispose();
   }
@@ -83,11 +104,12 @@ class _HeavyRainBackgroundState extends State<HeavyRainBackground>
     return AnimatedBuilder(
       animation: _controller,
       builder: (context, child) {
-        final time = _stopwatch.elapsedMilliseconds / 1000.0 * 0.96;
-        return CustomPaint(
-          foregroundPainter: _HeavyRainPainter(_drops, _random, time),
-          size: Size.infinite,
-          child: child,
+        return RepaintBoundary(
+          child: CustomPaint(
+            foregroundPainter: _HeavyRainPainter(_drops),
+            size: Size.infinite,
+            child: child,
+          ),
         );
       },
       child: Container(
@@ -105,10 +127,8 @@ class _HeavyRainBackgroundState extends State<HeavyRainBackground>
 
 class _HeavyRainPainter extends CustomPainter {
   final List<Particle> drops;
-  final Random random;
-  final double time;
 
-  _HeavyRainPainter(this.drops, this.random, this.time);
+  _HeavyRainPainter(this.drops);
 
   @override
   void paint(Canvas canvas, Size size) {
@@ -119,15 +139,6 @@ class _HeavyRainPainter extends CustomPainter {
       ..blendMode = BlendMode.plus;
 
     for (final drop in drops) {
-      drop.y += drop.speed;
-      drop.x += 1.2;
-
-      if (drop.y > size.height) {
-        drop.y = -10;
-        drop.x = random.nextDouble() * size.width;
-      }
-      if (drop.x > size.width) drop.x = 0;
-
       paint
         ..color = (drop.cachedColor ??= Color.fromRGBO(
           255,
@@ -146,5 +157,5 @@ class _HeavyRainPainter extends CustomPainter {
   }
 
   @override
-  bool shouldRepaint(_HeavyRainPainter oldDelegate) => oldDelegate.time != time;
+  bool shouldRepaint(_HeavyRainPainter oldDelegate) => true;
 }

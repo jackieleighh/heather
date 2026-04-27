@@ -21,12 +21,11 @@ class HailBackground extends StatefulWidget {
 class _HailBackgroundState extends State<HailBackground>
     with SingleTickerProviderStateMixin {
   late final AnimationController _controller;
-  final List<Particle> _drops = [];
   final List<Particle> _hailStones = [];
   final Random _random = Random();
+  Duration _previousFrameTime = Duration.zero;
   double _lightningOpacity = 0;
   double _nextFlash = 3.0;
-  final _stopwatch = Stopwatch();
 
   @override
   void initState() {
@@ -37,9 +36,8 @@ class _HailBackgroundState extends State<HailBackground>
     );
     if (widget.isActive) {
       _controller.repeat();
-      _stopwatch.start();
     }
-    _controller.addListener(_updateLightning);
+    _controller.addListener(_tick);
     WidgetsBinding.instance.addPostFrameCallback((_) {
       if (mounted && _hailStones.isEmpty) {
         final size = context.size;
@@ -62,35 +60,55 @@ class _HailBackgroundState extends State<HailBackground>
     }
   }
 
-  @override
-  void didUpdateWidget(HailBackground oldWidget) {
-    super.didUpdateWidget(oldWidget);
-    if (widget.isActive != oldWidget.isActive) {
-      if (widget.isActive) {
-        _controller.repeat();
-        _stopwatch.start();
-      } else {
-        _controller.stop();
-        _stopwatch.stop();
-      }
-    }
-  }
+  void _tick() {
+    final now = _controller.lastElapsedDuration ?? Duration.zero;
+    final dtMs = (now - _previousFrameTime).inMilliseconds;
+    _previousFrameTime = now;
+    final dt = (dtMs.clamp(0, 50)) / 16.667;
 
-  void _updateLightning() {
+    // Lightning
     if (_lightningOpacity > 0) {
       _lightningOpacity -= 0.08;
       if (_lightningOpacity < 0) _lightningOpacity = 0;
     }
-
     _nextFlash -= 0.016;
     if (_nextFlash <= 0) {
       _lightningOpacity = 0.5 + _random.nextDouble() * 0.4;
       _nextFlash = 2.5 + _random.nextDouble() * 5.0;
     }
+
+    // Hail stones
+    final size = context.size;
+    if (size == null || _hailStones.isEmpty) return;
+
+    for (final stone in _hailStones) {
+      stone.y += stone.speed * dt;
+      stone.x += 0.5 * dt;
+
+      if (stone.y > size.height) {
+        stone.y = -10;
+        stone.x = _random.nextDouble() * size.width;
+      }
+      if (stone.x > size.width) stone.x = 0;
+    }
+  }
+
+  @override
+  void didUpdateWidget(HailBackground oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    if (widget.isActive != oldWidget.isActive) {
+      if (widget.isActive) {
+        _previousFrameTime = _controller.lastElapsedDuration ?? Duration.zero;
+        _controller.repeat();
+      } else {
+        _controller.stop();
+      }
+    }
   }
 
   @override
   void dispose() {
+    _controller.removeListener(_tick);
     _controller.dispose();
     super.dispose();
   }
@@ -100,17 +118,15 @@ class _HailBackgroundState extends State<HailBackground>
     return AnimatedBuilder(
       animation: _controller,
       builder: (context, child) {
-        final time = _stopwatch.elapsedMilliseconds / 1000.0 * 0.96;
-        return CustomPaint(
-          foregroundPainter: _HailPainter(
-            _drops,
-            _hailStones,
-            _random,
-            _lightningOpacity,
-            time,
+        return RepaintBoundary(
+          child: CustomPaint(
+            foregroundPainter: _HailPainter(
+              _hailStones,
+              _lightningOpacity,
+            ),
+            size: Size.infinite,
+            child: child,
           ),
-          size: Size.infinite,
-          child: child,
         );
       },
       child: Container(
@@ -127,19 +143,10 @@ class _HailBackgroundState extends State<HailBackground>
 }
 
 class _HailPainter extends CustomPainter {
-  final List<Particle> drops;
   final List<Particle> hailStones;
-  final Random random;
   final double lightningOpacity;
-  final double time;
 
-  _HailPainter(
-    this.drops,
-    this.hailStones,
-    this.random,
-    this.lightningOpacity,
-    this.time,
-  );
+  _HailPainter(this.hailStones, this.lightningOpacity);
 
   @override
   void paint(Canvas canvas, Size size) {
@@ -150,15 +157,6 @@ class _HailPainter extends CustomPainter {
       ..blendMode = BlendMode.plus;
 
     for (final stone in hailStones) {
-      stone.y += stone.speed;
-      stone.x += 0.5;
-
-      if (stone.y > size.height) {
-        stone.y = -10;
-        stone.x = random.nextDouble() * size.width;
-      }
-      if (stone.x > size.width) stone.x = 0;
-
       paint.color = stone.cachedColor ??= Color.fromRGBO(
         255,
         255,
@@ -178,7 +176,5 @@ class _HailPainter extends CustomPainter {
   }
 
   @override
-  bool shouldRepaint(_HailPainter oldDelegate) =>
-      oldDelegate.time != time ||
-      oldDelegate.lightningOpacity != lightningOpacity;
+  bool shouldRepaint(_HailPainter oldDelegate) => true;
 }

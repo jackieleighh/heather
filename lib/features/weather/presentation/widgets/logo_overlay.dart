@@ -7,11 +7,11 @@ class LogoOverlay extends StatelessWidget {
   const LogoOverlay({super.key, this.isDay = true});
 
   static const _dayFilter = ColorFilter.mode(
-    Color.fromRGBO(255, 255, 255, 0.1),
+    Color.fromRGBO(255, 255, 255, 0.15),
     BlendMode.modulate,
   );
   static const _nightFilter = ColorFilter.mode(
-    Color.fromRGBO(255, 255, 255, 0.4),
+    Color.fromRGBO(255, 255, 255, 0.3),
     BlendMode.modulate,
   );
 

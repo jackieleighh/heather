@@ -1,23 +1,22 @@
 import 'dart:ui';
 
 import 'package:flutter/material.dart';
-import 'package:google_fonts/google_fonts.dart';
 
 import '../../../../core/constants/app_colors.dart';
 import '../../domain/entities/weather_alert.dart';
 import '../screens/alert_detail_sheet.dart';
 
 /// Cached text styles to avoid repeated GoogleFonts allocations.
-final _poppinsW60014Cream = GoogleFonts.poppins(
+const _poppinsW60014Cream = TextStyle(fontFamily: 'Poppins',
   fontSize: 14,
   fontWeight: FontWeight.w600,
   color: AppColors.cream,
 );
-final _quicksand12Cream85 = GoogleFonts.quicksand(
+const _quicksand12Cream85 = TextStyle(fontFamily: 'Quicksand',
   fontSize: 12,
   color: AppColors.cream85,
 );
-final _quicksandW50011Cream70 = GoogleFonts.quicksand(
+const _quicksandW50011Cream70 = TextStyle(fontFamily: 'Quicksand',
   fontSize: 11,
   fontWeight: FontWeight.w500,
   color: AppColors.cream70,

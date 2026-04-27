@@ -2,7 +2,6 @@ import 'dart:math' as math;
 
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:google_fonts/google_fonts.dart';
 import 'package:heather/core/utils/date_formats.dart';
 import 'package:weather_icons/weather_icons.dart';
 
@@ -18,68 +17,68 @@ import 'details_page/conditions_card.dart';
 import 'details_page/rain_card.dart';
 
 /// Cached text styles to avoid repeated GoogleFonts allocations.
-final _headerStyle = GoogleFonts.figtree(
+const _headerStyle = TextStyle(fontFamily: 'Figtree',
   fontSize: 22,
   fontWeight: FontWeight.w700,
   color: AppColors.cream,
 );
-final _dayNameStyle = GoogleFonts.figtree(
+const _dayNameStyle = TextStyle(fontFamily: 'Figtree',
   fontSize: 20,
   fontWeight: FontWeight.w400,
   color: AppColors.cream,
-  shadows: [const Shadow(color: Color(0x28000000), blurRadius: 6)],
+  shadows: [Shadow(color: Color(0x28000000), blurRadius: 6)],
 );
-final _dayNameCompactStyle = GoogleFonts.figtree(
+const _dayNameCompactStyle = TextStyle(fontFamily: 'Figtree',
   fontSize: 18,
   fontWeight: FontWeight.w400,
   color: AppColors.cream,
 );
-final _dateStyle = GoogleFonts.quicksand(
+const _dateStyle = TextStyle(fontFamily: 'Quicksand',
   fontSize: 13,
   fontWeight: FontWeight.w500,
   color: AppColors.cream95,
 );
-final _tempCompactStyle = GoogleFonts.quicksand(
+const _tempCompactStyle = TextStyle(fontFamily: 'Quicksand',
   fontSize: 14,
   fontWeight: FontWeight.w700,
   color: AppColors.cream,
 );
-final _tempEqualStyle = GoogleFonts.quicksand(
+const _tempEqualStyle = TextStyle(fontFamily: 'Quicksand',
   fontSize: 18,
   fontWeight: FontWeight.w700,
   color: AppColors.cream,
 );
-final _statBoldStyle = GoogleFonts.poppins(
+const _statBoldStyle = TextStyle(fontFamily: 'Poppins',
   fontSize: 11,
   fontWeight: FontWeight.w600,
   color: AppColors.cream,
 );
-final _statSemiBoldStyle = GoogleFonts.poppins(
+const _statSemiBoldStyle = TextStyle(fontFamily: 'Poppins',
   fontSize: 11,
   fontWeight: FontWeight.w600,
   color: AppColors.cream90,
 );
-final _statLightStyle = GoogleFonts.poppins(
+const _statLightStyle = TextStyle(fontFamily: 'Poppins',
   fontSize: 11,
   fontWeight: FontWeight.w500,
   color: AppColors.cream90,
 );
-final _tileHeaderStyle = GoogleFonts.figtree(
+const _tileHeaderStyle = TextStyle(fontFamily: 'Figtree',
   fontSize: 13,
   fontWeight: FontWeight.w400,
   color: AppColors.cream,
 );
-final _tileBoldStyle = GoogleFonts.poppins(
+const _tileBoldStyle = TextStyle(fontFamily: 'Poppins',
   fontSize: 11,
   fontWeight: FontWeight.w700,
   color: AppColors.cream,
 );
-final _tileTimeAxisStyle = GoogleFonts.poppins(
+const _tileTimeAxisStyle = TextStyle(fontFamily: 'Poppins',
   fontSize: 11,
   fontWeight: FontWeight.w400,
   color: AppColors.cream70,
 );
-final _statChipLightStyle = GoogleFonts.poppins(
+const _statChipLightStyle = TextStyle(fontFamily: 'Poppins',
   fontSize: 11,
   fontWeight: FontWeight.w400,
   color: AppColors.cream,

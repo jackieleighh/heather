@@ -2,51 +2,50 @@ import 'dart:ui';
 
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:google_fonts/google_fonts.dart';
 import 'package:heather/core/utils/date_formats.dart';
 
 import '../../../../core/constants/app_colors.dart';
 import '../../domain/entities/weather_alert.dart';
 
 /// Cached text styles to avoid repeated GoogleFonts allocations.
-final _poppinsW60020Cream = GoogleFonts.poppins(
+const _poppinsW60020Cream = TextStyle(fontFamily: 'Poppins',
   fontSize: 20,
   fontWeight: FontWeight.w600,
   color: AppColors.cream,
 );
-final _quicksandW60013Cream80 = GoogleFonts.quicksand(
+const _quicksandW60013Cream80 = TextStyle(fontFamily: 'Quicksand',
   fontSize: 13,
   fontWeight: FontWeight.w600,
   color: AppColors.cream80,
 );
-final _poppinsW60016Cream = GoogleFonts.poppins(
+const _poppinsW60016Cream = TextStyle(fontFamily: 'Poppins',
   fontSize: 16,
   fontWeight: FontWeight.w600,
   color: AppColors.cream,
 );
-final _quicksand13Cream85 = GoogleFonts.quicksand(
+const _quicksand13Cream85 = TextStyle(fontFamily: 'Quicksand',
   fontSize: 13,
   color: AppColors.cream85,
 );
-final _quicksand12Cream70 = GoogleFonts.quicksand(
+const _quicksand12Cream70 = TextStyle(fontFamily: 'Quicksand',
   fontSize: 12,
   color: AppColors.cream70,
 );
-final _quicksand12Cream60 = GoogleFonts.quicksand(
+const _quicksand12Cream60 = TextStyle(fontFamily: 'Quicksand',
   fontSize: 12,
   color: AppColors.cream60,
 );
-final _quicksand13H15Cream80 = GoogleFonts.quicksand(
+const _quicksand13H15Cream80 = TextStyle(fontFamily: 'Quicksand',
   fontSize: 13,
   height: 1.5,
   color: AppColors.cream80,
 );
-final _poppinsW60012Cream70 = GoogleFonts.poppins(
+const _poppinsW60012Cream70 = TextStyle(fontFamily: 'Poppins',
   fontSize: 12,
   fontWeight: FontWeight.w600,
   color: AppColors.cream70,
 );
-final _quicksand11Cream60 = GoogleFonts.quicksand(
+const _quicksand11Cream60 = TextStyle(fontFamily: 'Quicksand',
   fontSize: 11,
   color: AppColors.cream60,
 );
@@ -199,7 +198,7 @@ class _AlertDetailCard extends StatelessWidget {
                           const SizedBox(width: 4),
                           Text(
                             alert.severity.name.toUpperCase(),
-                            style: GoogleFonts.quicksand(
+                            style: TextStyle(fontFamily: 'Quicksand',
                               fontSize: 11,
                               fontWeight: FontWeight.w700,
                               color: alert.severity.color,

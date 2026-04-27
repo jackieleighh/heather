@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:flutter_native_splash/flutter_native_splash.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
-import 'package:google_fonts/google_fonts.dart';
 
 import '../../../../core/constants/app_colors.dart';
 import '../../../../core/services/fcm_service.dart';
@@ -10,26 +9,26 @@ import '../providers/settings_provider.dart';
 import '../widgets/logo_overlay.dart';
 
 /// Cached text styles to avoid repeated GoogleFonts allocations.
-final _quicksandBold32Cream = GoogleFonts.quicksand(
+const _quicksandBold32Cream = TextStyle(fontFamily: 'Quicksand',
   fontSize: 32,
   fontWeight: FontWeight.w700,
   color: AppColors.cream,
 );
-final _poppinsW60016Cream = GoogleFonts.poppins(
+const _poppinsW60016Cream = TextStyle(fontFamily: 'Poppins',
   fontSize: 16,
   fontWeight: FontWeight.w600,
   color: AppColors.cream,
 );
-final _poppins12Cream = GoogleFonts.poppins(
+const _poppins12Cream = TextStyle(fontFamily: 'Poppins',
   fontSize: 12,
   color: AppColors.cream,
 );
-final _poppinsW50015Cream = GoogleFonts.poppins(
+const _poppinsW50015Cream = TextStyle(fontFamily: 'Poppins',
   fontSize: 15,
   fontWeight: FontWeight.w500,
   color: AppColors.cream,
 );
-final _poppinsW60016 = GoogleFonts.poppins(
+const _poppinsW60016 = TextStyle(fontFamily: 'Poppins',
   fontSize: 16,
   fontWeight: FontWeight.w600,
 );

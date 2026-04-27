@@ -24,7 +24,8 @@ class _SnowBackgroundState extends State<SnowBackground>
   late final AnimationController _controller;
   final List<Particle> _flakes = [];
   final Random _random = Random();
-  final _stopwatch = Stopwatch();
+  Duration _previousFrameTime = Duration.zero;
+  double _elapsedTime = 0;
 
   @override
   void initState() {
@@ -35,8 +36,8 @@ class _SnowBackgroundState extends State<SnowBackground>
     );
     if (widget.isActive) {
       _controller.repeat();
-      _stopwatch.start();
     }
+    _controller.addListener(_tick);
     WidgetsBinding.instance.addPostFrameCallback((_) {
       if (mounted && _flakes.isEmpty) {
         final size = context.size;
@@ -60,22 +61,45 @@ class _SnowBackgroundState extends State<SnowBackground>
     }
   }
 
+  void _tick() {
+    final now = _controller.lastElapsedDuration ?? Duration.zero;
+    final dtMs = (now - _previousFrameTime).inMilliseconds;
+    _previousFrameTime = now;
+    final dt = (dtMs.clamp(0, 50)) / 16.667;
+    _elapsedTime += (dtMs.clamp(0, 50)) / 1000.0 * 0.96;
+
+    final size = context.size;
+    if (size == null || _flakes.isEmpty) return;
+
+    for (final flake in _flakes) {
+      flake.y += flake.speed * dt;
+      flake.x += sin(_elapsedTime * 1.5 + flake.wobble) * 0.8 * dt;
+
+      if (flake.y > size.height + 10) {
+        flake.y = -10;
+        flake.x = _random.nextDouble() * size.width;
+      }
+      if (flake.x < 0) flake.x = size.width;
+      if (flake.x > size.width) flake.x = 0;
+    }
+  }
+
   @override
   void didUpdateWidget(SnowBackground oldWidget) {
     super.didUpdateWidget(oldWidget);
     if (widget.isActive != oldWidget.isActive) {
       if (widget.isActive) {
+        _previousFrameTime = _controller.lastElapsedDuration ?? Duration.zero;
         _controller.repeat();
-        _stopwatch.start();
       } else {
         _controller.stop();
-        _stopwatch.stop();
       }
     }
   }
 
   @override
   void dispose() {
+    _controller.removeListener(_tick);
     _controller.dispose();
     super.dispose();
   }
@@ -85,11 +109,12 @@ class _SnowBackgroundState extends State<SnowBackground>
     return AnimatedBuilder(
       animation: _controller,
       builder: (context, child) {
-        final time = _stopwatch.elapsedMilliseconds / 1000.0 * 0.96;
-        return CustomPaint(
-          foregroundPainter: _SnowPainter(_flakes, _random, time),
-          size: Size.infinite,
-          child: child,
+        return RepaintBoundary(
+          child: CustomPaint(
+            foregroundPainter: _SnowPainter(_flakes),
+            size: Size.infinite,
+            child: child,
+          ),
         );
       },
       child: Container(
@@ -108,10 +133,8 @@ class _SnowBackgroundState extends State<SnowBackground>
 
 class _SnowPainter extends CustomPainter {
   final List<Particle> flakes;
-  final Random random;
-  final double time;
 
-  _SnowPainter(this.flakes, this.random, this.time);
+  _SnowPainter(this.flakes);
 
   @override
   void paint(Canvas canvas, Size size) {
@@ -120,16 +143,6 @@ class _SnowPainter extends CustomPainter {
     final paint = Paint()..style = PaintingStyle.fill;
 
     for (final flake in flakes) {
-      flake.y += flake.speed;
-      flake.x += sin(time * 1.5 + flake.wobble) * 0.8;
-
-      if (flake.y > size.height + 10) {
-        flake.y = -10;
-        flake.x = random.nextDouble() * size.width;
-      }
-      if (flake.x < 0) flake.x = size.width;
-      if (flake.x > size.width) flake.x = 0;
-
       paint.color = flake.cachedColor ??= Color.fromRGBO(
         255,
         255,
@@ -141,5 +154,5 @@ class _SnowPainter extends CustomPainter {
   }
 
   @override
-  bool shouldRepaint(_SnowPainter oldDelegate) => oldDelegate.time != time;
+  bool shouldRepaint(_SnowPainter oldDelegate) => true;
 }

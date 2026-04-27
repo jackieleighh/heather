@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:google_fonts/google_fonts.dart';
 
 import '../core/constants/app_colors.dart';
 
@@ -21,57 +20,57 @@ class HeatherTheme {
     scaffoldBackgroundColor: Colors.transparent,
   );
 
-  static final _textTheme = TextTheme(
+  static const _textTheme = TextTheme(
     // Temperature
-    displayLarge: GoogleFonts.poppins(
+    displayLarge: TextStyle(fontFamily: 'Poppins',
       fontSize: 160,
       fontWeight: FontWeight.w700,
       color: AppColors.cream,
       height: 1.0,
     ),
     // Loading title
-    displayMedium: GoogleFonts.poppins(
+    displayMedium: TextStyle(fontFamily: 'Poppins',
       fontSize: 48,
       fontWeight: FontWeight.w600,
       color: AppColors.cream,
     ),
     // °F suffix
-    headlineLarge: GoogleFonts.poppins(
+    headlineLarge: TextStyle(fontFamily: 'Poppins',
       fontSize: 42,
       fontWeight: FontWeight.w500,
       color: AppColors.cream,
     ),
     // City name
-    headlineMedium: GoogleFonts.poppins(
+    headlineMedium: TextStyle(fontFamily: 'Poppins',
       fontSize: 18,
       fontWeight: FontWeight.w500,
       color: AppColors.cream,
     ),
     // Loading tagline
-    headlineSmall: GoogleFonts.poppins(
+    headlineSmall: TextStyle(fontFamily: 'Poppins',
       fontSize: 14,
       fontWeight: FontWeight.w500,
       color: AppColors.cream,
     ),
     // Body
-    bodyLarge: GoogleFonts.figtree(
+    bodyLarge: TextStyle(fontFamily: 'Figtree',
       fontSize: 20,
       fontWeight: FontWeight.w400,
       color: AppColors.cream,
     ),
-    bodyMedium: GoogleFonts.figtree(
+    bodyMedium: TextStyle(fontFamily: 'Figtree',
       fontSize: 18,
       fontWeight: FontWeight.w400,
       color: AppColors.cream,
     ),
     // Meta details
-    bodySmall: GoogleFonts.figtree(
+    bodySmall: TextStyle(fontFamily: 'Figtree',
       fontSize: 18,
       fontWeight: FontWeight.w400,
       color: AppColors.cream,
     ),
     // Quip — no italics, slightly spaced
-    labelLarge: GoogleFonts.poppins(
+    labelLarge: TextStyle(fontFamily: 'Poppins',
       fontSize: 30,
       fontWeight: FontWeight.w700,
       letterSpacing: 0.3,

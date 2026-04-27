@@ -46,7 +46,6 @@ class FogBackground extends StatefulWidget {
 class _FogBackgroundState extends State<FogBackground>
     with SingleTickerProviderStateMixin {
   late final AnimationController _controller;
-  final _stopwatch = Stopwatch();
   final Random _random = Random();
   late final List<_FogWisp> _wisps;
 
@@ -60,7 +59,6 @@ class _FogBackgroundState extends State<FogBackground>
     );
     if (widget.isActive) {
       _controller.repeat();
-      _stopwatch.start();
     }
   }
 
@@ -70,10 +68,8 @@ class _FogBackgroundState extends State<FogBackground>
     if (widget.isActive != oldWidget.isActive) {
       if (widget.isActive) {
         _controller.repeat();
-        _stopwatch.start();
       } else {
         _controller.stop();
-        _stopwatch.stop();
       }
     }
   }
@@ -109,11 +105,16 @@ class _FogBackgroundState extends State<FogBackground>
     return AnimatedBuilder(
       animation: _controller,
       builder: (context, child) {
-        final time = _stopwatch.elapsedMilliseconds / 1000.0 * 0.24;
-        return CustomPaint(
-          foregroundPainter: _FogPainter(time, _wisps),
-          size: Size.infinite,
-          child: child,
+        final time =
+            (_controller.lastElapsedDuration?.inMilliseconds ?? 0) /
+                1000.0 *
+                0.24;
+        return RepaintBoundary(
+          child: CustomPaint(
+            foregroundPainter: _FogPainter(time, _wisps),
+            size: Size.infinite,
+            child: child,
+          ),
         );
       },
       child: Container(

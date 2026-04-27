@@ -24,7 +24,8 @@ class _BlizzardBackgroundState extends State<BlizzardBackground>
   late final AnimationController _controller;
   final List<Particle> _flakes = [];
   final Random _random = Random();
-  final _stopwatch = Stopwatch();
+  Duration _previousFrameTime = Duration.zero;
+  double _elapsedTime = 0;
 
   @override
   void initState() {
@@ -35,8 +36,8 @@ class _BlizzardBackgroundState extends State<BlizzardBackground>
     );
     if (widget.isActive) {
       _controller.repeat();
-      _stopwatch.start();
     }
+    _controller.addListener(_tick);
     WidgetsBinding.instance.addPostFrameCallback((_) {
       if (mounted && _flakes.isEmpty) {
         final size = context.size;
@@ -60,22 +61,47 @@ class _BlizzardBackgroundState extends State<BlizzardBackground>
     }
   }
 
+  void _tick() {
+    final now = _controller.lastElapsedDuration ?? Duration.zero;
+    final dtMs = (now - _previousFrameTime).inMilliseconds;
+    _previousFrameTime = now;
+    final dt = (dtMs.clamp(0, 50)) / 16.667;
+    _elapsedTime += (dtMs.clamp(0, 50)) / 1000.0 * 0.96;
+
+    final size = context.size;
+    if (size == null || _flakes.isEmpty) return;
+
+    final wind = sin(_elapsedTime * 1.8) * 2.5 + 1.0;
+
+    for (final flake in _flakes) {
+      flake.y += flake.speed * dt;
+      flake.x += (wind + sin(_elapsedTime * 1.8 + flake.wobble) * 1.2) * dt;
+
+      if (flake.y > size.height + 10) {
+        flake.y = -10;
+        flake.x = _random.nextDouble() * size.width;
+      }
+      if (flake.x > size.width) flake.x = 0;
+      if (flake.x < 0) flake.x = size.width;
+    }
+  }
+
   @override
   void didUpdateWidget(BlizzardBackground oldWidget) {
     super.didUpdateWidget(oldWidget);
     if (widget.isActive != oldWidget.isActive) {
       if (widget.isActive) {
+        _previousFrameTime = _controller.lastElapsedDuration ?? Duration.zero;
         _controller.repeat();
-        _stopwatch.start();
       } else {
         _controller.stop();
-        _stopwatch.stop();
       }
     }
   }
 
   @override
   void dispose() {
+    _controller.removeListener(_tick);
     _controller.dispose();
     super.dispose();
   }
@@ -85,11 +111,12 @@ class _BlizzardBackgroundState extends State<BlizzardBackground>
     return AnimatedBuilder(
       animation: _controller,
       builder: (context, child) {
-        final time = _stopwatch.elapsedMilliseconds / 1000.0 * 0.96;
-        return CustomPaint(
-          foregroundPainter: _BlizzardPainter(_flakes, _random, time),
-          size: Size.infinite,
-          child: child,
+        return RepaintBoundary(
+          child: CustomPaint(
+            foregroundPainter: _BlizzardPainter(_flakes, _elapsedTime),
+            size: Size.infinite,
+            child: child,
+          ),
         );
       },
       child: Container(
@@ -108,10 +135,9 @@ class _BlizzardBackgroundState extends State<BlizzardBackground>
 
 class _BlizzardPainter extends CustomPainter {
   final List<Particle> flakes;
-  final Random random;
   final double time;
 
-  _BlizzardPainter(this.flakes, this.random, this.time);
+  _BlizzardPainter(this.flakes, this.time);
 
   @override
   void paint(Canvas canvas, Size size) {
@@ -119,20 +145,7 @@ class _BlizzardPainter extends CustomPainter {
 
     final paint = Paint()..style = PaintingStyle.fill;
 
-    // Pre-compute shared wind component once per frame
-    final wind = sin(time * 1.8) * 2.5 + 1.0;
-
     for (final flake in flakes) {
-      flake.y += flake.speed;
-      flake.x += wind + sin(time * 1.8 + flake.wobble) * 1.2;
-
-      if (flake.y > size.height + 10) {
-        flake.y = -10;
-        flake.x = random.nextDouble() * size.width;
-      }
-      if (flake.x > size.width) flake.x = 0;
-      if (flake.x < 0) flake.x = size.width;
-
       paint.color = flake.cachedColor ??= Color.fromRGBO(
         255,
         255,
@@ -152,5 +165,5 @@ class _BlizzardPainter extends CustomPainter {
   }
 
   @override
-  bool shouldRepaint(_BlizzardPainter oldDelegate) => oldDelegate.time != time;
+  bool shouldRepaint(_BlizzardPainter oldDelegate) => true;
 }
