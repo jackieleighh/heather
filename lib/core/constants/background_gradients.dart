@@ -328,13 +328,13 @@ class BackgroundGradients {
     ],
     TemperatureTier.shortsWeather: [
       AppColors.midnightPurple,
-      AppColors.nightOvercastLavender,
-      AppColors.nightCoral,
+      AppColors.nightOvercastPlum,
+      AppColors.nightBurntOrange,
     ],
     TemperatureTier.scorcher: [
       AppColors.midnightPurple,
-      AppColors.nightOvercastMauve,
-      AppColors.nightMagenta,
+      AppColors.nightOvercastLavender,
+      AppColors.nightCoral,
     ],
   };
 

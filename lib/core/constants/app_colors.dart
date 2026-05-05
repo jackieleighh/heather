@@ -22,6 +22,10 @@ class AppColors {
   static const nightOvercastTeal = Color(0xFF144C68);
   static const nightOvercastLavender = Color(0xFF581C80);
   static const nightOvercastMauve = Color(0xFF681460);
+  static const nightOvercastPlum = Color(0xFF4C1838);
+
+  // --- Overcast night bottom accents ---
+  static const nightBurntOrange = Color(0xFFA85010);
 
   // --- Sunny night middles ---
   static const nightSunnyViolet = Color(0xFF381878);
@@ -113,7 +117,7 @@ class AppColors {
   static const softOvercastGold = Color(0xFFD8C038);
   static const softOvercastOrange = Color(0xFFC07018);
   static const softOrange = Color(0xFFD87420);
-  static const softRose = Color(0xFFC84068);
+  static const softRose = Color(0xFFE07090);
 
   // --- Drizzle day (Soft Cloud, Punchy Accent) ---
   static const drizzleCloudBlue = Color(0xFF6888D0);

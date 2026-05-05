@@ -618,6 +618,16 @@ class _UvLinePainter extends CustomPainter {
       uvLabelPainter.paint(canvas, const Offset(0, 0));
     }
 
+    // Horizontal gridlines (behind everything)
+    for (final val in [maxY, maxY / 2, 0.0]) {
+      final y = padTop + graphH * (1 - val / maxY);
+      canvas.drawLine(
+        Offset(padLeft, y),
+        Offset(size.width, y),
+        Paint()..color = AppColors.cream20,
+      );
+    }
+
     // Y-axis labels
     for (final val in [maxY, maxY / 2, 0.0]) {
       final y = padTop + graphH * (1 - val / maxY);
@@ -649,7 +659,7 @@ class _UvLinePainter extends CustomPainter {
             const LinearGradient(
               begin: Alignment.topCenter,
               end: Alignment.bottomCenter,
-              colors: [AppColors.cream15, AppColors.cream03],
+              colors: [AppColors.cream25, AppColors.cream06],
             ).createShader(
               Rect.fromLTRB(padLeft, padTop, padLeft + graphW, bottomY),
             )
@@ -660,7 +670,7 @@ class _UvLinePainter extends CustomPainter {
     canvas.drawPath(
       linePath,
       Paint()
-        ..color = AppColors.cream50
+        ..color = AppColors.cream70
         ..strokeWidth = 2
         ..style = PaintingStyle.stroke
         ..strokeCap = StrokeCap.round,

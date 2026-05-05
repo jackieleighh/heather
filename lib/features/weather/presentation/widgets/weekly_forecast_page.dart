@@ -986,14 +986,14 @@ class _MiniTempPainter extends CustomPainter {
       ..shader = const LinearGradient(
         begin: Alignment.topCenter,
         end: Alignment.bottomCenter,
-        colors: [AppColors.cream18, AppColors.cream02],
+        colors: [AppColors.cream25, AppColors.cream06],
       ).createShader(Rect.fromLTWH(0, 0, w, h));
     canvas.drawPath(fillPath, fillPaint);
 
     canvas.drawPath(
       linePath,
       Paint()
-        ..color = AppColors.cream55
+        ..color = AppColors.cream70
         ..strokeWidth = 1.5
         ..style = PaintingStyle.stroke
         ..strokeCap = StrokeCap.round,
@@ -1045,14 +1045,14 @@ class _MiniUvPainter extends CustomPainter {
       ..shader = const LinearGradient(
         begin: Alignment.topCenter,
         end: Alignment.bottomCenter,
-        colors: [AppColors.cream18, AppColors.cream02],
+        colors: [AppColors.cream25, AppColors.cream06],
       ).createShader(Rect.fromLTWH(0, 0, w, h));
     canvas.drawPath(fillPath, fillPaint);
 
     canvas.drawPath(
       linePath,
       Paint()
-        ..color = AppColors.cream55
+        ..color = AppColors.cream70
         ..strokeWidth = 1.5
         ..style = PaintingStyle.stroke
         ..strokeCap = StrokeCap.round,
@@ -1086,7 +1086,7 @@ class _MiniPrecipPainter extends CustomPainter {
           Rect.fromLTWH(x + 0.5, y, barW - 1, barH),
           const Radius.circular(1.5),
         ),
-        Paint()..color = AppColors.cream.withValues(alpha: 0.45 + 0.45 * pct),
+        Paint()..color = AppColors.cream.withValues(alpha: 0.55 + 0.35 * pct),
       );
     }
   }

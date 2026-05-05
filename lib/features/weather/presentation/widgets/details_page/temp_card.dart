@@ -486,7 +486,17 @@ class _TempLinePainter extends CustomPainter {
 
     final mid = (lo + hi) / 2;
 
-    // 1. Build the main temperature curve path
+    // 1. Horizontal gridlines at each Y-axis label (behind everything)
+    for (final temp in [hi, mid, lo]) {
+      final y = padTop + graphH * (1 - (temp - lo) / range);
+      canvas.drawLine(
+        Offset(padLeft, y),
+        Offset(size.width, y),
+        Paint()..color = AppColors.cream20,
+      );
+    }
+
+    // 2. Build the main temperature curve path
     final linePath = Path()..moveTo(points.first.dx, points.first.dy);
     for (var i = 1; i < points.length; i++) {
       final prev = points[i - 1];
@@ -495,7 +505,7 @@ class _TempLinePainter extends CustomPainter {
       linePath.cubicTo(cpx, prev.dy, cpx, curr.dy, curr.dx, curr.dy);
     }
 
-    // 2. Optional gradient fill under the curve (expanded mode only)
+    // 3. Optional gradient fill under the curve (expanded mode only)
     if (showAreaFill) {
       final fillPath = Path.from(linePath)
         ..lineTo(points.last.dx, padTop + graphH)
@@ -511,12 +521,12 @@ class _TempLinePainter extends CustomPainter {
         ..shader = const LinearGradient(
           begin: Alignment.topCenter,
           end: Alignment.bottomCenter,
-          colors: [AppColors.cream15, AppColors.cream03],
+          colors: [AppColors.cream25, AppColors.cream06],
         ).createShader(fillRect);
       canvas.drawPath(fillPath, fillPaint);
     }
 
-    // 3. Feels-like dashed line overlay
+    // 4. Feels-like dashed line overlay
     if (feelsLikeTemps.length == temps.length) {
       final flPoints = <Offset>[];
       for (var i = 0; i < feelsLikeTemps.length; i++) {
@@ -542,17 +552,17 @@ class _TempLinePainter extends CustomPainter {
       _drawDashedPath(canvas, flPath, dashPaint, 6, 4);
     }
 
-    // 4. Main temperature stroke line (on top of fill and feels-like)
+    // 5. Main temperature stroke line (on top of fill and feels-like)
     canvas.drawPath(
       linePath,
       Paint()
-        ..color = AppColors.cream50
+        ..color = AppColors.cream70
         ..strokeWidth = 2
         ..style = PaintingStyle.stroke
         ..strokeCap = StrokeCap.round,
     );
 
-    // 5. "Now" dot
+    // 6. "Now" dot
     final nowTime = now;
     if (nowTime != null && hours.length >= 2) {
       double dotX;
@@ -619,7 +629,7 @@ class _TempLinePainter extends CustomPainter {
       );
     }
 
-    // 6. Y-axis temp labels (high, mid, low)
+    // 7. Y-axis temp labels (high, mid, low)
     for (final temp in [hi, mid, lo]) {
       final y = padTop + graphH * (1 - (temp - lo) / range);
       final tp = TextPainter(
@@ -629,7 +639,7 @@ class _TempLinePainter extends CustomPainter {
       tp.paint(canvas, Offset(0, y - tp.height / 2));
     }
 
-    // 7. Hour labels
+    // 8. Hour labels
     for (var i = 0; i < hours.length; i++) {
       if (i % 6 != 0 && i != hours.length - 1) continue;
       final tp = TextPainter(

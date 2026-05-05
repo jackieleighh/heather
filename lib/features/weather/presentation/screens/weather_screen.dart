@@ -181,6 +181,11 @@ class _WeatherScreenState extends ConsumerState<WeatherScreen>
       // Check for pending notification tap (fallback for background→foreground)
       _handlePendingAlert();
 
+      // Skip automatic refresh when a pending alert's force refresh is
+      // already in flight — the non-force refresh returns cached data
+      // that can overwrite fresh alerts from the force refresh.
+      if (_pendingAlertActive) return;
+
       final now = DateTime.now();
       if (_lastRefreshTime != null &&
           now.difference(_lastRefreshTime!).inMinutes < 5) {
@@ -272,6 +277,9 @@ class _WeatherScreenState extends ConsumerState<WeatherScreen>
       }
 
       // Force refresh to get fresh alert data from NWS
+      // GPS and saved refreshes fire in parallel so the retry timer picks up
+      // fresh alert data regardless of which location the notification targets.
+      ref.read(weatherStateProvider.notifier).refresh(forceRefresh: true);
       final savedLocations = ref.read(savedLocationsProvider);
       if (savedLocations.isNotEmpty) {
         ref
@@ -337,6 +345,22 @@ class _WeatherScreenState extends ConsumerState<WeatherScreen>
     _pendingAlertStartTime = null;
     _pendingAlertRetryTimer?.cancel();
     _pendingAlertRetryTimer = null;
+
+    // Fallback: if load() was skipped because the pending alert was active,
+    // trigger it now so saved location forecasts don't stay empty forever.
+    if (!_savedLocationsLoaded) {
+      final savedLocations = ref.read(savedLocationsProvider);
+      if (savedLocations.isNotEmpty) {
+        _savedLocationsLoaded = true;
+        WidgetsBinding.instance.addPostFrameCallback((_) {
+          if (mounted) {
+            ref
+                .read(savedLocationsForecastProvider.notifier)
+                .load(savedLocations);
+          }
+        });
+      }
+    }
   }
 
   bool _navigateToAlertLocation() {
@@ -630,6 +654,19 @@ class _WeatherScreenState extends ConsumerState<WeatherScreen>
       }
     });
 
+    // When a saved-location force refresh completes, immediately re-check
+    // pending alert data instead of waiting for the 1-second retry timer.
+    ref.listen<SavedLocationsForecastState>(
+      savedLocationsForecastProvider,
+      (prev, next) {
+        if (_pendingAlertActive && !_pendingAlertSheetShown) {
+          WidgetsBinding.instance.addPostFrameCallback((_) {
+            if (mounted) _handlePendingAlert();
+          });
+        }
+      },
+    );
+
     final content = state.when(
       loading: () => const LoadingScreen(),
       error: (message) {
@@ -664,13 +701,13 @@ class _WeatherScreenState extends ConsumerState<WeatherScreen>
           _forceTimeoutTimer?.cancel();
         }
 
-        // Trigger batch load for saved locations once GPS is loaded
-        if (!_savedLocationsLoaded) {
-          _savedLocationsLoaded = true;
-          // Skip if _handlePendingAlert() already triggered a forceRefresh —
-          // running load() concurrently would race and could overwrite the
-          // refresh results (which include fresh alerts we need).
-          if (savedLocations.isNotEmpty && !_pendingAlertActive) {
+        // Trigger batch load for saved locations once GPS is loaded.
+        // Only mark as loaded when load() actually runs — if we skip because
+        // a pending alert refresh is in-flight, _clearPendingAlert() will
+        // trigger the load as a fallback.
+        if (!_savedLocationsLoaded && savedLocations.isNotEmpty) {
+          if (!_pendingAlertActive) {
+            _savedLocationsLoaded = true;
             WidgetsBinding.instance.addPostFrameCallback((_) {
               if (mounted) {
                 ref

@@ -69,12 +69,63 @@ Future<void> _refreshWidgetData() async {
     var lon = storedLon;
     var cityName = storedCity;
 
-    // Try to refresh location from system cache (no GPS activation)
+    // Try to refresh location using best available strategy:
+    // 1. Native significant location coords (< 5 min old)
+    // 2. getCurrentPosition() if Always permission available
+    // 3. getLastKnownPosition() as final fallback
     try {
-      final position = await Geolocator.getLastKnownPosition();
-      if (position != null) {
-        lat = position.latitude;
-        lon = position.longitude;
+      double? freshLat;
+      double? freshLon;
+
+      // Strategy 1: Check native significant location coords (app group)
+      final nativeLat = await HomeWidget.getWidgetData<double>('native_bg_lat');
+      final nativeLon = await HomeWidget.getWidgetData<double>('native_bg_lon');
+      final nativeTs = await HomeWidget.getWidgetData<double>('native_bg_ts');
+      if (nativeLat != null &&
+          nativeLon != null &&
+          nativeTs != null &&
+          nativeLat != 0 &&
+          nativeLon != 0) {
+        final ageSeconds =
+            (DateTime.now().millisecondsSinceEpoch / 1000 - nativeTs).abs();
+        if (ageSeconds < 300) {
+          // < 5 minutes old
+          freshLat = nativeLat;
+          freshLon = nativeLon;
+        }
+      }
+
+      // Strategy 2: getCurrentPosition() with Always permission
+      if (freshLat == null) {
+        final permission = await Geolocator.checkPermission();
+        if (permission == LocationPermission.always) {
+          try {
+            final position = await Geolocator.getCurrentPosition(
+              locationSettings: const LocationSettings(
+                accuracy: LocationAccuracy.low,
+                timeLimit: Duration(seconds: 10),
+              ),
+            );
+            freshLat = position.latitude;
+            freshLon = position.longitude;
+          } catch (_) {
+            // Fall through to strategy 3
+          }
+        }
+      }
+
+      // Strategy 3: getLastKnownPosition() (passive OS cache read)
+      if (freshLat == null) {
+        final position = await Geolocator.getLastKnownPosition();
+        if (position != null) {
+          freshLat = position.latitude;
+          freshLon = position.longitude;
+        }
+      }
+
+      if (freshLat != null && freshLon != null) {
+        lat = freshLat;
+        lon = freshLon;
         try {
           final placemarks = await geocoding.placemarkFromCoordinates(lat, lon);
           if (placemarks.isNotEmpty) {

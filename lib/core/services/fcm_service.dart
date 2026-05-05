@@ -1,9 +1,11 @@
 import 'dart:async';
+import 'dart:convert';
 import 'dart:io';
 
 import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 /// Top-level handler for background FCM messages.
 /// Must be a top-level function (not a class method).
@@ -47,15 +49,81 @@ class FcmService {
   /// The NWS alert ID from the tapped notification (for opening the specific alert).
   String? pendingAlertId;
 
+  static const _persistedAlertKey = 'fcm_pending_alert';
+  SharedPreferences? _prefs;
+
   void clearPendingAlertTap() {
     pendingAlertTap = false;
     pendingAlertLocationName = null;
     pendingAlertLocationId = null;
     pendingAlertId = null;
+    _clearPersistedAlert();
   }
 
-  Future<void> init() async {
+  void _persistPendingAlert() {
+    final prefs = _prefs;
+    if (prefs == null) return;
+    final data = jsonEncode({
+      'locationId': pendingAlertLocationId,
+      'locationName': pendingAlertLocationName,
+      'alertId': pendingAlertId,
+      'timestamp': DateTime.now().millisecondsSinceEpoch,
+    });
+    prefs.setString(_persistedAlertKey, data);
+    if (kDebugMode) {
+      debugPrint('[FCM] persisted pending alert: $data');
+    }
+  }
+
+  void _clearPersistedAlert() {
+    _prefs?.remove(_persistedAlertKey);
+  }
+
+  /// Restores a persisted pending alert if it was written within [ttl].
+  /// Returns true if a valid alert was restored.
+  bool _restorePersistedAlert(SharedPreferences prefs) {
+    final raw = prefs.getString(_persistedAlertKey);
+    if (raw == null) return false;
+
+    try {
+      final data = jsonDecode(raw) as Map<String, dynamic>;
+      final timestamp = data['timestamp'] as int?;
+      if (timestamp == null) {
+        prefs.remove(_persistedAlertKey);
+        return false;
+      }
+
+      final age = DateTime.now().difference(
+        DateTime.fromMillisecondsSinceEpoch(timestamp),
+      );
+      if (age.inSeconds > 60) {
+        if (kDebugMode) {
+          debugPrint('[FCM] persisted alert expired (${age.inSeconds}s old)');
+        }
+        prefs.remove(_persistedAlertKey);
+        return false;
+      }
+
+      pendingAlertTap = true;
+      pendingAlertLocationId = data['locationId'] as String?;
+      pendingAlertLocationName = data['locationName'] as String?;
+      pendingAlertId = data['alertId'] as String?;
+      if (kDebugMode) {
+        debugPrint(
+          '[FCM] restored persisted alert (${age.inSeconds}s old): '
+          'locId=$pendingAlertLocationId, alertId=$pendingAlertId',
+        );
+      }
+      return true;
+    } catch (e) {
+      prefs.remove(_persistedAlertKey);
+      return false;
+    }
+  }
+
+  Future<void> init({SharedPreferences? prefs}) async {
     if (_initialized) return;
+    _prefs = prefs;
 
     // Register background handler
     FirebaseMessaging.onBackgroundMessage(_firebaseMessagingBackgroundHandler);
@@ -107,6 +175,7 @@ class FcmService {
     }
     if (initialMessage != null) {
       _handleNotificationTap(initialMessage);
+      _persistPendingAlert();
     }
 
     // Check if app was launched by tapping a local notification (cold start).
@@ -131,11 +200,22 @@ class FcmService {
           pendingAlertLocationId = parts.isNotEmpty ? parts[0] : null;
           pendingAlertLocationName = parts.length > 1 ? parts[1] : payload;
           pendingAlertId = parts.length > 2 ? parts[2] : null;
+          _persistPendingAlert();
           // Fire the stream so WeatherScreen's listener is notified regardless of
           // timing with the 3-second splash timer. Without this, the pending
           // alert can be missed if init() completes after the timer fires.
           _alertTapController.add(null);
         }
+      }
+    }
+
+    // Third fallback: if both getInitialMessage() and
+    // getNotificationAppLaunchDetails() missed, check SharedPreferences for
+    // a persisted alert (written by a previous tap handler before the app
+    // was killed). Uses a 60-second TTL to avoid stale alerts.
+    if (!pendingAlertTap && prefs != null) {
+      if (_restorePersistedAlert(prefs)) {
+        _alertTapController.add(null);
       }
     }
 
@@ -206,6 +286,7 @@ class FcmService {
     pendingAlertLocationId = parts.isNotEmpty ? parts[0] : null;
     pendingAlertLocationName = parts.length > 1 ? parts[1] : payload;
     pendingAlertId = parts.length > 2 ? parts[2] : null;
+    _persistPendingAlert();
     if (kDebugMode) {
       if (pendingAlertLocationId == null || pendingAlertLocationId!.isEmpty) {
         debugPrint(
@@ -225,6 +306,7 @@ class FcmService {
     pendingAlertLocationId = message.data['locationId'];
     pendingAlertLocationName = message.data['locationName'];
     pendingAlertId = message.data['alertId'];
+    _persistPendingAlert();
     if (kDebugMode) {
       if (pendingAlertLocationId == null || pendingAlertLocationId!.isEmpty) {
         debugPrint('[FCM] WARNING: locationId is empty in notification data');

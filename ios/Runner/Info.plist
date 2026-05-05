@@ -71,6 +71,7 @@
 			<string>fetch</string>
 			<string>remote-notification</string>
 			<string>processing</string>
+			<string>location</string>
 		</array>
 		<key>BGTaskSchedulerPermittedIdentifiers</key>
 		<array>

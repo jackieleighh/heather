@@ -1,8 +1,11 @@
+import 'dart:io';
+
 import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_native_splash/flutter_native_splash.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:geolocator/geolocator.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 import 'app/app.dart';
@@ -11,6 +14,7 @@ import 'core/network/api_client.dart';
 import 'core/services/background_alert_service.dart';
 import 'core/services/device_registration_service.dart';
 import 'core/services/fcm_service.dart';
+import 'core/services/significant_location_service.dart';
 import 'core/services/widget_service.dart';
 import 'features/weather/data/repositories/weather_repository_impl.dart';
 import 'features/weather/data/sources/saved_locations_local_source.dart';
@@ -111,7 +115,37 @@ Future<void> main() async {
   await Firebase.initializeApp();
   await Future.wait([
     BackgroundAlertService.init(),
-    FcmService().init(),
+    FcmService().init(prefs: prefs),
     DeviceRegistrationService().init(),
   ]);
+
+  // Start significant location monitoring if Always permission is already granted
+  if (Platform.isIOS) {
+    final hasAlways = await SignificantLocationService.hasAlwaysPermission();
+    if (hasAlways) {
+      await SignificantLocationService.startMonitoring();
+    } else if (WidgetService.coldLaunchedFromWidget) {
+      // Widget cold launch: prompt for Always permission (once)
+      _promptForAlwaysPermission(prefs);
+    }
+  }
+}
+
+/// Shows a one-time dialog prompting the user to upgrade to "Always" location
+/// permission so the widget stays accurate while traveling.
+Future<void> _promptForAlwaysPermission(SharedPreferences prefs) async {
+  const promptKey = 'always_location_prompt_shown';
+  if (prefs.getBool(promptKey) == true) return;
+
+  // Check current permission — only prompt if we have "when in use"
+  final permission = await Geolocator.checkPermission();
+  if (permission != LocationPermission.whileInUse) return;
+
+  await prefs.setBool(promptKey, true);
+
+  // Request the upgrade — iOS will show its own system dialog
+  final result = await Geolocator.requestPermission();
+  if (result == LocationPermission.always) {
+    await SignificantLocationService.startMonitoring();
+  }
 }

@@ -180,6 +180,7 @@ struct HeatherWeatherProvider: TimelineProvider {
                         alertSeverity: cached.alertSeverity,
                         alertExpires: cached.alertExpires,
                         widgetSummary: cached.widgetSummary,
+                        summaryCondition: cached.summaryCondition,
                         summaryIsDay: cached.summaryIsDay,
                         moonPhase: cached.moonPhase,
                         moonIllumination: cached.moonIllumination,
@@ -336,7 +337,10 @@ struct HeatherWeatherProvider: TimelineProvider {
                     alertLabel: cached.alertLabel,
                     alertSeverity: cached.alertSeverity,
                     alertExpires: cached.alertExpires,
-                    widgetSummary: cached.widgetSummary,
+                    widgetSummary: (cached.summaryCondition == nil || cached.summaryCondition == condition)
+                        ? cached.widgetSummary : nil,
+                    summaryCondition: (cached.summaryCondition == nil || cached.summaryCondition == condition)
+                        ? cached.summaryCondition : nil,
                     summaryIsDay: cached.summaryIsDay,
                     moonPhase: cached.moonPhase,
                     moonIllumination: cached.moonIllumination,

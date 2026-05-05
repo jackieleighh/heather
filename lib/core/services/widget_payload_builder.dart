@@ -110,6 +110,7 @@ String buildWidgetPayload({
     'moonPhase': ?moonPhase,
     'moonIllumination': ?moonIllumination,
     'widgetSummary': widgetSummary,
+    'summaryCondition': current.condition.name,
     'summaryIsDay': isDay,
     'timelineSegments': timelineSegments,
     'hasPrecipInTimeline': hasPrecipInTimeline,

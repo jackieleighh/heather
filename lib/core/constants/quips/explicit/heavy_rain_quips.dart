@@ -41,7 +41,7 @@ const heavyRainExplicitQuips = <TemperatureTier, List<String>>{
     "Cool and dumping. She's absolutely unloading right now. Like who hurt you girl.",
     'Cool and she escalated a fine day into a torrential fucking disaster. Impressive honestly.',
     'Cold and pouring. She really brought the entire ocean and no apology babe.',
-    'Sleater-Kinney wrote this weather. Heavy cold rain. Loud and fucking committed honestly.',
+    'Heavy cold rain. Loud as fuck and committed to the bit. She has something to prove and your dry clothes are collateral.',
     "Cool and pouring. She really said I'm going to ruin everything and look good doing it.",
     'Cold and pouring. Like girl this is excessive even for you.',
     'Cold and fucking pouring. She went from zero to restraining order real quick girl.',

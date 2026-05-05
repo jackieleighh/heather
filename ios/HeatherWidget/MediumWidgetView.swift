@@ -86,7 +86,8 @@ struct MediumWidgetView: View {
                             )
                         }
                         if let summary = data.widgetSummary,
-                           data.summaryIsDay == nil || data.summaryIsDay == data.isDay {
+                           data.summaryIsDay == nil || data.summaryIsDay == data.isDay,
+                           data.summaryCondition == nil || data.summaryCondition == data.conditionName {
                             Text(summary)
                                 .font(.custom("Quicksand-Medium", size: 11))
                                 .lineLimit(3)

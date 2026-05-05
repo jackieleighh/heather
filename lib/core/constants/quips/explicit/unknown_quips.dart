@@ -5,7 +5,7 @@ const unknownExplicitQuips = <TemperatureTier, List<String>>{
     'Weather app said unknown and honestly same. The fuck. Layers babe.',
     'Not the sky ghosting every radar on the planet. Shady as hell girl.',
     "She's channeling Lost in Translation. Beautiful confusing. Won't explain shit babe.",
-    'Portishead Wandering Star energy. Unknown weather moody af. Classic her honestly.',
+    "Unknown weather moody af. She showed up and won't tell us what she's doing. Classic her honestly.",
     "She's fucking being cryptic and the forecast just shrugged. Dress for everything girl.",
     "She's out here being unreadable. Not rain not sun just vibes girl.",
     "Mulholland Drive vibes. Nobody knows what's happening. Layers babe.",

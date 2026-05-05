@@ -94,6 +94,7 @@ struct WeatherData: Codable {
     let alertSeverity: String?
     let alertExpires: Int?
     let widgetSummary: String?
+    let summaryCondition: String?
     let summaryIsDay: Bool?
     let moonPhase: String?
     let moonIllumination: Int?
@@ -191,6 +192,7 @@ struct WeatherData: Codable {
         alertSeverity: nil,
         alertExpires: nil,
         widgetSummary: nil,
+        summaryCondition: nil,
         summaryIsDay: nil,
         moonPhase: nil,
         moonIllumination: nil,

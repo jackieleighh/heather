@@ -469,7 +469,7 @@ class _PrecipBarPainter extends CustomPainter {
       canvas.drawLine(
         Offset(padLeft, y),
         Offset(size.width, y),
-        Paint()..color = AppColors.cream12,
+        Paint()..color = AppColors.cream20,
       );
     }
 
@@ -482,10 +482,10 @@ class _PrecipBarPainter extends CustomPainter {
 
       canvas.drawRRect(
         RRect.fromRectAndRadius(
-          Rect.fromLTWH(x + 1, y, barW - 2, barH),
+          Rect.fromLTWH(x + 0.5, y, barW - 1, barH),
           const Radius.circular(2),
         ),
-        Paint()..color = AppColors.cream.withValues(alpha: 0.45 + 0.45 * pct),
+        Paint()..color = AppColors.cream.withValues(alpha: 0.55 + 0.35 * pct),
       );
     }
 

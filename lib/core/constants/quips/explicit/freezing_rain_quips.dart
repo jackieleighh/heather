@@ -17,7 +17,7 @@ const freezingRainExplicitQuips = <TemperatureTier, List<String>>{
   ],
   TemperatureTier.freezing: [
     'She froze the rain before it landed. Genuinely dangerous as fuck. Do not go out there.',
-    'Bjork wrote Army of Me for this. Below freezing icy ruthless af. Stay inside girl.',
+    "Below freezing and ruthless as fuck. She iced every surface like she's collecting our ankles. Stay inside girl.",
     "She's out here turning the city into a fucking hockey rink. Nobody asked for this girl.",
     "She really said fuck everyone's ankles specifically. Targeted violence.",
     "She really woke up and said today I will personally fuck up everyone's commute.",
