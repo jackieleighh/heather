@@ -127,6 +127,6 @@ private struct SmallDetailLabel: View {
                 .lineLimit(1)
                 .opacity(0.9)
         }
-        .fixedSize()
+        .fixedSize(horizontal: true, vertical: true)
     }
 }

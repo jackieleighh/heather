@@ -57,7 +57,7 @@ struct WeatherEffectOverlay: View {
                 drawMiniCloud(ctx: ctx, center: CGPoint(x: size.width * 0.82, y: size.height * 0.71), cloudScale: size.width * 0.26, alpha: 0.18)
             }
         case "overcast":
-            drawOvercast(ctx: ctx, size: size, time: t)
+            drawOvercast(ctx: ctx, size: size, time: t, scale: scale)
         case "foggy":
             drawFog(ctx: ctx, size: size, time: t)
         case "drizzle":
@@ -314,7 +314,7 @@ struct WeatherEffectOverlay: View {
 
     // MARK: - Overcast Cloud Masses (matches Flutter overcast_background.dart)
 
-    private func drawOvercastCloudBlobs(ctx: GraphicsContext, size: CGSize) {
+    private func drawOvercastCloudBlobs(ctx: GraphicsContext, size: CGSize, scale: Double) {
         let w = size.width
         let h = size.height
 
@@ -333,8 +333,8 @@ struct WeatherEffectOverlay: View {
         ]
 
         for mass in masses {
-            let scale = w * mass.scale
-            let blurR = scale * 0.12
+            let massSize = w * mass.scale
+            let blurR = massSize * 0.12
             let centerX = w * mass.xFrac
             let centerY = h * mass.yFrac
             let blobCount = 10 + Int(rng.nextDouble() * 6) // 10-15 blobs per mass
@@ -345,10 +345,10 @@ struct WeatherEffectOverlay: View {
             for _ in 0..<blobCount {
                 let dx = (rng.nextDouble() - 0.5) * 1.8
                 let dy = (rng.nextDouble() - 0.5) * 0.8
-                let blobRadius = (0.16 + rng.nextDouble() * 0.22) * scale
+                let blobRadius = (0.16 + rng.nextDouble() * 0.22) * massSize
 
-                let bx = centerX + dx * scale
-                let by = centerY + dy * scale
+                let bx = centerX + dx * massSize
+                let by = centerY + dy * massSize
 
                 blobCtx.fill(
                     Circle().path(in: CGRect(
@@ -357,7 +357,7 @@ struct WeatherEffectOverlay: View {
                         width: blobRadius * 2,
                         height: blobRadius * 2
                     )),
-                    with: .color(.white.opacity(mass.alpha))
+                    with: .color(.white.opacity(mass.alpha * scale))
                 )
             }
         }
@@ -388,7 +388,7 @@ struct WeatherEffectOverlay: View {
 
     // MARK: - Overcast (Cloud blobs + haze)
 
-    private func drawOvercast(ctx: GraphicsContext, size: CGSize, time: Double) {
+    private func drawOvercast(ctx: GraphicsContext, size: CGSize, time: Double, scale: Double) {
         let w = size.width
         let h = size.height
         let szScale = min(w, h) / 400.0
@@ -404,11 +404,11 @@ struct WeatherEffectOverlay: View {
                 width: glowR * 2,
                 height: glowR * 2
             )),
-            with: .color(.white.opacity(0.16))
+            with: .color(.white.opacity(0.16 * scale))
         )
 
         // Cloud blobs at edges/corners
-        drawOvercastCloudBlobs(ctx: ctx, size: size)
+        drawOvercastCloudBlobs(ctx: ctx, size: size, scale: scale)
 
         // Upper haze
         var hazeCtx = ctx
@@ -420,7 +420,7 @@ struct WeatherEffectOverlay: View {
                 width: w * 2.0,
                 height: h * 0.5
             )),
-            with: .color(.white.opacity(0.04))
+            with: .color(.white.opacity(0.04 * scale))
         )
 
         // Lower haze
@@ -431,7 +431,7 @@ struct WeatherEffectOverlay: View {
                 width: w * 1.8,
                 height: h * 0.4
             )),
-            with: .color(.white.opacity(0.03))
+            with: .color(.white.opacity(0.03 * scale))
         )
     }
 

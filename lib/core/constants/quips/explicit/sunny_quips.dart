@@ -56,8 +56,8 @@ const sunnyExplicitQuips = <TemperatureTier, List<String>>{
     "Nice af out. If you're inside right now you're committing a crime. Like actually. Straight to jail girl.",
     'Weather equivalent of a glow up. Unrecognizable tbh. Light layers and go babe.',
     'Sunny and perfect temps. She really said fuck your plans I am the plan. She was right babe. Go.',
-    'Flannel on boots on attitude off. She served a perfect day. Get out there babe.',
-    'Sunny flannel weather. Throw on a hoodie and get the fuck outside. You earned this girl.',
+    'Shacket on boots on attitude off. She served a perfect day. Get out there babe.',
+    'Throw on a hoodie and get the fuck outside. You earned this girl.',
   ],
   TemperatureTier.shortsWeather: [
     "Sun showed the fuck up and I'm emotional about it tbh. Shorts on go go go.",

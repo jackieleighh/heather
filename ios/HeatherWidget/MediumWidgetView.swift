@@ -296,6 +296,6 @@ private struct MediumDetailLabel: View {
                 .opacity(iconTint != nil ? 1.0 : 0.9)
                 .foregroundStyle(.white)
         }
-        .fixedSize()
+        .fixedSize(horizontal: true, vertical: true)
     }
 }

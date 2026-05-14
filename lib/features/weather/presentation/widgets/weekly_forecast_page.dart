@@ -78,6 +78,11 @@ const _tileTimeAxisStyle = TextStyle(fontFamily: 'Poppins',
   fontWeight: FontWeight.w400,
   color: AppColors.cream70,
 );
+const _miniYLabelStyle = TextStyle(fontFamily: 'Poppins',
+  fontSize: 9,
+  fontWeight: FontWeight.w600,
+  color: AppColors.cream70,
+);
 const _statChipLightStyle = TextStyle(fontFamily: 'Poppins',
   fontSize: 11,
   fontWeight: FontWeight.w400,
@@ -648,6 +653,8 @@ class _TempTile extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final temps = hourly.map((h) => h.temperature).toList();
+    final hi = temps.isEmpty ? 0 : temps.reduce(math.max).round();
+    final lo = temps.isEmpty ? 0 : temps.reduce(math.min).round();
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -665,7 +672,7 @@ class _TempTile extends StatelessWidget {
           Expanded(
             child: CustomPaint(
               size: Size.infinite,
-              painter: _MiniTempPainter(temps),
+              painter: _MiniTempPainter(temps, hi: hi, lo: lo),
             ),
           )
         else
@@ -864,7 +871,10 @@ class _StatsTile extends StatelessWidget {
           Expanded(
             child: CustomPaint(
               size: Size.infinite,
-              painter: _MiniUvPainter(uvHours),
+              painter: _MiniUvPainter(
+                uvHours,
+                peak: daily.uvIndexMax.round(),
+              ),
             ),
           )
         else
@@ -903,12 +913,15 @@ class _TileTimeAxis extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Row(
-      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-      children: [
-        Text('AM', style: _tileTimeAxisStyle),
-        Text('PM', style: _tileTimeAxisStyle),
-      ],
+    return const Padding(
+      padding: EdgeInsets.only(left: 22),
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+        children: [
+          Text('AM', style: _tileTimeAxisStyle),
+          Text('PM', style: _tileTimeAxisStyle),
+        ],
+      ),
     );
   }
 }
@@ -943,30 +956,54 @@ class _StatChip extends StatelessWidget {
   }
 }
 
-/// Edge-to-edge cubic-smoothed temperature curve with a subtle area fill.
-/// No axis labels, no padding gutters — fills the available rect entirely.
+/// Cubic-smoothed temperature curve with hi/lo y-axis labels and area fill.
 class _MiniTempPainter extends CustomPainter {
   final List<double> temps;
+  final int hi;
+  final int lo;
 
-  _MiniTempPainter(this.temps);
+  _MiniTempPainter(this.temps, {required this.hi, required this.lo});
+
+  static const _leftPad = 22.0;
 
   @override
   void paint(Canvas canvas, Size size) {
     if (temps.length < 2) return;
 
-    final lo = temps.reduce(math.min);
-    final hi = temps.reduce(math.max);
-    final range = hi - lo;
+    final dataLo = temps.reduce(math.min);
+    final dataHi = temps.reduce(math.max);
+    final range = dataHi - dataLo;
     if (range == 0) return;
 
     final w = size.width;
     final h = size.height;
-    final stepX = w / (temps.length - 1);
+    final graphW = w - _leftPad;
 
+    // Y-axis labels
+    final hiTp = TextPainter(
+      text: TextSpan(text: '$hi°', style: _miniYLabelStyle),
+      textDirection: TextDirection.ltr,
+    )..layout();
+    final loTp = TextPainter(
+      text: TextSpan(text: '$lo°', style: _miniYLabelStyle),
+      textDirection: TextDirection.ltr,
+    )..layout();
+    hiTp.paint(canvas, const Offset(0, -1));
+    loTp.paint(canvas, Offset(0, h - loTp.height + 1));
+
+    // Faint gridlines at hi and lo
+    final gridPaint = Paint()
+      ..color = AppColors.cream15
+      ..strokeWidth = 0.5;
+    canvas.drawLine(const Offset(_leftPad, 0), Offset(w, 0), gridPaint);
+    canvas.drawLine(Offset(_leftPad, h), Offset(w, h), gridPaint);
+
+    // Curve shifted rightward by left padding
+    final stepX = graphW / (temps.length - 1);
     final points = <Offset>[];
     for (var i = 0; i < temps.length; i++) {
-      final x = i * stepX;
-      final y = h * (1 - (temps[i] - lo) / range);
+      final x = _leftPad + i * stepX;
+      final y = h * (1 - (temps[i] - dataLo) / range);
       points.add(Offset(x, y));
     }
 
@@ -987,7 +1024,7 @@ class _MiniTempPainter extends CustomPainter {
         begin: Alignment.topCenter,
         end: Alignment.bottomCenter,
         colors: [AppColors.cream25, AppColors.cream06],
-      ).createShader(Rect.fromLTWH(0, 0, w, h));
+      ).createShader(Rect.fromLTWH(_leftPad, 0, graphW, h));
     canvas.drawPath(fillPath, fillPaint);
 
     canvas.drawPath(
@@ -1001,15 +1038,18 @@ class _MiniTempPainter extends CustomPainter {
   }
 
   @override
-  bool shouldRepaint(covariant _MiniTempPainter old) => temps != old.temps;
+  bool shouldRepaint(covariant _MiniTempPainter old) =>
+      temps != old.temps || hi != old.hi || lo != old.lo;
 }
 
-/// Edge-to-edge cubic-smoothed UV-index curve pinned to a 0–11 y-axis so the
-/// natural midday hump reads consistently across days.
+/// Cubic-smoothed UV-index curve pinned to a 0–11+ y-axis with labels.
 class _MiniUvPainter extends CustomPainter {
   final List<double> uv;
+  final int peak;
 
-  _MiniUvPainter(this.uv);
+  _MiniUvPainter(this.uv, {required this.peak});
+
+  static const _leftPad = 22.0;
 
   @override
   void paint(Canvas canvas, Size size) {
@@ -1020,11 +1060,32 @@ class _MiniUvPainter extends CustomPainter {
 
     final w = size.width;
     final h = size.height;
-    final stepX = w / (uv.length - 1);
+    final graphW = w - _leftPad;
 
+    // Y-axis labels
+    final topTp = TextPainter(
+      text: TextSpan(text: '${maxY.round()}', style: _miniYLabelStyle),
+      textDirection: TextDirection.ltr,
+    )..layout();
+    final botTp = TextPainter(
+      text: const TextSpan(text: '0', style: _miniYLabelStyle),
+      textDirection: TextDirection.ltr,
+    )..layout();
+    topTp.paint(canvas, const Offset(0, -1));
+    botTp.paint(canvas, Offset(0, h - botTp.height + 1));
+
+    // Faint gridlines
+    final gridPaint = Paint()
+      ..color = AppColors.cream15
+      ..strokeWidth = 0.5;
+    canvas.drawLine(const Offset(_leftPad, 0), Offset(w, 0), gridPaint);
+    canvas.drawLine(Offset(_leftPad, h), Offset(w, h), gridPaint);
+
+    // Curve shifted rightward by left padding
+    final stepX = graphW / (uv.length - 1);
     final points = <Offset>[];
     for (var i = 0; i < uv.length; i++) {
-      final x = i * stepX;
+      final x = _leftPad + i * stepX;
       final y = h * (1 - (uv[i] / maxY).clamp(0.0, 1.0));
       points.add(Offset(x, y));
     }
@@ -1046,7 +1107,7 @@ class _MiniUvPainter extends CustomPainter {
         begin: Alignment.topCenter,
         end: Alignment.bottomCenter,
         colors: [AppColors.cream25, AppColors.cream06],
-      ).createShader(Rect.fromLTWH(0, 0, w, h));
+      ).createShader(Rect.fromLTWH(_leftPad, 0, graphW, h));
     canvas.drawPath(fillPath, fillPaint);
 
     canvas.drawPath(
@@ -1060,33 +1121,58 @@ class _MiniUvPainter extends CustomPainter {
   }
 
   @override
-  bool shouldRepaint(covariant _MiniUvPainter old) => uv != old.uv;
+  bool shouldRepaint(covariant _MiniUvPainter old) =>
+      uv != old.uv || peak != old.peak;
 }
 
-/// Edge-to-edge precipitation-probability bars. No axis labels, no grid.
+/// Precipitation-probability bars with 0%–100% y-axis labels.
 class _MiniPrecipPainter extends CustomPainter {
   final List<int> precipProb;
 
   _MiniPrecipPainter(this.precipProb);
+
+  static const _leftPad = 22.0;
 
   @override
   void paint(Canvas canvas, Size size) {
     if (precipProb.isEmpty) return;
     final w = size.width;
     final h = size.height;
-    final barW = w / precipProb.length;
+    final graphW = w - _leftPad;
 
+    // Y-axis labels — always 0%–100%
+    final topTp = TextPainter(
+      text: const TextSpan(text: '100%', style: _miniYLabelStyle),
+      textDirection: TextDirection.ltr,
+    )..layout();
+    final botTp = TextPainter(
+      text: const TextSpan(text: '0%', style: _miniYLabelStyle),
+      textDirection: TextDirection.ltr,
+    )..layout();
+    topTp.paint(canvas, const Offset(0, -1));
+    botTp.paint(canvas, Offset(0, h - botTp.height + 1));
+
+    // Faint gridlines
+    final gridPaint = Paint()
+      ..color = AppColors.cream15
+      ..strokeWidth = 0.5;
+    canvas.drawLine(const Offset(_leftPad, 0), Offset(w, 0), gridPaint);
+    canvas.drawLine(Offset(_leftPad, h), Offset(w, h), gridPaint);
+
+    // Bars shifted rightward by left padding, scaled to 100%
+    final barW = graphW / precipProb.length;
     for (var i = 0; i < precipProb.length; i++) {
       final pct = precipProb[i] / 100.0;
       final barH = math.max(h * pct, pct > 0 ? 1.5 : 0.0);
-      final x = i * barW;
+      final x = _leftPad + i * barW;
       final y = h - barH;
       canvas.drawRRect(
         RRect.fromRectAndRadius(
           Rect.fromLTWH(x + 0.5, y, barW - 1, barH),
           const Radius.circular(1.5),
         ),
-        Paint()..color = AppColors.cream.withValues(alpha: 0.55 + 0.35 * pct),
+        Paint()
+          ..color = AppColors.cream.withValues(alpha: 0.55 + 0.35 * pct),
       );
     }
   }

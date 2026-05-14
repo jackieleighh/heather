@@ -39,6 +39,7 @@ class VerticalForecastPager extends StatefulWidget {
 
 class VerticalForecastPagerState extends State<VerticalForecastPager> {
   final _pageController = PageController();
+  int _currentPage = 0;
 
   void jumpToFirst() {
     if (_pageController.hasClients) {
@@ -47,9 +48,23 @@ class VerticalForecastPagerState extends State<VerticalForecastPager> {
   }
 
   @override
+  void initState() {
+    super.initState();
+    _pageController.addListener(_onPageChanged);
+  }
+
+  @override
   void dispose() {
+    _pageController.removeListener(_onPageChanged);
     _pageController.dispose();
     super.dispose();
+  }
+
+  void _onPageChanged() {
+    final page = _pageController.page?.round() ?? 0;
+    if (page != _currentPage) {
+      setState(() => _currentPage = page);
+    }
   }
 
   @override
@@ -88,7 +103,9 @@ class VerticalForecastPagerState extends State<VerticalForecastPager> {
           child: PageView.builder(
             controller: _pageController,
             scrollDirection: Axis.vertical,
-            physics: const SmoothPageScrollPhysics(),
+            physics: _currentPage >= pages.length - 1 && widget.isUs
+                ? const _LockedBottomPagePhysics()
+                : const SmoothPageScrollPhysics(),
             itemCount: pages.length,
             itemBuilder: (context, index) => pages[index],
           ),
@@ -166,5 +183,26 @@ class _VerticalPageIndicatorState extends State<_VerticalPageIndicator> {
         }),
       ),
     );
+  }
+}
+
+/// Page physics that allows swiping back (up) but prevents overscroll
+/// at the bottom edge, keeping the user locked on the last page.
+class _LockedBottomPagePhysics extends SmoothPageScrollPhysics {
+  const _LockedBottomPagePhysics({super.parent});
+
+  @override
+  _LockedBottomPagePhysics applyTo(ScrollPhysics? ancestor) {
+    return _LockedBottomPagePhysics(parent: buildParent(ancestor));
+  }
+
+  @override
+  double applyBoundaryConditions(ScrollMetrics position, double value) {
+    // Prevent scrolling further down (value > position.pixels at max extent
+    // means the user is swiping up on screen → trying to go past last page).
+    if (value > position.pixels && position.pixels >= position.maxScrollExtent) {
+      return value - position.pixels;
+    }
+    return super.applyBoundaryConditions(position, value);
   }
 }

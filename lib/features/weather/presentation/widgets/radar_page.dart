@@ -1,5 +1,6 @@
 import 'dart:async';
 import 'dart:io';
+import 'dart:ui';
 import 'package:flutter/material.dart' hide Theme;
 import 'package:flutter_map/flutter_map.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -14,7 +15,7 @@ import '../providers/radar_provider.dart';
 import 'pulsing_dots.dart';
 
 /// Cached text styles.
-const _radarHeaderStyle = TextStyle(fontFamily: 'Quicksand',
+const _radarHeaderStyle = TextStyle(fontFamily: 'Figtree',
   fontSize: 22,
   fontWeight: FontWeight.w700,
   color: AppColors.cream,
@@ -177,125 +178,203 @@ class _RadarPageState extends ConsumerState<RadarPage> {
   Widget build(BuildContext context) {
     final styleAsync = ref.watch(basemapStyleProvider);
     final manifestAsync = ref.watch(radarManifestProvider);
+    final safeArea = MediaQuery.of(context).padding;
 
-    return SafeArea(
-      child: Padding(
-        padding: const EdgeInsets.fromLTRB(16, 0, 26, 16),
-        child: Column(
-          children: [
-            // Header
-            Padding(
-              padding: const EdgeInsets.only(right: 44),
-              child: SizedBox(
-                height: 62,
-                child: Align(
-                  alignment: Alignment.centerRight,
-                  child: Text('Radar', style: _radarHeaderStyle),
-                ),
-              ),
-            ),
-            const SizedBox(height: 8),
-            // Radar map
-            Expanded(
-              child: _MapCard(
-                child: (styleAsync.isLoading || manifestAsync.isLoading)
-                    ? const Center(child: PulsingDots(color: AppColors.cream))
-                    : (styleAsync.hasError || manifestAsync.hasError)
-                    ? Center(
-                        child: Text(
-                          'Radar unavailable',
-                          style: _radarErrorStyle,
-                        ),
-                      )
-                    : Builder(
-                        builder: (context) {
-                          final style = styleAsync.value!;
-                          final manifest = manifestAsync.value!;
-                          _initializePlayback(manifest.frames.length);
-                          final frame = manifest.frames[_currentFrameIndex];
+    final isLoading = styleAsync.isLoading || manifestAsync.isLoading;
+    final hasError = styleAsync.hasError || manifestAsync.hasError;
 
-                          return Stack(
-                            children: [
-                              ClipRRect(
-                                borderRadius: BorderRadius.circular(16),
-                                child: FlutterMap(
-                                  options: MapOptions(
-                                    initialCenter: LatLng(
-                                      widget.latitude,
-                                      widget.longitude,
-                                    ),
-                                    initialZoom: 7.0,
-                                    minZoom: 3.0,
-                                    maxZoom: 10.0,
-                                    backgroundColor: Colors.transparent,
-                                    interactionOptions:
-                                        const InteractionOptions(
-                                          flags:
-                                              InteractiveFlag.all &
-                                              ~InteractiveFlag.rotate,
-                                        ),
-                                  ),
-                                  children: [
-                                    Opacity(
-                                      opacity: 0.4,
-                                      child: VectorTileLayer(
-                                        tileProviders: style.providers,
-                                        theme: style.theme,
-                                        sprites: style.sprites,
-                                        maximumZoom: 14,
-                                        layerMode: VectorTileLayerMode.vector,
-                                      ),
-                                    ),
-                                    Opacity(
-                                      opacity: 0.7,
-                                      child: TileLayer(
-                                        key: ValueKey(frame.tileUrlTemplate),
-                                        urlTemplate: frame.tileUrlTemplate,
-                                        tileProvider: CachedRadarTileProvider(
-                                          cache: _tileCache,
-                                          httpClient: _tileHttpClient,
-                                        ),
-                                      ),
-                                    ),
-                                    _locationMarker,
-                                  ],
-                                ),
-                              ),
-                              Positioned(
-                                left: 0,
-                                right: 0,
-                                bottom: 0,
-                                child: ClipRRect(
-                                  borderRadius: const BorderRadius.only(
-                                    bottomLeft: Radius.circular(16),
-                                    bottomRight: Radius.circular(16),
-                                  ),
-                                  child: _ControlBar(
-                                    frame: frame,
-                                    frameCount: manifest.frames.length,
-                                    currentIndex: _currentFrameIndex,
-                                    nowIndex: manifest.nowIndex,
-                                    isPlaying: _isPlaying,
-                                    formatRelativeTime: _formatRelativeTime,
-                                    onSliderChanged: (value) =>
-                                        _onSliderChanged(
-                                          value,
-                                          manifest.frames.length,
-                                        ),
-                                    onPlayPause: () =>
-                                        _togglePlayback(manifest.frames.length),
-                                  ),
-                                ),
-                              ),
-                            ],
-                          );
-                        },
+    return Stack(
+      children: [
+        // 1. Full-bleed map or loading/error state
+        if (isLoading)
+          const Center(child: PulsingDots(color: AppColors.cream))
+        else if (hasError)
+          const Center(
+            child: Text('Radar unavailable', style: _radarErrorStyle),
+          )
+        else
+          Builder(
+            builder: (context) {
+              final style = styleAsync.value!;
+              final manifest = manifestAsync.value!;
+              _initializePlayback(manifest.frames.length);
+              final frame = manifest.frames[_currentFrameIndex];
+
+              return Stack(
+                children: [
+                  // Full-bleed map
+                  FlutterMap(
+                    options: MapOptions(
+                      initialCenter: LatLng(
+                        widget.latitude,
+                        widget.longitude,
                       ),
-              ),
-            ),
-          ],
-        ),
-      ),
+                      initialZoom: 7.0,
+                      minZoom: 3.0,
+                      maxZoom: 10.0,
+                      backgroundColor: Colors.transparent,
+                      interactionOptions: const InteractionOptions(
+                        flags: InteractiveFlag.pinchZoom |
+                            InteractiveFlag.pinchMove,
+                      ),
+                    ),
+                    children: [
+                      Opacity(
+                        opacity: 0.4,
+                        child: VectorTileLayer(
+                          tileProviders: style.providers,
+                          theme: style.theme,
+                          sprites: style.sprites,
+                          maximumZoom: 14,
+                          layerMode: VectorTileLayerMode.vector,
+                        ),
+                      ),
+                      Opacity(
+                        opacity: 0.7,
+                        child: TileLayer(
+                          key: ValueKey(frame.tileUrlTemplate),
+                          urlTemplate: frame.tileUrlTemplate,
+                          tileProvider: CachedRadarTileProvider(
+                            cache: _tileCache,
+                            httpClient: _tileHttpClient,
+                          ),
+                        ),
+                      ),
+                      _locationMarker,
+                    ],
+                  ),
+
+                  // 2. Top edge gradient
+                  const Positioned(
+                    top: 0,
+                    left: 0,
+                    right: 0,
+                    height: 80,
+                    child: IgnorePointer(
+                      child: DecoratedBox(
+                        decoration: BoxDecoration(
+                          gradient: LinearGradient(
+                            begin: Alignment.topCenter,
+                            end: Alignment.bottomCenter,
+                            colors: [AppColors.cream06, Colors.transparent],
+                          ),
+                        ),
+                      ),
+                    ),
+                  ),
+
+                  // 3. Bottom edge gradient
+                  const Positioned(
+                    bottom: 0,
+                    left: 0,
+                    right: 0,
+                    height: 80,
+                    child: IgnorePointer(
+                      child: DecoratedBox(
+                        decoration: BoxDecoration(
+                          gradient: LinearGradient(
+                            begin: Alignment.bottomCenter,
+                            end: Alignment.topCenter,
+                            colors: [AppColors.cream06, Colors.transparent],
+                          ),
+                        ),
+                      ),
+                    ),
+                  ),
+
+                  // 4. Left button (location) frosted glass background
+                  Positioned(
+                    top: safeArea.top + (Platform.isIOS ? -4 : 8),
+                    left: 16,
+                    child: IgnorePointer(
+                      child: ClipOval(
+                        child: BackdropFilter(
+                          filter: ImageFilter.blur(sigmaX: 12, sigmaY: 12),
+                          child: Container(
+                            width: 40,
+                            height: 40,
+                            decoration: BoxDecoration(
+                              color: AppColors.cream06,
+                              shape: BoxShape.circle,
+                              border: Border.all(color: AppColors.cream08),
+                            ),
+                          ),
+                        ),
+                      ),
+                    ),
+                  ),
+
+                  // 5. Right button (settings) frosted glass background
+                  Positioned(
+                    top: safeArea.top + (Platform.isIOS ? -4 : 8),
+                    right: 16,
+                    child: IgnorePointer(
+                      child: ClipOval(
+                        child: BackdropFilter(
+                          filter: ImageFilter.blur(sigmaX: 12, sigmaY: 12),
+                          child: Container(
+                            width: 40,
+                            height: 40,
+                            decoration: BoxDecoration(
+                              color: AppColors.cream06,
+                              shape: BoxShape.circle,
+                              border: Border.all(color: AppColors.cream08),
+                            ),
+                          ),
+                        ),
+                      ),
+                    ),
+                  ),
+
+                  // 6. Radar title (matches other page headers)
+                  Positioned(
+                    top: safeArea.top,
+                    right: 70,
+                    height: 62,
+                    child: const Center(
+                      child: Text('Radar', style: _radarHeaderStyle),
+                    ),
+                  ),
+
+                  // 7. Frosted glass control bar
+                  Positioned(
+                    bottom: safeArea.bottom + 16,
+                    left: 16,
+                    right: 16,
+                    child: ClipRRect(
+                      borderRadius: BorderRadius.circular(16),
+                      child: BackdropFilter(
+                        filter: ImageFilter.blur(sigmaX: 12, sigmaY: 12),
+                        child: Container(
+                          decoration: BoxDecoration(
+                            color: AppColors.cream06,
+                            borderRadius: BorderRadius.circular(16),
+                            border: Border.all(color: AppColors.cream08),
+                          ),
+                          child: _ControlBar(
+                            frame: frame,
+                            frameCount: manifest.frames.length,
+                            currentIndex: _currentFrameIndex,
+                            nowIndex: manifest.nowIndex,
+                            isPlaying: _isPlaying,
+                            formatRelativeTime: _formatRelativeTime,
+                            onSliderChanged: (value) =>
+                                _onSliderChanged(
+                                  value,
+                                  manifest.frames.length,
+                                ),
+                            onPlayPause: () =>
+                                _togglePlayback(manifest.frames.length),
+                          ),
+                        ),
+                      ),
+                    ),
+                  ),
+                ],
+              );
+            },
+          ),
+      ],
     );
   }
 }
@@ -325,8 +404,7 @@ class _ControlBar extends StatelessWidget {
   Widget build(BuildContext context) {
     final timeLabel = formatRelativeTime(frame.time);
 
-    return Container(
-      decoration: const BoxDecoration(color: AppColors.cream25),
+    return Padding(
       padding: const EdgeInsets.fromLTRB(12, 4, 6, 0),
       child: Row(
         children: [
@@ -398,95 +476,4 @@ class _ControlBar extends StatelessWidget {
       ),
     );
   }
-}
-
-class _MapCard extends StatelessWidget {
-  final Widget child;
-
-  const _MapCard({required this.child});
-
-  @override
-  Widget build(BuildContext context) {
-    return Container(
-      clipBehavior: Clip.hardEdge,
-      decoration: BoxDecoration(
-        color: AppColors.cream06,
-        borderRadius: BorderRadius.circular(20),
-        border: Border.all(color: AppColors.cream08),
-        boxShadow: [const BoxShadow(color: AppColors.black12, blurRadius: 12)],
-      ),
-      child: Stack(
-        children: [
-          Positioned.fill(child: child),
-          // Subtle white tint overlay
-          const Positioned.fill(
-            child: IgnorePointer(
-              child: DecoratedBox(
-                decoration: BoxDecoration(color: AppColors.cream06),
-              ),
-            ),
-          ),
-          // Subtle edge fade
-          Positioned.fill(
-            child: IgnorePointer(
-              child: CustomPaint(painter: _EdgeFadePainter()),
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-}
-
-class _EdgeFadePainter extends CustomPainter {
-  @override
-  void paint(Canvas canvas, Size size) {
-    const fade = 18.0;
-    const edgeColor = Color(0x18FAFAFA);
-    const clear = Color(0x00FAFAFA);
-
-    // Top
-    canvas.drawRect(
-      Rect.fromLTWH(0, 0, size.width, fade),
-      Paint()
-        ..shader = const LinearGradient(
-          begin: Alignment.topCenter,
-          end: Alignment.bottomCenter,
-          colors: [edgeColor, clear],
-        ).createShader(Rect.fromLTWH(0, 0, size.width, fade)),
-    );
-    // Bottom
-    canvas.drawRect(
-      Rect.fromLTWH(0, size.height - fade, size.width, fade),
-      Paint()
-        ..shader = const LinearGradient(
-          begin: Alignment.bottomCenter,
-          end: Alignment.topCenter,
-          colors: [edgeColor, clear],
-        ).createShader(Rect.fromLTWH(0, size.height - fade, size.width, fade)),
-    );
-    // Left
-    canvas.drawRect(
-      Rect.fromLTWH(0, 0, fade, size.height),
-      Paint()
-        ..shader = const LinearGradient(
-          begin: Alignment.centerLeft,
-          end: Alignment.centerRight,
-          colors: [edgeColor, clear],
-        ).createShader(Rect.fromLTWH(0, 0, fade, size.height)),
-    );
-    // Right
-    canvas.drawRect(
-      Rect.fromLTWH(size.width - fade, 0, fade, size.height),
-      Paint()
-        ..shader = const LinearGradient(
-          begin: Alignment.centerRight,
-          end: Alignment.centerLeft,
-          colors: [edgeColor, clear],
-        ).createShader(Rect.fromLTWH(size.width - fade, 0, fade, size.height)),
-    );
-  }
-
-  @override
-  bool shouldRepaint(covariant CustomPainter oldDelegate) => false;
 }

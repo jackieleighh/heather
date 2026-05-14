@@ -114,11 +114,14 @@ class ForecastResponseModel {
         (h) => sunnyConditions.contains(WeatherCodes.fromWmo(h.weatherCode)),
       );
 
-      // Probability-gate precipitation: demote low-confidence precip to overcast
+      // Probability-gate precipitation: demote low-confidence precip
       final daytimeConditions = daytimeHours.map((h) {
         final condition = WeatherCodes.fromWmo(h.weatherCode);
         if (WeatherCodes.isPrecipitation(condition) &&
             h.precipitationProbability < 50) {
+          if (h.precipitationProbability >= 25) {
+            return WeatherCondition.drizzle;
+          }
           return WeatherCondition.overcast;
         }
         return condition;
