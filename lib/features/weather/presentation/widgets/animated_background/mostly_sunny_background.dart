@@ -3,6 +3,8 @@ import 'dart:ui' as ui;
 
 import 'package:flutter/material.dart';
 
+import 'cloud_painter.dart';
+
 class MostlySunnyBackground extends StatefulWidget {
   final List<Color> gradientColors;
   final bool isDay;
@@ -86,7 +88,7 @@ class _MostlySunnyBackgroundState extends State<MostlySunnyBackground>
         final time =
             (_controller.lastElapsedDuration?.inMilliseconds ?? 0) /
                 1000.0 *
-                0.42;
+                0.6;
         if (widget.isDay && (time - _lastColorTime).abs() > 0.033) {
           _lastColorTime = time;
           const rayAlphas = [
@@ -137,6 +139,7 @@ class _Star {
   final double size;
   final double twinkleSpeed;
   final double phase;
+  Color? cachedColor;
 
   _Star({
     required this.x,
@@ -154,6 +157,9 @@ class _MostlySunnyDayPainter extends CustomPainter {
   _MostlySunnyDayPainter(this.time, this.rayColors);
 
   static const _white0 = Color.fromRGBO(255, 255, 255, 0);
+
+  /// Pre-allocated color pair lists for ray gradients (one per ray).
+  static final _rayGradientColors = List.generate(12, (_) => [_white0, _white0]);
   static const _glowColors = [
     Color.fromRGBO(255, 255, 255, 0.30),
     Color.fromRGBO(255, 255, 255, 0.08),
@@ -242,10 +248,13 @@ class _MostlySunnyDayPainter extends CustomPainter {
         ..lineTo(center.dx + cosR * innerR, center.dy + sinR * innerR)
         ..close();
 
+      final colors = _rayGradientColors[i];
+      colors[0] = rayColors[i];
+      colors[1] = _white0;
       rayPaint.shader = ui.Gradient.linear(
         Offset(center.dx + cosA * innerR, center.dy + sinA * innerR),
         Offset(center.dx + cosA * outerR, center.dy + sinA * outerR),
-        [rayColors[i], _white0],
+        colors,
       );
       canvas.drawPath(path, rayPaint);
     }
@@ -259,9 +268,9 @@ class _MostlySunnyDayPainter extends CustomPainter {
     canvas.drawRect(Offset.zero & size, paint);
 
     // Drifting cumulus clouds
-    _drawDriftingCloud(canvas, w, h, time, 0.15, 0.30, w * 0.38, 0.30, 0.096);
-    _drawDriftingCloud(canvas, w, h, time, 0.58, 0.38, w * 0.42, 0.28, 0.072);
-    _drawDriftingCloud(canvas, w, h, time, 0.30, 0.62, w * 0.35, 0.22, 0.08);
+    drawDriftingCloud(canvas, w, h, time, 0.15, 0.30, w * 0.38, 0.30, 0.14);
+    drawDriftingCloud(canvas, w, h, time, 0.58, 0.38, w * 0.42, 0.28, 0.11);
+    drawDriftingCloud(canvas, w, h, time, 0.30, 0.62, w * 0.35, 0.22, 0.12);
   }
 
   @override
@@ -288,8 +297,10 @@ class _MostlySunnyNightPainter extends CustomPainter {
     for (final star in stars) {
       final twinkle = (sin(time * star.twinkleSpeed + star.phase) + 1) / 2;
       final opacity = 0.1 + twinkle * 0.3;
+      // Quantize to ~50 levels to reuse cached Color objects
+      final quantized = (opacity * 50).roundToDouble() / 50;
 
-      starPaint.color = Color.fromRGBO(255, 255, 255, opacity);
+      starPaint.color = cachedColor(quantized);
       canvas.drawCircle(
         Offset(star.x, star.y),
         star.size * (0.8 + twinkle * 0.2),
@@ -298,9 +309,9 @@ class _MostlySunnyNightPainter extends CustomPainter {
     }
 
     // Drifting cumulus clouds (same positions as day)
-    _drawDriftingCloud(canvas, w, h, time, 0.15, 0.30, w * 0.38, 0.30, 0.072);
-    _drawDriftingCloud(canvas, w, h, time, 0.58, 0.38, w * 0.42, 0.28, 0.056);
-    _drawDriftingCloud(canvas, w, h, time, 0.30, 0.62, w * 0.35, 0.22, 0.064);
+    drawDriftingCloud(canvas, w, h, time, 0.15, 0.30, w * 0.38, 0.30, 0.11);
+    drawDriftingCloud(canvas, w, h, time, 0.58, 0.38, w * 0.42, 0.28, 0.085);
+    drawDriftingCloud(canvas, w, h, time, 0.30, 0.62, w * 0.35, 0.22, 0.10);
   }
 
   @override
@@ -308,93 +319,3 @@ class _MostlySunnyNightPainter extends CustomPainter {
       oldDelegate.time != time;
 }
 
-/// File-level caches for [_drawCloud] to avoid per-frame allocations.
-final _blurCache = <double, MaskFilter>{};
-final _colorCache = <double, Color>{};
-
-MaskFilter _cachedBlur(double scale) {
-  final key = scale * 0.06;
-  return _blurCache.putIfAbsent(
-    key,
-    () => MaskFilter.blur(BlurStyle.normal, key),
-  );
-}
-
-Color _cachedColor(double alpha) {
-  return _colorCache.putIfAbsent(
-    alpha,
-    () => Color.fromRGBO(255, 255, 255, alpha),
-  );
-}
-
-/// Draws a cloud that drifts continuously across the screen and wraps around.
-void _drawDriftingCloud(
-  Canvas canvas,
-  double w,
-  double h,
-  double time,
-  double startXFrac,
-  double yFrac,
-  double scale,
-  double alpha,
-  double speed,
-) {
-  // Continuous horizontal drift with wrap-around
-  final totalWidth = w + scale * 1.5;
-  final rawX = (startXFrac * w + time * w * speed) % totalWidth - scale * 0.75;
-  final y = h * yFrac + sin(time * 0.25 + startXFrac * 10) * 6;
-
-  _drawCloud(canvas, center: Offset(rawX, y), scale: scale, alpha: alpha);
-}
-
-void _drawCloud(
-  Canvas canvas, {
-  required Offset center,
-  required double scale,
-  required double alpha,
-}) {
-  final paint = Paint()
-    ..style = PaintingStyle.fill
-    ..maskFilter = _cachedBlur(scale);
-
-  final baseColor = _cachedColor(alpha * 0.7);
-  final mainColor = _cachedColor(alpha);
-  final accentColor = _cachedColor(alpha * 0.8);
-
-  // Flat base
-  paint.color = baseColor;
-  canvas.drawOval(
-    Rect.fromCenter(
-      center: Offset(center.dx, center.dy + scale * 0.10),
-      width: scale * 1.3,
-      height: scale * 0.28,
-    ),
-    paint,
-  );
-
-  // Main lobes
-  paint.color = mainColor;
-  canvas.drawCircle(
-    Offset(center.dx - scale * 0.25, center.dy),
-    scale * 0.24,
-    paint,
-  );
-  canvas.drawCircle(
-    Offset(center.dx, center.dy - scale * 0.08),
-    scale * 0.30,
-    paint,
-  );
-  canvas.drawCircle(
-    Offset(center.dx + scale * 0.28, center.dy + scale * 0.02),
-    scale * 0.22,
-    paint,
-  );
-
-  // Top accent puff
-  paint.color = accentColor;
-  canvas.drawCircle(
-    Offset(center.dx + scale * 0.04, center.dy - scale * 0.20),
-    scale * 0.18,
-    paint,
-  );
-}

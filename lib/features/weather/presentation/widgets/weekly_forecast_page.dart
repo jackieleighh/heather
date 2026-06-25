@@ -1,5 +1,4 @@
 import 'dart:math' as math;
-
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:heather/core/utils/date_formats.dart';
@@ -45,7 +44,7 @@ const _tempCompactStyle = TextStyle(fontFamily: 'Quicksand',
 );
 const _tempEqualStyle = TextStyle(fontFamily: 'Quicksand',
   fontSize: 18,
-  fontWeight: FontWeight.w700,
+  fontWeight: FontWeight.w800,
   color: AppColors.cream,
 );
 const _statBoldStyle = TextStyle(fontFamily: 'Poppins',
@@ -76,12 +75,12 @@ const _tileBoldStyle = TextStyle(fontFamily: 'Poppins',
 const _tileTimeAxisStyle = TextStyle(fontFamily: 'Poppins',
   fontSize: 11,
   fontWeight: FontWeight.w400,
-  color: AppColors.cream70,
+  color: AppColors.cream85,
 );
 const _miniYLabelStyle = TextStyle(fontFamily: 'Poppins',
   fontSize: 9,
   fontWeight: FontWeight.w600,
-  color: AppColors.cream70,
+  color: AppColors.cream85,
 );
 const _statChipLightStyle = TextStyle(fontFamily: 'Poppins',
   fontSize: 11,
@@ -90,10 +89,13 @@ const _statChipLightStyle = TextStyle(fontFamily: 'Poppins',
 );
 
 /// Pre-computed decoration constants.
-final _weeklyCardDecoration = BoxDecoration(
-  color: AppColors.cream22,
+final _weeklyCardShadow = BoxDecoration(
   borderRadius: BorderRadius.circular(20),
   boxShadow: const [BoxShadow(color: AppColors.black12, blurRadius: 12)],
+);
+final _weeklyCardFill = BoxDecoration(
+  color: AppColors.cream40,
+  borderRadius: BorderRadius.circular(20),
 );
 final _tileBoxDecoration = BoxDecoration(
   color: AppColors.cream08,
@@ -152,9 +154,7 @@ class _WeeklyForecastPageState extends ConsumerState<WeeklyForecastPage> {
                   final totalHeight = constraints.maxHeight;
                   final cardCount = daily.length;
                   final isExpanded = _expandedIndex != null;
-                  // Tighter spacing + compact row height only when a card is
-                  // expanded.
-                  final spacing = isExpanded ? 4.0 : 6.0;
+                  const spacing = 6.0;
                   const baseCollapsedHeight = 30.0;
                   // Hard cap on the expanded card so the 2x2 grid never
                   // dominates the viewport on taller devices. Any leftover
@@ -233,30 +233,43 @@ class _WeeklyForecastPageState extends ConsumerState<WeeklyForecastPage> {
     return Padding(
       padding: EdgeInsets.only(bottom: i < cardCount - 1 ? spacing : 0),
       child: AnimatedContainer(
-        duration: const Duration(milliseconds: 300),
-        curve: Curves.easeInOut,
+        duration: const Duration(milliseconds: 400),
+        curve: Curves.easeInOutCubic,
         height: targetHeight,
-        clipBehavior: Clip.hardEdge,
-        decoration: _weeklyCardDecoration,
-        child: GestureDetector(
-          behavior: HitTestBehavior.opaque,
-          onTap: () => setState(() {
-            _expandedIndex = _expandedIndex == i ? null : i;
-          }),
-          child: _expandedIndex == i
-              ? _ExpandedDayContent(
-                  daily: daily[i],
-                  dayDiff: dayDiff,
-                  forecast: forecast,
-                  moonData: usno,
-                )
-              : _CollapsedDayContent(
-                  daily: daily[i],
-                  dayDiff: dayDiff,
-                  isExpanded: isExpanded,
-                  now: now,
-                  moonData: usno,
-                ),
+        decoration: _weeklyCardShadow,
+        child: ClipRRect(
+          borderRadius: BorderRadius.circular(20),
+          child: DecoratedBox(
+            decoration: _weeklyCardFill,
+            child: GestureDetector(
+            behavior: HitTestBehavior.opaque,
+            onTap: () => setState(() {
+              _expandedIndex = _expandedIndex == i ? null : i;
+            }),
+            child: OverflowBox(
+              alignment: Alignment.topCenter,
+              minHeight: 0,
+              maxHeight: double.infinity,
+              child: SizedBox(
+                height: targetHeight,
+                child: _expandedIndex == i
+                    ? _ExpandedDayContent(
+                        daily: daily[i],
+                        dayDiff: dayDiff,
+                        forecast: forecast,
+                        moonData: usno,
+                      )
+                    : _CollapsedDayContent(
+                        daily: daily[i],
+                        dayDiff: dayDiff,
+                        isExpanded: isExpanded,
+                        now: now,
+                        moonData: usno,
+                      ),
+              ),
+            ),
+          ),
+          ),
         ),
       ),
     );
@@ -351,85 +364,88 @@ class _CollapsedDayContent extends StatelessWidget {
         ),
         Padding(
           padding: const EdgeInsets.only(
-            left: 14,
+            left: 10,
             right: 10,
             top: 3,
             bottom: 3,
           ),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            mainAxisAlignment: MainAxisAlignment.center,
+          child: Row(
             children: [
-              // Row 1: Day + date header
-              Row(
-                children: [
-                  Flexible(
-                    child: Text(
-                      dayStr,
-                      overflow: TextOverflow.ellipsis,
-                      style: _dayNameStyle,
-                    ),
-                  ),
-                  const SizedBox(width: 6),
-                  Text(dateStr, style: _dateStyle),
-                  const SizedBox(width: 10),
-                  Icon(
+              // Condition icon — fixed width so text columns align
+              SizedBox(
+                width: 32,
+                child: Center(
+                  child: Icon(
                     conditionIcon(
                       daily.weatherCode,
                       isDay: daily.hasSunnyPeriods ? true : null,
                     ),
                     color: AppColors.cream95,
-                    size: 18,
+                    size: 22,
                   ),
-                ],
+                ),
               ),
-              const SizedBox(height: 2),
-              // Row 2: Stats left, temp right
-              Row(
-                children: [
-                  Icon(_precipIcon(daily), size: 12, color: AppColors.cream95),
-                  const SizedBox(width: 2),
-                  Text(
-                    '${daily.precipitationProbabilityMax}%',
-                    style: _statBoldStyle,
-                  ),
-                  if (daily.precipitationSum > 0 &&
-                      (daily.precipitationSum / 25.4) >= 0.01) ...[
-                    const SizedBox(width: 2),
-                    Text(
-                      ' ${(daily.precipitationSum / 25.4).toStringAsFixed(2)}"',
-                      style: _statBoldStyle,
+              const SizedBox(width: 10),
+              // Two-row text block
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    // Row 1: Day + date
+                    Row(
+                      children: [
+                        Flexible(
+                          child: Text(
+                            dayStr,
+                            overflow: TextOverflow.ellipsis,
+                            style: _dayNameStyle,
+                          ),
+                        ),
+                        const SizedBox(width: 6),
+                        Text(dateStr, style: _dateStyle),
+                      ],
+                    ),
+                    const SizedBox(height: 2),
+                    // Row 2: Stats
+                    Row(
+                      children: [
+                        Icon(_precipIcon(daily), size: 12, color: AppColors.cream95),
+                        const SizedBox(width: 2),
+                        Text(
+                          '${daily.precipitationProbabilityMax}%',
+                          style: _statBoldStyle,
+                        ),
+                        if (daily.precipitationSum > 0 &&
+                            (daily.precipitationSum / 25.4) >= 0.01) ...[
+                          const SizedBox(width: 2),
+                          Text(
+                            ' ${(daily.precipitationSum / 25.4).toStringAsFixed(2)}"',
+                            style: _statBoldStyle,
+                          ),
+                        ],
+                        const SizedBox(width: 8),
+                        const Icon(
+                          WeatherIcons.day_sunny,
+                          size: 11,
+                          color: AppColors.cream90,
+                        ),
+                        const SizedBox(width: 2),
+                        Text('${daily.uvIndexMax.round()}', style: _statLightStyle),
+                        if (moonFrac != null && illumination != null) ...[
+                          const SizedBox(width: 8),
+                          Icon(
+                            moonPhaseIcon(moonFrac),
+                            size: 12,
+                            color: AppColors.cream90,
+                          ),
+                          const SizedBox(width: 3),
+                          Text('$illumination%', style: _statLightStyle),
+                        ],
+                      ],
                     ),
                   ],
-                  if (daily.humidityAvg > 0) ...[
-                    const SizedBox(width: 8),
-                    const Icon(
-                      WeatherIcons.humidity,
-                      size: 10,
-                      color: AppColors.cream90,
-                    ),
-                    const SizedBox(width: 2),
-                    Text('${daily.humidityAvg}%', style: _statLightStyle),
-                  ],
-                  const SizedBox(width: 8),
-                  const Icon(
-                    WeatherIcons.day_sunny,
-                    size: 11,
-                    color: AppColors.cream90,
-                  ),
-                  const SizedBox(width: 2),
-                  Text('${daily.uvIndexMax.round()}', style: _statLightStyle),
-                  if (moonFrac != null && illumination != null) ...[
-                    const SizedBox(width: 8),
-                    Icon(
-                      moonPhaseIcon(moonFrac),
-                      size: 12,
-                      color: AppColors.cream90,
-                    ),
-                    const SizedBox(width: 3),
-                    Text('$illumination%', style: _statLightStyle),
-                  ],
-                ],
+                ),
               ),
             ],
           ),

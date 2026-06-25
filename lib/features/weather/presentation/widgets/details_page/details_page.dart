@@ -20,13 +20,19 @@ const _headerStyle = TextStyle(fontFamily: 'Figtree',
   color: AppColors.cream,
 );
 
-/// Pre-computed decoration constants to avoid allocations during animation.
+/// Constant clip shape for the AnimatedContainer (never changes, so never animates).
+const _clipDecoration = BoxDecoration(
+  borderRadius: BorderRadius.all(Radius.circular(20)),
+);
+
+/// Visual backdrop for collapsed cards — applied via a non-animated DecoratedBox
+/// so it switches instantly (no tweening pop).
 final _collapsedDecoration = BoxDecoration(
-  color: AppColors.cream22,
+  color: AppColors.cream40,
   borderRadius: BorderRadius.circular(20),
   boxShadow: const [BoxShadow(color: AppColors.black12, blurRadius: 12)],
 );
-const _transparentDecoration = BoxDecoration(color: Colors.transparent);
+const _transparentDecoration = BoxDecoration();
 
 class DetailsPage extends ConsumerStatefulWidget {
   final Forecast forecast;
@@ -154,6 +160,7 @@ class _DetailsPageState extends ConsumerState<DetailsPage> {
         sunset: nextSunset,
         now: now,
         mode: mode,
+
       ),
       // 1: Temperature
       (mode) => TemperatureCard(
@@ -169,6 +176,7 @@ class _DetailsPageState extends ConsumerState<DetailsPage> {
         feelsLikeTemps: mode == CardDisplayMode.expanded
             ? next24.map((h) => h.feelsLike).toList()
             : const [],
+
       ),
       // 2: Rain
       (mode) => RainCard(
@@ -188,6 +196,7 @@ class _DetailsPageState extends ConsumerState<DetailsPage> {
         hourlyDewPoint: mode == CardDisplayMode.expanded
             ? next24.map((h) => h.dewPoint).toList()
             : const [],
+
       ),
       // 3: Air
       (mode) => AirCard(
@@ -204,6 +213,7 @@ class _DetailsPageState extends ConsumerState<DetailsPage> {
         hourlyWindDirection: next24WindDirection,
         hours: next24Hours,
         now: now,
+
       ),
       // 4: Sun
       (mode) => SunCard(
@@ -219,6 +229,7 @@ class _DetailsPageState extends ConsumerState<DetailsPage> {
         dayLengthDeltaMinutes: dayLengthDeltaMinutes,
         tomorrowSunrise: tomorrowDaily.sunrise,
         tomorrowSunset: tomorrowDaily.sunset,
+
       ),
       // 5: Moon
       (mode) => MoonCard(
@@ -232,6 +243,7 @@ class _DetailsPageState extends ConsumerState<DetailsPage> {
         tomorrowSunrise: tomorrowDaily.sunrise,
         tomorrowSunset: tomorrowDaily.sunset,
         utcOffsetSeconds: forecast.utcOffsetSeconds,
+
       ),
     ];
 
@@ -317,22 +329,37 @@ class _DetailsPageState extends ConsumerState<DetailsPage> {
 
     return Padding(
       padding: EdgeInsets.only(bottom: i < cardCount - 1 ? spacing : 0),
-      child: AnimatedContainer(
-        duration: const Duration(milliseconds: 300),
-        curve: Curves.easeInOut,
-        height: targetHeight,
-        clipBehavior: Clip.antiAlias,
+      child: DecoratedBox(
+        // Instant decoration switch — not animated.
         decoration: mode == CardDisplayMode.collapsed
             ? _collapsedDecoration
             : _transparentDecoration,
-        child: GestureDetector(
-          behavior: HitTestBehavior.opaque,
-          onTap: () {
-            setState(() {
-              _expandedIndex = _expandedIndex == i ? null : i;
-            });
-          },
-          child: cards[i](mode),
+        child: AnimatedContainer(
+          duration: const Duration(milliseconds: 400),
+          curve: Curves.easeInOutCubic,
+          height: targetHeight,
+          clipBehavior: Clip.antiAlias,
+          decoration: _clipDecoration,
+          child: GestureDetector(
+            behavior: HitTestBehavior.opaque,
+            onTap: () {
+              setState(() {
+                _expandedIndex = _expandedIndex == i ? null : i;
+              });
+            },
+            // OverflowBox decouples the child's layout from the animating
+            // container height so Expanded widgets inside cards don't stretch
+            // or squash during the transition.
+            child: OverflowBox(
+              alignment: Alignment.topCenter,
+              minHeight: 0,
+              maxHeight: double.infinity,
+              child: SizedBox(
+                height: targetHeight,
+                child: cards[i](mode),
+              ),
+            ),
+          ),
         ),
       ),
     );

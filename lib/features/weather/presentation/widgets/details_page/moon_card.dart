@@ -39,7 +39,7 @@ const _poppinsBold13Cream = TextStyle(fontFamily: 'Poppins',
 const _poppinsW50011Cream70 = TextStyle(fontFamily: 'Poppins',
   fontSize: 11,
   fontWeight: FontWeight.w500,
-  color: AppColors.cream70,
+  color: AppColors.cream85,
 );
 const _poppinsBold14Cream = TextStyle(fontFamily: 'Poppins',
   fontSize: 14,
@@ -49,7 +49,7 @@ const _poppinsBold14Cream = TextStyle(fontFamily: 'Poppins',
 const _poppinsW50011Cream80 = TextStyle(fontFamily: 'Poppins',
   fontSize: 11,
   fontWeight: FontWeight.w500,
-  color: AppColors.cream80,
+  color: AppColors.cream90,
 );
 const _poppinsBold11Cream90 = TextStyle(fontFamily: 'Poppins',
   fontSize: 11,
@@ -69,12 +69,12 @@ const _poppinsW40012Cream95 = TextStyle(fontFamily: 'Poppins',
 const _poppinsW40012Cream75 = TextStyle(fontFamily: 'Poppins',
   fontSize: 12,
   fontWeight: FontWeight.w400,
-  color: AppColors.cream75,
+  color: AppColors.cream90,
 );
 const _poppinsW40011Cream75 = TextStyle(fontFamily: 'Poppins',
   fontSize: 11,
   fontWeight: FontWeight.w400,
-  color: AppColors.cream75,
+  color: AppColors.cream90,
 );
 const _poppinsBold11Cream95 = TextStyle(fontFamily: 'Poppins',
   fontSize: 11,
@@ -84,12 +84,12 @@ const _poppinsBold11Cream95 = TextStyle(fontFamily: 'Poppins',
 const _poppinsW80011Cream85 = TextStyle(fontFamily: 'Poppins',
   fontSize: 11,
   fontWeight: FontWeight.w800,
-  color: AppColors.cream85,
+  color: AppColors.cream95,
 );
 const _poppinsW40011Cream85 = TextStyle(fontFamily: 'Poppins',
   fontSize: 11,
   fontWeight: FontWeight.w400,
-  color: AppColors.cream85,
+  color: AppColors.cream95,
 );
 const _poppinsBold11Cream90Style = TextStyle(fontFamily: 'Poppins',
   fontSize: 11,
@@ -208,6 +208,7 @@ class MoonCard extends ConsumerWidget {
       }
       return CardContainer(
         backgroundIcon: WeatherIcons.moon_full,
+
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
@@ -325,6 +326,7 @@ class MoonCard extends ConsumerWidget {
   }) {
     return CardContainer(
       backgroundIcon: icon,
+
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
@@ -400,6 +402,7 @@ class MoonCard extends ConsumerWidget {
 
     return CardContainer(
       backgroundIcon: icon,
+
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
@@ -1150,7 +1153,7 @@ class _MoonCycleChartPainter extends CustomPainter {
   final DateTime now;
 
   static const _dateLabelStyle = TextStyle(
-    color: AppColors.cream75,
+    color: AppColors.cream90,
     fontSize: 10,
     fontWeight: FontWeight.w600,
   );

@@ -44,12 +44,12 @@ const _poppinsBold13Cream95 = TextStyle(fontFamily: 'Poppins',
 const _poppinsW40011Cream80 = TextStyle(fontFamily: 'Poppins',
   fontSize: 11,
   fontWeight: FontWeight.w400,
-  color: AppColors.cream80,
+  color: AppColors.cream90,
 );
 const _poppinsW60011Cream80 = TextStyle(fontFamily: 'Poppins',
   fontSize: 11,
   fontWeight: FontWeight.w600,
-  color: AppColors.cream80,
+  color: AppColors.cream90,
 );
 const _poppinsW60013Cream90 = TextStyle(fontFamily: 'Poppins',
   fontSize: 13,
@@ -59,17 +59,17 @@ const _poppinsW60013Cream90 = TextStyle(fontFamily: 'Poppins',
 const _poppinsW60012Cream85 = TextStyle(fontFamily: 'Poppins',
   fontSize: 12,
   fontWeight: FontWeight.w600,
-  color: AppColors.cream85,
+  color: AppColors.cream95,
 );
 const _poppinsW60010Cream80 = TextStyle(fontFamily: 'Poppins',
   fontSize: 10,
   fontWeight: FontWeight.w600,
-  color: AppColors.cream80,
+  color: AppColors.cream90,
 );
 const _poppinsW80011Cream85 = TextStyle(fontFamily: 'Poppins',
   fontSize: 11,
   fontWeight: FontWeight.w800,
-  color: AppColors.cream85,
+  color: AppColors.cream95,
 );
 const _poppinsW4009Cream50 = TextStyle(fontFamily: 'Poppins',
   fontSize: 9,
@@ -256,6 +256,7 @@ class AirCard extends StatelessWidget {
     // Normal mode
     return CardContainer(
       backgroundIcon: WeatherIcons.smoke,
+
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         mainAxisAlignment: MainAxisAlignment.center,

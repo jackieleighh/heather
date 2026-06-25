@@ -23,6 +23,8 @@ import '../../domain/entities/forecast.dart';
 import '../../domain/entities/weather_alert.dart';
 import '../providers/location_provider.dart';
 import '../providers/settings_provider.dart';
+import '../providers/moon_data_provider.dart';
+import '../providers/visible_planets_provider.dart';
 import '../providers/weather_provider.dart';
 import '../screens/alert_detail_sheet.dart';
 import '../screens/location_search_screen.dart';
@@ -700,6 +702,10 @@ class _WeatherScreenState extends ConsumerState<WeatherScreen>
           _gracePeriodTimer?.cancel();
           _forceTimeoutTimer?.cancel();
         }
+
+        // Prefetch astronomy data so it's ready when user reaches the details page
+        ref.watch(visiblePlanetsProvider((lat: location.latitude, lon: location.longitude)));
+        ref.watch(moonDataProvider);
 
         // Trigger batch load for saved locations once GPS is loaded.
         // Only mark as loaded when load() actually runs — if we skip because

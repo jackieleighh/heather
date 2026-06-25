@@ -58,6 +58,11 @@ Future<List<WeatherAlert>> fetchAlerts({
     final alerts = features
         .map((feature) {
           final props = feature['properties'] as Map<String, dynamic>;
+
+          // Skip non-actual alerts (test messages, exercises, drafts)
+          final status = props['status'] as String? ?? '';
+          if (status != 'Actual') return null;
+
           final expires = DateTime.tryParse(props['expires'] as String? ?? '');
 
           // Skip expired alerts

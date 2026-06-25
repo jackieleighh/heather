@@ -60,7 +60,6 @@ class AppColors {
   static const sunnyCeruleanAqua = Color(0xFF70B8F8);
   static const sunnyElectricAqua = Color(0xFF70D8F8);
   static const sunnyVividTeal = Color(0xFF38C0A0);
-  static const sunnyWarmGold = Color(0xFFC8C030);
   static const sunnyYellowGreen = Color(0xFFC8D830);
   static const sunnyAmber = Color(0xFFF0C028);
   static const sunnyElectricGold = Color(0xFFE8C838);
@@ -69,9 +68,11 @@ class AppColors {
   static const sunnyCoolTeal = Color(0xFF58B8D0);
   static const sunnyTealGreen = Color(0xFF50B8A0);
   static const sunnySpringSage = Color(0xFF58C8A0);
-  static const sunnyWarmAmber = Color(0xFFE8C830);
-  static const sunnyDeepTangerine = Color(0xFFE08028);
-  static const sunnyWarmCoral = Color(0xFFE05848);
+  static const sunnySoftGold = Color(0xFFC0C068);
+  static const sunnySunshineYellow = Color(0xFFF0D860);
+  static const sunnySunshineGold = Color(0xFFE8A830);
+  static const sunnySunshineAmber = Color(0xFFD87028);
+  static const sunnyHotPink = Color(0xFFD03880);
 
   // --- Drizzle night middles ---
   static const nightDrizzleViolet = Color(0xFF2C1870);

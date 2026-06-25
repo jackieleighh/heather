@@ -22,7 +22,7 @@ const _poppinsBold13Cream = TextStyle(fontFamily: 'Poppins',
 const _poppinsW50011Cream85 = TextStyle(fontFamily: 'Poppins',
   fontSize: 11,
   fontWeight: FontWeight.w500,
-  color: AppColors.cream85,
+  color: AppColors.cream95,
 );
 const _poppinsBold42Cream = TextStyle(fontFamily: 'Poppins',
   fontSize: 42,
@@ -33,17 +33,17 @@ const _poppinsBold42Cream = TextStyle(fontFamily: 'Poppins',
 const _poppinsBold10Cream70 = TextStyle(fontFamily: 'Poppins',
   fontSize: 10,
   fontWeight: FontWeight.w700,
-  color: AppColors.cream70,
+  color: AppColors.cream85,
 );
 const _poppinsW60011Cream80 = TextStyle(fontFamily: 'Poppins',
   fontSize: 11,
   fontWeight: FontWeight.w600,
-  color: AppColors.cream80,
+  color: AppColors.cream90,
 );
 const _poppinsW60010Cream80 = TextStyle(fontFamily: 'Poppins',
   fontSize: 10,
   fontWeight: FontWeight.w600,
-  color: AppColors.cream80,
+  color: AppColors.cream90,
 );
 const _figtreeW40018Cream = TextStyle(fontFamily: 'Figtree',
   fontSize: 18,
@@ -691,12 +691,12 @@ class _RangeGaugePainter extends CustomPainter {
   final double todayHi;
 
   static const _labelStyle = TextStyle(
-    color: AppColors.cream60,
+    color: AppColors.cream75,
     fontSize: 9,
     fontWeight: FontWeight.w600,
     fontFamily: 'Poppins',
   );
-  static final _nowLabelStyle = _labelStyle.copyWith(color: AppColors.cream85);
+  static final _nowLabelStyle = _labelStyle.copyWith(color: AppColors.cream95);
 
   _RangeGaugePainter({
     required this.currentTemp,

@@ -3,6 +3,8 @@ import 'dart:ui' as ui;
 
 import 'package:flutter/material.dart';
 
+import 'cloud_painter.dart';
+
 class PartlyCloudyBackground extends StatefulWidget {
   final List<Color> gradientColors;
   final bool isDay;
@@ -85,7 +87,7 @@ class _PartlyCloudyBackgroundState extends State<PartlyCloudyBackground>
         final time =
             (_controller.lastElapsedDuration?.inMilliseconds ?? 0) /
                 1000.0 *
-                0.42;
+                0.6;
         if (widget.isDay && (time - _lastColorTime).abs() > 0.033) {
           _lastColorTime = time;
           const rayAlphas = [
@@ -134,6 +136,7 @@ class _Star {
   final double size;
   final double twinkleSpeed;
   final double phase;
+  Color? cachedColor;
 
   _Star({
     required this.x,
@@ -151,6 +154,9 @@ class _PartlyCloudyDayPainter extends CustomPainter {
   _PartlyCloudyDayPainter(this.time, this.rayColors);
 
   static const _white0 = Color.fromRGBO(255, 255, 255, 0);
+
+  /// Pre-allocated color pair lists for ray gradients (one per ray).
+  static final _rayGradientColors = List.generate(10, (_) => [_white0, _white0]);
   static const _glowColors = [
     Color.fromRGBO(255, 255, 255, 0.38),
     Color.fromRGBO(255, 255, 255, 0.10),
@@ -221,10 +227,13 @@ class _PartlyCloudyDayPainter extends CustomPainter {
         ..lineTo(sunCenter.dx + cosR * innerR, sunCenter.dy + sinR * innerR)
         ..close();
 
+      final colors = _rayGradientColors[i];
+      colors[0] = rayColors[i];
+      colors[1] = _white0;
       rayPaint.shader = ui.Gradient.linear(
         Offset(sunCenter.dx + cosA * innerR, sunCenter.dy + sinA * innerR),
         Offset(sunCenter.dx + cosA * outerR, sunCenter.dy + sinA * outerR),
-        [rayColors[i], _white0],
+        colors,
       );
       canvas.drawPath(path, rayPaint);
     }
@@ -276,8 +285,10 @@ class _PartlyCloudyNightPainter extends CustomPainter {
     for (final star in stars) {
       final twinkle = (sin(time * star.twinkleSpeed + star.phase) + 1) / 2;
       final opacity = 0.1 + twinkle * 0.3;
+      // Quantize to ~50 levels to reuse cached Color objects
+      final quantized = (opacity * 50).roundToDouble() / 50;
 
-      starPaint.color = Color.fromRGBO(255, 255, 255, opacity);
+      starPaint.color = cachedColor(quantized);
       canvas.drawCircle(
         Offset(star.x, star.y),
         star.size * (0.8 + twinkle * 0.2),
@@ -294,115 +305,11 @@ class _PartlyCloudyNightPainter extends CustomPainter {
       oldDelegate.time != time;
 }
 
-/// File-level caches for [_drawCloud] to avoid per-frame allocations.
-final _blurCache = <double, MaskFilter>{};
-final _colorCache = <double, Color>{};
-
-MaskFilter _cachedBlur(double scale) {
-  final key = scale * 0.06;
-  return _blurCache.putIfAbsent(
-    key,
-    () => MaskFilter.blur(BlurStyle.normal, key),
-  );
-}
-
-Color _cachedColor(double alpha) {
-  return _colorCache.putIfAbsent(
-    alpha,
-    () => Color.fromRGBO(255, 255, 255, alpha),
-  );
-}
-
-/// Draws a cloud that drifts continuously across the screen and wraps around.
-void _drawDriftingCloud(
-  Canvas canvas,
-  double w,
-  double h,
-  double time,
-  double startXFrac,
-  double yFrac,
-  double scale,
-  double alpha,
-  double speed,
-) {
-  final totalWidth = w + scale * 1.5;
-  final rawX = (startXFrac * w + time * w * speed) % totalWidth - scale * 0.75;
-  final y = h * yFrac + sin(time * 0.25 + startXFrac * 10) * 6;
-
-  _drawCloud(canvas, center: Offset(rawX, y), scale: scale, alpha: alpha);
-}
-
 /// Draws the 5 cumulus clouds shared by both day and night painters.
 void _drawClouds(Canvas canvas, double w, double h, double time) {
-  _drawDriftingCloud(canvas, w, h, time, 0.20, 0.08, w * 0.40, 0.35, 0.08);
-  _drawDriftingCloud(canvas, w, h, time, 0.65, 0.20, w * 0.48, 0.38, 0.064);
-  _drawDriftingCloud(canvas, w, h, time, 0.10, 0.38, w * 0.42, 0.32, 0.096);
-  _drawDriftingCloud(canvas, w, h, time, 0.75, 0.55, w * 0.36, 0.28, 0.072);
-  _drawDriftingCloud(canvas, w, h, time, 0.40, 0.72, w * 0.34, 0.24, 0.088);
-}
-
-/// Draws a single cumulus cloud as a cluster of overlapping soft circles.
-void _drawCloud(
-  Canvas canvas, {
-  required Offset center,
-  required double scale,
-  required double alpha,
-}) {
-  final paint = Paint()
-    ..style = PaintingStyle.fill
-    ..maskFilter = _cachedBlur(scale);
-
-  final baseColor = _cachedColor(alpha * 0.75);
-  final mainColor = _cachedColor(alpha);
-  final accentColor = _cachedColor(alpha * 0.85);
-
-  // Flat base — wide oval anchoring the bottom
-  paint.color = baseColor;
-  canvas.drawOval(
-    Rect.fromCenter(
-      center: Offset(center.dx, center.dy + scale * 0.12),
-      width: scale * 1.4,
-      height: scale * 0.35,
-    ),
-    paint,
-  );
-
-  // Main body — overlapping circles that form the puffy top
-  paint.color = mainColor;
-
-  // Left lobe
-  canvas.drawCircle(
-    Offset(center.dx - scale * 0.30, center.dy),
-    scale * 0.30,
-    paint,
-  );
-
-  // Center lobe (tallest)
-  canvas.drawCircle(
-    Offset(center.dx, center.dy - scale * 0.12),
-    scale * 0.36,
-    paint,
-  );
-
-  // Right lobe
-  canvas.drawCircle(
-    Offset(center.dx + scale * 0.32, center.dy + scale * 0.02),
-    scale * 0.28,
-    paint,
-  );
-
-  // Small accent puff — top center for height
-  paint.color = accentColor;
-  canvas.drawCircle(
-    Offset(center.dx + scale * 0.05, center.dy - scale * 0.24),
-    scale * 0.22,
-    paint,
-  );
-
-  // Small accent puff — right shoulder
-  canvas.drawCircle(
-    Offset(center.dx + scale * 0.44, center.dy + scale * 0.05),
-    scale * 0.18,
-    paint,
-  );
+  drawDriftingCloud(canvas, w, h, time, 0.20, 0.08, w * 0.40, 0.35, 0.12);
+  drawDriftingCloud(canvas, w, h, time, 0.65, 0.20, w * 0.48, 0.38, 0.10);
+  drawDriftingCloud(canvas, w, h, time, 0.10, 0.38, w * 0.42, 0.32, 0.14);
+  drawDriftingCloud(canvas, w, h, time, 0.75, 0.55, w * 0.36, 0.28, 0.11);
+  drawDriftingCloud(canvas, w, h, time, 0.40, 0.72, w * 0.34, 0.24, 0.13);
 }

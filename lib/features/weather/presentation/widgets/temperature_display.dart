@@ -8,10 +8,10 @@ const _quicksandBold22 = TextStyle(fontFamily: 'Quicksand',
   fontWeight: FontWeight.w700,
   color: AppColors.cream,
 );
-const _quicksandW50015Cream90 = TextStyle(fontFamily: 'Quicksand',
+const _quicksandW50015Cream = TextStyle(fontFamily: 'Quicksand',
   fontSize: 15,
   fontWeight: FontWeight.w500,
-  color: AppColors.cream90,
+  color: AppColors.cream,
 );
 
 class TemperatureDisplay extends StatelessWidget {
@@ -67,13 +67,13 @@ class TemperatureDisplay extends StatelessWidget {
             offset: const Offset(0, -8),
             child: Text(
               'feels ${feelsLike!.round()}°',
-              style: _quicksandW50015Cream90,
+              style: _quicksandW50015Cream,
             ),
           ),
         if (precipLabel != null)
           Transform.translate(
             offset: const Offset(0, 0),
-            child: Text(precipLabel!, style: _quicksandW50015Cream90),
+            child: Text(precipLabel!, style: _quicksandW50015Cream),
           ),
       ],
     );

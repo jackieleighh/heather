@@ -127,9 +127,9 @@ struct WidgetGradients {
             ["#FF70A8FF", "#FF80A8F8", "#FF9888F8"],
             ["#FF70B0FF", "#FF70B8F8", "#FF50B0F0"],
             ["#FF50B0F0", "#FF58B8D0", "#FF50B8A0"],
-            ["#FF58B8D0", "#FF58C8A0", "#FFC8C030"],
-            ["#FFC8C030", "#FFE8C830", "#FFE08028"],
-            ["#FFE8C838", "#FFE08030", "#FFE05848"],
+            ["#FF58B8D0", "#FF58C8A0", "#FFC0C068"],
+            ["#FFF0D860", "#FFE8A830", "#FFD87028"],
+            ["#FFE8C838", "#FFE08030", "#FFD03880"],
         ],
         "overcast": [
             ["#FF5454B8", "#FF727AC0", "#FF9A8AC8"],

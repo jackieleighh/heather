@@ -2,13 +2,7 @@ import 'dart:math';
 
 import 'package:flutter/material.dart';
 
-class _Blob {
-  final double dx;
-  final double dy;
-  final double radius;
-
-  const _Blob({required this.dx, required this.dy, required this.radius});
-}
+import 'cloud_painter.dart';
 
 class _CloudMass {
   final double startX;
@@ -17,18 +11,14 @@ class _CloudMass {
   final double scale;
   final double alpha;
   final double wobblePhase;
-  final List<_Blob> blobs;
-  MaskFilter? cachedMaskFilter;
-  Color? cachedColor;
 
-  _CloudMass({
+  const _CloudMass({
     required this.startX,
     required this.yFraction,
     required this.speed,
     required this.scale,
     required this.alpha,
     required this.wobblePhase,
-    required this.blobs,
   });
 }
 
@@ -80,24 +70,16 @@ class _OvercastBackgroundState extends State<OvercastBackground>
   List<_CloudMass> _generateMasses() {
     const params = [
       // (yFraction, scale, speed, alpha)
-      (0.08, 0.58, 0.22, 0.18),
-      (0.22, 0.54, 0.25, 0.16),
-      (0.38, 0.52, 0.32, 0.15),
-      (0.52, 0.56, 0.23, 0.14),
-      (0.66, 0.50, 0.34, 0.13),
-      (0.80, 0.48, 0.27, 0.12),
+      (0.08, 0.62, 0.32, 0.18),
+      (0.22, 0.58, 0.36, 0.16),
+      (0.38, 0.56, 0.46, 0.15),
+      (0.52, 0.60, 0.34, 0.14),
+      (0.66, 0.54, 0.48, 0.13),
+      (0.80, 0.52, 0.38, 0.12),
     ];
 
     return params.map((p) {
       final (yFrac, scale, speed, alpha) = p;
-      final blobCount = 10 + _random.nextInt(6);
-      final blobs = List.generate(blobCount, (_) {
-        return _Blob(
-          dx: (_random.nextDouble() - 0.5) * 1.8,
-          dy: (_random.nextDouble() - 0.5) * 0.8,
-          radius: 0.16 + _random.nextDouble() * 0.22,
-        );
-      });
       return _CloudMass(
         startX: _random.nextDouble() * 2.2,
         yFraction: yFrac,
@@ -105,7 +87,6 @@ class _OvercastBackgroundState extends State<OvercastBackground>
         scale: scale,
         alpha: alpha,
         wobblePhase: _random.nextDouble() * pi * 2,
-        blobs: blobs,
       );
     }).toList();
   }
@@ -124,7 +105,7 @@ class _OvercastBackgroundState extends State<OvercastBackground>
         final time =
             (_controller.lastElapsedDuration?.inMilliseconds ?? 0) /
                 1000.0 *
-                0.3;
+                0.45;
         return RepaintBoundary(
           child: CustomPaint(
             foregroundPainter: _OvercastPainter(time, _masses),
@@ -164,9 +145,7 @@ class _OvercastPainter extends CustomPainter {
       ..color = Color.fromRGBO(255, 255, 255, 0.15 + sin(time * 0.4) * 0.03);
     canvas.drawCircle(Offset(w * 0.8, h * 0.12), 90, glowPaint);
 
-    // Drifting cloud masses
-    final paint = Paint()..style = PaintingStyle.fill;
-
+    // Drifting cloud masses — structured stratus shapes
     for (final mass in masses) {
       final raw = mass.startX + time * mass.speed;
       final xNorm = (raw % 2.2) - 0.6;
@@ -175,25 +154,12 @@ class _OvercastPainter extends CustomPainter {
       final centerY = h * mass.yFraction + wobble;
       final scale = w * mass.scale;
 
-      paint
-        ..maskFilter = mass.cachedMaskFilter ??= MaskFilter.blur(
-          BlurStyle.normal,
-          scale * 0.12,
-        )
-        ..color = mass.cachedColor ??= Color.fromRGBO(
-          255,
-          255,
-          255,
-          mass.alpha,
-        );
-
-      for (final blob in mass.blobs) {
-        canvas.drawCircle(
-          Offset(centerX + blob.dx * scale, centerY + blob.dy * scale),
-          blob.radius * scale,
-          paint,
-        );
-      }
+      drawOvercastCloud(
+        canvas,
+        center: Offset(centerX, centerY),
+        scale: scale,
+        alpha: mass.alpha,
+      );
     }
 
     // Haze overlay
@@ -203,29 +169,13 @@ class _OvercastPainter extends CustomPainter {
   void _drawHaze(Canvas canvas, double w, double h) {
     final paint = Paint()
       ..style = PaintingStyle.fill
-      ..maskFilter = const MaskFilter.blur(BlurStyle.normal, 100);
-
-    paint.color = Color.fromRGBO(255, 255, 255, 0.03 + sin(time * 0.15) * 0.01);
+      ..maskFilter = const MaskFilter.blur(BlurStyle.normal, 40)
+      ..color = Color.fromRGBO(255, 255, 255, 0.03 + sin(time * 0.15) * 0.01);
     canvas.drawOval(
       Rect.fromCenter(
         center: Offset(w * 0.5, h * 0.25),
         width: w * 2.0,
         height: h * 0.5,
-      ),
-      paint,
-    );
-
-    paint.color = Color.fromRGBO(
-      255,
-      255,
-      255,
-      0.02 + sin(time * 0.12 + 2.0) * 0.01,
-    );
-    canvas.drawOval(
-      Rect.fromCenter(
-        center: Offset(w * 0.5, h * 0.65),
-        width: w * 1.8,
-        height: h * 0.4,
       ),
       paint,
     );

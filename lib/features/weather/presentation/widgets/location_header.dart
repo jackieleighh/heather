@@ -4,10 +4,10 @@ import '../../../../core/constants/app_colors.dart';
 import '../../../../core/utils/date_formats.dart';
 
 /// Cached text styles to avoid repeated GoogleFonts allocations.
-const _quicksandW50015Cream90 = TextStyle(fontFamily: 'Quicksand',
+const _quicksandW50015Cream = TextStyle(fontFamily: 'Quicksand',
   fontSize: 15,
   fontWeight: FontWeight.w500,
-  color: AppColors.cream90,
+  color: AppColors.cream,
 );
 const _quicksandBold22 = TextStyle(fontFamily: 'Quicksand',
   fontSize: 22,
@@ -33,7 +33,7 @@ class LocationHeader extends StatelessWidget {
       mainAxisSize: MainAxisSize.min,
       crossAxisAlignment: CrossAxisAlignment.end,
       children: [
-        Text(timeString, style: _quicksandW50015Cream90),
+        Text(timeString, style: _quicksandW50015Cream),
         const SizedBox(height: 2),
         Row(
           mainAxisSize: MainAxisSize.min,
